@@ -1,0 +1,10 @@
+_worker.js
+.git
+.gitignore
+.gitattributes
+node_modules
+scripts
+supabase
+.claude
+wrangler.jsonc
+wrangler.toml
