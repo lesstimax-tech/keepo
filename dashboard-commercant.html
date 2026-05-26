@@ -1051,6 +1051,23 @@
         }
         .ai-color-swatch { width: 38px; height: 38px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); }
 
+        /* ─── ÉTAT BLOQUÉ / FLOUTÉ POUR BOUTONS IA ─── */
+        .btn-ai-locked {
+            position: relative; cursor: not-allowed !important;
+            opacity: 0.55; filter: blur(0.3px);
+            background: linear-gradient(135deg, rgba(124,106,247,0.10), rgba(0,232,204,0.08)) !important;
+            border-color: rgba(124,106,247,0.2) !important;
+            color: rgba(197,184,255,0.7) !important;
+        }
+        .btn-ai-locked::after {
+            content: "🔒"; margin-left: 8px;
+            filter: none; opacity: 1;
+        }
+        .btn-ai-locked:hover {
+            transform: none !important; box-shadow: none !important;
+            opacity: 0.7;
+        }
+
         /* ─── INSIGHT CARD ─── */
         .insight-card {
             background: linear-gradient(135deg, rgba(0, 180, 216, 0.06), rgba(124, 106, 247, 0.04));
@@ -1357,7 +1374,7 @@
                     <h2 class="panel-title" style="margin-bottom:6px;">Créer un Avantage Client</h2>
                     <p class="panel-subtitle" style="margin-bottom:0;">Configurez les récompenses que vos clients peuvent débloquer avec leurs points</p>
                 </div>
-                <button onclick="openAiRewardSuggestions()" class="btn-action btn-ai-suggest" style="padding:11px 18px;font-size:13px;white-space:nowrap;">
+                <button onclick="aiFeatureLockedClick()" id="ai-btn-rewards" class="btn-action btn-ai-suggest btn-ai-locked" style="padding:11px 18px;font-size:13px;white-space:nowrap;">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Suggérer avec l'IA
                 </button>
             </div>
@@ -1490,7 +1507,7 @@
                     <h2 class="panel-title" style="margin-bottom:6px;">Studio Design Card</h2>
                     <p class="panel-subtitle" style="margin-bottom:0;">Personnalisez l'apparence de la carte de fidélité affichée sur l'application client</p>
                 </div>
-                <button onclick="openAiDesignStudio()" class="btn-action btn-ai-suggest" style="padding:11px 18px;font-size:13px;white-space:nowrap;">
+                <button onclick="aiFeatureLockedClick()" id="ai-btn-studio" class="btn-action btn-ai-suggest btn-ai-locked" style="padding:11px 18px;font-size:13px;white-space:nowrap;">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-design par IA
                 </button>
             </div>
@@ -1665,7 +1682,7 @@
 
                 <!-- ── Contenu e-mail ── -->
                 <div style="display:flex;justify-content:flex-end;margin-bottom:-4px;">
-                    <button type="button" onclick="openAiEmailWriter()" class="btn-action btn-ai-suggest" style="padding:8px 14px;font-size:12px;">
+                    <button type="button" onclick="aiFeatureLockedClick()" id="ai-btn-email" class="btn-action btn-ai-suggest btn-ai-locked" style="padding:8px 14px;font-size:12px;">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Rédiger avec l'IA
                     </button>
                 </div>
@@ -4302,6 +4319,17 @@
     // ═══════════════════════════════════════════════════════════
     //  IA ASSISTANT — Email writer, Reward suggester, Design studio
     // ═══════════════════════════════════════════════════════════
+
+    // Bouton bloqué : message différent selon le plan
+    function aiFeatureLockedClick() {
+        if (activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale') {
+            showToast('info', '⏳ Bientôt disponible',
+                'Cette fonctionnalité IA arrive dans une prochaine mise à jour. Restez connecté !');
+        } else {
+            showToast('warning', '🔒 Exclusivité Pro Scale',
+                'Les fonctionnalités IA sont réservées aux abonnés Pro Scale. Passez à l\'offre supérieure pour en profiter.');
+        }
+    }
 
     function showAiModal(html) {
         let backdrop = document.getElementById('ai-modal-backdrop');
