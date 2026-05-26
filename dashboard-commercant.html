@@ -1315,7 +1315,7 @@
                     <div style="text-align:center;flex-shrink:0;">
                         <div id="upgrade-usage-display" style="font-family:'Cabinet Grotesk',sans-serif;font-size:28px;font-weight:900;color:var(--primary-accent);"></div>
                         <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;" id="upgrade-usage-label">membres actifs</div>
-                        <button onclick="showToast('info','Upgrade','Contactez-nous à contact@keepo.app pour passer Pro Scale 🚀')"
+                        <button onclick="startStripeUpgrade()"
                             style="background:linear-gradient(135deg,#ff4d82,#7c6af7);border:none;border-radius:50px;
                                padding:11px 22px;color:white;font-weight:800;font-size:13px;cursor:pointer;
                                font-family:'Cabinet Grotesk',sans-serif;white-space:nowrap;
@@ -4886,6 +4886,47 @@
     // ═══════════════════════════════════════════════════════════
     //  IA ASSISTANT — Email writer, Reward suggester, Design studio
     // ═══════════════════════════════════════════════════════════
+
+    // ─── PHASE 4 #14 — Stripe upgrade flow ───
+    async function startStripeUpgrade() {
+        if (!currentMerchantId) return;
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const email = user?.email;
+        if (!email) { showToast('error', 'Erreur', 'Email introuvable'); return; }
+
+        showToast('info', 'Redirection…', 'Ouverture de la page de paiement Stripe');
+
+        try {
+            const res = await fetch('/api/stripe-checkout', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    merchantId: currentMerchantId,
+                    merchantEmail: email,
+                    returnUrl: window.location.origin + '/dashboard-commercant'
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.url) {
+                showToast('error', 'Erreur', (data?.error || 'Stripe indisponible') + (data?.error?.includes('non configuré') ? ' — Le commerçant doit finaliser la config Stripe' : ''));
+                return;
+            }
+            window.location.href = data.url;
+        } catch (err) {
+            showToast('error', 'Erreur réseau', String(err));
+        }
+    }
+
+    // Notification de retour de paiement
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('stripe') === 'success') {
+            setTimeout(() => showToast('success', '🎉 Bienvenue Pro Scale !', 'Votre abonnement est activé. Rechargez si certaines fonctions ne sont pas encore visibles.'), 1200);
+            history.replaceState(null, '', window.location.pathname);
+        } else if (urlParams.get('stripe') === 'cancel') {
+            setTimeout(() => showToast('info', 'Paiement annulé', 'Vous restez sur le plan Essential. Vous pouvez réessayer à tout moment.'), 1200);
+            history.replaceState(null, '', window.location.pathname);
+        }
+    });
 
     // ─── PHASE 4 #15 — Gestion des caissiers ────
     async function sha256Hex(text) {
