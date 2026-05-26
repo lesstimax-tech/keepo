@@ -1,0 +1,15 @@
+# Cloudflare Pages — _redirects
+# ⚠️  NE PAS ajouter de règles "200 rewrite" vers des fichiers .html
+#     → Cloudflare Pages Pretty URLs les gère nativement :
+#       /connexion         → sert connexion.html (sans redirect)
+#       /connexion.html    → 301 vers /connexion   (géré automatiquement)
+
+# Alias courts pratiques (redirections 301)
+/login          /connexion              301
+/signup         /connexion              301
+/register       /connexion              301
+/client         /dashboard-client       301
+/commercant     /dashboard-commercant   301
+/merchant       /dashboard-commercant   301
+/pro            /dashboard-commercant   301
+/essai          /connexion              301

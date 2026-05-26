@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keepo | Validation de compte</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+    <link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
+    <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+    <meta name="theme-color" content="#00e8cc">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+
+    <style>
+        .validation-container {
+            max-width: 440px; width: 100%; padding: 50px 40px; 
+            background: var(--bg-card); backdrop-filter: blur(30px); 
+            border: 1px solid var(--glass-border); border-radius: 36px; 
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5); text-align: center; z-index: 10;
+        }
+
+        /* Spinner de chargement */
+        .loader {
+            width: 60px; height: 60px; border: 4px solid rgba(46, 230, 212, 0.2); 
+            border-top-color: var(--secondary-accent); border-radius: 50%; 
+            animation: spin 1s linear infinite; margin: 0 auto 25px;
+        }
+
+        /* Coche de succès */
+        .success-checkmark {
+            display: flex; width: 80px; height: 80px; margin: 0 auto 20px;
+            background: rgba(46, 230, 212, 0.1); border-radius: 50%;
+            align-items: center; justify-content: center; font-size: 40px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .status-title { font-size: 24px; font-weight: 900; margin-bottom: 15px; transition: color 0.3s; }
+        .status-text { color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes popIn { 
+            0% { transform: scale(0); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+    </style>
+</head>
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; position: relative;">
+
+    <div class="cyber-grid" style="display: block;"></div>
+    <div class="blob blob-1"></div>
+
+    <div style="margin-bottom: 30px; z-index: 10;">
+        <img src="img/logo.png" alt="Keepo Logo" style="height: 52px;">
+    </div>
+
+    <div class="validation-container" id="validation-box">
+        
+        <div id="loading-state">
+            <div class="loader"></div>
+            <h2 class="status-title">Vérification en cours...</h2>
+            <p class="status-text">Veuillez patienter pendant que nous sécurisons votre connexion avec Supabase.</p>
+        </div>
+
+        <div id="success-state" style="display: none;">
+            <div class="success-checkmark">✅</div>
+            <h2 class="status-title" style="color: var(--secondary-accent);">E-mail Confirmé !</h2>
+            <p class="status-text">Votre identité a été vérifiée avec succès.<br>Préparation de votre espace personnel...</p>
+        </div>
+
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
+                
+                // Supabase détecte automatiquement le token dans l'URL quand l'utilisateur clique sur le mail
+                const { data, error } = await supabaseClient.auth.getSession();
+                
+                if (data && data.session) {
+                    // L'utilisateur est connecté et validé !
+                    handleSuccess(data.session.user.id);
+                } else {
+                    // Écoute active : Parfois la session met 1 seconde à s'établir après le clic
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        if (event === 'SIGNED_IN' && session) {
+                            handleSuccess(session.user.id);
+                        }
+                    });
+                }
+            }
+        });
+
+        async function handleSuccess(userId) {
+            // 1. On affiche l'animation de succès
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('success-state').style.display = 'block';
+
+            try {
+                // 2. On interroge la base de données pour savoir où l'envoyer
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', userId)
+                    .maybeSingle();
+
+                const role = profile ? profile.role : 'client'; // Sécurité : client par défaut
+
+                // 3. Petite pause de 2 secondes pour que l'utilisateur ait le temps de voir le "✅ Succès"
+                setTimeout(() => {
+                    window.location.href = role === 'commercant' ? '/dashboard-commercant' : '/dashboard-client';
+                }, 2000);
+
+            } catch (err) {
+                console.error("Erreur de routage :", err);
+                // Fallback de sécurité
+                setTimeout(() => { window.location.href = '/dashboard-client'; }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,750 @@
+/* ==========================================================================
+   KEEPO PRO PREMIUM - ARCHITECTURE CSS COMPLÈTE (ÉLÉGANTE, MATE & ADAPTATIVE)
+   ========================================================================== */
+
+/* --- 1. THEME PAR DÉFAUT : SOMBRE CLASSIQUE MAT (Sobre, minimaliste, haut de gamme) --- */
+:root {
+    --bg-body: #0a0911;
+    --bg-card: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.07);
+    --text-main: #f3f3f6;
+    --text-muted: #7e7b91;
+    --primary-accent: #4a2b82;
+    --secondary-accent: #1e9488; /* Vert d'eau mat de confiance */
+    --btn-cta-bg: linear-gradient(135deg, #4a2b82, #5a32a3);
+    --card-hover-border: rgba(255, 255, 255, 0.15);
+    --shadow-main: rgba(0, 0, 0, 0.5);
+    --primary-purple: #4a2b82;
+    --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    
+    /* Variables de bascule désactivées par défaut */
+    --display-neon-elements: none;
+    --laser-animation: none;
+    --laser-bg: #1e9488;
+    --body-animation: none;
+    --cta-animation: none;
+}
+
+/* --- 2. THEME OPTIONNEL : CLAIR MAT CORPORATE (Activable via les Paramètres) --- */
+body.light-mode {
+    --bg-body: #f4f5f8;
+    --bg-card: #ffffff;
+    --glass-border: rgba(0, 0, 0, 0.06);
+    --text-main: #12111a;
+    --text-muted: #6b697c;
+    --primary-accent: #4a2b82;
+    --secondary-accent: #22a699;
+    --btn-cta-bg: linear-gradient(135deg, #4a2b82, #22a699);
+    --card-hover-border: rgba(74, 43, 130, 0.2);
+    --shadow-main: rgba(0, 0, 0, 0.06);
+    --display-neon-elements: none;
+}
+
+/* --- 3. THEME OPTIONNEL : NÉON ÉNERGÉTIQUE VIVANT (Activable via les Paramètres) --- */
+body.neon-mode {
+    background: linear-gradient(-45deg, #07050f, #1e1136, #092623, #0f0c1b) !important;
+    background-size: 400% 400% !important;
+    animation: gradientMove 15s ease infinite !important;
+    --secondary-accent: #2ee6d4;
+    --btn-cta-bg: linear-gradient(135deg, #4a2b82, #7e42eb, #2ee6d4);
+    --card-hover-border: rgba(46, 230, 212, 0.3);
+    --shadow-glow: rgba(46, 230, 212, 0.3);
+    --display-neon-elements: block;
+    --laser-animation: laserMove 2.5s linear infinite;
+    --laser-bg: linear-gradient(90deg, transparent, #2ee6d4, transparent);
+    --cta-animation: ctaPulseFloat 4s ease-in-out infinite;
+}
+
+/* --- 4. RESET STRUCTUREL & OPTIMISATIONS APPAREILS --- */
+html {
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* --- 5. EFFETS ET AURAS DE FOND (AFFICCHÉS UNIQUEMENT EN MODE NÉON) --- */
+.cyber-grid {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: -2;
+    pointer-events: none;
+    display: var(--display-neon-elements);
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    z-index: -2;
+    opacity: 0.22;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    display: var(--display-neon-elements);
+}
+.blob-1 { width: 500px; height: 500px; background: var(--primary-purple); top: -100px; right: -50px; animation: floatBlob 12s infinite alternate; }
+.blob-2 { width: 600px; height: 600px; background: var(--primary-teal); top: 900px; left: -150px; animation: floatBlob 18s infinite alternate-reverse; }
+
+/* --- 6. ENGINE DE DÉFILEMENT (SCROLL REVEAL) --- */
+.reveal {
+    opacity: 0;
+    transform: translateY(50px) scale(0.96);
+    transition: opacity 1.2s var(--bezier-smooth), transform 1.2s var(--bezier-smooth);
+    will-change: transform, opacity;
+}
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.reveal.active.stagger-1 { transition-delay: 0.1s; }
+.reveal.active.stagger-2 { transition-delay: 0.25s; }
+.reveal.active.stagger-3 { transition-delay: 0.4s; }
+
+/* --- 7. BARRE DE NAVIGATION (HEADER) VITRINE & APP --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: rgba(10, 8, 18, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+body.light-mode header {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+.logo-container img {
+    height: 46px;
+    display: block;
+    transition: transform 0.4s var(--bezier-smooth);
+}
+.logo-container img:hover {
+    transform: scale(1.05);
+}
+
+nav {
+    display: flex;
+    align-items: center;
+}
+nav a {
+    margin-left: 35px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 15px;
+    position: relative;
+    transition: color 0.3s ease;
+}
+nav a:hover {
+    color: var(--text-main);
+}
+nav a::after {
+    content: '';
+    position: absolute;
+    width: 0; height: 2px;
+    bottom: -6px; left: 0;
+    background: var(--secondary-accent);
+    transition: width 0.3s ease;
+}
+nav a:hover::after {
+    width: 100%;
+}
+
+/* --- 8. SYSTÈME DE BOUTONS UNIVERSELS --- */
+.btn {
+    padding: 14px 32px;
+    border-radius: 100px;
+    text-decoration: none;
+    font-weight: 700;
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+    transition: all 0.4s var(--bezier-smooth);
+}
+
+.btn-purple {
+    background: linear-gradient(135deg, var(--primary-purple), #6a39c4);
+    color: white;
+}
+.btn-purple:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(74, 43, 130, 0.3);
+}
+
+.btn-teal {
+    background: var(--secondary-accent);
+    color: white;
+}
+.btn-teal:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px var(--shadow-main);
+}
+
+.btn-outline {
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.01);
+    padding: 10px 24px;
+    font-size: 14px;
+}
+.btn-outline:hover {
+    border-color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.04);
+    transform: translateY(-2px);
+}
+
+/* Le bouton central Hero unique et ultra-boosté */
+.btn-main-cta {
+    background: var(--btn-cta-bg);
+    color: white;
+    box-shadow: 0 8px 25px var(--shadow-main);
+    animation: var(--cta-animation);
+}
+.btn-main-cta:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 30px var(--shadow-glow, var(--shadow-main));
+}
+
+/* --- 9. VITRINE PRINCIPALE (HERO SECTION) --- */
+.hero {
+    padding: 130px 8% 90px;
+    text-align: center;
+    position: relative;
+}
+.hero h1 {
+    font-size: 60px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.15;
+    margin-bottom: 25px;
+    color: var(--text-main);
+}
+.hero h1 span {
+    background: linear-gradient(120deg, #a370ff, #2ee6d4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+body.light-mode .hero h1 span {
+    background: linear-gradient(120deg, #4a2b82, #1e9488);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero p {
+    font-size: 21px;
+    color: var(--text-muted);
+    max-width: 720px;
+    margin: 0 auto 45px;
+}
+
+/* --- 10. GRILLE DES FONCTIONNALITÉS (CARDS HORIZONTALES) --- */
+.features {
+    padding: 80px 8%;
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+}
+.card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 36px;
+    border: 1px solid var(--glass-border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    align-items: center;
+    transition: all 0.5s var(--bezier-smooth);
+}
+.card:hover {
+    transform: translateY(-10px);
+    border-color: var(--card-hover-border);
+    box-shadow: 0 30px 60px var(--shadow-main);
+}
+
+.card-visual-container {
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.visual-placeholder {
+    width: 100%;
+    height: 320px;
+    border-radius: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.15);
+}
+.purple-gradient-bg { background: linear-gradient(135deg, rgba(20,13,36,0.2) 0%, rgba(49,28,84,0.2) 100%); }
+.teal-gradient-bg { background: linear-gradient(135deg, rgba(6,25,23,0.2) 0%, rgba(19,71,66,0.2) 100%); }
+.mixed-gradient-bg { background: linear-gradient(135deg, rgba(20,13,36,0.2) 0%, rgba(19,71,66,0.2) 100%); }
+
+.feat-img {
+    max-width: 85%;
+    max-height: 85%;
+    object-fit: contain;
+    transition: transform 0.6s var(--bezier-smooth);
+}
+.card:hover .feat-img {
+    transform: scale(1.04);
+}
+
+.card-content {
+    padding: 60px;
+    text-align: left;
+}
+.card .icon {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+.card h3 {
+    font-size: 30px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+.feat-description {
+    color: var(--text-muted);
+    font-size: 17px;
+    margin-bottom: 30px;
+}
+
+.feat-list {
+    list-style: none;
+}
+.feat-list li {
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: var(--text-main);
+    padding-left: 24px;
+    position: relative;
+}
+.feat-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--secondary-accent);
+    font-weight: bold;
+}
+
+/* --- 11. ABONNEMENTS ET GRILLE DES PRIX (49€ / 99€) --- */
+.pricing-section {
+    padding: 120px 8%;
+    text-align: center;
+}
+.pricing-grid {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 60px;
+}
+.price-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 60px 45px;
+    border-radius: 40px;
+    width: 360px;
+    border: 1px solid var(--glass-border);
+    text-align: center;
+    transition: all 0.5s var(--bezier-smooth);
+}
+.price-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 40px var(--shadow-main);
+}
+body.light-mode .price-card {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+.price-card.featured {
+    border: 2px solid var(--secondary-accent);
+    background: rgba(34, 166, 153, 0.01);
+    position: relative;
+}
+body.neon-mode .price-card.featured {
+    animation: floatCard 6s ease-in-out infinite;
+}
+
+.badge {
+    position: absolute;
+    top: -20px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--secondary-accent);
+    color: white;
+    padding: 8px 24px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+body.neon-mode .badge {
+    background: linear-gradient(90deg, #2ee6d4, #0a0911);
+    color: #0a0911;
+    box-shadow: 0 4px 15px rgba(46, 230, 212, 0.4);
+}
+
+.price {
+    font-size: 58px;
+    font-weight: 900;
+    margin: 25px 0;
+    color: var(--text-main);
+}
+.price span {
+    font-size: 20px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* --- 12. SECTION D'EXPLICATION (HOW IT WORKS) --- */
+.how-it-works {
+    padding: 100px 8%;
+    text-align: center;
+}
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+.step-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    padding: 40px 30px;
+    border-radius: 28px;
+    text-align: left;
+    transition: transform 0.3s;
+}
+.step-card:hover {
+    transform: translateY(-5px);
+}
+.step-number {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--secondary-accent);
+    margin-bottom: 15px;
+}
+.step-card h3 {
+    font-size: 20px;
+    color: var(--text-main);
+    margin-bottom: 10px;
+}
+.step-card p {
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+/* --- 13. SECTION ACCORDÉON INTERACTIF (FAQ) --- */
+.faq-section {
+    padding: 100px 8%;
+    text-align: center;
+}
+.faq-container {
+    max-width: 800px;
+    margin: 50px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.faq-item {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+summary {
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 17px;
+    outline: none;
+    list-style: none;
+}
+summary::-webkit-details-marker {
+    display: none;
+}
+summary::before {
+    content: "＋ ";
+    color: var(--secondary-accent);
+    font-weight: bold;
+}
+.faq-item[open] summary::before {
+    content: "✕ ";
+}
+.faq-item p {
+    margin-top: 15px;
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+/* --- 14. PIED DE PAGE (FOOTER TERMINAL) --- */
+footer {
+    background: rgba(6, 4, 13, 0.2);
+    border-top: 1px solid var(--glass-border);
+    padding: 60px 8% 20px;
+    margin-top: 80px;
+}
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 40px;
+    text-align: left;
+}
+.footer-links {
+    display: flex;
+    gap: 60px;
+}
+.footer-links h4 {
+    color: var(--text-main);
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+.footer-links a {
+    display: block;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 10px;
+    transition: color 0.2s ease;
+}
+.footer-links a:hover {
+    color: var(--text-main);
+}
+.footer-bottom {
+    border-top: 1px solid var(--glass-border);
+    padding-top: 20px;
+    margin-top: 40px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* --- 15. ESPACE AUTHENTIFICATION ET INSCRIPTION (CONNEXION.HTML) --- */
+.login-container {
+    max-width: 440px;
+    margin: 60px auto;
+    padding: 50px 40px;
+    background: var(--bg-card);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid var(--glass-border);
+    border-radius: 36px;
+    box-shadow: 0 40px 80px var(--shadow-main);
+    text-align: center;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    margin-bottom: 22px;
+}
+.form-group label {
+    display: block;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    font-size: 15px;
+    background-color: rgba(0, 0, 0, 0.15);
+    color: var(--text-main);
+    transition: all 0.3s var(--bezier-smooth);
+}
+body.light-mode .form-group input, body.light-mode .form-group select {
+    background-color: #f5f6f9;
+}
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--secondary-accent);
+}
+.form-group select option {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+}
+
+/* --- 16. STRUCTURE PANNEAU LATÉRAL DE L'APPLICATION (SIDEBAR DRAWER) --- */
+.sidebar-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
+    z-index: 998; opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+.sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+
+.sidebar-menu {
+    position: fixed; top: 0; left: 0; width: 320px; height: 100%;
+    background: rgba(14, 13, 22, 0.95); backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px); border-right: 1px solid var(--glass-border);
+    z-index: 999; transform: translateX(-100%);
+    padding: 40px 25px; display: flex; flex-direction: column;
+    transition: transform 0.4s var(--bezier-smooth);
+}
+body.light-mode .sidebar-menu { background: rgba(255, 255, 255, 0.98); }
+.sidebar-menu.open { transform: translateX(0); box-shadow: 20px 0 60px rgba(0,0,0,0.3); }
+
+.burger-btn {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+    color: var(--text-main); font-size: 22px; padding: 10px 14px; border-radius: 12px;
+    cursor: pointer; transition: all 0.3s; display: flex; align-items: center;
+}
+.burger-btn:hover { border-color: var(--secondary-accent); }
+.sidebar-brand { font-size: 26px; font-weight: 900; color: var(--text-main); margin-bottom: 40px; }
+
+.menu-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.menu-item-btn {
+    width: 100%; text-align: left; padding: 15px 20px; background: transparent;
+    border: none; border-radius: 14px; color: var(--text-muted); font-size: 16px;
+    font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 15px;
+    transition: all 0.3s;
+}
+.menu-item-btn:hover { background: rgba(255,255,255,0.03); color: var(--text-main); }
+.menu-item-btn.active { background: var(--glass-border); border-left: 3px solid var(--secondary-accent); color: var(--text-main); }
+
+/* --- 17. REGLAGES DES TERMINAUX APPLICATIFS ET DES VUES SÉPARÉES --- */
+.dashboard-layout {
+    max-width: 1200px; width: 100%; margin: 30px auto;
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px;
+}
+.app-view { display: none; animation: fadeIn 0.4s ease-out; }
+.app-view.active { display: block; }
+
+/* --- 18. MODULE CAMERA ET VISEUR DE SCAN EXCLUSIF --- */
+.camera-container {
+    width: 100%; height: 320px; margin: 25px auto;
+    border-radius: 24px; border: 2px solid var(--secondary-accent);
+    box-shadow: 0 10px 30px var(--shadow-main);
+    position: relative; overflow: hidden; background: #000;
+}
+video { width: 100%; height: 100%; object-fit: cover; }
+.scanner-laser { 
+    position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
+    background: var(--laser-bg);
+    box-shadow: 0 0 15px var(--secondary-accent);
+    animation: var(--laser-animation); 
+}
+
+/* --- 19. RECONNAISSANCE DU CATALOGUE DE CADEAUX FIDÉLITÉ --- */
+.gifts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 30px; }
+.gift-card { background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; text-align: center; transition: all 0.3s; }
+body.light-mode .gift-card { background: #fdfdfd; }
+.gift-card:hover { transform: translateY(-5px); border-color: var(--secondary-accent); }
+.gift-photo-frame { width: 100%; height: 120px; border-radius: 12px; background: rgba(0,0,0,0.2); margin-bottom: 15px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+.gift-photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+/* --- 20. RENDU STUDIO DE PERSONNALISATION WALLET SMARTPHONE --- */
+.studio-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 50px; align-items: center; }
+.mockup-phone { width: 290px; height: 520px; background: #0c0b14; border: 10px solid #222; border-radius: 44px; padding: 22px; margin: 0 auto; box-shadow: 0 30px 60px rgba(0,0,0,0.4); display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+.mockup-card { width: 100%; height: 160px; border-radius: 20px; padding: 20px; color: white; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 24px rgba(0,0,0,0.3); background: linear-gradient(135deg, #4a2b82, #140d24); position: relative; overflow: hidden; }
+.mockup-card-bg-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; display: none; z-index: 0; }
+.card-inner-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+
+/* --- 21. BLOCS DES PARAMÈTRES ÉPURÉS SYSTÈME --- */
+.settings-block { border-bottom: 1px solid var(--glass-border); padding-bottom: 30px; margin-bottom: 30px; text-align: left; }
+.settings-block:last-child { border: none; padding: 0; margin: 0; }
+.toggle-flex-row { display: flex; gap: 15px; margin-top: 15px; }
+.theme-btn { padding: 12px 24px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.01); color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.theme-btn.active { border-color: var(--secondary-accent); background: rgba(34,166,153,0.1); color: var(--secondary-accent); }
+
+/* --- 22. LOGS COMPTEURS ET MODALS EN COMPTABILITÉ --- */
+.stats-grid-dash { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; margin-top: 30px; }
+.mini-stat-card { background: rgba(255, 255, 255, 0.01); border: 1px solid var(--glass-border); padding: 25px 15px; border-radius: 18px; text-align: center; }
+body.light-mode .mini-stat-card { background: #fafafa; }
+.mini-stat-card h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
+.mini-stat-card .stat-number { font-size: 26px; font-weight: 800; color: var(--text-main); }
+
+.history-list { list-style: none; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+.history-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); border-radius: 14px; text-align: left; }
+
+.scan-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: var(--bg-body); border: 1px solid var(--glass-border); box-shadow: 0 40px 100px rgba(0,0,0,0.5); padding: 40px; border-radius: 32px; z-index: 1000; text-align: center; opacity: 0; pointer-events: none; max-width: 400px; width: 90%; transition: all 0.4s var(--bezier-smooth); }
+.scan-popup.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+
+/* --- 23. RESPONSIVE CRITIQUE SMARTPHONES SANS COLLISION --- */
+@media (max-width: 960px) {
+    .card { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 38px; }
+    .hero p { font-size: 18px; }
+    .card-content { padding: 40px; }
+    header { padding: 15px 5%; }
+    nav a { margin-left: 20px; font-size: 14px; }
+    .dashboard-layout, .studio-grid { grid-template-columns: 1fr; }
+}
+
+/* --- 24. ENGINE TIMELINES ET DE BASE INTERNE (KEYFRAMES) --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Notifications toast (auth & dashboards) --- */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: #1a1829;
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 9999;
+    max-width: 90vw;
+    text-align: center;
+}
+.toast-notification.show { transform: translateX(-50%) translateY(0); }
+.toast-error { border-color: #ea4335; color: #ff8a80; }
+.toast-success { border-color: var(--secondary-accent); color: #a7ffeb; }

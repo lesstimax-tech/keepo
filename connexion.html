@@ -1,0 +1,369 @@
+<!-- connexion.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keepo | Authentification Premium</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+    <link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
+    <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+    <meta name="theme-color" content="#00e8cc">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+
+    <style>
+        .auth-tabs { display: flex; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); }
+        .tab-btn { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--secondary-accent); }
+        
+        .social-auth-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .btn-social { display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 14px; color: var(--text-main); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-social:hover { background: rgba(255, 255, 255, 0.05); transform: translateY(-2px); border-color: var(--text-muted); }
+        
+        .auth-separator { display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 25px; }
+        .auth-separator::before, .auth-separator::after { content: ''; flex: 1; border-bottom: 1px solid var(--glass-border); }
+        .auth-separator:not(:empty)::before { margin-right: .5em; }
+        .auth-separator:not(:empty)::after { margin-left: .5em; }
+        
+        .auth-form { display: none; animation: fadeIn 0.4s ease; }
+        .auth-form.active { display: block; }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 20px; position: relative; }
+        .form-group label { font-weight: 700; font-size: 12px; letter-spacing: 0.5px; color: var(--text-muted); }
+        .form-group input, .form-group select { width: 100%; padding: 14px; border: 1px solid var(--glass-border); border-radius: 12px; font-size: 15px; background-color: rgba(0, 0, 0, 0.15); color: var(--text-main); transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--secondary-accent); }
+        .form-group select option { background-color: #0a0911; color: white; }
+
+        .toggle-password { position: absolute; right: 15px; top: 38px; cursor: pointer; opacity: 0.5; }
+
+        .plans-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0 25px; }
+        .plan-card { border: 1px solid var(--glass-border); background: rgba(255,255,255,0.01); padding: 15px; border-radius: 16px; cursor: pointer; text-align: left; transition: all 0.3s; }
+        .plan-card.active { border-color: var(--secondary-accent); background: rgba(46, 230, 212, 0.05); box-shadow: 0 0 15px rgba(46, 230, 212, 0.2); }
+        .plan-card h4 { margin: 0 0 5px; font-size: 15px; color: white; font-weight: 800; }
+        .plan-card .price { font-size: 18px; font-weight: 900; color: var(--secondary-accent); }
+
+        .payment-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .payment-modal { background: #0e0d16; border: 1px solid var(--glass-border); width: 100%; max-width: 400px; padding: 30px; border-radius: 28px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+
+        .verify-screen { display: none; text-align: center; animation: fadeIn 0.5s ease; }
+        .verify-icon { font-size: 54px; margin-bottom: 20px; animation: float 2s ease-in-out infinite; }
+
+        .toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1a1829; border: 1px solid var(--glass-border); color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: transform 0.4s; z-index: 9999; display: flex; align-items: center; gap: 10px; }
+        .toast-notification.show { transform: translateX(-50%) translateY(0); }
+        .toast-error { border-color: #ea4335; color: #ff8a80; }
+        .toast-success { border-color: var(--secondary-accent); color: #a7ffeb; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; position: relative;">
+
+    <div class="cyber-grid" style="display: block;"></div>
+    <div id="toastMessage" class="toast-notification"></div>
+
+    <div class="payment-overlay" id="paymentOverlay">
+        <div class="payment-modal">
+            <div style="font-size: 32px; margin-bottom: 10px;">🔒</div>
+            <h3 style="font-weight: 800; font-size: 20px; margin-bottom: 5px;">Paiement Sécurisé Keepo</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Forfait <span id="modal-plan-name" style="color:var(--secondary-accent); font-weight:700;">Essential</span> par carte bancaire.</p>
+            
+            <div class="form-group">
+                <label>NUMÉRO DE CARTE</label>
+                <input type="text" value="4242 4242 4242 4242" disabled style="opacity: 0.6; text-align: center; letter-spacing: 2px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group"><label>EXPIRATION</label><input type="text" value="12/29" disabled style="opacity: 0.6; text-align: center;"></div>
+                <div class="form-group"><label>CVC</label><input type="text" value="123" disabled style="opacity: 0.6; text-align: center;"></div>
+            </div>
+
+            <button onclick="processMerchantRegistrationAfterPayment()" id="btnConfirmPayment" class="btn btn-main-cta" style="width: 100%; margin-top: 10px; padding: 14px;">
+                Valider le paiement (<span id="modal-plan-price">49€</span>/mois)
+            </button>
+            <button onclick="closePaymentModal()" style="background: none; border: none; color: var(--text-muted); font-size: 12px; margin-top: 15px; cursor: pointer; text-decoration: underline;">
+                Annuler et modifier
+            </button>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 25px; z-index: 10;">
+        <a href="index.html" class="logo-container"><img src="img/logo.png" alt="Keepo Logo" style="height: 52px;"></a>
+    </div>
+
+    <div class="login-container verify-screen" id="verificationScreen" style="max-width: 440px; width: 100%; padding: 40px; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 36px; z-index: 100%;">
+        <div class="verify-icon">✉️</div>
+        <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 10px;">Confirmez votre e-mail</h2>
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 25px;">
+            Un lien de validation unique vient d'être envoyé à <strong id="user-sent-email" style="color: white;">...</strong>.<br>
+            Cliquez sur ce lien pour déverrouiller instantanément votre accès Keepo.
+        </p>
+        <div style="font-size: 12px; color: var(--secondary-accent); font-weight: 700; background: rgba(46,230,212,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(46,230,212,0.1);">
+            🔄 En attente de votre confirmation... la page se redirigera toute seule !
+        </div>
+    </div>
+
+    <div class="login-container" id="mainAuthBlock" style="max-width: 440px; margin: 0; width: 100%; padding: 40px; background: var(--bg-card); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 36px; box-shadow: 0 40px 80px rgba(0,0,0,0.5); text-align: center; z-index: 10;">
+        
+        <div class="auth-tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Se connecter</button>
+            <button class="tab-btn" onclick="switchTab('register')">S'inscrire</button>
+        </div>
+
+        <div class="social-auth-container">
+            <button class="btn-social" onclick="handleOAuthLogin('google')">Google</button>
+            <button class="btn-social" onclick="handleOAuthLogin('apple')">Apple</button>
+        </div>
+
+        <div class="auth-separator">OU IDENTIFIANTS SÉCURISÉS</div>
+
+        <!-- FORMULAIRE : CONNEXION -->
+        <form id="loginForm" class="auth-form active">
+            <div class="form-group">
+                <label>ADRESSE EMAIL</label>
+                <input type="email" id="login-email" placeholder="nom@exemple.com" required>
+            </div>
+            <div class="form-group">
+                <label>MOT DE PASSE</label>
+                <input type="password" id="login-password" placeholder="••••••••" required>
+                <span class="toggle-password" onclick="togglePasswordVisibility('login-password')">👁️</span>
+            </div>
+            <button type="submit" class="btn btn-main-cta" style="width: 100%; margin-top: 10px; padding: 15px;">
+                Se connecter
+            </button>
+        </form>
+
+        <!-- FORMULAIRE : INSCRIPTION -->
+        <form id="registerForm" class="auth-form">
+            <div class="form-group">
+                <label>JE SOUHAITE REJOINDRE EN TANT QUE</label>
+                <select id="register-role" onchange="handleRoleChange()" required>
+                    <option value="client">📱 Client (Utiliser mes cartes de fidélité)</option>
+                    <option value="commercant">🏪 Commerçant (Créer un programme pour mes clients)</option>
+                </select>
+            </div>
+
+            <div id="merchant-plans-zone" style="display: none; text-align: left;">
+                <label style="font-weight: 700; font-size: 12px; color: var(--text-muted); letter-spacing: 0.5px;">CHOISISSEZ VOTRE PLAN KEEPO PRO</label>
+                <div class="plans-container">
+                    <div class="plan-card active" id="plan-essential" onclick="selectPlan('essential', 'Essential', '49€')">
+                        <h4>Essential 🏪</h4>
+                        <div class="price">49€<span style="font-size:10px; color:var(--text-muted);">/mois</span></div>
+                    </div>
+                    <div class="plan-card" id="plan-pro" onclick="selectPlan('pro', 'Pro Scale', '99€')">
+                        <h4>Pro Scale ⚡</h4>
+                        <div class="price">99€<span style="font-size:10px; color:var(--text-muted);">/mois</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>NOM COMPLET OU DE L'ENSEIGNE</label>
+                <input type="text" id="register-name" placeholder="Ex: Jean Dupont / Le Bistrot" required>
+            </div>
+            <div class="form-group">
+                <label>ADRESSE EMAIL</label>
+                <input type="email" id="register-email" placeholder="nom@domaine.com" required>
+            </div>
+            <div class="form-group">
+                <label>CRÉER UN MOT DE PASSE</label>
+                <input type="password" id="register-password" placeholder="Minimum 6 caractères" required>
+                <span class="toggle-password" onclick="togglePasswordVisibility('register-password')">👁️</span>
+            </div>
+            <div class="form-group">
+                <label>CONFIRMER LE MOT DE PASSE</label>
+                <input type="password" id="register-confirm-password" placeholder="Répétez le mot de passe" required>
+                <span class="toggle-password" onclick="togglePasswordVisibility('register-confirm-password')">👁️</span>
+            </div>
+            <button type="submit" class="btn btn-teal" style="width: 100%; margin-top: 10px; padding: 15px;">
+                Créer mon compte Keepo
+            </button>
+        </form>
+    </div>
+
+    <script>
+        let selectedPlan = 'client';
+
+        // 🛡️ BOUCLIER ANTI-BOUCLE : On affiche un bouton plutôt qu'une redirection forcée.
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+                    const userRole = profile ? profile.role : 'client';
+                    
+                    // Remplacement du formulaire par un écran de bienvenue fixe
+                    document.getElementById('mainAuthBlock').innerHTML = `
+                        <div style="padding: 20px;">
+                            <div style="font-size: 50px; margin-bottom: 15px; animation: float 2s infinite ease-in-out;">👋</div>
+                            <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 10px;">Vous êtes déjà connecté</h2>
+                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 30px;">Votre session est active et sécurisée.</p>
+                            
+                            <button onclick="redirectUser('${userRole}')" class="btn btn-main-cta" style="width: 100%; padding: 16px; font-size: 16px; margin-bottom: 15px;">
+                                Accéder à mon Espace
+                            </button>
+                            
+                            <button onclick="forceLogout()" style="background: none; border: none; color: #ff477e; cursor: pointer; font-size: 13px; font-weight: bold; text-decoration: underline;">
+                                Me déconnecter et changer de compte
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        async function forceLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
+
+        function showToast(message, type = 'error') {
+            const toast = document.getElementById('toastMessage');
+            toast.innerHTML = type === 'error' ? `⚠️ ${message}` : `✅ ${message}`;
+            toast.className = `toast-notification show toast-${type}`;
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        }
+
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+
+        function handleRoleChange() {
+            const role = document.getElementById('register-role').value;
+            const planZone = document.getElementById('merchant-plans-zone');
+            if(role === 'commercant') {
+                planZone.style.display = 'block';
+                selectedPlan = 'essential';
+            } else {
+                planZone.style.display = 'none';
+                selectedPlan = 'client';
+            }
+        }
+
+        function selectPlan(planCode, label, price) {
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`plan-${planCode}`).classList.add('active');
+            selectedPlan = planCode;
+            document.getElementById('modal-plan-name').innerText = label;
+            document.getElementById('modal-plan-price').innerText = price;
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentOverlay').style.display = 'none';
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+
+            if (password !== confirmPassword) {
+                showToast("Les mots de passe ne correspondent pas.", "error");
+                return;
+            }
+            if (password.length < 6) {
+                showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
+                return;
+            }
+
+            const role = document.getElementById('register-role').value;
+            if(role === 'commercant') {
+                document.getElementById('paymentOverlay').style.display = 'flex';
+            } else {
+                processRegistrationEngine();
+            }
+        });
+
+        function processMerchantRegistrationAfterPayment() {
+            document.getElementById('paymentOverlay').style.display = 'none';
+            processRegistrationEngine();
+        }
+
+        async function processRegistrationEngine() {
+            const role = document.getElementById('register-role').value;
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+
+            try {
+                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: { redirectTo: window.location.origin + '/validation' }
+                });
+                if (authError) throw authError;
+
+                if (authData.user) {
+                    const { error: profileError } = await supabaseClient.from('profiles').upsert([
+                        { 
+                            id: authData.user.id, 
+                            name: name, 
+                            role: role, 
+                            email: email, 
+                            plan: selectedPlan 
+                        }
+                    ]);
+                    
+                    if (profileError) throw profileError;
+
+                    if (authData.session) {
+                        showToast("Compte configuré avec succès !", "success");
+                        setTimeout(() => { redirectUser(role); }, 1500);
+                    } else {
+                        document.getElementById('user-sent-email').innerText = email;
+                        document.getElementById('mainAuthBlock').style.display = 'none';
+                        document.getElementById('verificationScreen').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                showToast(error.message, "error");
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw new Error("Identifiants incorrects ou email non vérifié.");
+
+                const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+                if (profile) redirectUser(profile.role);
+            } catch (error) {
+                showToast(error.message, "error");
+            }
+        });
+
+        async function handleOAuthLogin(provider) {
+            try {
+                const redirectUrl = window.location.origin + '/validation';
+                await supabaseClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: redirectUrl } });
+            } catch (error) { showToast(error.message, "error"); }
+        }
+
+        function switchTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            if (type === 'login') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        function redirectUser(role) {
+            window.location.href = role === 'commercant' ? '/dashboard-commercant' : '/dashboard-client';
+        }
+    </script>
+</body>
+</html>

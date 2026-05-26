@@ -1,0 +1,1910 @@
+<!-- dashboard-client.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Keepo | Portefeuille Client</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+    <link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
+    <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00e8cc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Keepo">
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        /* ═══════════════════════════════════════
+           TOKENS & RESET
+        ═══════════════════════════════════════ */
+        :root {
+            --bg: #06050d;
+            --bg-2: #0d0b18;
+            --bg-3: #131122;
+            --card-bg: rgba(18, 15, 32, 0.82);
+            --glass: rgba(255,255,255,0.055);
+            --glass-2: rgba(255,255,255,0.10);
+            --border: rgba(255,255,255,0.07);
+            --border-2: rgba(255,255,255,0.13);
+
+            --text: #f2efff;
+            --muted: #635f84;
+            --sub: #9490b8;
+
+            --cyan: #00e8cc;
+            --cyan-glow: rgba(0,232,204,0.22);
+            --cyan-soft: rgba(0,232,204,0.08);
+            --pink: #ff4d82;
+            --pink-glow: rgba(255,77,130,0.22);
+            --violet: #8b7cf8;
+            --violet-glow: rgba(139,124,248,0.2);
+            --gold: #ffc34d;
+            --gold-glow: rgba(255,195,77,0.2);
+            --green: #22d47a;
+
+            --nav-h: 76px;
+            --r: 22px;
+            --r-sm: 14px;
+
+            font-size: 16px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── ambient background ─── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 50% at 15% 5%, rgba(139,124,248,.1) 0%, transparent 55%),
+                radial-gradient(ellipse 55% 40% at 85% 85%, rgba(0,232,204,.07) 0%, transparent 55%),
+                radial-gradient(ellipse 45% 35% at 50% 50%, rgba(255,77,130,.04) 0%, transparent 65%);
+        }
+
+        /* ═══════════════════════════════════════
+           LAYOUT
+        ═══════════════════════════════════════ */
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 18px calc(var(--nav-h) + 24px);
+            position: relative; z-index: 1;
+        }
+
+        /* ═══════════════════════════════════════
+           HEADER
+        ═══════════════════════════════════════ */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0 16px;
+            position: sticky; top: 0; z-index: 50;
+        }
+        header::before {
+            content: '';
+            position: absolute; inset: -4px -18px 0;
+            background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .user-badge {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--card-bg);
+            padding: 6px 14px 6px 6px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            cursor: default;
+            transition: border-color .2s;
+        }
+        .user-badge:hover { border-color: var(--border-2); }
+
+        .user-avatar {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--violet), var(--pink));
+            background-size: cover; background-position: center;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 13px; font-weight: 800;
+            flex-shrink: 0; overflow: hidden;
+            box-shadow: 0 0 12px var(--violet-glow);
+        }
+        .user-avatar.has-photo { color: transparent; }
+        #user-display-name { font-weight: 700; font-size: 13px; }
+
+        .btn-logout {
+            background: none; border: none;
+            color: var(--muted); cursor: pointer;
+            font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 12px;
+            border-radius: 50px;
+            border: 1px solid transparent;
+            transition: all .2s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .btn-logout:hover { color: var(--pink); border-color: rgba(255,77,130,.2); background: rgba(255,77,130,.05); }
+
+        /* ═══════════════════════════════════════
+           VIEWS
+        ═══════════════════════════════════════ */
+        .app-view { display: none; animation: viewIn .38s cubic-bezier(.4,0,.2,1); }
+        .app-view.active { display: block; }
+        @keyframes viewIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 26px; font-weight: 800;
+            letter-spacing: -.5px;
+            margin-bottom: 4px;
+        }
+        .view-sub { color: var(--muted); font-size: 13px; margin-bottom: 22px; line-height: 1.5; }
+
+        /* ═══════════════════════════════════════
+           STATS BAR (wallet top)
+        ═══════════════════════════════════════ */
+        .stats-bar {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px; margin-bottom: 22px;
+        }
+        .stat-pill {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            padding: 12px 14px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: border-color .2s;
+        }
+        .stat-pill:hover { border-color: var(--border-2); }
+        .stat-pill-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px; font-weight: 800;
+            color: var(--cyan);
+            line-height: 1;
+        }
+        .stat-pill-lbl { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+
+        /* ═══════════════════════════════════════
+           LOYALTY CARDS
+        ═══════════════════════════════════════ */
+        .cards-grid { display: flex; flex-direction: column; gap: 14px; }
+
+        .loyalty-card {
+            border-radius: var(--r);
+            padding: 22px;
+            position: relative; overflow: hidden;
+            cursor: pointer;
+            transition: transform .28s cubic-bezier(.4,0,.2,1), box-shadow .28s;
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, #15122600 0%, #0f0d1a 100%);
+            background-color: #13112080;
+        }
+        .loyalty-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg,
+                rgba(139,124,248,.06) 0%,
+                transparent 40%,
+                rgba(0,232,204,.04) 100%);
+            pointer-events: none;
+        }
+        .loyalty-card::after {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 160px; height: 160px;
+            background: radial-gradient(circle, var(--card-glow, var(--cyan-glow)) 0%, transparent 70%);
+            border-radius: 50%; pointer-events: none;
+            transition: opacity .3s;
+        }
+        .loyalty-card:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 20px 50px rgba(0,0,0,.4); border-color: var(--border-2); }
+        .loyalty-card:active { transform: translateY(-1px) scale(1); }
+
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+        .card-logo-chip {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--card-color1, var(--violet)), var(--card-color2, var(--cyan)));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+            color: white; flex-shrink: 0;
+            box-shadow: 0 4px 14px var(--card-glow, var(--violet-glow));
+        }
+        .card-points-block { text-align: right; }
+        .card-points-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px; font-weight: 800;
+            color: var(--card-accent, var(--cyan));
+            line-height: 1;
+        }
+        .card-points-lbl { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-top: 2px; }
+
+        .merchant-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 17px; font-weight: 700;
+            letter-spacing: -.3px;
+            margin-bottom: 12px;
+        }
+
+        /* progress bar inside card */
+        .card-progress-wrap { margin-bottom: 14px; }
+        .card-progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+        .card-progress-track { height: 5px; background: rgba(255,255,255,.06); border-radius: 6px; overflow: hidden; }
+        .card-progress-fill {
+            height: 100%; border-radius: 6px;
+            background: linear-gradient(90deg, var(--card-accent, var(--cyan)), var(--card-accent2, var(--violet)));
+            transition: width 1.2s cubic-bezier(.4,0,.2,1);
+            width: 0;
+        }
+
+        .card-footer { display: flex; align-items: center; justify-content: space-between; }
+        .card-tap-hint {
+            font-size: 11px; color: var(--card-accent, var(--cyan));
+            font-weight: 600; display: flex; align-items: center; gap: 5px;
+            opacity: .8;
+        }
+        .card-tap-hint i { font-size: 13px; animation: tapPulse 2s ease-in-out infinite; }
+        @keyframes tapPulse { 0%,100%{transform:scale(1);opacity:.8} 50%{transform:scale(1.2);opacity:1} }
+
+        .card-reward-badge {
+            font-size: 10px; font-weight: 700;
+            background: rgba(255,195,77,.1); color: var(--gold);
+            border: 1px solid rgba(255,195,77,.2);
+            padding: 3px 9px; border-radius: 20px;
+            display: flex; align-items: center; gap: 4px;
+        }
+
+        /* ─── empty wallet ─── */
+        .empty-wallet {
+            text-align: center; padding: 52px 24px;
+            border: 1px dashed var(--border);
+            border-radius: var(--r);
+        }
+        .empty-wallet-icon {
+            width: 72px; height: 72px; border-radius: 20px;
+            background: var(--cyan-soft); border: 1px solid rgba(0,232,204,.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; margin: 0 auto 18px;
+        }
+        .empty-wallet h3 { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; margin-bottom:8px; }
+        .empty-wallet p { color:var(--muted); font-size:13px; line-height:1.6; max-width:240px; margin:0 auto 20px; }
+        .empty-wallet-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--cyan); color: #06050d;
+            border: none; border-radius: 50px;
+            padding: 11px 22px; font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: all .2s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .empty-wallet-btn:hover { box-shadow: 0 8px 24px var(--cyan-glow); transform: translateY(-2px); }
+
+        /* ═══════════════════════════════════════
+           SCANNER VIEW
+        ═══════════════════════════════════════ */
+        .scanner-frame-wrap {
+            position: relative; margin-bottom: 18px;
+            border-radius: var(--r); overflow: hidden;
+        }
+        #scanner-container {
+            width: 100%; border-radius: var(--r);
+            overflow: hidden; background: #000;
+            border: 1px solid var(--border);
+        }
+        .scanner-corners { position: absolute; inset: 0; pointer-events: none; }
+        .sc { position: absolute; width: 26px; height: 26px; border-color: var(--cyan); border-style: solid; }
+        .sc.tl { top: 8px; left: 8px; border-width: 3px 0 0 3px; border-radius: 5px 0 0 0; }
+        .sc.tr { top: 8px; right: 8px; border-width: 3px 3px 0 0; border-radius: 0 5px 0 0; }
+        .sc.bl { bottom: 8px; left: 8px; border-width: 0 0 3px 3px; border-radius: 0 0 0 5px; }
+        .sc.br { bottom: 8px; right: 8px; border-width: 0 3px 3px 0; border-radius: 0 0 5px 0; }
+        .scan-beam {
+            position: absolute; left: 10%; right: 10%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            animation: beam 2.2s ease-in-out infinite; top: 10%;
+            pointer-events: none; border-radius: 2px;
+        }
+        @keyframes beam { 0%,100%{top:10%} 50%{top:87%} }
+
+        .scanner-status {
+            display: flex; align-items: center; gap: 9px;
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 50px; padding: 9px 16px; margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            font-size: 12px; font-weight: 600; color: var(--sub);
+        }
+        .scanner-status-dot { width: 7px; height: 7px; background: var(--cyan); border-radius: 50%; animation: pulse-dot 1.8s ease-in-out infinite; box-shadow: 0 0 6px var(--cyan); }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+        .scan-hint-card {
+            margin-top: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px 20px;
+            display: flex; align-items: flex-start; gap: 14px;
+        }
+        .scan-hint-icon {
+            flex-shrink: 0;
+            width: 38px; height: 38px;
+            background: rgba(0,232,204,0.1);
+            border: 1px solid rgba(0,232,204,0.2);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--cyan); font-size: 15px;
+        }
+        .scan-hint-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .scan-hint-body { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        .scan-hint-body strong { color: var(--sub); }
+
+        /* ═══════════════════════════════════════
+           PROFILE VIEW
+        ═══════════════════════════════════════ */
+        .profile-hero {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 28px 22px;
+            text-align: center;
+            margin-bottom: 14px;
+            backdrop-filter: blur(12px);
+            position: relative; overflow: hidden;
+        }
+        .profile-hero::before {
+            content: '';
+            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, var(--violet-glow) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .profile-avatar-big {
+            width: 84px; height: 84px;
+            background: linear-gradient(135deg, var(--violet), var(--pink));
+            background-size: cover; background-position: center;
+            border-radius: 50%; margin: 0 auto 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800;
+            box-shadow: 0 0 28px var(--violet-glow);
+            position: relative; overflow: hidden; cursor: pointer;
+            transition: transform .2s;
+        }
+        .profile-avatar-big:hover { transform: scale(1.05); }
+        .profile-avatar-big.has-photo { color: transparent; }
+        .profile-avatar-big::after {
+            content: '\f030'; /* fa-camera */
+            font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; bottom: 2px; right: 2px;
+            width: 26px; height: 26px;
+            background: var(--cyan); color: #06050d;
+            border-radius: 50%;
+            border: 2px solid var(--bg-2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px;
+            transition: transform .2s;
+        }
+        .profile-avatar-big:hover::after { transform: scale(1.1); }
+        @keyframes avatar-ring { 0%,100%{transform:scale(1);opacity:.3} 50%{transform:scale(1.08);opacity:.15} }
+        .profile-name { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin-bottom:4px; }
+        .profile-status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(0,232,204,.08); color: var(--cyan);
+            border: 1px solid rgba(0,232,204,.18);
+            padding: 4px 12px; border-radius: 50px;
+            font-size: 11px; font-weight: 700;
+        }
+
+        .profile-info-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+        .profile-info-row {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: var(--r-sm); padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            backdrop-filter: blur(8px);
+        }
+        .profile-info-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--glass); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+        .profile-info-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+        .profile-info-val { font-size: 13px; font-weight: 600; }
+
+        .profile-actions { display: flex; flex-direction: column; gap: 10px; }
+        .profile-action-btn {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: var(--r-sm); padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            cursor: pointer; transition: all .2s;
+            width: 100%; text-align: left;
+            font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text);
+        }
+        .profile-action-btn:hover { background: var(--glass); border-color: var(--border-2); }
+        .profile-action-btn i:first-child { font-size: 14px; color: var(--sub); width: 18px; text-align: center; }
+        .profile-action-btn span { flex: 1; font-size: 13px; font-weight: 600; }
+        .profile-action-btn i:last-child { color: var(--muted); font-size: 11px; }
+        .profile-action-btn.danger { color: var(--pink); }
+        .profile-action-btn.danger i { color: var(--pink); }
+
+        /* ═══════════════════════════════════════
+           QR MODAL
+        ═══════════════════════════════════════ */
+        .popup-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.82);
+            backdrop-filter: blur(14px);
+            z-index: 999; display: none;
+            align-items: flex-end; justify-content: center;
+            padding: 0;
+        }
+        .popup-card {
+            background: #12101e;
+            border: 1px solid var(--border-2);
+            border-radius: 32px 32px 0 0;
+            width: 100%; max-width: 500px;
+            padding: 10px 28px 40px;
+            text-align: center;
+            box-shadow: 0 -20px 60px rgba(0,0,0,.5);
+            animation: sheetUp .38s cubic-bezier(.4,0,.2,1);
+            position: relative;
+        }
+        @keyframes sheetUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+        .sheet-handle {
+            width: 40px; height: 4px;
+            background: var(--border-2); border-radius: 4px;
+            margin: 10px auto 22px;
+        }
+        .modal-merchant-chip {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 50px; padding: 5px 14px;
+            font-size: 12px; color: var(--sub); margin-bottom: 4px;
+        }
+        #modal-merchant-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px; font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .modal-sub { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+
+        .qr-zone {
+            background: white; padding: 16px;
+            border-radius: 22px; display: inline-block;
+            margin-bottom: 18px;
+            box-shadow: 0 0 40px var(--cyan-glow);
+        }
+
+        .modal-points-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin-bottom: 20px;
+        }
+        .modal-stat-box {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: var(--r-sm); padding: 12px;
+        }
+        .modal-stat-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+        .modal-stat-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--cyan); }
+
+        .modal-close-btn {
+            width: 100%; background: var(--glass); border: 1px solid var(--border);
+            color: var(--sub); border-radius: var(--r-sm); padding: 13px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            transition: all .2s; font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .modal-close-btn:hover { background: var(--glass-2); color: var(--text); }
+
+        /* ═══════════════════════════════════════
+           BOTTOM NAV
+        ═══════════════════════════════════════ */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 500px;
+            background: rgba(10, 8, 20, 0.9);
+            backdrop-filter: blur(24px) saturate(1.5);
+            border-top: 1px solid var(--border);
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            height: var(--nav-h);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            z-index: 900;
+        }
+        .nav-item {
+            background: none; border: none;
+            color: var(--muted);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 5px; font-size: 10px; font-weight: 700;
+            cursor: pointer;
+            transition: color .25s;
+            text-transform: uppercase; letter-spacing: .5px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            position: relative;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute; top: 0; left: 30%; right: 30%;
+            height: 2px; border-radius: 0 0 4px 4px;
+            background: var(--cyan);
+            transform: scaleX(0);
+            transition: transform .25s cubic-bezier(.4,0,.2,1);
+        }
+        .nav-item.active { color: var(--cyan); }
+        .nav-item.active::before { transform: scaleX(1); }
+        .nav-icon {
+            font-size: 19px;
+            transition: transform .25s cubic-bezier(.4,0,.2,1);
+        }
+        .nav-item.active .nav-icon { transform: translateY(-2px); }
+
+        /* ─── center scan button ─── */
+        .nav-item.nav-scan-btn {
+            position: relative; overflow: visible;
+        }
+        .nav-scan-bubble {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #06050d;
+            box-shadow: 0 4px 20px var(--cyan-glow);
+            transition: transform .25s, box-shadow .25s;
+            margin-bottom: 2px;
+        }
+        .nav-item.nav-scan-btn.active .nav-scan-bubble,
+        .nav-item.nav-scan-btn:hover .nav-scan-bubble {
+            transform: scale(1.08);
+            box-shadow: 0 8px 30px var(--cyan-glow);
+        }
+        .nav-item.nav-scan-btn::before { display: none; }
+        .nav-item.nav-scan-btn.active { color: var(--cyan); }
+        .nav-item.nav-scan-btn.active .nav-scan-bubble { background: linear-gradient(135deg, var(--violet), var(--cyan)); }
+
+        /* ═══════════════════════════════════════
+           TOAST
+        ═══════════════════════════════════════ */
+        #toast-root {
+            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; width: calc(100% - 36px); max-width: 460px;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+        .toast {
+            background: rgba(16,13,26,.97);
+            border: 1px solid var(--border-2);
+            border-radius: 16px; padding: 12px 16px;
+            display: flex; align-items: center; gap: 11px;
+            box-shadow: 0 12px 40px rgba(0,0,0,.5);
+            animation: toastIn .35s cubic-bezier(.4,0,.2,1);
+            pointer-events: all; backdrop-filter: blur(20px);
+        }
+        .toast.out { animation: toastOut .3s ease forwards; }
+        @keyframes toastIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes toastOut { to{opacity:0;transform:translateY(-10px)} }
+        .toast i { font-size:17px; flex-shrink:0; }
+        .toast.success i { color:var(--green); }
+        .toast.error i { color:var(--pink); }
+        .toast.info i { color:var(--cyan); }
+        .toast.warning i { color:var(--gold); }
+        .toast-content { flex:1; }
+        .toast-title { font-size:13px; font-weight:700; font-family:'Syne',sans-serif; }
+        .toast-msg { font-size:11px; color:var(--muted); margin-top:2px; }
+
+        /* ═══════════════════════════════════════
+           REWARDS SECTION (inside profile/wallet)
+        ═══════════════════════════════════════ */
+        .section-label {
+            font-size:10px; font-weight:700; color:var(--muted);
+            text-transform:uppercase; letter-spacing:.8px;
+            margin-bottom:12px;
+            font-family:'Plus Jakarta Sans',sans-serif;
+        }
+
+        /* ═══════════════════════════════════════
+           RÉCOMPENSES SHEET
+        ═══════════════════════════════════════ */
+        .btn-see-rewards {
+            background: none; border: 1px solid rgba(255,195,77,.25);
+            color: var(--gold); border-radius: 50px;
+            padding: 6px 13px; font-size: 11px; font-weight: 700;
+            cursor: pointer; transition: all .2s;
+            display: inline-flex; align-items: center; gap: 5px;
+            font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap;
+        }
+        .btn-see-rewards:hover { background: rgba(255,195,77,.1); border-color: rgba(255,195,77,.5); }
+
+        .reward-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 14px; border-radius: var(--r-sm);
+            margin-bottom: 9px; border: 1px solid var(--border);
+            background: var(--glass); transition: border-color .2s;
+        }
+        .reward-row.unlocked { border-color: rgba(0,232,204,.25); background: rgba(0,232,204,.04); }
+        .reward-row-icon { font-size: 20px; flex-shrink: 0; }
+        .reward-row-info { flex: 1; min-width: 0; }
+        .reward-row-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .reward-row-pts { font-size: 11px; color: var(--muted); }
+
+        .reward-claim-btn {
+            background: var(--cyan); color: #06050d;
+            border: none; border-radius: 50px; padding: 7px 14px;
+            font-size: 11px; font-weight: 700; cursor: pointer;
+            transition: all .2s; white-space: nowrap; flex-shrink: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .reward-claim-btn:hover { box-shadow: 0 4px 14px var(--cyan-glow); transform: translateY(-1px); }
+
+        .reward-prog-wrap { flex-shrink: 0; min-width: 56px; text-align: right; }
+        .reward-prog-track { height: 4px; background: rgba(255,255,255,.06); border-radius: 4px; overflow: hidden; margin-bottom: 3px; }
+        .reward-prog-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--violet), var(--cyan)); }
+        .reward-prog-pct { font-size: 9px; color: var(--muted); font-weight: 700; }
+
+        .rewards-pts-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(0,232,204,.08); border: 1px solid rgba(0,232,204,.18);
+            border-radius: 50px; padding: 4px 12px;
+            font-size: 11px; font-weight: 700; color: var(--cyan);
+            margin-bottom: 16px;
+        }
+
+        /* scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 4px; }
+
+        /* ═══════════════════════════════════════
+           SPLASH SCREEN
+        ═══════════════════════════════════════ */
+        #splash {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--bg);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 0;
+            /* s'efface une fois la classe "hidden" ajoutée */
+            transition: opacity .55s cubic-bezier(.4,0,.2,1), visibility .55s;
+        }
+        #splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        /* fond dégradé ambiant */
+        #splash::before {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,124,248,.12) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(0,232,204,.07) 0%, transparent 55%);
+        }
+
+        .splash-logo-wrap {
+            position: relative;
+            width: 96px; height: 96px;
+            margin-bottom: 32px;
+        }
+        /* anneau animé */
+        .splash-ring {
+            position: absolute; inset: 0;
+            border-radius: 50%;
+            border: 2.5px solid transparent;
+            border-top-color: var(--cyan);
+            border-right-color: rgba(0,232,204,.3);
+            animation: spin 1s linear infinite;
+        }
+        .splash-ring-2 {
+            position: absolute; inset: 8px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-bottom-color: var(--violet);
+            border-left-color: rgba(139,124,248,.25);
+            animation: spin 1.6s linear infinite reverse;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* logo K central */
+        .splash-k {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 36px; font-weight: 800;
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: kPulse 2s ease-in-out infinite;
+        }
+        @keyframes kPulse {
+            0%,100% { filter: drop-shadow(0 0 8px rgba(0,232,204,.4)); }
+            50%      { filter: drop-shadow(0 0 20px rgba(0,232,204,.7)); }
+        }
+
+        .splash-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px; font-weight: 800;
+            letter-spacing: -.5px;
+            margin-bottom: 6px;
+            background: linear-gradient(120deg, #f2efff, var(--cyan));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .splash-greeting {
+            font-size: 14px; color: var(--muted); font-weight: 500;
+            min-height: 20px;
+            margin-bottom: 40px;
+            transition: color .4s;
+        }
+        .splash-greeting.ready { color: var(--cyan); font-weight: 700; }
+
+        /* barre de progression */
+        .splash-progress-track {
+            width: 180px; height: 3px;
+            background: rgba(255,255,255,.07);
+            border-radius: 99px; overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .splash-progress-bar {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(90deg, var(--violet), var(--cyan));
+            width: 0%;
+            transition: width .4s cubic-bezier(.4,0,.2,1);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .splash-status {
+            font-size: 11px; color: var(--muted);
+            letter-spacing: .5px; text-transform: uppercase;
+            font-weight: 600; min-height: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ SPLASH SCREEN ═══════════ -->
+<div id="splash">
+    <div class="splash-logo-wrap">
+        <div class="splash-ring"></div>
+        <div class="splash-ring-2"></div>
+        <div class="splash-k">K</div>
+    </div>
+    <div class="splash-title">Keepo</div>
+    <div class="splash-greeting" id="splash-greeting">Connexion en cours…</div>
+    <div class="splash-progress-track">
+        <div class="splash-progress-bar" id="splash-bar"></div>
+    </div>
+    <div class="splash-status" id="splash-status">Vérification du compte</div>
+</div>
+
+<div id="toast-root"></div>
+
+<div class="app-container">
+
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header>
+        <div class="user-badge">
+            <div class="user-avatar" id="avatar-letter">U</div>
+            <span id="user-display-name">Utilisateur</span>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Quitter
+        </button>
+    </header>
+
+    <!-- ═══════════ VUE 1 : PORTEFEUILLE ═══════════ -->
+    <div id="view-wallet" class="app-view active">
+
+        <h2 class="view-title">Mes Cartes</h2>
+        <p class="view-sub">Appuyez sur une carte pour présenter votre QR Code.</p>
+
+        <!-- stats bar -->
+        <div class="stats-bar">
+            <div class="stat-pill">
+                <div class="stat-pill-val" id="stat-nb-cards">—</div>
+                <div class="stat-pill-lbl">Cartes</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-pill-val" id="stat-total-pts">—</div>
+                <div class="stat-pill-lbl">Points</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-pill-val" id="stat-best-pts">—</div>
+                <div class="stat-pill-lbl">Best</div>
+            </div>
+        </div>
+
+        <div id="cards-container" class="cards-grid">
+            <div class="empty-wallet">
+                <div class="empty-wallet-icon">🎫</div>
+                <h3>Chargement...</h3>
+                <p>Récupération de votre portefeuille en cours.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ VUE 2 : SCANNER ═══════════ -->
+    <div id="view-scan" class="app-view">
+        <h2 class="view-title">Scanner un comptoir</h2>
+        <p class="view-sub">Flashez le QR Code affiché chez le commerçant pour rejoindre son programme de fidélité.</p>
+
+        <div class="scanner-status">
+            <div class="scanner-status-dot"></div>
+            Caméra active — Pointez vers un QR Keepo
+        </div>
+
+        <div class="scanner-frame-wrap" style="position:relative;">
+            <div id="scanner-container">
+                <div id="reader" style="width:100%;"></div>
+            </div>
+            <div class="scanner-corners">
+                <div class="sc tl"></div>
+                <div class="sc tr"></div>
+                <div class="sc bl"></div>
+                <div class="sc br"></div>
+                <div class="scan-beam"></div>
+            </div>
+            <!-- Bouton flip caméra -->
+            <button id="client-flip-btn" onclick="clientFlipCamera()" title="Retourner la caméra"
+                style="display:none;position:absolute;bottom:12px;right:12px;z-index:10;
+                       width:40px;height:40px;border-radius:50%;
+                       background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.25);
+                       color:white;font-size:18px;cursor:pointer;
+                       align-items:center;justify-content:center;transition:all .2s;">
+                <i class="fa-solid fa-rotate"></i>
+            </button>
+        </div>
+
+        <div class="scan-hint-card">
+            <div class="scan-hint-icon"><i class="fa-solid fa-lightbulb"></i></div>
+            <div>
+                <div class="scan-hint-title">Astuces pour un scan rapide</div>
+                <div class="scan-hint-body">
+                    <strong>Bonne luminosité</strong> · Stabilisez votre téléphone à 15&nbsp;cm du code · Le QR doit rester dans le cadre 2 secondes.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ VUE 3 : PROFIL ═══════════ -->
+    <div id="view-profile" class="app-view">
+        <h2 class="view-title">Mon Profil</h2>
+        <p class="view-sub">Gérez vos informations et préférences</p>
+
+        <div class="profile-hero">
+            <div class="profile-avatar-big" id="profile-avatar-big" onclick="document.getElementById('client-avatar-input').click()" title="Modifier la photo de profil">U</div>
+            <input type="file" id="client-avatar-input" accept="image/*" style="display:none;" onchange="handleClientAvatarSelect(event)">
+            <div class="profile-name" id="profile-name-big">Utilisateur</div>
+            <div class="profile-status-badge">
+                <i class="fa-solid fa-circle-check" style="font-size:10px;"></i>
+                Membre Privilège Keepo
+            </div>
+            <button id="client-avatar-remove" onclick="removeClientAvatar()"
+                style="display:none;margin-top:10px;background:none;border:none;color:var(--muted);
+                       font-size:12px;cursor:pointer;text-decoration:underline;font-family:'Plus Jakarta Sans',sans-serif;">
+                <i class="fa-solid fa-trash" style="font-size:10px;"></i> Retirer la photo
+            </button>
+        </div>
+
+        <div class="profile-info-grid">
+            <div class="profile-info-row">
+                <div class="profile-info-icon" style="color:var(--cyan)"><i class="fa-solid fa-envelope"></i></div>
+                <div>
+                    <div class="profile-info-label">E-mail</div>
+                    <div class="profile-info-val" id="profile-email-text">...</div>
+                </div>
+            </div>
+            <div class="profile-info-row">
+                <div class="profile-info-icon" style="color:var(--violet)"><i class="fa-solid fa-trophy"></i></div>
+                <div>
+                    <div class="profile-info-label">Points totaux cumulés</div>
+                    <div class="profile-info-val" id="profile-total-pts">— pts</div>
+                </div>
+            </div>
+            <div class="profile-info-row">
+                <div class="profile-info-icon" style="color:var(--gold)"><i class="fa-solid fa-store"></i></div>
+                <div>
+                    <div class="profile-info-label">Commerces rejoints</div>
+                    <div class="profile-info-val" id="profile-nb-stores">— partenaires</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label" style="margin-top:20px;">Actions du compte</div>
+        <div class="profile-actions">
+            <button class="profile-action-btn" onclick="openThemeChooser()">
+                <i class="fa-solid fa-palette"></i>
+                <span>Apparence de l'application</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="profile-action-btn" onclick="openNotifPrefs()">
+                <i class="fa-solid fa-bell"></i>
+                <span>Préférences de notifications</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="profile-action-btn" onclick="openSecuritySettings()">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Sécurité du compte</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="profile-action-btn" onclick="exportClientData()">
+                <i class="fa-solid fa-download"></i>
+                <span>Exporter mes données</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="profile-action-btn danger" onclick="handleLogout()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Se déconnecter</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+</div><!-- /.app-container -->
+
+<!-- ═══════════ REWARDS SHEET (Bottom Sheet) ═══════════ -->
+<div class="popup-overlay" id="rewardsSheet" onclick="closeRewardsSheet()">
+    <div class="popup-card" onclick="event.stopPropagation()" style="max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+        <div class="sheet-handle"></div>
+        <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Programme de fidélité</div>
+        <h3 id="rewards-sheet-title" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;text-align:left;"></h3>
+        <div class="rewards-pts-chip">
+            <i class="fa-solid fa-star"></i>
+            <span id="rewards-pts-val">0</span> points disponibles
+        </div>
+        <div id="rewards-sheet-list" style="margin-bottom:16px;"></div>
+        <button class="modal-close-btn" onclick="closeRewardsSheet()">
+            <i class="fa-solid fa-xmark"></i> Fermer
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════ QR MODAL (Bottom Sheet) ═══════════ -->
+<div class="popup-overlay" id="qrModal" onclick="closeQrModal()">
+    <div class="popup-card" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="modal-merchant-chip"><i class="fa-solid fa-store" style="font-size:11px;"></i> Commerce partenaire</div>
+        <h3 id="modal-merchant-name">Magasin</h3>
+        <p class="modal-sub">Faites scanner ce code par votre commerçant</p>
+
+        <div class="qr-zone" id="client-qr-rendering-zone"></div>
+
+        <div class="modal-points-row">
+            <div class="modal-stat-box">
+                <div class="modal-stat-label">Solde actuel</div>
+                <div class="modal-stat-val" id="modal-current-points">0 Pts</div>
+            </div>
+            <div class="modal-stat-box">
+                <div class="modal-stat-label">Prochain palier</div>
+                <div class="modal-stat-val" id="modal-next-reward" style="color:var(--gold);">— Pts</div>
+            </div>
+        </div>
+
+        <button class="modal-close-btn" onclick="closeQrModal()">
+            <i class="fa-solid fa-xmark"></i> Fermer
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════ BOTTOM NAV ═══════════ -->
+<nav class="bottom-nav">
+    <button class="nav-item active" id="nav-wallet" onclick="switchView('view-wallet')">
+        <i class="fa-solid fa-wallet nav-icon"></i>
+        <span>Cartes</span>
+    </button>
+    <button class="nav-item nav-scan-btn" id="nav-scan" onclick="switchView('view-scan')">
+        <div class="nav-scan-bubble"><i class="fa-solid fa-qrcode"></i></div>
+        <span>Scanner</span>
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="switchView('view-profile')">
+        <i class="fa-solid fa-user nav-icon"></i>
+        <span>Profil</span>
+    </button>
+</nav>
+
+<!-- ═══════════ MODAL CLAIM ANTI-TRICHE ═══════════ -->
+<div id="claimConfirmModal" onclick="event.target===this && closeClaimConfirmModal()"
+    style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);
+           align-items:center;justify-content:center;padding:20px;">
+    <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid rgba(0,232,204,0.3);
+                border-radius:28px;padding:30px 24px;max-width:360px;width:100%;text-align:center;
+                box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+        <div style="font-size:48px;margin-bottom:12px;">🎁</div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:4px;">Récompense réclamée !</div>
+        <div id="claim-modal-name" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;"></div>
+
+        <!-- Code de validation -->
+        <div style="background:rgba(0,232,204,0.06);border:2px dashed rgba(0,232,204,0.3);
+                    border-radius:16px;padding:18px;margin-bottom:16px;">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Code de validation (usage unique)</div>
+            <div id="claim-modal-code" style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;
+                 color:var(--cyan);letter-spacing:6px;"></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:6px;
+                    font-size:12px;color:var(--muted);">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span id="claim-modal-date"></span>
+        </div>
+        <div id="claim-modal-pts" style="font-size:12px;color:var(--sub);margin-bottom:20px;"></div>
+
+        <div style="background:rgba(255,195,77,0.06);border:1px solid rgba(255,195,77,0.2);border-radius:12px;
+                    padding:12px 14px;font-size:12px;color:var(--gold);text-align:left;line-height:1.6;margin-bottom:20px;">
+            <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i>
+            Montrez ce code à votre commerçant pour valider l'échange. Ce code est à usage unique — les points ont déjà été débités.
+        </div>
+
+        <button onclick="closeClaimConfirmModal()"
+            style="width:100%;padding:14px;background:var(--cyan);color:#06050d;border:none;border-radius:14px;
+                   font-weight:800;font-size:15px;cursor:pointer;font-family:'Syne',sans-serif;">
+            Compris — Valider avec le commerçant
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════ MODAL GÉNÉRIQUE PARAMÈTRES ═══════════ -->
+<div id="clientGenericModal" onclick="event.target===this && closeClientModal()"
+    style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.75);
+           align-items:center;justify-content:center;padding:20px;">
+    <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid var(--border-2);
+                border-radius:24px;padding:28px 22px;max-width:400px;width:100%;
+                box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div id="client-modal-title" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);"></div>
+            <button onclick="closeClientModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="client-modal-body"></div>
+    </div>
+</div>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // ─── STATE ───
+    let currentClientId = null;
+    let html5QrCodeScanner = null;
+    let walletCache = [];
+
+    // ─── PALETTE for cards (cycles) ───
+    const CARD_PALETTES = [
+        { c1: '#8b7cf8', c2: '#00e8cc', accent: '#00e8cc', accent2: '#8b7cf8', glow: 'rgba(139,124,248,.22)' },
+        { c1: '#ff4d82', c2: '#ff9f4d', accent: '#ff9f4d', accent2: '#ff4d82', glow: 'rgba(255,77,130,.22)' },
+        { c1: '#00e8cc', c2: '#4d8bff', accent: '#4dbbff', accent2: '#00e8cc', glow: 'rgba(0,232,204,.22)' },
+        { c1: '#ffc34d', c2: '#ff6b4d', accent: '#ffc34d', accent2: '#ff6b4d', glow: 'rgba(255,195,77,.22)' },
+        { c1: '#22d47a', c2: '#00b4d8', accent: '#22d47a', accent2: '#00b4d8', glow: 'rgba(34,212,122,.22)' },
+    ];
+
+    // ─── TOAST ───
+    function showToast(type, title, msg) {
+        const icons = { success:'fa-circle-check', error:'fa-circle-xmark', info:'fa-circle-info', warning:'fa-triangle-exclamation' };
+        const root = document.getElementById('toast-root');
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+        root.appendChild(el);
+        setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 3600);
+    }
+
+    // ─── COUNTER ANIMATION ───
+    function animateVal(el, to, suffix='') {
+        if (!el) return;
+        let start = 0, duration = 800;
+        const t0 = performance.now();
+        function step(now) {
+            const p = Math.min((now - t0) / duration, 1);
+            const ease = 1 - Math.pow(1 - p, 3);
+            el.innerText = Math.round(start + (to - start) * ease) + suffix;
+            if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    // ─── SPLASH HELPERS ───
+    function splashProgress(pct, status) {
+        document.getElementById('splash-bar').style.width = pct + '%';
+        if (status) document.getElementById('splash-status').innerText = status;
+    }
+    function splashHide(name) {
+        const greet = document.getElementById('splash-greeting');
+        greet.innerText = name ? `Bonjour, ${name.split(' ')[0]} 👋` : 'Bienvenue !';
+        greet.classList.add('ready');
+        splashProgress(100, 'Prêt !');
+        setTimeout(() => {
+            document.getElementById('splash').classList.add('hidden');
+        }, 650);
+    }
+    function splashRedirect(href) {
+        // Fondu rapide avant redirection
+        document.getElementById('splash-bar').style.width = '100%';
+        document.getElementById('splash-status').innerText = 'Redirection…';
+        setTimeout(() => { window.location.href = href; }, 400);
+    }
+
+    // ─── INIT ───
+    window.addEventListener('DOMContentLoaded', async () => {
+        splashProgress(15, 'Vérification du compte');
+
+        if (typeof supabaseClient === 'undefined' || !supabaseClient.auth) {
+            splashRedirect('/connexion');
+            return;
+        }
+
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        splashProgress(40, 'Authentification…');
+
+        if (error || !session) {
+            splashRedirect('/connexion');
+            return;
+        }
+        currentClientId = session.user.id;
+
+        // Affichage cached avatar AVANT le fetch DB pour rendu instantané
+        loadClientAvatarFromCache();
+
+        splashProgress(60, 'Chargement du profil');
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('name, email, role, avatar_url')
+            .eq('id', currentClientId)
+            .maybeSingle();
+
+        if (profile && profile.role === 'commercant') {
+            splashRedirect('/dashboard-commercant');
+            return;
+        }
+
+        const displayName = (profile && profile.name) ? profile.name : "Client Privilège";
+        const initial = displayName.charAt(0).toUpperCase();
+        document.getElementById('user-display-name').innerText = displayName;
+        document.getElementById('avatar-letter').innerText = initial;
+        document.getElementById('profile-name-big').innerText = displayName;
+        document.getElementById('profile-avatar-big').innerText = initial;
+        document.getElementById('profile-email-text').innerText = session.user.email || '...';
+
+        // Avatar serveur (peut écraser le cache si modifié ailleurs)
+        applyClientAvatarFromProfile(profile?.avatar_url);
+
+        splashProgress(80, 'Récupération des cartes');
+        loadClientTheme(); // thème personnalisé avec ID connu
+        await loadClientWallet();
+
+        splashHide(displayName);
+    });
+
+    // ─── HELPER : hex → glow rgba ───
+    function hexToGlow(hex, alpha = 0.28) {
+        try {
+            const h = hex.replace('#', '');
+            const r = parseInt(h.substring(0,2), 16);
+            const g = parseInt(h.substring(2,4), 16);
+            const b = parseInt(h.substring(4,6), 16);
+            return `rgba(${r},${g},${b},${alpha})`;
+        } catch(e) { return 'rgba(0,232,204,0.22)'; }
+    }
+
+    // ─── LOAD WALLET ───
+    async function loadClientWallet() {
+        const container = document.getElementById('cards-container');
+
+        const { data: walletData, error } = await supabaseClient
+            .from('loyalty_balances')
+            .select(`id, points_balance, merchant_id, merchant_profile:merchant_id ( name )`)
+            .eq('client_id', currentClientId);
+
+        if (error) {
+            container.innerHTML = `<div class="empty-wallet"><div class="empty-wallet-icon">⚠️</div><h3>Erreur de sync</h3><p>${error.message}</p></div>`;
+            return;
+        }
+
+        walletCache = walletData || [];
+
+        // ── Charger les designs et récompenses de chaque commerçant ──
+        let rewardGoals  = {}; // merchantId → points du 1er palier
+        let cardDesigns  = {}; // merchantId → { title, color, studio_json }
+
+        if (walletCache.length > 0) {
+            const merchantIds = walletCache.map(c => c.merchant_id);
+
+            const [rewardsRes, cardsRes] = await Promise.all([
+                supabaseClient
+                    .from('rewards')
+                    .select('merchant_id, points_required')
+                    .in('merchant_id', merchantIds)
+                    .order('points_required', { ascending: true }),
+                supabaseClient
+                    .from('merchant_cards')
+                    .select('merchant_id, title, color, studio_json')
+                    .in('merchant_id', merchantIds)
+            ]);
+
+            if (rewardsRes.data) {
+                rewardsRes.data.forEach(r => {
+                    if (!rewardGoals[r.merchant_id]) rewardGoals[r.merchant_id] = r.points_required;
+                });
+            }
+            if (cardsRes.data) {
+                cardsRes.data.forEach(mc => { cardDesigns[mc.merchant_id] = mc; });
+            }
+        }
+
+        // Update stats
+        const nbCards = walletCache.length;
+        const totalPts = walletCache.reduce((s, c) => s + (c.points_balance || 0), 0);
+        const bestPts = walletCache.length ? Math.max(...walletCache.map(c => c.points_balance || 0)) : 0;
+
+        animateVal(document.getElementById('stat-nb-cards'), nbCards);
+        animateVal(document.getElementById('stat-total-pts'), totalPts);
+        animateVal(document.getElementById('stat-best-pts'), bestPts);
+
+        document.getElementById('profile-total-pts').innerText = totalPts + ' pts';
+        document.getElementById('profile-nb-stores').innerText = nbCards + ' partenaire' + (nbCards > 1 ? 's' : '');
+
+        if (!walletData || walletData.length === 0) {
+            container.innerHTML = `
+                <div class="empty-wallet">
+                    <div class="empty-wallet-icon">🎫</div>
+                    <h3>Portefeuille vide</h3>
+                    <p>Scannez le QR Code d'un commerçant partenaire pour obtenir votre première carte !</p>
+                    <button class="empty-wallet-btn" onclick="switchView('view-scan')">
+                        <i class="fa-solid fa-qrcode"></i> Scanner un commerce
+                    </button>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = "";
+        walletData.forEach((card, idx) => {
+            const design    = cardDesigns[card.merchant_id] || {};
+            const shopName  = design.title || (card.merchant_profile ? card.merchant_profile.name : "Commerce Partenaire");
+            const points    = card.points_balance || 0;
+            const initial   = shopName.charAt(0).toUpperCase();
+            const goal      = rewardGoals[card.merchant_id] || 10;
+            const pct       = Math.min((points / goal) * 100, 100);
+            const remaining = Math.max(goal - points, 0);
+            const hasReward = points >= goal;
+            const shopSafe  = shopName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+            // ── Couleurs depuis le studio du commerçant ──
+            let cardColor = '#00e8cc'; // fallback
+            let cardBgImg = null;
+            let cardOverlayOpacity = 0.5;
+
+            if (design.color) cardColor = design.color;
+
+            if (design.studio_json) {
+                try {
+                    const studio = JSON.parse(design.studio_json);
+                    if (studio.borderColor) cardColor = studio.borderColor;
+                    if (studio.bg)          cardBgImg = studio.bg;
+                    if (studio.opacity)     cardOverlayOpacity = Number(studio.opacity) / 100;
+                } catch(e) {}
+            }
+
+            const cardGlow  = hexToGlow(cardColor);
+            const bgStyle   = cardBgImg ? `background-image:url('${cardBgImg}');background-size:cover;background-position:center;` : '';
+            // Overlay sombre si image de fond (lisibilité)
+            const overlayEl = cardBgImg
+                ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,${cardOverlayOpacity});border-radius:inherit;pointer-events:none;z-index:0;"></div>`
+                : '';
+
+            const cardHtml = `
+                <div class="loyalty-card"
+                    style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
+                    onclick="openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}')">
+                    ${overlayEl}
+                    <div style="position:relative;z-index:1;">
+                        <div class="card-top">
+                            <div class="card-logo-chip">${initial}</div>
+                            <div class="card-points-block">
+                                <div class="card-points-num" style="color:${cardColor}">${points}</div>
+                                <div class="card-points-lbl">Points</div>
+                            </div>
+                        </div>
+                        <div class="merchant-name">${shopName}</div>
+                        <div class="card-progress-wrap">
+                            <div class="card-progress-labels">
+                                <span>${points} pts</span>
+                                <span>Objectif : ${goal} pts</span>
+                            </div>
+                            <div class="card-progress-track">
+                                <div class="card-progress-fill" data-width="${pct}%" style="width:0%;background:${cardColor}"></div>
+                            </div>
+                        </div>
+                        <div class="card-footer" style="gap:8px;flex-wrap:wrap;">
+                            <button class="btn-see-rewards" onclick="event.stopPropagation(); openRewardsSheet('${card.merchant_id}', '${shopSafe}', ${points})"
+                                style="border-color:${hexToGlow(cardColor, 0.4)};color:${cardColor};">
+                                <i class="fa-solid fa-gift"></i> Voir les récompenses
+                            </button>
+                            ${hasReward
+                                ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> Récompense dispo !</div>`
+                                : `<div style="font-size:10px;color:rgba(255,255,255,0.5);">encore ${remaining} pt${remaining > 1 ? 's' : ''}</div>`
+                            }
+                        </div>
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        });
+
+        // Animate progress bars
+        setTimeout(() => {
+            container.querySelectorAll('.card-progress-fill').forEach(bar => {
+                bar.style.width = bar.dataset.width;
+            });
+        }, 120);
+    }
+
+    // ─── QR MODAL ───
+    function openClientCardPopup(merchantName, currentPoints, merchantId) {
+        document.getElementById('modal-merchant-name').innerText = merchantName;
+        document.getElementById('modal-current-points').innerText = `${currentPoints} Pts`;
+
+        const goal = 10;
+        const remaining = Math.max(goal - currentPoints, 0);
+        document.getElementById('modal-next-reward').innerText = remaining > 0 ? `${remaining} pts` : '🎁 Dispo !';
+
+        document.getElementById('client-qr-rendering-zone').innerHTML = "";
+
+        // QR unique par commerce : keepo:card:CLIENT_UUID:MERCHANT_UUID
+        // → un commerçant ne peut scanner que les QR de SON programme
+        new QRCodeStyling({
+            width: 200, height: 200, type: "svg",
+            data: `keepo:card:${currentClientId}:${merchantId}`,
+            dotsOptions: { color: "#0a0911", type: "rounded" },
+            backgroundOptions: { color: "#ffffff" },
+            cornersSquareOptions: { type: "extra-rounded", color: "#0a0911" }
+        }).append(document.getElementById("client-qr-rendering-zone"));
+
+        document.getElementById('qrModal').style.display = 'flex';
+    }
+
+    function closeQrModal() {
+        document.getElementById('qrModal').style.display = 'none';
+    }
+
+    // ─── SCAN LOGIC ───
+    async function handleStoreQrCodeScanned(qrData) {
+        if (qrData.startsWith("keepo:merchant:")) {
+            const merchantId = qrData.split(":")[2];
+
+            const { error } = await supabaseClient
+                .from('loyalty_balances')
+                .insert([{ client_id: currentClientId, merchant_id: merchantId, points_balance: 0 }]);
+
+            if (error && error.code !== '23505') {
+                showToast('error', 'Erreur de liaison', error.message);
+            } else if (error && error.code === '23505') {
+                showToast('warning', 'Carte déjà obtenue', 'Vous possédez déjà la carte de fidélité de ce commerce !');
+                switchView('view-wallet');
+            } else {
+                showToast('success', 'Nouvelle carte ajoutée ! 🎉', 'Bienvenue dans ce programme de fidélité.');
+                loadClientWallet();
+                switchView('view-wallet');
+            }
+        } else {
+            showToast('error', 'QR invalide', 'Ce QR Code n\'est pas un code de comptoir Keepo valide.');
+        }
+    }
+
+    // ─── NAVIGATION ───
+    function switchView(viewId) {
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        if (viewId === 'view-wallet') document.getElementById('nav-wallet').classList.add('active');
+        if (viewId === 'view-scan')   document.getElementById('nav-scan').classList.add('active');
+        if (viewId === 'view-profile') document.getElementById('nav-profile').classList.add('active');
+
+        document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+
+        if (viewId === 'view-scan') {
+            startCameraScanner();
+        } else {
+            stopCameraScanner();
+        }
+    }
+
+    // ─── CAMERA (caméra arrière directe, sans étapes) ───
+    let clientFacingMode = "environment";
+
+    async function startCameraScanner() {
+        if (html5QrCodeScanner) return;
+        const container = document.getElementById('reader');
+        if (!container) return;
+        container.innerHTML = '';
+        html5QrCodeScanner = new Html5Qrcode("reader");
+
+        const onSuccess = (decodedText) => {
+            stopCameraScanner();
+            handleStoreQrCodeScanned(decodedText);
+        };
+
+        try {
+            await html5QrCodeScanner.start(
+                { facingMode: clientFacingMode },
+                { fps: 10, qrbox: { width: 230, height: 230 } },
+                onSuccess, () => {}
+            );
+            const flipBtn = document.getElementById('client-flip-btn');
+            if (flipBtn) flipBtn.style.display = 'flex';
+        } catch (err) {
+            clientFacingMode = "user";
+            try {
+                await html5QrCodeScanner.start(
+                    { facingMode: clientFacingMode },
+                    { fps: 10, qrbox: { width: 230, height: 230 } },
+                    onSuccess, () => {}
+                );
+                const flipBtn = document.getElementById('client-flip-btn');
+                if (flipBtn) flipBtn.style.display = 'flex';
+            } catch (err2) {
+                html5QrCodeScanner = null;
+                document.getElementById('reader').innerHTML =
+                    '<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px;">📷 Autorisez la caméra dans votre navigateur pour scanner</div>';
+            }
+        }
+    }
+
+    async function stopCameraScanner() {
+        if (html5QrCodeScanner) {
+            try { await html5QrCodeScanner.stop(); html5QrCodeScanner.clear(); } catch(e) {}
+            html5QrCodeScanner = null;
+        }
+        const flipBtn = document.getElementById('client-flip-btn');
+        if (flipBtn) flipBtn.style.display = 'none';
+    }
+
+    async function clientFlipCamera() {
+        clientFacingMode = clientFacingMode === "environment" ? "user" : "environment";
+        await stopCameraScanner();
+        await startCameraScanner();
+    }
+
+    // ─── REWARDS SHEET ───
+    async function openRewardsSheet(merchantId, merchantName, currentPoints) {
+        document.getElementById('rewards-sheet-title').innerText = merchantName;
+        document.getElementById('rewards-pts-val').innerText = currentPoints;
+        document.getElementById('rewardsSheet').style.display = 'flex';
+
+        const list = document.getElementById('rewards-sheet-list');
+        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Chargement...</div>';
+
+        const { data: rewards, error } = await supabaseClient
+            .from('rewards')
+            .select('id, name, points_required')
+            .eq('merchant_id', merchantId)
+            .order('points_required', { ascending: true });
+
+        if (error || !rewards || rewards.length === 0) {
+            list.innerHTML = `
+                <div style="text-align:center;padding:32px 16px;">
+                    <div style="font-size:36px;margin-bottom:12px;">🎁</div>
+                    <div style="font-weight:700;margin-bottom:6px;">Aucune récompense</div>
+                    <div style="font-size:12px;color:var(--muted);">Ce commerçant n'a pas encore configuré de récompenses.</div>
+                </div>`;
+            return;
+        }
+
+        list.innerHTML = rewards.map(r => {
+            const unlocked = currentPoints >= r.points_required;
+            const pct = Math.min((currentPoints / r.points_required) * 100, 100);
+            const remaining = Math.max(r.points_required - currentPoints, 0);
+            const nameSafe = r.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+            return `
+                <div class="reward-row${unlocked ? ' unlocked' : ''}">
+                    <div class="reward-row-icon">${unlocked ? '🎁' : '🔒'}</div>
+                    <div class="reward-row-info">
+                        <div class="reward-row-name">${r.name}</div>
+                        <div class="reward-row-pts">${r.points_required} pts requis${unlocked
+                            ? ' &middot; <span style="color:var(--cyan);font-weight:700;">Débloquée !</span>'
+                            : ' &middot; encore ' + remaining + ' pt' + (remaining > 1 ? 's' : '')}</div>
+                    </div>
+                    ${unlocked
+                        ? `<button class="reward-claim-btn" onclick="claimReward('${merchantId}', ${r.points_required}, '${nameSafe}', ${currentPoints})">
+                               <i class="fa-solid fa-check"></i> Réclamer
+                           </button>`
+                        : `<div class="reward-prog-wrap">
+                               <div class="reward-prog-track"><div class="reward-prog-fill" style="width:${pct}%"></div></div>
+                               <div class="reward-prog-pct">${Math.round(pct)}%</div>
+                           </div>`
+                    }
+                </div>`;
+        }).join('');
+    }
+
+    function closeRewardsSheet() {
+        document.getElementById('rewardsSheet').style.display = 'none';
+    }
+
+    async function claimReward(merchantId, pointsCost, rewardName, currentPoints) {
+        if (!confirm(`Utiliser ${pointsCost} points pour "${rewardName}" ?\n\nUn code de validation sera généré côté serveur. Montrez-le au commerçant — il est à usage unique.`)) return;
+
+        // RPC retourne jsonb { balance, code }
+        const { data: result, error } = await supabaseClient
+            .rpc('apply_reward_claim_by_client', { p_merchant_id: merchantId, p_points: pointsCost });
+
+        if (error) { showToast('error', 'Impossible de réclamer', error.message); return; }
+
+        closeRewardsSheet();
+
+        const claimCode = result?.code || '------';
+        const newBalance = result?.balance ?? (currentPoints - pointsCost);
+
+        const claimData = {
+            reward: rewardName,
+            code: claimCode,
+            date: new Date().toLocaleString('fr-FR'),
+            points: pointsCost,
+            balance: newBalance
+        };
+
+        // Persistance anti-perte (10 derniers claims)
+        const key = `keepo_claim_${currentClientId}`;
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.unshift(claimData);
+        localStorage.setItem(key, JSON.stringify(existing.slice(0, 10)));
+
+        showClaimConfirmModal(claimData);
+        await loadClientWallet();
+    }
+
+    function showClaimConfirmModal(claim) {
+        const overlay = document.getElementById('claimConfirmModal');
+        if (!overlay) return;
+        document.getElementById('claim-modal-name').innerText = claim.reward;
+        document.getElementById('claim-modal-code').innerText = claim.code;
+        document.getElementById('claim-modal-date').innerText = claim.date;
+        document.getElementById('claim-modal-pts').innerText  = `${claim.points} pts débités · Solde restant : ${claim.balance} pts`;
+        overlay.style.display = 'flex';
+    }
+
+    function closeClaimConfirmModal() {
+        document.getElementById('claimConfirmModal').style.display = 'none';
+    }
+
+    // ─── PHOTO DE PROFIL CLIENT ───
+    function handleClientAvatarSelect(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 8 * 1024 * 1024) { showToast('warning', 'Image trop lourde', 'Max 8 Mo.'); return; }
+        if (!file.type.startsWith('image/')) { showToast('warning', 'Format invalide', 'Choisissez une image.'); return; }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                // Crop carré + redimension 256x256
+                const SIZE = 256;
+                const min = Math.min(img.width, img.height);
+                const sx = (img.width - min) / 2;
+                const sy = (img.height - min) / 2;
+                const canvas = document.createElement('canvas');
+                canvas.width = SIZE; canvas.height = SIZE;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE);
+                saveClientAvatarToDb(canvas.toDataURL('image/jpeg', 0.88));
+            };
+            img.onerror = () => showToast('error', 'Image illisible', 'Format non supporté.');
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function saveClientAvatarToDb(base64) {
+        if (!currentClientId) return;
+        applyClientAvatarEverywhere(base64);
+        localStorage.setItem(`keepo_avatar_${currentClientId}`, base64);
+        const { error } = await supabaseClient.from('profiles')
+            .update({ avatar_url: base64 }).eq('id', currentClientId);
+        if (error) {
+            if (error.message && error.message.includes('avatar_url')) {
+                showToast('warning', 'Photo enregistrée localement', 'Activez le schema.sql pour la synchroniser.');
+            } else {
+                showToast('warning', 'Sync DB échouée', error.message);
+            }
+        } else {
+            showToast('success', '✓ Photo de profil mise à jour', 'Votre nouvelle photo est visible.');
+        }
+    }
+
+    async function removeClientAvatar() {
+        if (!currentClientId) return;
+        if (!confirm('Retirer votre photo de profil ?')) return;
+        localStorage.removeItem(`keepo_avatar_${currentClientId}`);
+        applyClientAvatarEverywhere(null);
+        const { error } = await supabaseClient.from('profiles')
+            .update({ avatar_url: null }).eq('id', currentClientId);
+        if (error && !error.message.includes('avatar_url')) {
+            showToast('warning', 'Sync DB échouée', error.message);
+        }
+        showToast('success', 'Photo retirée', 'L\'initiale de votre prénom est de nouveau affichée.');
+    }
+
+    function applyClientAvatarEverywhere(base64) {
+        const targets = ['avatar-letter', 'profile-avatar-big'];
+        targets.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (base64) {
+                el.style.backgroundImage = `url('${base64}')`;
+                el.classList.add('has-photo');
+            } else {
+                el.style.backgroundImage = '';
+                el.classList.remove('has-photo');
+            }
+        });
+        const removeBtn = document.getElementById('client-avatar-remove');
+        if (removeBtn) removeBtn.style.display = base64 ? 'inline-flex' : 'none';
+    }
+
+    function loadClientAvatarFromCache() {
+        if (!currentClientId) return;
+        const cached = localStorage.getItem(`keepo_avatar_${currentClientId}`);
+        if (cached) applyClientAvatarEverywhere(cached);
+    }
+
+    function applyClientAvatarFromProfile(avatarUrl) {
+        if (!avatarUrl) { applyClientAvatarEverywhere(null); return; }
+        applyClientAvatarEverywhere(avatarUrl);
+        if (currentClientId) localStorage.setItem(`keepo_avatar_${currentClientId}`, avatarUrl);
+    }
+
+    // ─── PARAMÈTRES CLIENT ───
+    async function openNotifPrefs() {
+        const key = `keepo_notif_${currentClientId}`;
+        const prefs = JSON.parse(localStorage.getItem(key) || '{"push":true,"email":true}');
+        const pushOn  = prefs.push  ? 'on' : '';
+        const emailOn = prefs.email ? 'on' : '';
+        const html = `
+            <div style="padding:4px 0 12px;">
+                <div class="profile-info-label" style="margin-bottom:16px;">Choisissez comment être alerté de vos récompenses et activités :</div>
+                <div style="display:flex;flex-direction:column;gap:14px;">
+                    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+                        <input type="checkbox" id="notif-push" ${prefs.push ? 'checked' : ''}
+                            style="width:18px;height:18px;accent-color:var(--cyan);cursor:pointer;">
+                        <div><div style="font-weight:600;">Notifications push</div>
+                             <div style="font-size:12px;color:var(--muted);">Alertes quand vos points évoluent</div></div>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+                        <input type="checkbox" id="notif-email" ${prefs.email ? 'checked' : ''}
+                            style="width:18px;height:18px;accent-color:var(--cyan);cursor:pointer;">
+                        <div><div style="font-weight:600;">Notifications e-mail</div>
+                             <div style="font-size:12px;color:var(--muted);">Résumé hebdomadaire de vos cartes</div></div>
+                    </label>
+                </div>
+                <button onclick="saveNotifPrefs()" style="margin-top:20px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;">
+                    Enregistrer
+                </button>
+            </div>`;
+        showClientModal('🔔 Préférences de notifications', html);
+    }
+
+    function saveNotifPrefs() {
+        const key = `keepo_notif_${currentClientId}`;
+        const prefs = {
+            push:  document.getElementById('notif-push')?.checked  ?? true,
+            email: document.getElementById('notif-email')?.checked ?? true
+        };
+        localStorage.setItem(key, JSON.stringify(prefs));
+        closeClientModal();
+        showToast('success', 'Préférences sauvegardées', prefs.push && prefs.email ? 'Toutes les notifications activées.' : 'Préférences mises à jour.');
+    }
+
+    async function openSecuritySettings() {
+        const html = `
+            <div style="padding:4px 0 12px;">
+                <div class="profile-info-label" style="margin-bottom:14px;">Modifiez votre nom d'affichage ou réinitialisez votre mot de passe.</div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Nom d'affichage</label>
+                    <input type="text" id="sec-name-input" placeholder="Votre prénom ou pseudonyme"
+                        style="width:100%;padding:11px 14px;background:var(--bg-3);border:1px solid var(--border-2);
+                               color:var(--text);border-radius:12px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;">
+                </div>
+                <button onclick="saveClientName()" style="width:100%;padding:11px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;margin-bottom:10px;">
+                    Mettre à jour le nom
+                </button>
+                <button onclick="sendPasswordReset()" style="width:100%;padding:11px;background:transparent;color:var(--text);border:1px solid var(--border-2);border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;">
+                    <i class="fa-solid fa-envelope"></i> Envoyer un lien de réinitialisation du mot de passe
+                </button>
+            </div>`;
+        showClientModal('🔐 Sécurité du compte', html);
+        // Pré-remplir le nom actuel
+        const { data } = await supabaseClient.from('profiles').select('name').eq('id', currentClientId).maybeSingle();
+        const el = document.getElementById('sec-name-input');
+        if (el && data?.name) el.value = data.name;
+    }
+
+    async function saveClientName() {
+        const name = document.getElementById('sec-name-input')?.value.trim();
+        if (!name) { showToast('warning', 'Champ vide', 'Entrez un nom.'); return; }
+        const { error } = await supabaseClient.from('profiles').update({ name }).eq('id', currentClientId);
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+        const initial = name.charAt(0).toUpperCase();
+        document.getElementById('user-display-name').innerText = name;
+        document.getElementById('profile-name-big').innerText = name;
+        document.getElementById('profile-avatar-big').innerText = initial;
+        document.getElementById('avatar-letter').innerText = initial;
+        closeClientModal();
+        showToast('success', 'Nom mis à jour', `Bonjour, ${name} !`);
+    }
+
+    async function sendPasswordReset() {
+        const { data: profile } = await supabaseClient.from('profiles').select('email').eq('id', currentClientId).maybeSingle();
+        const email = profile?.email || (await supabaseClient.auth.getUser()).data?.user?.email;
+        if (!email) { showToast('error', 'Email introuvable', 'Connectez-vous à nouveau.'); return; }
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/connexion` });
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+        closeClientModal();
+        showToast('success', 'Email envoyé !', `Lien de réinitialisation envoyé à ${email}.`);
+    }
+
+    async function exportClientData() {
+        showToast('info', 'Export en cours...', 'Préparation de vos données.');
+
+        const [balancesRes, transactionsRes, profileRes] = await Promise.all([
+            supabaseClient.from('loyalty_balances').select('merchant_id, points_balance, created_at').eq('client_id', currentClientId),
+            supabaseClient.from('transactions').select('merchant_id, amount, points_changed, type, created_at').eq('client_id', currentClientId).order('created_at', { ascending: false }),
+            supabaseClient.from('profiles').select('name, email, created_at').eq('id', currentClientId).maybeSingle()
+        ]);
+
+        const exportObj = {
+            exportedAt: new Date().toISOString(),
+            profil: profileRes.data || {},
+            cartes: balancesRes.data || [],
+            transactions: transactionsRes.data || []
+        };
+
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `keepo-export-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('success', 'Export téléchargé !', `${(transactionsRes.data||[]).length} transactions exportées.`);
+    }
+
+    // ─── MODAL GÉNÉRIQUE CLIENT ───
+    function showClientModal(title, bodyHtml) {
+        document.getElementById('client-modal-title').innerText = title;
+        document.getElementById('client-modal-body').innerHTML  = bodyHtml;
+        document.getElementById('clientGenericModal').style.display = 'flex';
+    }
+
+    function closeClientModal() {
+        document.getElementById('clientGenericModal').style.display = 'none';
+    }
+
+    // ─── THÈMES CLIENT ───
+    const CLIENT_THEMES = {
+        dark: {
+            '--bg': '#06050d', '--bg-2': '#0d0b18', '--bg-3': '#131122',
+            '--card-bg': 'rgba(18,15,32,0.82)', '--glass': 'rgba(255,255,255,0.055)',
+            '--border': 'rgba(255,255,255,0.07)', '--border-2': 'rgba(255,255,255,0.13)',
+            '--text': '#f2efff', '--muted': '#635f84', '--sub': '#9490b8',
+            '--cyan': '#00e8cc', '--pink': '#ff4d82', '--violet': '#8b7cf8',
+            '--gold': '#ffc34d', '--green': '#22d47a'
+        },
+        light: {
+            '--bg': '#f0f2f8', '--bg-2': '#e8eaf2', '--bg-3': '#ffffff',
+            '--card-bg': 'rgba(255,255,255,0.92)', '--glass': 'rgba(0,0,0,0.04)',
+            '--border': 'rgba(0,0,0,0.10)', '--border-2': 'rgba(0,0,0,0.18)',
+            '--text': '#12102a', '--muted': '#8b89ab', '--sub': '#5a577e',
+            '--cyan': '#00b89e', '--pink': '#e83c6e', '--violet': '#6c4ef2',
+            '--gold': '#d4900c', '--green': '#1aac66'
+        },
+        neon: {
+            '--bg': '#03000f', '--bg-2': '#070018', '--bg-3': '#0d0028',
+            '--card-bg': 'rgba(7,0,24,0.9)', '--glass': 'rgba(255,255,255,0.04)',
+            '--border': 'rgba(180,100,255,0.15)', '--border-2': 'rgba(180,100,255,0.3)',
+            '--text': '#f5f0ff', '--muted': '#7060a0', '--sub': '#b0a0d0',
+            '--cyan': '#b44dff', '--pink': '#ff00cc', '--violet': '#00f0ff',
+            '--gold': '#ffdd00', '--green': '#00ff9f'
+        },
+        ocean: {
+            '--bg': '#020d1a', '--bg-2': '#041525', '--bg-3': '#062035',
+            '--card-bg': 'rgba(4,18,38,0.9)', '--glass': 'rgba(255,255,255,0.04)',
+            '--border': 'rgba(0,150,255,0.15)', '--border-2': 'rgba(0,180,255,0.3)',
+            '--text': '#e8f4ff', '--muted': '#4a7090', '--sub': '#7ab0d0',
+            '--cyan': '#00b4d8', '--pink': '#ff4d82', '--violet': '#4d9fff',
+            '--gold': '#ffd166', '--green': '#06d6a0'
+        },
+        rose: {
+            '--bg': '#0f060d', '--bg-2': '#1a0a15', '--bg-3': '#240e1e',
+            '--card-bg': 'rgba(24,8,18,0.9)', '--glass': 'rgba(255,255,255,0.04)',
+            '--border': 'rgba(255,130,180,0.15)', '--border-2': 'rgba(255,130,180,0.3)',
+            '--text': '#ffe8f4', '--muted': '#8a5070', '--sub': '#c090b0',
+            '--cyan': '#ff4da6', '--pink': '#ff91cc', '--violet': '#c878ff',
+            '--gold': '#ffbf69', '--green': '#2ec4b6'
+        }
+    };
+
+    const CLIENT_THEME_NAMES = {
+        dark:  '🌙 Sombre (Défaut)',
+        light: '☀️ Clair',
+        neon:  '⚡ Néon Violet',
+        ocean: '🌊 Océan',
+        rose:  '🌸 Rose Sakura'
+    };
+
+    function applyClientTheme(themeKey) {
+        const vars = CLIENT_THEMES[themeKey] || CLIENT_THEMES.dark;
+        const root = document.documentElement;
+        Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+        const key = currentClientId ? `keepo_client_theme_${currentClientId}` : 'keepo_client_theme_default';
+        localStorage.setItem(key, themeKey);
+    }
+
+    function loadClientTheme() {
+        const key = currentClientId ? `keepo_client_theme_${currentClientId}` : 'keepo_client_theme_default';
+        const saved = localStorage.getItem(key) || 'dark';
+        const vars = CLIENT_THEMES[saved] || CLIENT_THEMES.dark;
+        const root = document.documentElement;
+        Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    }
+
+    function openThemeChooser() {
+        const key = currentClientId ? `keepo_client_theme_${currentClientId}` : 'keepo_client_theme_default';
+        const current = localStorage.getItem(key) || 'dark';
+        const html = `
+            <div style="padding:4px 0 12px;">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Choisissez l'habillage visuel de votre application :</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    ${Object.entries(CLIENT_THEME_NAMES).map(([k, label]) => `
+                    <button onclick="applyClientTheme('${k}');updateThemeChooserUI('${k}')"
+                        id="theme-btn-${k}"
+                        style="display:flex;align-items:center;justify-content:space-between;width:100%;
+                               padding:13px 16px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;
+                               background:${k === current ? 'rgba(0,232,204,0.08)' : 'var(--card-bg)'};
+                               border:1px solid ${k === current ? 'rgba(0,232,204,0.35)' : 'var(--border)'};
+                               color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;">
+                        <span>${label}</span>
+                        <i class="fa-solid fa-check" style="color:var(--cyan);opacity:${k === current ? '1' : '0'};transition:.15s;" id="theme-check-${k}"></i>
+                    </button>`).join('')}
+                </div>
+                <button onclick="closeClientModal()"
+                    style="margin-top:18px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;
+                           border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;">
+                    Fermer
+                </button>
+            </div>`;
+        showClientModal('🎨 Apparence', html);
+    }
+
+    function updateThemeChooserUI(selectedKey) {
+        Object.keys(CLIENT_THEME_NAMES).forEach(k => {
+            const btn = document.getElementById('theme-btn-' + k);
+            const chk = document.getElementById('theme-check-' + k);
+            if (btn) {
+                const active = k === selectedKey;
+                btn.style.background = active ? 'rgba(0,232,204,0.08)' : 'var(--card-bg)';
+                btn.style.borderColor = active ? 'rgba(0,232,204,0.35)' : 'var(--border)';
+            }
+            if (chk) chk.style.opacity = k === selectedKey ? '1' : '0';
+        });
+    }
+
+    // ─── LOGOUT ───
+    async function handleLogout() {
+        await stopCameraScanner();
+        await supabaseClient.auth.signOut();
+        window.location.href = '/connexion';
+    }
+</script>
+</body>
+</html>

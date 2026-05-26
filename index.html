@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keepo | Révolutionnez la fidélité de vos clients</title>
+    <meta name="description" content="Programme de fidélité digital pour commerces indépendants. Remplacez la carte papier par une app mobile premium. Essai gratuit 14 jours.">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+    <link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
+    <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00e8cc">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ── Nouvelles sections landing ── */
+        .trust-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            padding: 28px 8%;
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.01);
+        }
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .trust-item .trust-icon { font-size: 20px; }
+        .trust-item strong { color: var(--text-main); }
+
+        /* Hero stats */
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+            margin: 0 auto 50px;
+            max-width: 720px;
+        }
+        .hero-stat { text-align: center; }
+        .hero-stat .stat-big {
+            font-size: 38px;
+            font-weight: 900;
+            background: linear-gradient(120deg, #a370ff, #2ee6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        .hero-stat .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* ROI Section */
+        .roi-section {
+            padding: 100px 8%;
+            text-align: center;
+            background: linear-gradient(180deg, transparent, rgba(74,43,130,0.06), transparent);
+        }
+        .roi-section h2 { font-size: 42px; margin-bottom: 15px; }
+        .roi-section .section-sub {
+            color: var(--text-muted);
+            font-size: 19px;
+            max-width: 600px;
+            margin: 0 auto 70px;
+        }
+        .roi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .roi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px 30px;
+            transition: all 0.4s var(--bezier-smooth);
+        }
+        .roi-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(46,230,212,0.3);
+            box-shadow: 0 20px 40px var(--shadow-main);
+        }
+        .roi-card .roi-number {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(120deg, #a370ff, #2ee6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        .roi-card h4 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
+        .roi-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+        /* Testimonials */
+        .testimonials-section {
+            padding: 100px 8%;
+            text-align: center;
+        }
+        .testimonials-section h2 { font-size: 42px; margin-bottom: 15px; }
+        .testimonials-section .section-sub {
+            color: var(--text-muted);
+            font-size: 19px;
+            margin-bottom: 60px;
+        }
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .testimonial-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px 35px;
+            text-align: left;
+            transition: all 0.4s var(--bezier-smooth);
+            position: relative;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 20px 40px var(--shadow-main);
+        }
+        .testimonial-quote {
+            font-size: 36px;
+            line-height: 1;
+            margin-bottom: 15px;
+            background: linear-gradient(120deg, #a370ff, #2ee6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .testimonial-text {
+            font-size: 16px;
+            color: var(--text-main);
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .avatar-purple { background: linear-gradient(135deg, #4a2b82, #7e42eb); }
+        .avatar-teal { background: linear-gradient(135deg, #1e9488, #2ee6d4); }
+        .avatar-mixed { background: linear-gradient(135deg, #4a2b82, #1e9488); }
+        .author-info .author-name { font-weight: 800; font-size: 15px; color: var(--text-main); }
+        .author-info .author-job { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .testimonial-stars { color: #f5c518; font-size: 14px; margin-bottom: 18px; letter-spacing: 2px; }
+        .result-badge {
+            display: inline-block;
+            background: rgba(46,230,212,0.1);
+            border: 1px solid rgba(46,230,212,0.25);
+            color: #2ee6d4;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 100px;
+            margin-bottom: 18px;
+        }
+
+        /* Comparison table */
+        .comparison-section {
+            padding: 80px 8% 0;
+            text-align: center;
+        }
+        .comparison-section h3 {
+            font-size: 26px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+        .comparison-table {
+            max-width: 780px;
+            margin: 0 auto;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+        .comp-header {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr 1fr;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .comp-header div {
+            padding: 20px 15px;
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+        .comp-header .col-pro {
+            background: rgba(34,166,153,0.08);
+            color: #2ee6d4;
+            font-size: 16px;
+            border-left: 1px solid rgba(46,230,212,0.2);
+        }
+        .comp-row {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr 1fr;
+            border-bottom: 1px solid var(--glass-border);
+            transition: background 0.2s;
+        }
+        .comp-row:last-child { border-bottom: none; }
+        .comp-row:hover { background: rgba(255,255,255,0.015); }
+        .comp-row div {
+            padding: 16px 15px;
+            font-size: 14px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+        .comp-row .col-feature { color: var(--text-main); font-weight: 500; }
+        .comp-row .col-pro {
+            background: rgba(34,166,153,0.04);
+            border-left: 1px solid rgba(46,230,212,0.15);
+            font-weight: 700;
+        }
+        .check-pro { color: #2ee6d4; font-size: 18px; }
+        .check-no { color: #444; font-size: 16px; }
+        .check-base { color: var(--text-muted); font-size: 13px; }
+
+        /* PRO badge sur les features */
+        .pro-badge-inline {
+            display: inline-block;
+            background: linear-gradient(90deg, #2ee6d4, #4a2b82);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 100px;
+            margin-left: 8px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
+
+        /* Final CTA section */
+        .final-cta-section {
+            margin: 80px 8%;
+            padding: 80px 60px;
+            background: linear-gradient(135deg, rgba(74,43,130,0.15), rgba(30,148,136,0.1));
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 40px;
+            text-align: center;
+        }
+        .final-cta-section h2 {
+            font-size: 44px;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        .final-cta-section p {
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 550px;
+            margin: 0 auto 40px;
+        }
+        .final-cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .urgency-note {
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .urgency-note strong { color: #2ee6d4; }
+
+        /* Pricing enhancements */
+        .pricing-saving {
+            display: inline-block;
+            background: rgba(46,230,212,0.1);
+            border: 1px solid rgba(46,230,212,0.3);
+            color: #2ee6d4;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin: 10px 0 20px;
+        }
+        .feat-list-pro li { color: var(--text-main); }
+        .feat-list-pro li::before { color: #2ee6d4; }
+
+        /* Feature cards alternées */
+        .card:nth-child(even) { direction: rtl; }
+        .card:nth-child(even) > * { direction: ltr; }
+
+        /* Section header générique */
+        .section-header { text-align: center; margin-bottom: 20px; }
+        .section-tag {
+            display: inline-block;
+            background: rgba(74,43,130,0.2);
+            border: 1px solid rgba(163,112,255,0.3);
+            color: #a370ff;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 6px 18px;
+            border-radius: 100px;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .hero-stats { gap: 30px; }
+            .hero-stat .stat-big { font-size: 30px; }
+            .final-cta-section { padding: 50px 30px; margin: 60px 5%; }
+            .final-cta-section h2 { font-size: 30px; }
+            .roi-section h2, .testimonials-section h2 { font-size: 30px; }
+            .comparison-table { font-size: 13px; }
+            .comp-header div, .comp-row div { padding: 12px 10px; }
+            .card:nth-child(even) { direction: ltr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="img/logo.png" alt="Keepo Logo">
+        </a>
+        <nav>
+            <a href="#features">Fonctionnalités</a>
+            <a href="#pricing">Tarifs</a>
+            <a href="#testimonials">Avis</a>
+            <a href="connexion.html" class="btn btn-outline">Se connecter</a>
+        </nav>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════
+         HERO
+    ════════════════════════════════════════════════ -->
+    <section class="hero">
+        <div class="section-tag">Nouveau · Saison 2026</div>
+        <h1>La fidélité de vos clients,<br>devenue <span>extraordinaire</span>.</h1>
+        <p>Bouchers, coiffeurs, restaurateurs&hellip; Abandonnez le carton. Créez un programme de fidélité digital ultra-premium en 2 minutes — et regardez vos clients revenir.</p>
+
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="stat-big">+38%</div>
+                <div class="stat-label">de taux de retour moyen</div>
+            </div>
+            <div class="hero-stat">
+                <div class="stat-big">2 min</div>
+                <div class="stat-label">pour tout configurer</div>
+            </div>
+            <div class="hero-stat">
+                <div class="stat-big">150+</div>
+                <div class="stat-label">commerçants actifs</div>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:18px; flex-wrap:wrap;">
+            <a href="connexion.html" class="btn btn-main-cta" style="font-size:17px; padding:18px 45px;">Démarrer l'essai Pro gratuit</a>
+            <a href="demo.html" class="btn btn-outline" style="font-size:15px; padding:18px 30px;">🎮 Essayer sans inscription</a>
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); margin-top:18px;">14 jours gratuits · Essai Pro complet · Résiliation en 1 clic</p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         BARRE DE CONFIANCE
+    ════════════════════════════════════════════════ -->
+    <div class="trust-bar">
+        <div class="trust-item">
+            <span class="trust-icon">🔒</span>
+            <span><strong>100% RGPD</strong> conforme</span>
+        </div>
+        <div class="trust-item">
+            <span class="trust-icon">🇫🇷</span>
+            <span>Conçu pour les <strong>commerçants français</strong></span>
+        </div>
+        <div class="trust-item">
+            <span class="trust-icon">⚡</span>
+            <span>Aucun matériel requis — <strong>votre smartphone suffit</strong></span>
+        </div>
+        <div class="trust-item">
+            <span class="trust-icon">🎯</span>
+            <span><strong>ROI positif</strong> dès 8 clients fidèles</span>
+        </div>
+        <div class="trust-item">
+            <span class="trust-icon">💬</span>
+            <span>Support <strong>7j/7</strong> en option Pro</span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         FEATURES
+    ════════════════════════════════════════════════ -->
+    <section class="features" id="features">
+
+        <div class="card reveal stagger-1">
+            <div class="card-visual-container">
+                <div class="visual-placeholder purple-gradient-bg">
+                    <img src="img/feat-client.png" alt="Keepo Client App" class="feat-img">
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="icon">📱</div>
+                <h3>Une carte toujours prête à être scannée</h3>
+                <p class="feat-description">
+                    Vos clients n'ont plus besoin de chercher leur carte au fond d'un sac. En un clic depuis leur écran d'accueil, ils ouvrent Keepo et <strong>présentent leur QR Code unique</strong> à votre caisse.
+                </p>
+                <ul class="feat-list">
+                    <li>Le client affiche son code instantanément</li>
+                    <li>Raccourci magique sur l'écran d'accueil (PWA)</li>
+                    <li>Zéro espace de stockage perdu sur leur téléphone</li>
+                    <li>Intégration Apple Wallet &amp; Google Pay <span class="pro-badge-inline">PRO</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card reveal stagger-2">
+            <div class="card-visual-container">
+                <div class="visual-placeholder teal-gradient-bg">
+                    <img src="img/feat-scan.png" alt="Keepo Merchant Scan" class="feat-img">
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="icon">⚡</div>
+                <h3>C'est vous qui scannez, en 1 seconde</h3>
+                <p class="feat-description">
+                    Prenez le contrôle. Utilisez votre propre smartphone, celui de vos serveurs ou votre tablette de caisse. Notre scanner intégré <strong>flashe le téléphone du client</strong> instantanément pour ajouter ses points.
+                </p>
+                <ul class="feat-list">
+                    <li>Vous utilisez la caméra de votre propre appareil</li>
+                    <li>Distribution de points sécurisée — aucun risque de triche</li>
+                    <li>Mode multi-serveurs pour équiper toute votre équipe <span class="pro-badge-inline">PRO</span></li>
+                    <li>Notification immédiate côté client après chaque scan</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card reveal stagger-3">
+            <div class="card-visual-container">
+                <div class="visual-placeholder mixed-gradient-bg">
+                    <img src="img/feat-stats.png" alt="Keepo Dashboard" class="feat-img">
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="icon">📊</div>
+                <h3>Le cerveau de votre croissance locale</h3>
+                <p class="feat-description">
+                    Chaque fois que vous scannez un client, ses données sont enregistrées. Accédez à un tableau de bord puissant pour comprendre qui sont vos meilleurs clients et comment les faire revenir plus souvent.
+                </p>
+                <ul class="feat-list">
+                    <li>Suivi automatique des visites après chaque scan</li>
+                    <li>Historique transparent de toutes les transactions</li>
+                    <li>Statistiques avancées &amp; analyses prédictives <span class="pro-badge-inline">PRO</span></li>
+                    <li>Export complet du fichier clients (RGPD) <span class="pro-badge-inline">PRO</span></li>
+                </ul>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         ROI / CHIFFRES CLÉS
+    ════════════════════════════════════════════════ -->
+    <section class="roi-section reveal">
+        <div class="section-tag">Résultats mesurés</div>
+        <h2>Ce que Keepo change <span style="background:linear-gradient(120deg,#a370ff,#2ee6d4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">concrètement</span></h2>
+        <p class="section-sub">Des commerçants comme vous ont mesuré ces résultats après 90 jours d'utilisation active de l'offre Pro.</p>
+        <div class="roi-grid">
+            <div class="roi-card reveal stagger-1">
+                <div class="roi-number">+38%</div>
+                <h4>Taux de retour client</h4>
+                <p>Un client qui accumule des points revient en moyenne 38% plus souvent qu'un client sans programme de fidélité.</p>
+            </div>
+            <div class="roi-card reveal stagger-2">
+                <div class="roi-number">×3</div>
+                <h4>Valeur vie client</h4>
+                <p>Un client fidèle génère 3 fois plus de chiffre d'affaires sur l'année qu'un client occasionnel.</p>
+            </div>
+            <div class="roi-card reveal stagger-3">
+                <div class="roi-number">+23%</div>
+                <h4>Panier moyen</h4>
+                <p>Les clients qui savent qu'ils accumulent des points dépensent 23% de plus par visite pour atteindre leur récompense.</p>
+            </div>
+            <div class="roi-card reveal stagger-1">
+                <div class="roi-number">8 sem.</div>
+                <h4>ROI atteint</h4>
+                <p>En moyenne, l'abonnement Pro est rentabilisé en moins de 8 semaines. Après, c'est du bénéfice pur.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         TÉMOIGNAGES
+    ════════════════════════════════════════════════ -->
+    <section class="testimonials-section" id="testimonials">
+        <div class="section-tag">Ils ont sauté le pas</div>
+        <h2>Des commerçants comme vous,<br><span style="background:linear-gradient(120deg,#a370ff,#2ee6d4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">qui ont tout changé</span></h2>
+        <p class="section-sub">Découvrez comment Keepo Pro transforme leur quotidien et leur chiffre d'affaires.</p>
+
+        <div class="testimonials-grid">
+            <div class="testimonial-card reveal stagger-1">
+                <div class="testimonial-stars">★★★★★</div>
+                <div class="result-badge">+41% de retours en 3 mois</div>
+                <p class="testimonial-text">
+                    "J'avais des cartons de fidélité partout, personne ne les sortait. Avec Keepo, mes clients ouvrent leur téléphone automatiquement à la caisse. Et l'export client Pro m'a permis d'envoyer une promo SMS pour mon anniversaire de boutique — jamais eu autant de monde."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar avatar-purple">✂️</div>
+                    <div class="author-info">
+                        <div class="author-name">Marie L.</div>
+                        <div class="author-job">Coiffeuse indépendante · Lyon</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card reveal stagger-2">
+                <div class="testimonial-stars">★★★★★</div>
+                <div class="result-badge">Rentabilisé en 6 semaines</div>
+                <p class="testimonial-text">
+                    "Je pensais que c'était pour les grandes surfaces. En fait, c'est exactement pour moi. En deux semaines, j'avais 80 clients inscrits. Les stats Pro me montrent qui revient, qui a décroché — je relance exactement les bons clients au bon moment."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar avatar-teal">🥩</div>
+                    <div class="author-info">
+                        <div class="author-name">Thomas B.</div>
+                        <div class="author-job">Boucher artisan · Bordeaux</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card reveal stagger-3">
+                <div class="testimonial-stars">★★★★★</div>
+                <div class="result-badge">+290€ de CA moyen / semaine</div>
+                <p class="testimonial-text">
+                    "Le mode multi-serveurs Pro est indispensable pour nous — on est 4 en salle. Chacun a son accès sur son téléphone. Et l'Apple Wallet ? Mes clientes adorent avoir leur carte de fidélité Keepo à côté de leur carte de métro. Ça fait vraiment pro."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar avatar-mixed">🍽️</div>
+                    <div class="author-info">
+                        <div class="author-name">Safia M.</div>
+                        <div class="author-job">Restauratrice · Paris 11e</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         TARIFS
+    ════════════════════════════════════════════════ -->
+    <section class="pricing-section" id="pricing">
+        <div class="section-tag">Tarification claire</div>
+        <h2 class="reveal" style="font-size: 42px;">Un investissement rentable<br>dès le premier mois</h2>
+        <p class="reveal" style="color: #a4a1b5; margin-top: 15px; font-size: 19px; max-width:600px; margin-left:auto; margin-right:auto;">14 jours de test Pro offerts — configuration assistée — sans engagement.</p>
+
+        <div class="pricing-grid">
+            <!-- Essentiel -->
+            <div class="price-card reveal">
+                <div style="display:inline-block; background:rgba(163,112,255,0.12); border:1px solid rgba(163,112,255,0.25); color:#a370ff; font-size:11px; font-weight:800; padding:5px 14px; border-radius:100px; letter-spacing:0.5px; margin-bottom:16px;">IDÉAL POUR DÉMARRER</div>
+                <h3 style="font-size: 26px; color: var(--text-main);">Essentiel</h3>
+                <p style="color: #6a687a; margin-top: 5px;">Testez la fidélité digitale sans risque</p>
+                <div class="price">49€<span>/mois</span></div>
+                <p style="font-size:13px; color:#a370ff; margin:-10px 0 20px; font-weight:600;">soit 1,60€ par jour — moins qu'un café ☕</p>
+                <ul class="feat-list" style="margin-bottom:36px; text-align:left; padding-left:10px;">
+                    <li>Jusqu'à 150 clients actifs</li>
+                    <li>Scanner QR intégré sur smartphone</li>
+                    <li>Tableau de bord de base</li>
+                    <li>Support par chat 5j/7</li>
+                    <li>QR code de comptoir HD inclus</li>
+                    <li>Passage en Pro en 1 clic à tout moment</li>
+                </ul>
+                <a href="connexion.html" class="btn btn-purple" style="width:100%; text-align:center;">Démarrer avec Essentiel</a>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:12px;">Upgrader vers Pro quand vous voulez — vos données sont conservées</p>
+            </div>
+
+            <!-- Pro -->
+            <div class="price-card featured reveal">
+                <div class="badge">⭐ RECOMMANDÉ PAR LES COMMERÇANTS</div>
+                <h3 style="font-size: 26px; color: #2ee6d4;">Keepo Pro</h3>
+                <p style="color: #22a699; margin-top: 5px;">Puissance et croissance illimitées</p>
+                <div class="price">99€<span>/mois</span></div>
+                <div class="pricing-saving">🎉 Essai 14 jours offert — sans CB</div>
+                <ul class="feat-list feat-list-pro" style="margin-bottom:40px; text-align:left; padding-left:10px;">
+                    <li><strong>Clients &amp; Scans illimités</strong></li>
+                    <li>Statistiques avancées &amp; analyses prédictives</li>
+                    <li>Support VIP dédié 7j/7</li>
+                    <li>Export complet fichier clients (RGPD)</li>
+                    <li>Intégration Apple Wallet &amp; Google Pay</li>
+                    <li>Mode multi-serveurs (toute l'équipe)</li>
+                    <li>Personnalisation avancée de la carte</li>
+                </ul>
+                <a href="connexion.html" class="btn btn-teal" style="width:100%; text-align:center; font-size:16px; padding:16px;">Lancer l'essai Pro gratuit →</a>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:14px;">Essai complet · Résiliation en 1 clic</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         TABLEAU COMPARATIF
+    ════════════════════════════════════════════════ -->
+    <section class="comparison-section reveal">
+        <h3>Essentiel vs. Pro : la différence en un coup d'œil</h3>
+        <div class="comparison-table">
+            <div class="comp-header">
+                <div>Fonctionnalité</div>
+                <div style="text-align:center;">Essentiel<br><span style="font-size:12px;font-weight:500;color:var(--text-muted);">49€/mois</span></div>
+                <div class="col-pro" style="text-align:center;">Keepo Pro<br><span style="font-size:12px;font-weight:500;">99€/mois</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Clients actifs</div>
+                <div style="justify-content:center;"><span class="check-base">150 max</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">∞ Illimités</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Scans par mois</div>
+                <div style="justify-content:center;"><span class="check-base">300 max</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">∞ Illimités</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Scanner QR intégré</div>
+                <div style="justify-content:center;"><span class="check-pro">✓</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">✓</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Tableau de bord statistiques</div>
+                <div style="justify-content:center;"><span class="check-base">Basique</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">✓ Avancé</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Mode multi-serveurs</div>
+                <div style="justify-content:center;"><span class="check-no">✕</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">✓</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Export fichier clients (RGPD)</div>
+                <div style="justify-content:center;"><span class="check-no">✕</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">✓</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Apple Wallet &amp; Google Pay</div>
+                <div style="justify-content:center;"><span class="check-no">✕</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">✓</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Support client</div>
+                <div style="justify-content:center;"><span class="check-base">Chat 5j/7</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">VIP 7j/7</span></div>
+            </div>
+            <div class="comp-row">
+                <div class="col-feature">Personnalisation carte</div>
+                <div style="justify-content:center;"><span class="check-base">Standard</span></div>
+                <div class="col-pro" style="justify-content:center;"><span class="check-pro">✓ Avancée</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         COMMENT ÇA MARCHE
+    ════════════════════════════════════════════════ -->
+    <section class="how-it-works" id="how">
+        <div class="section-tag">Mise en place</div>
+        <h2 class="reveal" style="font-size: 42px; text-align: center; margin-bottom: 15px;">Prêt en 2 minutes, top chrono</h2>
+        <p class="reveal" style="text-align:center; color:var(--text-muted); font-size:18px; max-width:600px; margin:0 auto 50px;">Pas de technicien, pas de matériel, pas d'application à installer pour vos clients.</p>
+        <div class="steps-grid">
+            <div class="step-card reveal stagger-1">
+                <div class="step-number">01</div>
+                <h3>Imprimez votre QR Code</h3>
+                <p>Téléchargez et imprimez votre QR code de comptoir Keepo. Placez-le bien en vue près de votre caisse — c'est tout.</p>
+            </div>
+            <div class="step-card reveal stagger-2">
+                <div class="step-number">02</div>
+                <h3>Le client crée son raccourci</h3>
+                <p>Lors de son premier passage, le client flashe votre QR code et ajoute Keepo sur son écran d'accueil en 2 secondes. Sans téléchargement.</p>
+            </div>
+            <div class="step-card reveal stagger-3">
+                <div class="step-number">03</div>
+                <h3>Scannez et fidélisez !</h3>
+                <p>À chaque achat, le client présente son smartphone. Vous scannez son écran avec le vôtre. Points attribués, client ravi — et vous aussi.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         FAQ
+    ════════════════════════════════════════════════ -->
+    <section class="faq-section" id="faq">
+        <div class="section-tag">Questions fréquentes</div>
+        <h2 class="reveal" style="font-size: 42px; text-align: center; margin-bottom: 50px;">Une réponse à chaque question</h2>
+        <div class="faq-container reveal">
+            <details class="faq-item">
+                <summary>Faut-il installer du matériel spécifique ou une douchette de caisse ?</summary>
+                <p>Absolument pas. Keepo utilise simplement l'appareil photo de votre smartphone ou de votre tablette actuelle. Pas besoin de câble, pas besoin de matériel cher. Si vous avez un téléphone, vous avez Keepo.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Que se passe-t-il après les 14 jours d'essai gratuit ?</summary>
+                <p>Vous êtes libre de choisir votre abonnement (Essentiel ou Pro) ou d'arrêter sans frais. Nous ne prélevons rien automatiquement sans votre accord écrit.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Est-ce sécurisé ? Un client peut-il s'ajouter des points tout seul ?</summary>
+                <p>Impossible. Seule l'interface sécurisée du commerçant (votre espace) est capable de valider et d'injecter des points sur le compte d'un client. Le QR code du client ne sert que d'identifiant — impossible à falsifier.</p>
+            </details>
+            <details class="faq-item">
+                <summary>L'application est-elle conforme aux lois sur les données (RGPD) ?</summary>
+                <p>Oui, Keepo est 100&nbsp;% conforme au RGPD. Les données de vos clients sont chiffrées et sécurisées sur des serveurs européens. Avec l'offre Pro, vous pouvez exporter votre fichier client quand vous le souhaitez, en un clic.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Quelle est la différence concrète entre Essentiel et Pro ?</summary>
+                <p>L'offre Essentiel est parfaite pour démarrer : jusqu'à 150 clients actifs, scanner intégré, tableau de bord basique. L'offre Pro lève toutes les limites et débloque les fonctionnalités qui font vraiment croître votre commerce : clients illimités, statistiques avancées, export RGPD, Apple Wallet, et mode multi-serveurs pour équiper toute votre équipe.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Puis-je passer d'Essentiel à Pro à tout moment ?</summary>
+                <p>Oui, en un clic depuis votre espace commerçant. Le changement est immédiat. Vos données, clients et historique sont entièrement conservés. Aucune migration ni configuration supplémentaire.</p>
+            </details>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         FINAL CTA
+    ════════════════════════════════════════════════ -->
+    <section class="final-cta-section reveal">
+        <div class="section-tag">Dernière étape</div>
+        <h2>Vos clients méritent mieux<br>qu'un carton perforé.</h2>
+        <p>Rejoignez 150+ commerçants indépendants qui ont choisi Keepo Pro pour fidéliser, analyser et faire grandir leur commerce.</p>
+        <div class="final-cta-buttons">
+            <a href="connexion.html" class="btn btn-main-cta" style="font-size:17px; padding:18px 45px;">Démarrer gratuitement pendant 14 jours →</a>
+            <a href="demo.html" class="btn btn-outline" style="font-size:15px; padding:18px 30px;">🎮 Tester la démo d'abord</a>
+        </div>
+        <p class="urgency-note">Essai Pro complet · Résiliation en 1 clic · <strong>Données hébergées en Europe</strong></p>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div style="font-size: 24px; font-weight: 900; background: linear-gradient(120deg, #a370ff, #2ee6d4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px;">Keepo</div>
+                <p style="color: #a4a1b5; font-size: 14px; max-width:220px;">La fidélité client locale, réinventée pour les commerçants indépendants.</p>
+            </div>
+            <div class="footer-links">
+                <div>
+                    <h4>Produit</h4>
+                    <a href="#features">Fonctionnalités</a>
+                    <a href="#pricing">Tarifs</a>
+                    <a href="#testimonials">Avis clients</a>
+                    <a href="#faq">FAQ</a>
+                    <a href="demo.html">Démo interactive</a>
+                </div>
+                <div>
+                    <h4>Légal</h4>
+                    <a href="#">Mentions Légales</a>
+                    <a href="#">CGV / CGU</a>
+                    <a href="#">Confidentialité</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Keepo. Tous droits réservés. Conçu pour booster les commerces indépendants.
+        </div>
+    </footer>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    </script>
+
+</body>
+</html>
