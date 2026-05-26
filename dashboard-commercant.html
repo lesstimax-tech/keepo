@@ -1051,6 +1051,73 @@
         }
         .ai-color-swatch { width: 38px; height: 38px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); }
 
+        /* ─── ANALYTICS PHASE 2 ─── */
+        .top-client-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+            transition: all .15s;
+        }
+        .top-client-row:hover { background: rgba(0,232,204,0.04); border-color: rgba(0,232,204,0.2); }
+        .top-rank-badge {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900; font-size: 13px;
+            flex-shrink: 0;
+        }
+        .top-rank-1 { background: linear-gradient(135deg, #ffd34d, #ff9a3c); color: #1a1828; }
+        .top-rank-2 { background: linear-gradient(135deg, #c0c5d4, #8d92a4); color: #1a1828; }
+        .top-rank-3 { background: linear-gradient(135deg, #cd8158, #a05f3c); color: #fff; }
+        .top-rank-x { background: rgba(255,255,255,0.06); color: var(--text-sub); }
+        .top-client-info { flex: 1; min-width: 0; }
+        .top-client-name { font-weight: 700; font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .top-client-pts  { font-size: 11px; color: var(--secondary-accent); margin-top: 2px; }
+
+        .churn-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; background: rgba(255,138,92,0.05);
+            border: 1px solid rgba(255,138,92,0.18); border-radius: 12px;
+        }
+        .churn-row-info { flex: 1; min-width: 0; }
+        .churn-row-name { font-weight: 700; font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .churn-row-days { font-size: 11px; color: #ff8a5c; margin-top: 2px; }
+
+        /* Heatmap */
+        .heatmap-table { border-collapse: separate; border-spacing: 3px; margin: 0 auto; min-width: 100%; }
+        .heatmap-table th { font-size: 9px; color: var(--text-muted); font-weight: 600; padding: 3px 0; text-align: center; min-width: 28px; }
+        .heatmap-table td.heatmap-label { font-size: 10px; color: var(--text-muted); font-weight: 700; padding-right: 8px; text-align: right; }
+        .heatmap-cell {
+            width: 100%; height: 22px; border-radius: 4px;
+            background: rgba(255,255,255,0.02); position: relative; cursor: default;
+            transition: transform .12s;
+        }
+        .heatmap-cell:hover { transform: scale(1.4); z-index: 5; box-shadow: 0 0 0 1px rgba(0,232,204,0.5); }
+        .heatmap-cell[data-tip]:hover::after {
+            content: attr(data-tip); position: absolute; bottom: 100%; left: 50%;
+            transform: translateX(-50%); white-space: nowrap;
+            background: #000; color: #fff; padding: 4px 8px; border-radius: 6px;
+            font-size: 10px; font-weight: 600; pointer-events: none; margin-bottom: 4px;
+            z-index: 10;
+        }
+        .heatmap-legend {
+            display: flex; align-items: center; gap: 4px; margin-top: 12px; font-size: 11px;
+            color: var(--text-muted); justify-content: flex-end;
+        }
+        .heatmap-legend-cell { width: 16px; height: 16px; border-radius: 3px; }
+
+        /* Comparaison */
+        .period-stat {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 14px 16px;
+        }
+        .period-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Cabinet Grotesk', sans-serif; }
+        .period-stat-val { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900; font-size: 24px; color: var(--text-main); margin-top: 4px; }
+        .period-stat-prev { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+        .period-stat-delta { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 50px; font-size: 11px; font-weight: 700; margin-top: 6px; }
+        .period-stat-delta.up   { background: rgba(62,227,108,0.12); color: #5dd984; }
+        .period-stat-delta.down { background: rgba(255,138,92,0.12); color: #ff8a5c; }
+        .period-stat-delta.flat { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
         /* ─── ÉTAT BLOQUÉ / FLOUTÉ POUR BOUTONS IA ─── */
         .btn-ai-locked {
             position: relative; cursor: not-allowed !important;
@@ -1277,6 +1344,66 @@
                             <i class="fa-solid fa-spinner fa-spin" style="margin-bottom:8px;display:block;font-size:18px;"></i>
                             Chargement de l'activité…
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════ PHASE 2 — ANALYTICS PREMIUM ═══════════ -->
+
+            <!-- #9 Comparaison périodes -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title">
+                    <i class="fa-solid fa-chart-column"></i>&nbsp; Comparaison de période
+                    <span id="period-comp-month-label" style="margin-left:auto;font-size:12px;color:var(--text-muted);font-weight:400;"></span>
+                </div>
+                <div id="period-comparison-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:10px;">
+                    <div style="text-align:center;padding:20px;color:var(--text-muted);grid-column:1/-1;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Chargement…
+                    </div>
+                </div>
+            </div>
+
+            <!-- #7 Top 10 + #8 Churn -->
+            <div class="dash-insight-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-trophy" style="color:#ffc34d;"></i>&nbsp; Top 10 — Clients fidèles
+                    </div>
+                    <div id="top-clients-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+                        <div style="padding:18px 0;text-align:center;color:var(--text-muted);font-size:13px;">
+                            <i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Calcul du classement…
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-triangle-exclamation" style="color:#ff8a5c;"></i>&nbsp; Clients à risque
+                        <span id="churn-count-badge" style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;"></span>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;">
+                        Membres qui n'ont pas scanné depuis <strong style="color:#ff8a5c">30+ jours</strong>. Pensez à les relancer !
+                    </div>
+                    <div id="churn-clients-list" style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="padding:18px 0;text-align:center;color:var(--text-muted);font-size:13px;">
+                            <i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Analyse en cours…
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- #6 Heatmap horaire -->
+            <div class="card" style="margin-bottom:24px;">
+                <div class="card-title">
+                    <i class="fa-solid fa-fire"></i>&nbsp; Heatmap d'affluence
+                    <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;">90 derniers jours</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">
+                    Repérez vos jours et heures de pointe pour mieux planifier votre équipe ou vos promotions.
+                </div>
+                <div id="heatmap-wrapper" style="overflow-x:auto;">
+                    <div style="padding:18px 0;text-align:center;color:var(--text-muted);font-size:13px;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Construction de la heatmap…
                     </div>
                 </div>
             </div>
@@ -4165,8 +4292,285 @@
         // ── Mini-chart (vrais points par jour) ──
         await refreshMiniChartReal();
 
+        // ── PHASE 2 : Analytics premium ──
+        refreshAnalyticsPhase2();
+
         loadAppTheme();
     }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PHASE 2 — ANALYTICS PREMIUM (Top clients, Churn, Heatmap, Period)
+    // ═══════════════════════════════════════════════════════════
+    async function refreshAnalyticsPhase2() {
+        if (!currentMerchantId) return;
+
+        // Récupère toutes les transactions credit récentes (limité à 1000 pour perf)
+        const { data: txs } = await supabaseClient
+            .from('transactions')
+            .select('client_id, amount, points_changed, type, created_at, client:client_id(name)')
+            .eq('merchant_id', currentMerchantId)
+            .eq('type', 'credit')
+            .order('created_at', { ascending: false })
+            .limit(1000);
+
+        const transactions = txs || [];
+
+        // ── #7 Top 10 clients fidèles ──
+        renderTopClients(transactions);
+
+        // ── #8 Churn detection ──
+        await renderChurnRisk();
+
+        // ── #6 Heatmap horaire ──
+        renderHeatmap(transactions);
+
+        // ── #9 Comparaison périodes ──
+        renderPeriodComparison(transactions);
+    }
+
+    function renderTopClients(transactions) {
+        const box = document.getElementById('top-clients-list');
+        if (!box) return;
+
+        // Agrège points par client
+        const agg = {};
+        for (const t of transactions) {
+            const cid  = t.client_id;
+            const name = t.client?.name || 'Client';
+            if (!agg[cid]) agg[cid] = { name, points: 0, visits: 0 };
+            agg[cid].points += (t.points_changed || 0);
+            agg[cid].visits += 1;
+        }
+        const arr = Object.values(agg).sort((a, b) => b.points - a.points).slice(0, 10);
+
+        if (arr.length === 0) {
+            box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">
+                <i class="fa-solid fa-trophy" style="font-size:24px;opacity:0.3;display:block;margin-bottom:8px;"></i>
+                Aucun classement encore. Vos top clients apparaîtront ici après quelques scans.
+            </div>`;
+            return;
+        }
+
+        const escape = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+        box.innerHTML = arr.map((c, i) => {
+            const rank = i + 1;
+            const cls  = rank === 1 ? 'top-rank-1' : rank === 2 ? 'top-rank-2' : rank === 3 ? 'top-rank-3' : 'top-rank-x';
+            const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+            return `<div class="top-client-row">
+                <div class="top-rank-badge ${cls}">${medal}</div>
+                <div class="top-client-info">
+                    <div class="top-client-name">${escape(c.name)}</div>
+                    <div class="top-client-pts">${c.points} pts cumulés · ${c.visits} visite${c.visits>1?'s':''}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function renderChurnRisk() {
+        const box = document.getElementById('churn-clients-list');
+        const badge = document.getElementById('churn-count-badge');
+        if (!box) return;
+
+        // Tous les soldes de fidélité avec last activity > 30j
+        const { data: balances } = await supabaseClient
+            .from('loyalty_balances')
+            .select('client_id, points_balance, client:client_id(name)')
+            .eq('merchant_id', currentMerchantId);
+
+        if (!balances || balances.length === 0) {
+            box.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">
+                <i class="fa-solid fa-circle-check" style="color:#3ee36c;font-size:24px;display:block;margin-bottom:8px;"></i>
+                Aucun client encore enregistré.
+            </div>`;
+            if (badge) badge.innerText = '';
+            return;
+        }
+
+        // Pour chaque client, trouver la dernière transaction credit
+        const thresholdMs = 30 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        const churnList = [];
+
+        for (const b of balances) {
+            const { data: lastTx } = await supabaseClient
+                .from('transactions')
+                .select('created_at')
+                .eq('merchant_id', currentMerchantId)
+                .eq('client_id', b.client_id)
+                .eq('type', 'credit')
+                .order('created_at', { ascending: false })
+                .limit(1);
+            const last = lastTx?.[0]?.created_at;
+            if (!last) continue;
+            const daysAgo = Math.floor((now - new Date(last).getTime()) / (24 * 60 * 60 * 1000));
+            if (daysAgo >= 30) {
+                churnList.push({
+                    name: b.client?.name || 'Client',
+                    daysAgo,
+                    balance: b.points_balance
+                });
+            }
+        }
+        churnList.sort((a, b) => b.daysAgo - a.daysAgo);
+
+        if (badge) badge.innerText = `${churnList.length} client${churnList.length>1?'s':''}`;
+
+        if (churnList.length === 0) {
+            box.innerHTML = `<div style="text-align:center;padding:20px;color:#3ee36c;font-size:13px;">
+                <i class="fa-solid fa-circle-check" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+                Aucun client à risque — tous restent actifs !
+            </div>`;
+            return;
+        }
+
+        const escape = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const display = churnList.slice(0, 6);
+        box.innerHTML = display.map(c => `
+            <div class="churn-row">
+                <div style="font-size:18px;">😴</div>
+                <div class="churn-row-info">
+                    <div class="churn-row-name">${escape(c.name)}</div>
+                    <div class="churn-row-days">Inactif depuis ${c.daysAgo} jours · ${c.balance} pts</div>
+                </div>
+            </div>
+        `).join('') + (churnList.length > 6 ? `<div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:6px;">+ ${churnList.length - 6} autre${churnList.length-6>1?'s':''} dans cette catégorie</div>` : '');
+    }
+
+    function renderHeatmap(transactions) {
+        const wrap = document.getElementById('heatmap-wrapper');
+        if (!wrap) return;
+
+        // Filtre 90 derniers jours
+        const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+        const recent = transactions.filter(t => new Date(t.created_at).getTime() >= cutoff);
+
+        // grid[day 0=lundi..6=dimanche][hour 0-23] = count
+        const grid = Array.from({length: 7}, () => new Array(24).fill(0));
+        for (const t of recent) {
+            const d  = new Date(t.created_at);
+            // 0=dim, 1=lun, ..., 6=sam → convertis pour lun=0 ... dim=6
+            const dow = (d.getDay() + 6) % 7;
+            const hr  = d.getHours();
+            grid[dow][hr]++;
+        }
+        const maxVal = Math.max(1, ...grid.flat());
+
+        if (recent.length === 0) {
+            wrap.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text-muted);font-size:13px;">
+                <i class="fa-solid fa-chart-line" style="font-size:24px;opacity:0.3;display:block;margin-bottom:8px;"></i>
+                Pas encore assez d'activité pour générer une heatmap. Continuez à scanner vos clients !
+            </div>`;
+            return;
+        }
+
+        const daysFr = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        const hours  = Array.from({length: 24}, (_, i) => i);
+
+        const cellColor = v => {
+            if (v === 0) return 'rgba(255,255,255,0.025)';
+            const t = v / maxVal; // 0..1
+            // Gradient violet → cyan → vert intensité
+            const r = Math.round(124 + (0 - 124) * t);
+            const g = Math.round(106 + (232 - 106) * t);
+            const b = Math.round(247 + (204 - 247) * t);
+            const alpha = 0.18 + t * 0.82;
+            return `rgba(${r},${g},${b},${alpha})`;
+        };
+
+        let html = '<table class="heatmap-table"><thead><tr><th></th>';
+        for (const h of hours) html += `<th>${h % 3 === 0 ? h + 'h' : ''}</th>`;
+        html += '</tr></thead><tbody>';
+        for (let d = 0; d < 7; d++) {
+            html += `<tr><td class="heatmap-label">${daysFr[d]}</td>`;
+            for (let h = 0; h < 24; h++) {
+                const v = grid[d][h];
+                const tip = v > 0 ? `${daysFr[d]} ${h}h — ${v} scan${v>1?'s':''}` : '';
+                html += `<td><div class="heatmap-cell" style="background:${cellColor(v)};" ${tip ? `data-tip="${tip}"` : ''}></div></td>`;
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        html += `<div class="heatmap-legend">
+            <span>Moins</span>
+            <div class="heatmap-legend-cell" style="background:rgba(124,106,247,0.18);"></div>
+            <div class="heatmap-legend-cell" style="background:rgba(62,169,225,0.45);"></div>
+            <div class="heatmap-legend-cell" style="background:rgba(0,232,204,0.75);"></div>
+            <div class="heatmap-legend-cell" style="background:rgba(0,232,204,1);"></div>
+            <span>Plus</span>
+        </div>`;
+        wrap.innerHTML = html;
+    }
+
+    function renderPeriodComparison(transactions) {
+        const grid = document.getElementById('period-comparison-grid');
+        const label = document.getElementById('period-comp-month-label');
+        if (!grid) return;
+
+        const now = new Date();
+        const startThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const startPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+        const endPrevMonth   = startThisMonth - 1;
+
+        const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+        if (label) label.innerText = `${monthNames[now.getMonth()]} ${now.getFullYear()} vs ${monthNames[(now.getMonth() + 11) % 12]}`;
+
+        const inThis = t => new Date(t.created_at).getTime() >= startThisMonth;
+        const inPrev = t => {
+            const ts = new Date(t.created_at).getTime();
+            return ts >= startPrevMonth && ts <= endPrevMonth;
+        };
+
+        const thisCount  = transactions.filter(inThis).length;
+        const prevCount  = transactions.filter(inPrev).length;
+        const thisPoints = transactions.filter(inThis).reduce((a, t) => a + (t.points_changed || 0), 0);
+        const prevPoints = transactions.filter(inPrev).reduce((a, t) => a + (t.points_changed || 0), 0);
+        const thisRev    = transactions.filter(inThis).reduce((a, t) => a + (Number(t.amount) || 0), 0);
+        const prevRev    = transactions.filter(inPrev).reduce((a, t) => a + (Number(t.amount) || 0), 0);
+        const thisClients = new Set(transactions.filter(inThis).map(t => t.client_id)).size;
+        const prevClients = new Set(transactions.filter(inPrev).map(t => t.client_id)).size;
+
+        const deltaBlock = (curr, prev, suffix = '') => {
+            if (prev === 0 && curr === 0) {
+                return `<div class="period-stat-delta flat"><i class="fa-solid fa-minus"></i> Pas de donnée</div>`;
+            }
+            if (prev === 0) {
+                return `<div class="period-stat-delta up"><i class="fa-solid fa-arrow-trend-up"></i> Nouveau !</div>`;
+            }
+            const pct = ((curr - prev) / prev) * 100;
+            const cls = pct > 1 ? 'up' : pct < -1 ? 'down' : 'flat';
+            const arr = pct > 1 ? 'fa-arrow-trend-up' : pct < -1 ? 'fa-arrow-trend-down' : 'fa-minus';
+            return `<div class="period-stat-delta ${cls}"><i class="fa-solid ${arr}"></i> ${pct > 0 ? '+' : ''}${pct.toFixed(0)}%${suffix}</div>`;
+        };
+
+        grid.innerHTML = `
+            <div class="period-stat">
+                <div class="period-stat-label">Scans</div>
+                <div class="period-stat-val">${thisCount}</div>
+                <div class="period-stat-prev">vs ${prevCount} le mois passé</div>
+                ${deltaBlock(thisCount, prevCount)}
+            </div>
+            <div class="period-stat">
+                <div class="period-stat-label">Points émis</div>
+                <div class="period-stat-val">${thisPoints}</div>
+                <div class="period-stat-prev">vs ${prevPoints} pts</div>
+                ${deltaBlock(thisPoints, prevPoints)}
+            </div>
+            <div class="period-stat">
+                <div class="period-stat-label">Chiffre fidélisé</div>
+                <div class="period-stat-val">${thisRev.toFixed(0)} €</div>
+                <div class="period-stat-prev">vs ${prevRev.toFixed(0)} €</div>
+                ${deltaBlock(thisRev, prevRev)}
+            </div>
+            <div class="period-stat">
+                <div class="period-stat-label">Clients actifs</div>
+                <div class="period-stat-val">${thisClients}</div>
+                <div class="period-stat-prev">vs ${prevClients}</div>
+                ${deltaBlock(thisClients, prevClients)}
+            </div>
+        `;
+    }
+
 
     async function refreshPredictiveInsight() {
         const body = document.getElementById('predictive-insight-body');
