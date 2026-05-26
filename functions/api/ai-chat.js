@@ -2,6 +2,7 @@
 //  Keepo — Cloudflare Pages Function : Proxy IA (Gemini Flash)
 //  Route : /api/ai-chat  (même domaine = pas de CORS)
 //  Variable d'env : GEMINI_API_KEY  (Cloudflare Pages → Settings → Variables)
+//  v2 - force redeploy
 // ════════════════════════════════════════════════════════════════
 
 const GEMINI_MODEL = 'gemini-2.0-flash';
