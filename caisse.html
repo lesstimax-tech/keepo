@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Keepo — Mode Caisse</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-180.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        :root {
+            --bg: #0a0911;
+            --bg-2: #12101e;
+            --card: #1a1828;
+            --border: rgba(255,255,255,0.08);
+            --muted: rgba(255,255,255,0.5);
+            --txt: #e8e9f0;
+            --cyan: #00e8cc;
+            --violet: #7c6af7;
+            --gold: #ffc34d;
+            --red: #ff4d82;
+            --green: #3ee36c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg); color: var(--txt);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* ─── LOGIN SCREEN ─── */
+        .login-wrap {
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 24px;
+            background: radial-gradient(ellipse at top, rgba(124,106,247,0.15), transparent 50%),
+                        radial-gradient(ellipse at bottom, rgba(0,232,204,0.12), transparent 50%);
+        }
+        .login-card {
+            background: linear-gradient(160deg, var(--card), var(--bg-2));
+            border: 1px solid var(--border); border-radius: 28px;
+            padding: 40px 36px; max-width: 460px; width: 100%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+        }
+        .login-logo {
+            width: 64px; height: 64px; border-radius: 18px;
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            color: var(--bg); font-size: 30px; margin: 0 auto 18px;
+        }
+        .login-title {
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-size: 28px; text-align: center; margin-bottom: 6px;
+        }
+        .login-sub {
+            color: var(--muted); font-size: 14px; text-align: center;
+            margin-bottom: 28px;
+        }
+        .login-section { margin-bottom: 20px; }
+        .login-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.6px; color: var(--muted); margin-bottom: 8px;
+            font-family: 'Cabinet Grotesk', sans-serif;
+        }
+        .cashier-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        .cashier-btn {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 14px; padding: 18px 14px; cursor: pointer;
+            transition: all .15s; font-family: inherit; color: #fff;
+        }
+        .cashier-btn:hover, .cashier-btn.selected {
+            background: linear-gradient(135deg, rgba(124,106,247,0.15), rgba(0,232,204,0.1));
+            border-color: rgba(0,232,204,0.5); transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,232,204,0.15);
+        }
+        .cashier-avatar {
+            width: 44px; height: 44px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            color: var(--bg); font-size: 19px; margin: 0 auto 10px;
+        }
+        .cashier-name { font-size: 13px; font-weight: 700; text-align: center; }
+        .cashier-role { font-size: 10px; color: var(--muted); text-align: center; margin-top: 2px; }
+
+        .pin-display {
+            background: #000; border: 2px solid rgba(0,232,204,0.3);
+            border-radius: 14px; padding: 16px; text-align: center;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-size: 32px; letter-spacing: 16px; color: var(--cyan);
+            margin-bottom: 14px; min-height: 60px;
+        }
+        .pin-pad {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        }
+        .pin-key {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 14px; padding: 18px;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700;
+            font-size: 22px; color: #fff; cursor: pointer; transition: all .12s;
+        }
+        .pin-key:active { background: rgba(0,232,204,0.2); transform: scale(0.97); }
+        .pin-key.fn { background: rgba(255,77,130,0.08); color: #ff8aaa; }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            border: none; color: var(--bg); font-weight: 800; font-size: 14px;
+            padding: 14px 22px; border-radius: 14px; cursor: pointer;
+            font-family: 'Cabinet Grotesk', sans-serif; transition: all .15s;
+            width: 100%; margin-top: 8px;
+        }
+        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,232,204,0.25); }
+        .btn-action:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-action.secondary { background: rgba(255,255,255,0.05); color: var(--txt); }
+
+        /* ─── CAISSE INTERFACE ─── */
+        .caisse-wrap {
+            display: none; min-height: 100vh; padding: 18px;
+            flex-direction: column; gap: 18px;
+        }
+        .caisse-wrap.active { display: flex; }
+        .caisse-header {
+            display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(135deg, var(--card), var(--bg-2));
+            border: 1px solid var(--border); border-radius: 18px;
+            padding: 14px 22px;
+        }
+        .caisse-header-left { display: flex; align-items: center; gap: 14px; }
+        .caisse-merchant-chip {
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            color: var(--bg); padding: 6px 14px; border-radius: 50px;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800;
+            font-size: 13px;
+        }
+        .caisse-cashier-badge {
+            background: rgba(0,232,204,0.1); border: 1px solid rgba(0,232,204,0.3);
+            color: var(--cyan); padding: 6px 14px; border-radius: 50px;
+            font-size: 12px; font-weight: 700;
+        }
+        .caisse-logout-btn {
+            background: rgba(255,77,130,0.1); border: 1px solid rgba(255,77,130,0.3);
+            color: #ff8aaa; padding: 8px 16px; border-radius: 10px;
+            font-family: inherit; font-weight: 700; font-size: 13px;
+            cursor: pointer;
+        }
+
+        .caisse-body {
+            display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px;
+            flex: 1;
+        }
+        @media (max-width: 900px) { .caisse-body { grid-template-columns: 1fr; } }
+
+        .caisse-panel {
+            background: linear-gradient(160deg, var(--card), var(--bg-2));
+            border: 1px solid var(--border); border-radius: 22px; padding: 22px;
+        }
+        .caisse-panel-title {
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-size: 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+        }
+        .caisse-panel-title i { color: var(--cyan); }
+
+        .scanner-zone {
+            position: relative; background: #000;
+            border-radius: 18px; overflow: hidden;
+            border: 2px solid rgba(0,232,204,0.3);
+            min-height: 320px;
+        }
+        #scanner-reader { width: 100%; }
+        .scanner-empty {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 60px 20px; color: var(--muted); gap: 14px;
+        }
+        .scanner-empty .icon { font-size: 48px; opacity: 0.4; }
+        .scanner-start-btn {
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            border: none; color: var(--bg); padding: 14px 26px;
+            border-radius: 14px; font-weight: 800; font-size: 15px;
+            cursor: pointer; font-family: 'Cabinet Grotesk', sans-serif;
+        }
+
+        .code-input-wrap {
+            display: flex; gap: 8px; margin-bottom: 14px;
+        }
+        .code-input-wrap input {
+            flex: 1; background: #000; border: 2px dashed rgba(0,232,204,0.3);
+            color: var(--cyan); padding: 16px;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-size: 24px; letter-spacing: 8px; text-align: center;
+            border-radius: 12px; text-transform: uppercase;
+        }
+
+        .credit-form { display: flex; flex-direction: column; gap: 10px; }
+        .credit-form label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+        .credit-form input {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(0,232,204,0.2);
+            color: var(--cyan); padding: 14px;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800;
+            font-size: 22px; text-align: center; border-radius: 12px;
+        }
+        .credit-form input:focus { outline: none; border-color: rgba(0,232,204,0.6); }
+
+        .result-box {
+            background: linear-gradient(135deg, rgba(62,227,108,0.08), rgba(0,232,204,0.05));
+            border: 1px solid rgba(62,227,108,0.3); border-radius: 14px;
+            padding: 16px; margin-top: 12px;
+        }
+        .result-box.error {
+            background: rgba(255,77,130,0.06); border-color: rgba(255,77,130,0.3); color: #ff8aaa;
+        }
+
+        .stat-row { display: flex; gap: 10px; margin-bottom: 14px; }
+        .stat-mini {
+            flex: 1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px;
+        }
+        .stat-mini-val { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900; font-size: 22px; color: var(--cyan); }
+        .stat-mini-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="loginScreen" class="login-wrap">
+    <div class="login-card">
+        <div class="login-logo">K</div>
+        <h1 class="login-title">Mode Caisse</h1>
+        <p class="login-sub" id="merchantNameLabel">Connectez-vous pour commencer</p>
+
+        <div id="step1-merchant" class="login-section">
+            <div class="login-label">Étape 1 — Connexion commerçant</div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+                Veuillez vous connecter avec votre compte commerçant pour activer le mode caisse sur cette tablette.
+            </p>
+            <button onclick="window.location.href='/connexion'" class="btn-action">
+                <i class="fa-solid fa-arrow-right"></i> Se connecter
+            </button>
+        </div>
+
+        <div id="step2-cashier" class="login-section" style="display:none;">
+            <div class="login-label">Étape 2 — Sélectionnez votre profil</div>
+            <div id="cashiers-grid" class="cashier-grid">
+                <div style="grid-column:1/-1;padding:30px;text-align:center;color:var(--muted);">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Chargement…
+                </div>
+            </div>
+        </div>
+
+        <div id="step3-pin" class="login-section" style="display:none;">
+            <div class="login-label">Étape 3 — PIN de <span id="cashier-name-pin"></span></div>
+            <div class="pin-display" id="pin-display">····</div>
+            <div class="pin-pad">
+                <button class="pin-key" onclick="pinKey('1')">1</button>
+                <button class="pin-key" onclick="pinKey('2')">2</button>
+                <button class="pin-key" onclick="pinKey('3')">3</button>
+                <button class="pin-key" onclick="pinKey('4')">4</button>
+                <button class="pin-key" onclick="pinKey('5')">5</button>
+                <button class="pin-key" onclick="pinKey('6')">6</button>
+                <button class="pin-key" onclick="pinKey('7')">7</button>
+                <button class="pin-key" onclick="pinKey('8')">8</button>
+                <button class="pin-key" onclick="pinKey('9')">9</button>
+                <button class="pin-key fn" onclick="pinClear()">✕</button>
+                <button class="pin-key" onclick="pinKey('0')">0</button>
+                <button class="pin-key fn" onclick="pinSubmit()">✓</button>
+            </div>
+            <button onclick="goBackToCashierSelect()" class="btn-action secondary" style="margin-top:14px;">
+                <i class="fa-solid fa-arrow-left"></i> Choisir un autre profil
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ MODE CAISSE ═══════════ -->
+<div id="caisseScreen" class="caisse-wrap">
+    <div class="caisse-header">
+        <div class="caisse-header-left">
+            <div class="caisse-merchant-chip" id="caisse-merchant-name">…</div>
+            <div class="caisse-cashier-badge" id="caisse-cashier-badge">…</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button onclick="lockCaisse()" class="caisse-logout-btn" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.3);color:#c5b8ff;">
+                <i class="fa-solid fa-lock"></i> Verrouiller
+            </button>
+        </div>
+    </div>
+
+    <div class="caisse-body">
+        <!-- LEFT : SCANNER -->
+        <div class="caisse-panel">
+            <div class="caisse-panel-title"><i class="fa-solid fa-camera"></i> Scanner de QR Client</div>
+            <div class="scanner-zone" id="scanner-zone">
+                <div class="scanner-empty">
+                    <div class="icon">📷</div>
+                    <div style="font-size:14px;text-align:center;">Cliquez pour activer la caméra<br><span style="font-size:11px;">puis pointez vers le QR du client</span></div>
+                    <button class="scanner-start-btn" onclick="startCaisseScanner()">
+                        <i class="fa-solid fa-camera"></i> Activer la caméra
+                    </button>
+                </div>
+                <div id="scanner-reader" style="display:none;"></div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-top:14px;text-align:center;">
+                💡 Astuce : placez le client à 15-25 cm de la caméra, écran lumineux.
+            </p>
+        </div>
+
+        <!-- RIGHT : ACTIONS -->
+        <div class="caisse-panel">
+            <div class="caisse-panel-title"><i class="fa-solid fa-bolt"></i> Actions du jour</div>
+
+            <div class="stat-row">
+                <div class="stat-mini">
+                    <div class="stat-mini-val" id="stat-today-scans">0</div>
+                    <div class="stat-mini-lbl">Scans aujourd'hui</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="stat-mini-val" id="stat-today-points">0</div>
+                    <div class="stat-mini-lbl">Pts crédités</div>
+                </div>
+            </div>
+
+            <!-- Validation code récompense -->
+            <div class="caisse-panel-title" style="font-size:14px;margin-top:8px;"><i class="fa-solid fa-ticket"></i> Valider un code récompense</div>
+            <div class="code-input-wrap">
+                <input type="text" id="claim-code-input" placeholder="ABC123" maxlength="6">
+            </div>
+            <button onclick="validateCodeAtCaisse()" class="btn-action">
+                <i class="fa-solid fa-check"></i> Valider le code
+            </button>
+
+            <div id="caisse-result" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  Mode Caisse — Logique
+// ═══════════════════════════════════════════════════════════
+let merchantSession = null;
+let merchantId      = null;
+let merchantName    = '';
+let cashiersList    = [];
+let selectedCashier = null;
+let currentPin      = '';
+let scanner         = null;
+let dailyScans      = 0;
+let dailyPoints     = 0;
+let creditClientId  = null;
+let creditClientName= '';
+let pointsPerEuroCaisse = 1;
+
+async function init() {
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) {
+        document.getElementById('step1-merchant').style.display = 'block';
+        return;
+    }
+    merchantSession = session;
+    merchantId = session.user.id;
+
+    // Vérifier que c'est un compte commerçant
+    const { data: profile } = await window.supabaseClient
+        .from('profiles')
+        .select('role, name')
+        .eq('id', merchantId)
+        .maybeSingle();
+
+    if (!profile || profile.role !== 'commercant') {
+        document.getElementById('step1-merchant').innerHTML = '<p style="color:#ff8aaa;">Ce compte n\'est pas un compte commerçant.</p>';
+        return;
+    }
+
+    const { data: mc } = await window.supabaseClient
+        .from('merchant_cards')
+        .select('title, points_per_euro')
+        .eq('merchant_id', merchantId)
+        .maybeSingle();
+    merchantName = mc?.title || profile.name || 'Mon Commerce';
+    pointsPerEuroCaisse = mc?.points_per_euro || 1;
+
+    document.getElementById('merchantNameLabel').innerText = merchantName;
+
+    // Vérifier session caissier en cours
+    const savedCashier = sessionStorage.getItem('keepo_caisse_cashier');
+    if (savedCashier) {
+        try {
+            const c = JSON.parse(savedCashier);
+            enterCaisse(c);
+            return;
+        } catch {}
+    }
+
+    // Charger caissiers
+    document.getElementById('step1-merchant').style.display = 'none';
+    document.getElementById('step2-cashier').style.display = 'block';
+    await loadCashiers();
+}
+
+async function loadCashiers() {
+    const { data } = await window.supabaseClient
+        .from('cashiers')
+        .select('id, name, role')
+        .eq('merchant_id', merchantId)
+        .eq('active', true)
+        .order('created_at', { ascending: true });
+
+    cashiersList = data || [];
+    const grid = document.getElementById('cashiers-grid');
+
+    if (cashiersList.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:13px;">
+            Aucun caissier configuré.<br><br>
+            <a href="/dashboard-commercant" style="color:var(--cyan);font-weight:700;">Aller dans Paramètres → Caissiers</a>
+        </div>`;
+        return;
+    }
+
+    grid.innerHTML = cashiersList.map(c => `
+        <button class="cashier-btn" onclick="selectCashier(${c.id})">
+            <div class="cashier-avatar">${(c.name || '?').charAt(0).toUpperCase()}</div>
+            <div class="cashier-name">${escapeHtml(c.name)}</div>
+            <div class="cashier-role">${c.role === 'manager' ? '👔 Manager' : '👤 Caissier'}</div>
+        </button>
+    `).join('');
+}
+
+function selectCashier(id) {
+    selectedCashier = cashiersList.find(c => c.id === id);
+    if (!selectedCashier) return;
+    document.getElementById('step2-cashier').style.display = 'none';
+    document.getElementById('step3-pin').style.display = 'block';
+    document.getElementById('cashier-name-pin').innerText = selectedCashier.name;
+    currentPin = '';
+    refreshPinDisplay();
+}
+
+function goBackToCashierSelect() {
+    document.getElementById('step3-pin').style.display = 'none';
+    document.getElementById('step2-cashier').style.display = 'block';
+    currentPin = '';
+}
+
+function pinKey(d) {
+    if (currentPin.length >= 6) return;
+    currentPin += d;
+    refreshPinDisplay();
+    if (currentPin.length >= 4) {
+        // Auto-submit si 4+ chiffres ? Non, laisser l'utilisateur valider explicitement
+    }
+}
+function pinClear() { currentPin = ''; refreshPinDisplay(); }
+function refreshPinDisplay() {
+    const d = document.getElementById('pin-display');
+    if (!d) return;
+    d.innerText = currentPin.length === 0 ? '····' : '•'.repeat(currentPin.length).padEnd(4, '·');
+}
+
+async function sha256Hex(text) {
+    const buf = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function pinSubmit() {
+    if (currentPin.length < 4) { alert('PIN trop court (4 chiffres minimum)'); return; }
+    const hash = await sha256Hex(currentPin);
+    const { data: full } = await window.supabaseClient
+        .from('cashiers').select('pin_hash').eq('id', selectedCashier.id).maybeSingle();
+    if (!full || full.pin_hash !== hash) {
+        alert('PIN incorrect');
+        currentPin = ''; refreshPinDisplay();
+        return;
+    }
+    enterCaisse(selectedCashier);
+}
+
+function enterCaisse(cashier) {
+    selectedCashier = cashier;
+    sessionStorage.setItem('keepo_caisse_cashier', JSON.stringify(cashier));
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('caisseScreen').classList.add('active');
+    document.getElementById('caisse-merchant-name').innerText = merchantName;
+    document.getElementById('caisse-cashier-badge').innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHtml(cashier.name)}`;
+    loadDailyStats();
+}
+
+function lockCaisse() {
+    if (scanner) { try { scanner.stop(); } catch {} scanner = null; }
+    sessionStorage.removeItem('keepo_caisse_cashier');
+    document.getElementById('caisseScreen').classList.remove('active');
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('step1-merchant').style.display = 'none';
+    document.getElementById('step3-pin').style.display = 'none';
+    document.getElementById('step2-cashier').style.display = 'block';
+    currentPin = '';
+}
+
+async function loadDailyStats() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { data } = await window.supabaseClient
+        .from('transactions')
+        .select('points_changed')
+        .eq('merchant_id', merchantId)
+        .eq('type', 'credit')
+        .gte('created_at', today.toISOString());
+    dailyScans  = data?.length || 0;
+    dailyPoints = (data || []).reduce((a, t) => a + (t.points_changed || 0), 0);
+    document.getElementById('stat-today-scans').innerText  = dailyScans;
+    document.getElementById('stat-today-points').innerText = dailyPoints;
+}
+
+// ─── Scanner ───
+function startCaisseScanner() {
+    document.querySelector('.scanner-empty').style.display = 'none';
+    document.getElementById('scanner-reader').style.display = 'block';
+    scanner = new Html5Qrcode("scanner-reader");
+    scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        onQrScanned,
+        () => {} // ignore errors
+    ).catch(err => {
+        showCaisseResult('error', 'Camera', String(err));
+    });
+}
+
+async function onQrScanned(qrData) {
+    if (!qrData.startsWith('keepo:card:')) {
+        return; // ignore non-Keepo QRs
+    }
+    const parts = qrData.split(':');
+    const clientId = parts[2];
+    const expectedMerchant = parts[3];
+    if (expectedMerchant !== merchantId) {
+        showCaisseResult('error', 'Carte étrangère', 'Ce QR appartient à un autre commerce.');
+        return;
+    }
+    // Stop scanner during action
+    if (scanner) { try { await scanner.pause(); } catch {} }
+
+    // Récupère le profil client
+    const { data: client } = await window.supabaseClient
+        .from('profiles').select('name').eq('id', clientId).maybeSingle();
+
+    creditClientId = clientId;
+    creditClientName = client?.name || 'Client';
+
+    // Demander le montant (prompt simple)
+    const amountStr = prompt(`Client : ${creditClientName}\n\nMontant de l'achat en euros ?`);
+    if (!amountStr) {
+        if (scanner) try { await scanner.resume(); } catch {}
+        return;
+    }
+    const amount = parseFloat(amountStr.replace(',', '.'));
+    if (!amount || amount <= 0) {
+        showCaisseResult('error', 'Montant invalide', '');
+        if (scanner) try { await scanner.resume(); } catch {}
+        return;
+    }
+
+    const points = Math.max(1, Math.round(amount * pointsPerEuroCaisse));
+    const { data: newBalance, error } = await window.supabaseClient.rpc('apply_loyalty_credit', {
+        p_merchant_id: merchantId, p_client_id: clientId, p_amount: amount, p_points: points
+    });
+
+    if (error) {
+        showCaisseResult('error', 'Erreur', error.message);
+    } else {
+        showCaisseResult('success', `+${points} pts crédités !`, `${creditClientName} a maintenant ${newBalance} pts (${amount.toFixed(2)} €)`);
+        // Audit
+        window.supabaseClient.from('cashier_audit').insert({
+            merchant_id: merchantId, cashier_id: selectedCashier.id,
+            cashier_name: selectedCashier.name, action: 'credit',
+            client_id: clientId, meta: { amount, points }
+        });
+        loadDailyStats();
+    }
+
+    setTimeout(() => {
+        if (scanner) { try { scanner.resume(); } catch {} }
+    }, 2500);
+}
+
+// ─── Valider code récompense ───
+async function validateCodeAtCaisse() {
+    const code = document.getElementById('claim-code-input').value?.trim().toUpperCase();
+    if (!code) return;
+    const { data, error } = await window.supabaseClient.rpc('validate_claim_code', { p_code: code });
+    if (error) {
+        showCaisseResult('error', 'Code invalide', error.message);
+    } else {
+        showCaisseResult('success', `✓ Récompense validée`, `${data.client_name} — ${data.points_debited} pts utilisés`);
+        document.getElementById('claim-code-input').value = '';
+        // Audit
+        window.supabaseClient.from('cashier_audit').insert({
+            merchant_id: merchantId, cashier_id: selectedCashier.id,
+            cashier_name: selectedCashier.name, action: 'debit_validate',
+            meta: { code, client_name: data.client_name }
+        });
+    }
+}
+
+function showCaisseResult(type, title, msg) {
+    const box = document.getElementById('caisse-result');
+    box.className = 'result-box' + (type === 'error' ? ' error' : '');
+    box.style.display = 'block';
+    box.innerHTML = `<div style="font-weight:800;font-size:16px;margin-bottom:4px;">${escapeHtml(title)}</div><div style="font-size:13px;opacity:0.9;">${escapeHtml(msg)}</div>`;
+    setTimeout(() => { box.style.display = 'none'; }, 4500);
+}
+
+function escapeHtml(s) {
+    return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

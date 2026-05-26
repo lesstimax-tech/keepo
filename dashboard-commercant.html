@@ -1992,6 +1992,40 @@
                     </button>
                 </div>
 
+                <!-- ═══════════ PHASE 4 — Multi-caissiers & Mode Caisse Tablette ═══════════ -->
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-title">
+                        <i class="fa-solid fa-cash-register" style="color:#00e8cc;"></i>&nbsp; Caissiers & Mode Caisse
+                    </div>
+                    <p style="color:var(--text-muted);font-size:12px;line-height:1.6;margin-bottom:14px;">
+                        Créez des comptes caissier avec PIN. Vos employés se connectent sur l'interface tablette dédiée sans accéder aux paramètres.
+                    </p>
+
+                    <a href="/caisse" target="_blank"
+                        style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(0,232,204,0.1),rgba(124,106,247,0.08));border:1px solid rgba(0,232,204,0.3);border-radius:12px;text-decoration:none;color:#fff;margin-bottom:14px;">
+                        <div style="width:38px;height:38px;background:linear-gradient(135deg,#7c6af7,#00e8cc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📱</div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700;font-size:14px;">Ouvrir le mode caisse</div>
+                            <div style="font-size:11px;color:var(--text-muted);">Interface tablette plein écran pour comptoir</div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="color:var(--secondary-accent);"></i>
+                    </a>
+
+                    <div style="font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
+                        Comptes caissier
+                    </div>
+
+                    <div id="cashiers-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+                        <div style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;">
+                            <i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Chargement…
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="openAddCashierModal()" class="btn-action btn-secondary" style="width:100%;">
+                        <i class="fa-solid fa-user-plus"></i> Ajouter un caissier
+                    </button>
+                </div>
+
                 <div class="card" style="margin-bottom:20px;">
                     <div class="card-title"><i class="fa-solid fa-shield-halved"></i> Sécurité du compte</div>
                     <div class="form-row" style="margin-bottom:14px;">
@@ -2681,6 +2715,9 @@
 
         // ── Phase 3 : programme avancé ──
         loadAdvancedProgram(card);
+
+        // ── Phase 4 #15 : caissiers ──
+        loadCashiers();
 
         // ── Phase 4 : géolocalisation status ──
         const geoChip = document.getElementById('geo-status-chip');
@@ -4849,6 +4886,86 @@
     // ═══════════════════════════════════════════════════════════
     //  IA ASSISTANT — Email writer, Reward suggester, Design studio
     // ═══════════════════════════════════════════════════════════
+
+    // ─── PHASE 4 #15 — Gestion des caissiers ────
+    async function sha256Hex(text) {
+        const buf = new TextEncoder().encode(text);
+        const hash = await crypto.subtle.digest('SHA-256', buf);
+        return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function loadCashiers() {
+        if (!currentMerchantId) return;
+        const box = document.getElementById('cashiers-list');
+        if (!box) return;
+        const { data, error } = await supabaseClient
+            .from('cashiers')
+            .select('id, name, role, active, created_at')
+            .eq('merchant_id', currentMerchantId)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            box.innerHTML = `<div style="padding:12px;color:#ff8a5c;font-size:12px;">⚠️ ${error.message}</div>`;
+            return;
+        }
+        if (!data || data.length === 0) {
+            box.innerHTML = `<div style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;border:1px dashed var(--glass-border);border-radius:10px;">
+                Aucun caissier configuré.<br><span style="font-size:10px;">Ajoutez votre première recrue ↓</span>
+            </div>`;
+            return;
+        }
+        const escape = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        box.innerHTML = data.map(c => `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:12px;">
+                <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#7c6af7,#00e8cc);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0d0c18;">${escape(c.name).charAt(0).toUpperCase()}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:13px;color:var(--text-main);">${escape(c.name)}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">${c.role === 'manager' ? '👔 Manager' : '👤 Caissier'} ${c.active ? '· actif' : '· inactif'}</div>
+                </div>
+                <button onclick="resetCashierPin(${c.id}, '${escape(c.name).replace(/'/g,"\\'")}')" title="Changer le PIN" style="background:rgba(255,255,255,0.05);border:none;color:var(--text-sub);width:30px;height:30px;border-radius:8px;cursor:pointer;">
+                    <i class="fa-solid fa-key"></i>
+                </button>
+                <button onclick="deleteCashier(${c.id}, '${escape(c.name).replace(/'/g,"\\'")}')" title="Supprimer" style="background:rgba(255,77,130,0.08);border:none;color:#ff8aaa;width:30px;height:30px;border-radius:8px;cursor:pointer;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function openAddCashierModal() {
+        const name = prompt('Nom du caissier (ex : Sophie) :');
+        if (!name || !name.trim()) return;
+        const pin = prompt(`Choisissez un PIN à 4 chiffres pour ${name.trim()} :`);
+        if (!pin || !/^\d{4,6}$/.test(pin)) {
+            showToast('warning', 'PIN invalide', 'Le PIN doit contenir 4 à 6 chiffres.');
+            return;
+        }
+        addCashier(name.trim(), pin);
+    }
+    async function addCashier(name, pin) {
+        const pin_hash = await sha256Hex(pin);
+        const { error } = await supabaseClient.from('cashiers').insert({
+            merchant_id: currentMerchantId, name, pin_hash, role: 'cashier', active: true
+        });
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+        showToast('success', '✓ Caissier ajouté', `${name} peut maintenant se connecter sur /caisse avec son PIN.`);
+        loadCashiers();
+    }
+    async function resetCashierPin(id, name) {
+        const pin = prompt(`Nouveau PIN pour ${name} (4-6 chiffres) :`);
+        if (!pin || !/^\d{4,6}$/.test(pin)) { showToast('warning', 'PIN invalide', '4-6 chiffres requis.'); return; }
+        const pin_hash = await sha256Hex(pin);
+        const { error } = await supabaseClient.from('cashiers').update({ pin_hash }).eq('id', id);
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+        showToast('success', '✓ PIN mis à jour', `Le PIN de ${name} a été changé.`);
+    }
+    async function deleteCashier(id, name) {
+        if (!confirm(`Supprimer le compte caissier de ${name} ?`)) return;
+        const { error } = await supabaseClient.from('cashiers').delete().eq('id', id);
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+        showToast('success', 'Caissier supprimé', `${name} ne peut plus se connecter au mode caisse.`);
+        loadCashiers();
+    }
 
     // ─── PHASE 4 #21 — Géolocalisation du commerce
     let pendingGeoLat = null;
