@@ -1,8 +1,7 @@
 // ════════════════════════════════════════════════════════════════
-//  Keepo — Cloudflare Pages Function : Proxy IA (Gemini Flash)
-//  Route : /api/ai-chat  (même domaine = pas de CORS)
-//  Variable d'env : GEMINI_API_KEY  (Cloudflare Pages → Settings → Variables)
-//  v2 - force redeploy
+//  Keepo — Cloudflare Pages Worker (Advanced mode)
+//  Intercepte /api/ai-chat → proxy Gemini Flash
+//  Tout le reste → assets statiques
 // ════════════════════════════════════════════════════════════════
 
 const GEMINI_MODEL = 'gemini-2.0-flash';
@@ -30,44 +29,34 @@ TON RÔLE :
 - N'invente JAMAIS de fonctionnalités qui n'existent pas.
 - Si on te demande quel modèle d'IA tu utilises, réponds : "Je suis l'Assistant Keepo, un outil interne basé sur de l'IA."`;
 
-// Handler universel — fonctionne avec toutes les versions de Cloudflare Pages
-export async function onRequest(context) {
-  const { request, env } = context;
+const jsonResponse = (obj, status = 200) =>
+  new Response(JSON.stringify(obj), {
+    status,
+    headers: { 'Content-Type': 'application/json' }
+  });
 
-  // Seul POST est accepté
+async function handleAiChat(request, env) {
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
-      status  : 405,
-      headers : { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ error: 'Method Not Allowed' }, 405);
   }
 
   const GEMINI_API_KEY = env.GEMINI_API_KEY || '';
   if (!GEMINI_API_KEY) {
-    return new Response(JSON.stringify({ error: 'GEMINI_API_KEY non configurée' }), {
-      status  : 500,
-      headers : { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ error: 'GEMINI_API_KEY non configurée' }, 500);
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Corps de requête invalide' }), {
-      status  : 400,
-      headers : { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ error: 'Corps de requête invalide' }, 400);
   }
 
   const messages = Array.isArray(body?.messages) ? body.messages : [];
   const ctx      = body?.userContext || {};
 
   if (messages.length === 0) {
-    return new Response(JSON.stringify({ error: 'Aucun message fourni' }), {
-      status  : 400,
-      headers : { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ error: 'Aucun message fourni' }, 400);
   }
 
   const userCtx = [
@@ -106,25 +95,30 @@ export async function onRequest(context) {
 
     if (!geminiRes.ok) {
       const errTxt = await geminiRes.text();
-      return new Response(JSON.stringify({ error: 'Erreur Gemini', details: errTxt.slice(0, 300) }), {
-        status  : 502,
-        headers : { 'Content-Type': 'application/json' }
-      });
+      return jsonResponse({ error: 'Erreur Gemini', details: errTxt.slice(0, 300) }, 502);
     }
 
     const data  = await geminiRes.json();
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
       || "Je n'ai pas pu générer de réponse. Reformulez votre question ?";
 
-    return new Response(JSON.stringify({ reply }), {
-      status  : 200,
-      headers : { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ reply });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Erreur serveur', details: String(err) }), {
-      status  : 500,
-      headers : { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ error: 'Erreur serveur', details: String(err) }, 500);
   }
 }
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    // Route API : /api/ai-chat
+    if (url.pathname === '/api/ai-chat') {
+      return handleAiChat(request, env);
+    }
+
+    // Tout le reste → assets statiques (HTML, CSS, JS, images)
+    return env.ASSETS.fetch(request);
+  }
+};
