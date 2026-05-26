@@ -4350,7 +4350,7 @@
             });
             const data = await res.json();
             if (!res.ok || !data.subject) {
-                showToast('error', 'Erreur IA', data?.error || 'Échec de génération.');
+                showToast('error', 'Erreur IA', (data?.error || 'Échec') + (data?.details ? ' — ' + String(data.details).slice(0,100) : ''));
                 if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer'; }
                 return;
             }
@@ -4393,7 +4393,7 @@
             });
             const data = await res.json();
             if (!res.ok || !Array.isArray(data.rewards)) {
-                showToast('error', 'Erreur IA', data?.error || 'Échec.');
+                showToast('error', 'Erreur IA', (data?.error || 'Échec') + (data?.details ? ' — ' + String(data.details).slice(0,100) : ''));
                 if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer 5 idées'; }
                 return;
             }
@@ -4464,7 +4464,7 @@
             });
             const data = await res.json();
             if (!res.ok || !data.bgColor) {
-                showToast('error', 'Erreur IA', data?.error || 'Échec.');
+                showToast('error', 'Erreur IA', (data?.error || 'Échec') + (data?.details ? ' — ' + String(data.details).slice(0,100) : ''));
                 if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer le design'; }
                 return;
             }

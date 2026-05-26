@@ -94,19 +94,22 @@ const json = (obj, status = 200) =>
     headers: { 'Content-Type': 'application/json' }
   });
 
-async function callGemini(env, { systemPrompt, contents, generationConfig = {} }) {
+async function callGemini(env, { systemPrompt, contents, generationConfig = {}, jsonMode = false }) {
   const GEMINI_API_KEY = env.GEMINI_API_KEY || '';
   if (!GEMINI_API_KEY) {
     return { error: 'GEMINI_API_KEY non configurée', status: 500 };
   }
 
+  const finalGenConfig = {
+    temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 600,
+    ...generationConfig
+  };
+  if (jsonMode) finalGenConfig.responseMimeType = 'application/json';
+
   const payload = {
     systemInstruction : { parts: [{ text: systemPrompt }] },
     contents,
-    generationConfig  : {
-      temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 600,
-      ...generationConfig
-    },
+    generationConfig  : finalGenConfig,
     safetySettings    : [
       { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_ONLY_HIGH' },
@@ -124,11 +127,16 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {} }
 
     if (!res.ok) {
       const errTxt = await res.text();
-      return { error: 'Erreur Gemini', details: errTxt.slice(0, 300), status: 502 };
+      console.log('Gemini error', res.status, errTxt);
+      return { error: 'Erreur Gemini ' + res.status, details: errTxt.slice(0, 500), status: 502 };
     }
 
     const data  = await res.json();
     const text  = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+    if (!text) {
+      console.log('Gemini empty response', JSON.stringify(data).slice(0, 500));
+      return { error: 'Réponse vide', details: JSON.stringify(data?.promptFeedback || data).slice(0, 300), status: 502 };
+    }
     return { text };
 
   } catch (err) {
@@ -241,7 +249,8 @@ Génère le JSON {subject, body}.`;
   const result = await callGemini(env, {
     systemPrompt: EMAIL_WRITER_PROMPT,
     contents: [{ role: 'user', parts: [{ text: userMsg }] }],
-    generationConfig: { maxOutputTokens: 500, temperature: 0.85 }
+    generationConfig: { maxOutputTokens: 800, temperature: 0.85 },
+    jsonMode: true
   });
   if (result.error) return json(result, result.status);
 
@@ -272,7 +281,8 @@ Propose 5 récompenses au format JSON {rewards:[...]}.`;
   const result = await callGemini(env, {
     systemPrompt: REWARD_SUGGEST_PROMPT,
     contents: [{ role: 'user', parts: [{ text: userMsg }] }],
-    generationConfig: { maxOutputTokens: 600, temperature: 0.6 }
+    generationConfig: { maxOutputTokens: 800, temperature: 0.6 },
+    jsonMode: true
   });
   if (result.error) return json(result, result.status);
 
@@ -306,7 +316,8 @@ Propose une palette + tagline au format JSON {bgColor, txtColor, borderColor, ta
   const result = await callGemini(env, {
     systemPrompt: DESIGN_STUDIO_PROMPT,
     contents: [{ role: 'user', parts: [{ text: userMsg }] }],
-    generationConfig: { maxOutputTokens: 300, temperature: 0.9 }
+    generationConfig: { maxOutputTokens: 500, temperature: 0.9 },
+    jsonMode: true
   });
   if (result.error) return json(result, result.status);
 
