@@ -437,9 +437,14 @@
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             text-align: center; border-radius: inherit; z-index: 10;
-            padding: 20px;
+            padding: 20px; cursor: pointer; transition: all .2s;
         }
-        .lock-overlay i { font-size: 22px; color: var(--essential-color); margin-bottom: 8px; }
+        .lock-overlay:hover {
+            background: rgba(15, 10, 25, 0.94);
+            transform: scale(1.01);
+        }
+        .lock-overlay:hover i { transform: scale(1.15); color: #ff8aaa; }
+        .lock-overlay i { font-size: 22px; color: var(--essential-color); margin-bottom: 8px; transition: all .2s; }
         .lock-overlay .lock-title {
             font-size: 12px; font-weight: 800;
             color: var(--essential-color);
@@ -447,6 +452,14 @@
             letter-spacing: 0.5px;
         }
         .lock-overlay .lock-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+        .lock-overlay .lock-cta {
+            margin-top: 10px;
+            background: linear-gradient(135deg, #ff4d82, #ffc34d);
+            color: #0d0c18; font-weight: 800;
+            padding: 6px 14px; border-radius: 50px;
+            font-size: 10px; letter-spacing: 0.5px;
+            font-family: 'Cabinet Grotesk', sans-serif;
+        }
 
         /* ─── TABS ─── */
         .tab-bar {
@@ -1118,6 +1131,159 @@
         .period-stat-delta.down { background: rgba(255,138,92,0.12); color: #ff8a5c; }
         .period-stat-delta.flat { background: rgba(255,255,255,0.05); color: var(--text-muted); }
 
+        /* ─── MODALE UPGRADE PRO SCALE ─── */
+        .upgrade-modal-backdrop {
+            position: fixed; inset: 0; z-index: 10000;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(14px);
+            display: none; align-items: center; justify-content: center;
+            padding: 20px; overflow-y: auto;
+        }
+        .upgrade-modal-backdrop.show { display: flex; animation: upgradeBackdropIn .3s; }
+        @keyframes upgradeBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .upgrade-modal {
+            background: linear-gradient(160deg, #1d1b30 0%, #0f0d1a 60%, #1a0d22 100%);
+            border: 1px solid rgba(255,77,130,0.3);
+            border-radius: 28px;
+            max-width: 640px; width: 100%;
+            box-shadow: 0 32px 100px rgba(0,0,0,0.7), 0 0 80px rgba(255,77,130,0.12);
+            position: relative; overflow: hidden;
+            animation: upgradeModalIn .42s cubic-bezier(.16,1,.3,1);
+            max-height: 92vh; overflow-y: auto;
+        }
+        @keyframes upgradeModalIn {
+            from { opacity: 0; transform: scale(.92) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .upgrade-modal::before {
+            content: ""; position: absolute; top: -100px; right: -100px;
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, rgba(255,77,130,0.25), transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        .upgrade-modal::after {
+            content: ""; position: absolute; bottom: -150px; left: -100px;
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, rgba(124,106,247,0.2), transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        .upgrade-modal-inner { position: relative; z-index: 1; padding: 36px 32px; }
+
+        .upgrade-close-btn {
+            position: absolute; top: 18px; right: 18px; z-index: 5;
+            background: rgba(255,255,255,0.06); border: none;
+            width: 36px; height: 36px; border-radius: 50%;
+            color: var(--text-sub); cursor: pointer; font-size: 14px;
+            transition: all .15s;
+        }
+        .upgrade-close-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); transform: rotate(90deg); }
+
+        .upgrade-crown {
+            width: 76px; height: 76px; margin: 0 auto 18px;
+            background: linear-gradient(135deg, #ff4d82, #ffc34d 50%, #ff4d82);
+            background-size: 200% 200%;
+            border-radius: 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 38px;
+            box-shadow: 0 12px 32px rgba(255,77,130,0.4);
+            animation: upgradeCrownPulse 3.5s ease-in-out infinite;
+        }
+        @keyframes upgradeCrownPulse {
+            0%, 100% { background-position: 0% 50%; transform: rotate(-2deg); }
+            50% { background-position: 100% 50%; transform: rotate(2deg); }
+        }
+
+        .upgrade-title {
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-size: 30px; text-align: center; margin-bottom: 6px;
+            background: linear-gradient(135deg, #fff 0%, #ff8aaa 50%, #c5b8ff 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+        }
+        .upgrade-sub {
+            text-align: center; color: var(--text-sub); font-size: 14px;
+            margin-bottom: 24px; line-height: 1.5;
+        }
+
+        .upgrade-price-box {
+            background: linear-gradient(135deg, rgba(255,77,130,0.1), rgba(124,106,247,0.06));
+            border: 1px solid rgba(255,77,130,0.3);
+            border-radius: 18px; padding: 20px;
+            text-align: center; margin-bottom: 24px;
+            position: relative; overflow: hidden;
+        }
+        .upgrade-price-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff4d82, #ffc34d);
+            color: #0d0c18; font-weight: 900;
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: 11px; letter-spacing: 1px;
+            padding: 5px 12px; border-radius: 50px;
+            margin-bottom: 12px;
+        }
+        .upgrade-price-val {
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-size: 52px; color: #fff; line-height: 1;
+            margin-bottom: 4px;
+        }
+        .upgrade-price-val .currency { font-size: 28px; vertical-align: top; margin-right: 2px; }
+        .upgrade-price-val .period { font-size: 16px; color: var(--text-muted); font-weight: 600; }
+        .upgrade-price-detail { font-size: 12px; color: var(--text-muted); }
+
+        .upgrade-benefits {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 540px) { .upgrade-benefits { grid-template-columns: 1fr; } }
+        .upgrade-benefit {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 12px; background: rgba(255,255,255,0.025);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+        }
+        .upgrade-benefit-check {
+            width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, #3ee36c, #00e8cc);
+            display: flex; align-items: center; justify-content: center;
+            color: #0d0c18; font-size: 11px; font-weight: 900;
+        }
+        .upgrade-benefit-text { font-size: 12.5px; line-height: 1.45; color: var(--text-sub); }
+        .upgrade-benefit-text strong { color: var(--text-main); font-weight: 700; }
+
+        .upgrade-cta-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff4d82 0%, #ffc34d 100%);
+            border: none; color: #0d0c18;
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-weight: 900; font-size: 16px;
+            padding: 16px 22px; border-radius: 14px;
+            cursor: pointer; transition: all .2s;
+            box-shadow: 0 10px 28px rgba(255,77,130,0.35);
+            margin-bottom: 10px;
+        }
+        .upgrade-cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(255,77,130,0.5);
+        }
+        .upgrade-cta-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .upgrade-secondary-btn {
+            width: 100%; background: rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border); color: var(--text-sub);
+            padding: 12px 18px; border-radius: 12px; cursor: pointer;
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 13px;
+            transition: all .15s;
+        }
+        .upgrade-secondary-btn:hover { background: rgba(255,255,255,0.07); color: var(--text-main); }
+
+        .upgrade-footer {
+            display: flex; align-items: center; justify-content: center; gap: 18px;
+            margin-top: 18px; padding-top: 18px;
+            border-top: 1px solid var(--glass-border);
+            font-size: 11px; color: var(--text-muted);
+        }
+        .upgrade-footer-item { display: flex; align-items: center; gap: 5px; }
+        .upgrade-footer-item i { color: #3ee36c; }
+
         /* ─── ÉTAT BLOQUÉ / FLOUTÉ POUR BOUTONS IA ─── */
         .btn-ai-locked {
             position: relative; cursor: not-allowed !important;
@@ -1315,7 +1481,7 @@
                     <div style="text-align:center;flex-shrink:0;">
                         <div id="upgrade-usage-display" style="font-family:'Cabinet Grotesk',sans-serif;font-size:28px;font-weight:900;color:var(--primary-accent);"></div>
                         <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;" id="upgrade-usage-label">membres actifs</div>
-                        <button onclick="startStripeUpgrade()"
+                        <button onclick="openUpgradeModal('Limites du plan Essential atteintes')"
                             style="background:linear-gradient(135deg,#ff4d82,#7c6af7);border:none;border-radius:50px;
                                padding:11px 22px;color:white;font-weight:800;font-size:13px;cursor:pointer;
                                font-family:'Cabinet Grotesk',sans-serif;white-space:nowrap;
@@ -3190,11 +3356,11 @@
             document.getElementById('lock-api-webhooks').outerHTML = "";
         } else {
             badge.innerText = "🏪 Essential"; badge.className = "plan-badge plan-essential";
-            const lockHTML = `<div class="lock-overlay"><i class="fa-solid fa-lock"></i><span class="lock-title">Exclusivité Pro Scale</span><span class="lock-subtitle">Passez à l'offre supérieure</span></div>`;
-            document.getElementById('lock-panier').innerHTML = lockHTML;
-            document.getElementById('lock-predictive').innerHTML = lockHTML;
-            document.getElementById('lock-export-csv').innerHTML = lockHTML;
-            document.getElementById('lock-api-webhooks').innerHTML = lockHTML;
+            const buildLock = (reason) => `<div class="lock-overlay" onclick="openUpgradeModal('${reason.replace(/'/g, "\\'")}')"><i class="fa-solid fa-lock"></i><span class="lock-title">Exclusivité Pro Scale</span><span class="lock-subtitle">Cliquez pour découvrir</span><span class="lock-cta">👑 PASSER PRO</span></div>`;
+            document.getElementById('lock-panier').innerHTML       = buildLock('Panier moyen fidélisé');
+            document.getElementById('lock-predictive').innerHTML   = buildLock('Intelligence prédictive');
+            document.getElementById('lock-export-csv').innerHTML   = buildLock('Export CSV illimité');
+            document.getElementById('lock-api-webhooks').innerHTML = buildLock('API & Webhooks');
         }
     }
 
@@ -3267,7 +3433,7 @@
 
     function regenerateMerchantQrUUID() {
         if (activeMerchantPlan === 'essential') {
-            showToast('warning', 'Plan Pro requis', 'La régénération du QR Code nécessite le plan Pro Scale.');
+            openUpgradeModal('Régénération du QR Code commerçant');
             return;
         }
         showToast('success', 'QR Code régénéré', 'Nouveau QR Code généré avec succès !');
@@ -4354,7 +4520,11 @@
 
     // ─── EXPORT & COUNTERS ───
     function executeHistoryCSVExport() {
-        showToast('warning', 'Plan Pro requis', 'L\'export CSV nécessite le plan Pro Scale.');
+        if (activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale') {
+            showToast('info', 'Bientôt', 'Export CSV en finalisation.');
+        } else {
+            openUpgradeModal('Export CSV illimité');
+        }
     }
 
     async function refreshDashboardCloudCounters() {
@@ -4874,6 +5044,102 @@
         requestAnimationFrame(update);
     }
 
+    // ═══════════════════════════════════════════════════════════
+    //  MODALE UPGRADE PRO SCALE
+    // ═══════════════════════════════════════════════════════════
+    const PRO_BENEFITS = [
+        { icon: '∞',  title: 'Membres illimités',          desc: 'Pas de plafond de 50 clients fidèles' },
+        { icon: '📊', title: 'Analytics premium',          desc: 'Heatmap, churn, top clients, comparaison' },
+        { icon: '🧠', title: 'Intelligence prédictive',    desc: 'IA d\'analyse d\'affluence en temps réel' },
+        { icon: '✨', title: 'Toutes les IA actives',      desc: 'Rédacteur emails, design, suggestions' },
+        { icon: '📥', title: 'Export CSV illimité',        desc: 'Toutes vos données téléchargeables' },
+        { icon: '🔌', title: 'API & Webhooks',             desc: 'Intégrez votre logiciel de caisse' },
+        { icon: '👥', title: 'Multi-caissiers illimités',  desc: 'Comptes employés avec PIN' },
+        { icon: '🎁', title: 'Panier moyen fidélisé',      desc: 'Suivi du CA généré par la fidélité' },
+        { icon: '🎯', title: 'Support prioritaire',        desc: 'Réponse en moins de 4h en semaine' },
+        { icon: '🏷️', title: 'Marque blanche',             desc: 'Vos couleurs sur l\'app client' },
+    ];
+
+    function openUpgradeModal(triggerReason) {
+        let modal = document.getElementById('upgradeModalBackdrop');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'upgradeModalBackdrop';
+            modal.className = 'upgrade-modal-backdrop';
+            modal.onclick = (e) => { if (e.target === modal) closeUpgradeModal(); };
+            document.body.appendChild(modal);
+        }
+
+        const reasonChip = triggerReason
+            ? `<div style="display:inline-block;background:rgba(255,77,130,0.12);border:1px solid rgba(255,77,130,0.3);color:#ff8aaa;padding:5px 12px;border-radius:50px;font-size:11px;font-weight:700;margin:0 auto 14px;font-family:'Cabinet Grotesk',sans-serif;">🔒 ${triggerReason}</div>`
+            : '';
+
+        const benefitsHtml = PRO_BENEFITS.map(b => `
+            <div class="upgrade-benefit">
+                <div class="upgrade-benefit-check"><i class="fa-solid fa-check"></i></div>
+                <div class="upgrade-benefit-text"><strong>${b.title}</strong><br>${b.desc}</div>
+            </div>
+        `).join('');
+
+        modal.innerHTML = `
+            <div class="upgrade-modal">
+                <button class="upgrade-close-btn" onclick="closeUpgradeModal()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+                <div class="upgrade-modal-inner">
+                    <div class="upgrade-crown">👑</div>
+                    <div style="text-align:center;">${reasonChip}</div>
+                    <h2 class="upgrade-title">Passer à Pro Scale</h2>
+                    <p class="upgrade-sub">Débloquez tout le potentiel de Keepo et faites passer votre programme<br>de fidélité au niveau supérieur.</p>
+
+                    <div class="upgrade-price-box">
+                        <div class="upgrade-price-tag">⚡ OFFRE DE LANCEMENT</div>
+                        <div class="upgrade-price-val">
+                            <span class="currency">€</span>29<span class="period">/mois</span>
+                        </div>
+                        <div class="upgrade-price-detail">
+                            <strike style="color:rgba(255,255,255,0.3);margin-right:6px;">49 €</strike>
+                            <span style="color:#ffc34d;font-weight:700;">Sans engagement</span> · Annulez en 1 clic
+                        </div>
+                    </div>
+
+                    <div style="font-size:12px;color:var(--text-muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;text-align:center;font-family:'Cabinet Grotesk',sans-serif;">
+                        ⭐ Tout ce que vous obtenez
+                    </div>
+
+                    <div class="upgrade-benefits">
+                        ${benefitsHtml}
+                    </div>
+
+                    <button onclick="confirmUpgradeFromModal()" id="upgradeModalCta" class="upgrade-cta-btn">
+                        <i class="fa-solid fa-crown"></i>&nbsp; Passer Pro Scale maintenant
+                    </button>
+                    <button onclick="closeUpgradeModal()" class="upgrade-secondary-btn">
+                        Plus tard
+                    </button>
+
+                    <div class="upgrade-footer">
+                        <div class="upgrade-footer-item"><i class="fa-solid fa-shield-halved"></i> Paiement sécurisé Stripe</div>
+                        <div class="upgrade-footer-item"><i class="fa-solid fa-rotate-left"></i> Remboursé sous 14j</div>
+                        <div class="upgrade-footer-item"><i class="fa-solid fa-clock"></i> Activation immédiate</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeUpgradeModal() {
+        const modal = document.getElementById('upgradeModalBackdrop');
+        if (modal) modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    async function confirmUpgradeFromModal() {
+        const btn = document.getElementById('upgradeModalCta');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Redirection vers Stripe…'; }
+        await startStripeUpgrade();
+    }
+    // ESC ferme la modale
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUpgradeModal(); });
+
     async function handleLogout() {
         if (realTimeHtml5QrScanner) {
             try { await realTimeHtml5QrScanner.stop(); realTimeHtml5QrScanner.clear(); } catch(e) {}
@@ -5093,14 +5359,13 @@
         }
     }
 
-    // Bouton bloqué : message différent selon le plan
+    // Bouton bloqué : Essential → modale upgrade, Pro → toast "bientôt"
     function aiFeatureLockedClick() {
         if (activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale') {
             showToast('info', '⏳ Bientôt disponible',
                 'Cette fonctionnalité IA arrive dans une prochaine mise à jour. Restez connecté !');
         } else {
-            showToast('warning', '🔒 Exclusivité Pro Scale',
-                'Les fonctionnalités IA sont réservées aux abonnés Pro Scale. Passez à l\'offre supérieure pour en profiter.');
+            openUpgradeModal('Fonctionnalité IA réservée aux Pro Scale');
         }
     }
 
