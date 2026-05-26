@@ -4,7 +4,7 @@
 //  Tout le reste → assets statiques
 // ════════════════════════════════════════════════════════════════
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_URL   = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const SYSTEM_PROMPT = `Tu es l'Assistant Keepo, le support officiel pour les commerçants utilisant Keepo, une plateforme de fidélité digitale française.
