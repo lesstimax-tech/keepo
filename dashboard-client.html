@@ -2289,14 +2289,28 @@
     }
 
     // ─── Modale parrainage : entrer un code ───
-    function openReferralRedeem() {
+    async function openReferralRedeem() {
         if (!walletCache?.length) {
             showSnack('Rejoignez d\'abord au moins une enseigne via QR code');
             return;
         }
         const sel = document.getElementById('referral-merchant-select');
         if (sel) {
-            sel.innerHTML = walletCache.map(c => `<option value="${c.merchant_id}">${(c.merchant_profile?.name || 'Commerce').replace(/</g,'&lt;')}</option>`).join('');
+            // Récupère les VRAIS noms d'enseignes (title de merchant_cards) — pas le nom du gérant
+            const merchantIds = walletCache.map(c => c.merchant_id);
+            const { data: cards } = await supabaseClient
+                .from('merchant_cards')
+                .select('merchant_id, title')
+                .in('merchant_id', merchantIds);
+
+            const titleMap = {};
+            (cards || []).forEach(mc => { titleMap[mc.merchant_id] = mc.title; });
+
+            sel.innerHTML = walletCache.map(c => {
+                const shopName = titleMap[c.merchant_id] || c.merchant_profile?.name || 'Commerce partenaire';
+                const pts = c.points_balance || 0;
+                return `<option value="${c.merchant_id}">${shopName.replace(/</g,'&lt;')} — ${pts} pts</option>`;
+            }).join('');
         }
         document.getElementById('referral-code-input').value = '';
         document.getElementById('referralRedeemSheet').style.display = 'flex';
