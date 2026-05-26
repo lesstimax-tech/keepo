@@ -900,3 +900,66 @@ end;
 $$;
 
 grant execute on function public.apply_loyalty_credit to authenticated;
+
+
+-- ════════════════════════════════════════════════════════
+--  PHASE 4 — Architecture pro
+-- ════════════════════════════════════════════════════════
+
+-- ── #21 GÉOLOCALISATION : lat/lng sur les commerces ──
+alter table public.merchant_cards add column if not exists latitude  numeric(9,6);
+alter table public.merchant_cards add column if not exists longitude numeric(9,6);
+
+create index if not exists idx_merchant_cards_geo
+  on public.merchant_cards(latitude, longitude)
+  where latitude is not null and longitude is not null;
+
+-- ── #15 MULTI-CAISSIERS : employés rattachés à un commerce ──
+create table if not exists public.cashiers (
+  id           bigserial primary key,
+  merchant_id  uuid not null references public.profiles(id) on delete cascade,
+  name         text not null,
+  pin_hash     text not null,
+  role         text not null default 'cashier' check (role in ('cashier','manager')),
+  active       boolean not null default true,
+  created_at   timestamptz default now()
+);
+
+alter table public.cashiers enable row level security;
+
+drop policy if exists "cashiers_select_own" on public.cashiers;
+drop policy if exists "cashiers_write_own"  on public.cashiers;
+
+create policy "cashiers_select_own" on public.cashiers
+  for select using (auth.uid() = merchant_id);
+
+create policy "cashiers_write_own" on public.cashiers
+  for all using (auth.uid() = merchant_id)
+  with check (auth.uid() = merchant_id);
+
+create table if not exists public.cashier_audit (
+  id           bigserial primary key,
+  merchant_id  uuid not null references public.profiles(id) on delete cascade,
+  cashier_id   bigint references public.cashiers(id) on delete set null,
+  cashier_name text,
+  action       text not null,
+  client_id    uuid,
+  meta         jsonb,
+  created_at   timestamptz default now()
+);
+
+alter table public.cashier_audit enable row level security;
+
+drop policy if exists "audit_select_own" on public.cashier_audit;
+drop policy if exists "audit_insert_any" on public.cashier_audit;
+
+create policy "audit_select_own" on public.cashier_audit
+  for select using (auth.uid() = merchant_id);
+
+create policy "audit_insert_any" on public.cashier_audit
+  for insert with check (true);
+
+-- ── #14 STRIPE : références client + abonnement ──
+alter table public.profiles add column if not exists stripe_customer_id     text;
+alter table public.profiles add column if not exists stripe_subscription_id text;
+alter table public.profiles add column if not exists plan_renews_at         timestamptz;

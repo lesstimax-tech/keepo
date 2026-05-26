@@ -1878,6 +1878,21 @@
                         <label>Adresse complète</label>
                         <input type="text" id="settings-address" placeholder="Ex: 12 rue de la Paix, Paris">
                     </div>
+
+                    <!-- Géolocalisation -->
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;">
+                            <i class="fa-solid fa-location-dot" style="color:#00e8cc;"></i> Géolocalisation
+                            <span id="geo-status-chip" style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;">Non géolocalisé</span>
+                        </label>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0 0 10px;line-height:1.5;">
+                            Permet aux clients de découvrir votre commerce sur la carte "près de moi".
+                        </p>
+                        <button type="button" onclick="captureMerchantGeolocation()" class="btn-action btn-secondary" style="width:100%;">
+                            <i class="fa-solid fa-crosshairs"></i> Capturer ma position actuelle (GPS)
+                        </button>
+                    </div>
+
                     <button onclick="saveBusinessSettings()" class="btn-action"><i class="fa-solid fa-floppy-disk"></i> Enregistrer toutes les informations</button>
                 </div>
 
@@ -2470,7 +2485,7 @@
 
             const { data: existingCard } = await supabaseClient
                 .from('merchant_cards')
-                .select('title, color, address, points_per_euro, studio_json, referral_bonus, birthday_bonus, wheel_visits_required, wheel_enabled, tier_silver_threshold, tier_gold_threshold, tier_silver_multiplier, tier_gold_multiplier')
+                .select('title, color, address, points_per_euro, studio_json, referral_bonus, birthday_bonus, wheel_visits_required, wheel_enabled, tier_silver_threshold, tier_gold_threshold, tier_silver_multiplier, tier_gold_multiplier, latitude, longitude')
                 .eq('merchant_id', currentMerchantId)
                 .maybeSingle();
 
@@ -2666,6 +2681,18 @@
 
         // ── Phase 3 : programme avancé ──
         loadAdvancedProgram(card);
+
+        // ── Phase 4 : géolocalisation status ──
+        const geoChip = document.getElementById('geo-status-chip');
+        if (geoChip) {
+            if (card?.latitude && card?.longitude) {
+                geoChip.innerHTML = `<i class="fa-solid fa-check"></i> Localisé (${Number(card.latitude).toFixed(3)}, ${Number(card.longitude).toFixed(3)})`;
+                geoChip.style.color = '#3ee36c';
+            } else {
+                geoChip.innerHTML = 'Non géolocalisé';
+                geoChip.style.color = '';
+            }
+        }
 
         // ── Taux de conversion → reconstruire les deux inputs ──
         if (card && card.points_per_euro) {
@@ -4822,6 +4849,47 @@
     // ═══════════════════════════════════════════════════════════
     //  IA ASSISTANT — Email writer, Reward suggester, Design studio
     // ═══════════════════════════════════════════════════════════
+
+    // ─── PHASE 4 #21 — Géolocalisation du commerce
+    let pendingGeoLat = null;
+    let pendingGeoLng = null;
+
+    function captureMerchantGeolocation() {
+        const chip = document.getElementById('geo-status-chip');
+        if (!navigator.geolocation) {
+            showToast('error', 'Non supporté', 'Votre navigateur ne supporte pas la géolocalisation.');
+            return;
+        }
+        if (chip) { chip.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localisation…'; chip.style.color = '#c5b8ff'; }
+        navigator.geolocation.getCurrentPosition(
+            async pos => {
+                const lat = +pos.coords.latitude.toFixed(6);
+                const lng = +pos.coords.longitude.toFixed(6);
+                pendingGeoLat = lat;
+                pendingGeoLng = lng;
+                // Sauvegarde immédiate dans merchant_cards
+                const { error } = await supabaseClient.from('merchant_cards')
+                    .update({ latitude: lat, longitude: lng, updated_at: new Date().toISOString() })
+                    .eq('merchant_id', currentMerchantId);
+                if (error) {
+                    showToast('error', 'Erreur', error.message);
+                    if (chip) { chip.innerHTML = '⚠️ Erreur'; chip.style.color = '#ff8a5c'; }
+                } else {
+                    showToast('success', '📍 Position enregistrée', `Lat: ${lat}, Lng: ${lng}`);
+                    if (chip) { chip.innerHTML = `<i class="fa-solid fa-check"></i> Localisé (${lat.toFixed(3)}, ${lng.toFixed(3)})`; chip.style.color = '#3ee36c'; }
+                }
+            },
+            err => {
+                let msg = 'Impossible de récupérer votre position';
+                if (err.code === 1) msg = 'Permission refusée — autorisez la géolocalisation dans votre navigateur';
+                else if (err.code === 2) msg = 'Position indisponible (GPS coupé ?)';
+                else if (err.code === 3) msg = 'Délai dépassé, réessayez';
+                showToast('error', 'Géoloc', msg);
+                if (chip) { chip.innerHTML = '⚠️ ' + msg; chip.style.color = '#ff8a5c'; }
+            },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+    }
 
     // ─── PHASE 3 — Sauvegarde du programme avancé (parrainage / VIP / anniv / roue)
     async function loadAdvancedProgram(card) {

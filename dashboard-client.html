@@ -885,8 +885,15 @@
     <!-- ═══════════ VUE 1 : PORTEFEUILLE ═══════════ -->
     <div id="view-wallet" class="app-view active">
 
-        <h2 class="view-title">Mes Cartes</h2>
-        <p class="view-sub">Appuyez sur une carte pour présenter votre QR Code.</p>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div>
+                <h2 class="view-title">Mes Cartes</h2>
+                <p class="view-sub">Appuyez sur une carte pour présenter votre QR Code.</p>
+            </div>
+            <button onclick="openDiscoverNearby()" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);border:none;color:#0d0c18;font-weight:700;padding:10px 16px;border-radius:50px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 4px 14px rgba(124,106,247,0.25);">
+                <i class="fa-solid fa-location-dot"></i>&nbsp;Découvrir
+            </button>
+        </div>
 
         <!-- stats bar -->
         <div class="stats-bar">
@@ -1138,6 +1145,46 @@
         </button>
     </div>
 </div>
+
+<!-- ═══════════ PHASE 4 — Découvrir des commerces près de moi ═══════════ -->
+<div class="popup-overlay" id="discoverSheet" onclick="closeDiscoverNearby()">
+    <div class="popup-card" onclick="event.stopPropagation()" style="max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+        <div class="sheet-handle"></div>
+        <div class="modal-merchant-chip"><i class="fa-solid fa-location-dot" style="font-size:11px;"></i> Près de vous</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Commerces partenaires</h3>
+        <p id="discover-status" style="font-size:12px;color:var(--muted);margin-bottom:14px;">Activez votre position pour découvrir les enseignes près de vous.</p>
+        <div id="discover-results" style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:14px;"></div>
+        <button onclick="closeDiscoverNearby()" class="modal-close-btn">Fermer</button>
+    </div>
+</div>
+
+<style>
+.discover-merchant-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+    text-align: left;
+}
+.discover-merchant-row.joined {
+    background: linear-gradient(135deg, rgba(0,232,204,0.07), rgba(124,106,247,0.05));
+    border-color: rgba(0,232,204,0.25);
+}
+.discover-merchant-avatar {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #7c6af7, #00e8cc);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 900; color: #0d0c18; font-size: 18px;
+    flex-shrink: 0;
+}
+.discover-merchant-info { flex: 1; min-width: 0; }
+.discover-merchant-name { font-weight: 700; font-size: 14px; color: #fff; }
+.discover-merchant-addr { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.discover-distance-chip {
+    background: rgba(0,232,204,0.12); border: 1px solid rgba(0,232,204,0.25);
+    color: #00e8cc; padding: 4px 10px; border-radius: 50px;
+    font-weight: 700; font-size: 11px; white-space: nowrap;
+}
+</style>
 
 <!-- ═══════════ PHASE 3 — Sheets : Wheel / Gift / Referral ═══════════ -->
 <div class="popup-overlay" id="wheelSheet" onclick="closeWheelSheet()">
@@ -2236,6 +2283,81 @@
         await stopCameraScanner();
         await supabaseClient.auth.signOut();
         window.location.href = '/connexion';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PHASE 4 #21 — Découvrir des commerces près de moi
+    // ═══════════════════════════════════════════════════════════
+    function openDiscoverNearby() {
+        document.getElementById('discoverSheet').style.display = 'flex';
+        document.getElementById('discover-status').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Localisation en cours…';
+        document.getElementById('discover-results').innerHTML = '';
+        if (!navigator.geolocation) {
+            document.getElementById('discover-status').innerText = 'Votre navigateur ne supporte pas la géolocalisation.';
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            async pos => {
+                const userLat = pos.coords.latitude;
+                const userLng = pos.coords.longitude;
+                await loadNearbyMerchants(userLat, userLng);
+            },
+            err => {
+                let msg = 'Position indisponible';
+                if (err.code === 1) msg = 'Autorisez la géolocalisation pour découvrir les commerces près de vous.';
+                document.getElementById('discover-status').innerText = msg;
+            },
+            { enableHighAccuracy: false, timeout: 8000 }
+        );
+    }
+    function closeDiscoverNearby() {
+        document.getElementById('discoverSheet').style.display = 'none';
+    }
+    async function loadNearbyMerchants(userLat, userLng) {
+        const { data: merchants } = await supabaseClient
+            .from('merchant_cards')
+            .select('merchant_id, title, address, latitude, longitude')
+            .not('latitude', 'is', null)
+            .not('longitude', 'is', null);
+
+        if (!merchants || merchants.length === 0) {
+            document.getElementById('discover-status').innerText = 'Aucun commerce géolocalisé pour le moment. Revenez bientôt !';
+            return;
+        }
+
+        // Distance Haversine
+        const distKm = (la1, lo1, la2, lo2) => {
+            const R = 6371;
+            const toRad = d => d * Math.PI / 180;
+            const dLat = toRad(la2 - la1), dLng = toRad(lo2 - lo1);
+            const a = Math.sin(dLat/2)**2 + Math.cos(toRad(la1)) * Math.cos(toRad(la2)) * Math.sin(dLng/2)**2;
+            return 2 * R * Math.asin(Math.sqrt(a));
+        };
+
+        const withDist = merchants.map(m => ({
+            ...m, distance: distKm(userLat, userLng, Number(m.latitude), Number(m.longitude))
+        })).sort((a, b) => a.distance - b.distance);
+
+        const joinedIds = new Set((walletCache || []).map(c => c.merchant_id));
+        document.getElementById('discover-status').innerHTML = `<i class="fa-solid fa-check"></i>&nbsp; ${withDist.length} commerce${withDist.length>1?'s':''} trouvé${withDist.length>1?'s':''} à proximité`;
+
+        const escape = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+        document.getElementById('discover-results').innerHTML = withDist.slice(0, 30).map(m => {
+            const joined = joinedIds.has(m.merchant_id);
+            const distLabel = m.distance < 1
+                ? `${Math.round(m.distance * 1000)} m`
+                : `${m.distance.toFixed(1)} km`;
+            const initial = (m.title || '?').charAt(0).toUpperCase();
+            return `<div class="discover-merchant-row ${joined ? 'joined' : ''}">
+                <div class="discover-merchant-avatar">${initial}</div>
+                <div class="discover-merchant-info">
+                    <div class="discover-merchant-name">${escape(m.title || 'Commerce partenaire')} ${joined ? '<span style="font-size:10px;color:#00e8cc;margin-left:4px;">✓ Carte active</span>' : ''}</div>
+                    <div class="discover-merchant-addr">${escape(m.address || '')}</div>
+                </div>
+                <div class="discover-distance-chip">${distLabel}</div>
+            </div>`;
+        }).join('');
     }
 
     // ═══════════════════════════════════════════════════════════
