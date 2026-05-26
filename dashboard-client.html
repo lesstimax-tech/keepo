@@ -283,6 +283,81 @@
             display: flex; align-items: center; gap: 4px;
         }
 
+        /* ─── PHASE 3 — Tier badges, Wheel, Gift cards ─── */
+        .tier-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 50px;
+            font-size: 9px; font-weight: 900; letter-spacing: 0.8px;
+            font-family: 'Syne', sans-serif; margin-bottom: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .tier-bronze { background: linear-gradient(135deg, #cd8158, #a05f3c); color: #fff; }
+        .tier-silver { background: linear-gradient(135deg, #d8dce5, #8d92a4); color: #1a1828; }
+        .tier-gold   { background: linear-gradient(135deg, #ffd34d, #ff9a3c); color: #1a1828; }
+
+        /* Wheel CSS */
+        .wheel-container {
+            width: 220px; height: 220px; margin: 18px auto; position: relative;
+        }
+        .wheel-disc {
+            width: 100%; height: 100%; border-radius: 50%; position: relative;
+            background: conic-gradient(
+                #7c6af7 0deg 60deg, #00e8cc 60deg 120deg,
+                #ffc34d 120deg 180deg, #ff8a5c 180deg 240deg,
+                #c5b8ff 240deg 300deg, #3ee36c 300deg 360deg
+            );
+            box-shadow: 0 0 40px rgba(124,106,247,0.4), inset 0 0 0 6px rgba(255,255,255,0.06);
+            transition: transform 4s cubic-bezier(.17,.67,.3,1);
+        }
+        .wheel-disc.spinning { transform: rotate(var(--target-rotation, 1080deg)); }
+        .wheel-arrow {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
+            border-top: 24px solid #fff; z-index: 5;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+        .wheel-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 70px; height: 70px; background: #0d0c18; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; box-shadow: inset 0 0 0 3px #00e8cc;
+        }
+        .wheel-result {
+            text-align: center; padding: 16px; margin-top: 12px;
+            background: linear-gradient(135deg, rgba(124,106,247,0.1), rgba(0,232,204,0.08));
+            border: 1px solid rgba(0,232,204,0.3); border-radius: 16px;
+            display: none;
+        }
+        .wheel-result.show { display: block; animation: wheelResultIn .4s; }
+        @keyframes wheelResultIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Card-detail action buttons */
+        .card-detail-action {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+            cursor: pointer; transition: all .15s; width: 100%;
+            color: #fff; font-family: inherit; font-size: 13px; text-align: left;
+        }
+        .card-detail-action:hover { background: rgba(124,106,247,0.1); border-color: rgba(124,106,247,0.3); }
+        .card-detail-action.disabled { opacity: 0.5; cursor: not-allowed; }
+        .card-detail-action-icon { font-size: 18px; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .card-detail-action-text { flex: 1; }
+        .card-detail-action-text small { color: var(--muted); font-size: 11px; display: block; margin-top: 2px; }
+
+        /* Referral box on profile */
+        .referral-box {
+            background: linear-gradient(135deg, rgba(124,106,247,0.08), rgba(0,232,204,0.06));
+            border: 1px solid rgba(124,106,247,0.25); border-radius: 16px;
+            padding: 16px; margin-bottom: 14px;
+        }
+        .referral-code {
+            font-family: 'Syne', sans-serif; font-weight: 900; font-size: 24px;
+            letter-spacing: 4px; color: #fff; text-align: center;
+            background: rgba(0,0,0,0.4); padding: 12px;
+            border-radius: 12px; margin: 10px 0;
+            border: 2px dashed rgba(124,106,247,0.4);
+        }
+
         /* ─── empty wallet ─── */
         .empty-wallet {
             text-align: center; padding: 52px 24px;
@@ -925,6 +1000,44 @@
             </div>
         </div>
 
+        <!-- ═══════════ PHASE 3 — Parrainage & Anniversaire ═══════════ -->
+        <div class="section-label" style="margin-top:20px;">Mon programme avantages</div>
+
+        <div class="referral-box">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="font-size:18px;">👥</span>
+                <span style="font-weight:700;font-size:14px;color:#fff;">Mon code de parrainage</span>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.5;">
+                Partagez ce code avec vos proches. Quand ils l'utilisent dans une enseigne où vous êtes déjà inscrit, <strong style="color:#c5b8ff;">vous recevez tous les deux des points bonus</strong>.
+            </p>
+            <div class="referral-code" id="my-referral-code">------</div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="copyMyReferralCode()" class="profile-action-btn" style="flex:1;justify-content:center;padding:10px;">
+                    <i class="fa-solid fa-copy"></i> <span>Copier</span>
+                </button>
+                <button onclick="openReferralRedeem()" class="profile-action-btn" style="flex:1;justify-content:center;padding:10px;">
+                    <i class="fa-solid fa-ticket"></i> <span>J'ai un code</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="referral-box" style="background:linear-gradient(135deg,rgba(255,138,92,0.08),rgba(255,195,77,0.06));border-color:rgba(255,138,92,0.25);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="font-size:18px;">🎂</span>
+                <span style="font-weight:700;font-size:14px;color:#fff;">Date d'anniversaire</span>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin:0 0 10px;line-height:1.5;">
+                Renseignez votre date pour recevoir un cadeau automatique chaque année 🎁
+            </p>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input type="date" id="my-birthday-input" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,138,92,0.3);color:#fff;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px;">
+                <button onclick="saveMyBirthday()" class="profile-action-btn" style="padding:10px 16px;background:linear-gradient(135deg,#ff8a5c,#ffc34d);color:#0d0c18;font-weight:700;border:none;">
+                    <i class="fa-solid fa-check"></i> <span>Enregistrer</span>
+                </button>
+            </div>
+        </div>
+
         <div class="section-label" style="margin-top:20px;">Actions du compte</div>
         <div class="profile-actions">
             <button class="profile-action-btn" onclick="openClientAiChat()">
@@ -1000,9 +1113,103 @@
             </div>
         </div>
 
+        <!-- Actions Phase 3 -->
+        <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0;">
+            <button id="qrModalWheelBtn" onclick="openWheelSheet()" class="card-detail-action" style="display:none;">
+                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#7c6af7,#c5b8ff);">🎰</div>
+                <div class="card-detail-action-text">
+                    <span id="qrModalWheelLabel">Roue de la fortune</span>
+                    <small id="qrModalWheelSub">Bientôt débloquée…</small>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color:var(--muted);"></i>
+            </button>
+            <button onclick="openGiftSheet()" class="card-detail-action">
+                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#ff8a5c,#ffc34d);">🎁</div>
+                <div class="card-detail-action-text">
+                    <span>Cartes cadeaux</span>
+                    <small>Offrir des points ou en recevoir</small>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color:var(--muted);"></i>
+            </button>
+        </div>
+
         <button class="modal-close-btn" onclick="closeQrModal()">
             <i class="fa-solid fa-xmark"></i> Fermer
         </button>
+    </div>
+</div>
+
+<!-- ═══════════ PHASE 3 — Sheets : Wheel / Gift / Referral ═══════════ -->
+<div class="popup-overlay" id="wheelSheet" onclick="closeWheelSheet()">
+    <div class="popup-card" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="modal-merchant-chip"><i class="fa-solid fa-circle-dot" style="font-size:11px;"></i> Roue de la fortune</div>
+        <h3 id="wheel-merchant-name" style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;"></h3>
+        <p id="wheel-status-text" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></p>
+        <div class="wheel-container">
+            <div class="wheel-arrow"></div>
+            <div class="wheel-disc" id="wheel-disc"></div>
+            <div class="wheel-center">🎯</div>
+        </div>
+        <div id="wheel-result" class="wheel-result"></div>
+        <button id="wheel-spin-btn" onclick="doSpinWheel()" class="modal-close-btn" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;border:none;font-weight:800;font-family:'Syne',sans-serif;">
+            <i class="fa-solid fa-rotate"></i> Tourner la roue
+        </button>
+        <button onclick="closeWheelSheet()" class="modal-close-btn" style="margin-top:8px;">Fermer</button>
+    </div>
+</div>
+
+<div class="popup-overlay" id="giftSheet" onclick="closeGiftSheet()">
+    <div class="popup-card" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Cartes cadeaux</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;">Offrir des points</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Convertissez vos points en code cadeau à partager.</p>
+        <div id="gift-merchant-info" style="background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:13px;color:#fff;text-align:left;"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:13px;color:var(--muted);">Offrir</span>
+            <input type="number" id="gift-amount" min="10" step="10" placeholder="100" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(124,106,247,0.3);color:#fff;padding:10px;border-radius:10px;font-weight:700;text-align:center;font-family:inherit;">
+            <span style="font-size:13px;color:var(--muted);">points</span>
+        </div>
+        <input type="text" id="gift-message" placeholder="Petit mot pour le destinataire (optionnel)" style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(124,106,247,0.2);color:#fff;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px;margin-bottom:14px;box-sizing:border-box;">
+        <div id="gift-result" style="display:none;background:linear-gradient(135deg,rgba(0,232,204,0.1),rgba(124,106,247,0.08));border:1px solid rgba(0,232,204,0.3);border-radius:12px;padding:14px;margin-bottom:12px;"></div>
+        <button id="gift-create-btn" onclick="doCreateGiftCard()" class="modal-close-btn" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;border:none;font-weight:800;">
+            <i class="fa-solid fa-paper-plane"></i> Générer le code
+        </button>
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin:14px 0 8px;">— ou —</div>
+        <button onclick="openRedeemGiftCard()" class="modal-close-btn">
+            <i class="fa-solid fa-ticket"></i> J'ai reçu une carte cadeau
+        </button>
+        <button onclick="closeGiftSheet()" class="modal-close-btn" style="margin-top:8px;">Fermer</button>
+    </div>
+</div>
+
+<div class="popup-overlay" id="referralRedeemSheet" onclick="closeReferralRedeem()">
+    <div class="popup-card" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="modal-merchant-chip"><i class="fa-solid fa-ticket" style="font-size:11px;"></i> Code de parrainage</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Utiliser un code</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Choisissez l'enseigne dans laquelle utiliser ce code, puis entrez-le.</p>
+        <select id="referral-merchant-select" style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(124,106,247,0.3);color:#fff;padding:12px;border-radius:12px;font-family:inherit;font-size:13px;margin-bottom:10px;"></select>
+        <input type="text" id="referral-code-input" placeholder="ABC123" maxlength="10" style="width:100%;background:rgba(0,0,0,0.4);border:2px dashed rgba(124,106,247,0.4);color:#fff;padding:14px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
+        <button onclick="doRedeemReferral()" class="modal-close-btn" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;border:none;font-weight:800;">
+            <i class="fa-solid fa-check"></i> Valider le parrainage
+        </button>
+        <button onclick="closeReferralRedeem()" class="modal-close-btn" style="margin-top:8px;">Annuler</button>
+    </div>
+</div>
+
+<div class="popup-overlay" id="redeemGiftSheet" onclick="closeRedeemGift()">
+    <div class="popup-card" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Réclamer une carte</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Code cadeau reçu</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Entrez le code à 8 caractères reçu par message.</p>
+        <input type="text" id="redeem-gift-input" placeholder="ABC12345" maxlength="10" style="width:100%;background:rgba(0,0,0,0.4);border:2px dashed rgba(0,232,204,0.4);color:#fff;padding:14px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
+        <button onclick="doRedeemGift()" class="modal-close-btn" style="background:linear-gradient(135deg,#3ee36c,#00e8cc);color:#0d0c18;border:none;font-weight:800;">
+            <i class="fa-solid fa-check"></i> Récupérer les points
+        </button>
+        <button onclick="closeRedeemGift()" class="modal-close-btn" style="margin-top:8px;">Annuler</button>
     </div>
 </div>
 
@@ -1254,6 +1461,7 @@
         splashProgress(80, 'Récupération des cartes');
         loadClientTheme(); // thème personnalisé avec ID connu
         await loadClientWallet();
+        await loadMyPhase3Profile();
 
         splashHide(displayName);
     });
@@ -1275,7 +1483,7 @@
 
         const { data: walletData, error } = await supabaseClient
             .from('loyalty_balances')
-            .select(`id, points_balance, merchant_id, merchant_profile:merchant_id ( name )`)
+            .select(`id, points_balance, lifetime_points, merchant_id, merchant_profile:merchant_id ( name )`)
             .eq('client_id', currentClientId);
 
         if (error) {
@@ -1300,7 +1508,7 @@
                     .order('points_required', { ascending: true }),
                 supabaseClient
                     .from('merchant_cards')
-                    .select('merchant_id, title, color, studio_json')
+                    .select('merchant_id, title, color, studio_json, tier_silver_threshold, tier_gold_threshold, wheel_enabled, wheel_visits_required')
                     .in('merchant_id', merchantIds)
             ]);
 
@@ -1374,6 +1582,19 @@
                 ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,${cardOverlayOpacity});border-radius:inherit;pointer-events:none;z-index:0;"></div>`
                 : '';
 
+            // ── VIP Tier badge ──
+            const lifetime = card.lifetime_points || 0;
+            const silverThr = design.tier_silver_threshold ?? 500;
+            const goldThr   = design.tier_gold_threshold   ?? 2000;
+            let tierBadge = '';
+            if (lifetime >= goldThr) {
+                tierBadge = `<div class="tier-badge tier-gold" title="Niveau Gold — multiplicateur appliqué">🥇 GOLD</div>`;
+            } else if (lifetime >= silverThr) {
+                tierBadge = `<div class="tier-badge tier-silver" title="Niveau Silver — multiplicateur appliqué">🥈 SILVER</div>`;
+            } else {
+                tierBadge = `<div class="tier-badge tier-bronze" title="Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver">🥉 BRONZE</div>`;
+            }
+
             const cardHtml = `
                 <div class="loyalty-card"
                     style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
@@ -1387,6 +1608,7 @@
                                 <div class="card-points-lbl">Points</div>
                             </div>
                         </div>
+                        ${tierBadge}
                         <div class="merchant-name">${shopName}</div>
                         <div class="card-progress-wrap">
                             <div class="card-progress-labels">
@@ -1421,9 +1643,14 @@
     }
 
     // ─── QR MODAL ───
-    function openClientCardPopup(merchantName, currentPoints, merchantId) {
+    async function openClientCardPopup(merchantName, currentPoints, merchantId) {
         document.getElementById('modal-merchant-name').innerText = merchantName;
         document.getElementById('modal-current-points').innerText = `${currentPoints} Pts`;
+
+        // Stocke pour les actions Phase 3 (wheel / gift)
+        currentQrMerchantId   = merchantId;
+        currentQrMerchantName = merchantName;
+        currentQrPoints       = currentPoints;
 
         const goal = 10;
         const remaining = Math.max(goal - currentPoints, 0);
@@ -1432,7 +1659,6 @@
         document.getElementById('client-qr-rendering-zone').innerHTML = "";
 
         // QR unique par commerce : keepo:card:CLIENT_UUID:MERCHANT_UUID
-        // → un commerçant ne peut scanner que les QR de SON programme
         new QRCodeStyling({
             width: 200, height: 200, type: "svg",
             data: `keepo:card:${currentClientId}:${merchantId}`,
@@ -1440,6 +1666,41 @@
             backgroundOptions: { color: "#ffffff" },
             cornersSquareOptions: { type: "extra-rounded", color: "#0a0911" }
         }).append(document.getElementById("client-qr-rendering-zone"));
+
+        // ── Vérifie l'éligibilité de la roue ──
+        const wheelBtn   = document.getElementById('qrModalWheelBtn');
+        const wheelSub   = document.getElementById('qrModalWheelSub');
+        if (wheelBtn && wheelSub) {
+            wheelBtn.style.display = 'flex';
+            wheelSub.innerText = 'Vérification…';
+            try {
+                const { data: card } = await supabaseClient
+                    .from('merchant_cards')
+                    .select('wheel_enabled, wheel_visits_required')
+                    .eq('merchant_id', merchantId).maybeSingle();
+                if (!card?.wheel_enabled) {
+                    wheelBtn.style.display = 'none';
+                } else {
+                    const required = card.wheel_visits_required ?? 10;
+                    const [txRes, balRes] = await Promise.all([
+                        supabaseClient.from('transactions').select('id', { count: 'exact', head: true })
+                            .eq('merchant_id', merchantId).eq('client_id', currentClientId).eq('type', 'credit'),
+                        supabaseClient.from('loyalty_balances').select('wheel_last_spin_visits')
+                            .eq('merchant_id', merchantId).eq('client_id', currentClientId).maybeSingle()
+                    ]);
+                    const visits   = txRes.count || 0;
+                    const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
+                    const progress = visits - lastSpin;
+                    if (progress >= required) {
+                        wheelSub.innerHTML = `<span style="color:#00e8cc;font-weight:700;">🎉 Tour gratuit disponible !</span>`;
+                    } else {
+                        wheelSub.innerText = `Encore ${required - progress} visite${required - progress > 1 ? 's' : ''} pour débloquer (${progress}/${required})`;
+                    }
+                }
+            } catch {
+                wheelBtn.style.display = 'none';
+            }
+        }
 
         document.getElementById('qrModal').style.display = 'flex';
     }
@@ -1975,6 +2236,243 @@
         await stopCameraScanner();
         await supabaseClient.auth.signOut();
         window.location.href = '/connexion';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PHASE 3 — Parrainage, Anniversaire, Roue, Cartes cadeaux
+    // ═══════════════════════════════════════════════════════════
+    let currentQrMerchantId  = null;
+    let currentQrMerchantName= '';
+    let currentQrPoints      = 0;
+
+    // ─── Profil : charger anniversaire + code parrainage ───
+    async function loadMyPhase3Profile() {
+        if (!currentClientId) return;
+        const { data: p } = await supabaseClient
+            .from('profiles')
+            .select('birthday, referral_code')
+            .eq('id', currentClientId)
+            .maybeSingle();
+        if (!p) return;
+
+        const codeEl = document.getElementById('my-referral-code');
+        if (codeEl) codeEl.innerText = (p.referral_code || '------').toUpperCase();
+
+        const bdayEl = document.getElementById('my-birthday-input');
+        if (bdayEl && p.birthday) bdayEl.value = p.birthday;
+    }
+
+    function copyMyReferralCode() {
+        const code = document.getElementById('my-referral-code')?.innerText?.trim();
+        if (!code || code === '------') return;
+        navigator.clipboard.writeText(code).then(() => {
+            showSnack('✓ Code copié dans le presse-papier');
+        });
+    }
+
+    async function saveMyBirthday() {
+        const val = document.getElementById('my-birthday-input')?.value;
+        if (!val) { showSnack('Sélectionnez une date'); return; }
+        const { error } = await supabaseClient
+            .from('profiles')
+            .update({ birthday: val })
+            .eq('id', currentClientId);
+        if (error) { showSnack('Erreur : ' + error.message); return; }
+        showSnack('🎂 Anniversaire enregistré !');
+        // Tente le bonus auto chez chaque commerce où le client a une carte
+        if (walletCache?.length) {
+            for (const c of walletCache) {
+                try { await supabaseClient.rpc('claim_birthday_bonus', { p_merchant_id: c.merchant_id }); } catch {}
+            }
+            await loadClientWallet();
+        }
+    }
+
+    // ─── Modale parrainage : entrer un code ───
+    function openReferralRedeem() {
+        if (!walletCache?.length) {
+            showSnack('Rejoignez d\'abord au moins une enseigne via QR code');
+            return;
+        }
+        const sel = document.getElementById('referral-merchant-select');
+        if (sel) {
+            sel.innerHTML = walletCache.map(c => `<option value="${c.merchant_id}">${(c.merchant_profile?.name || 'Commerce').replace(/</g,'&lt;')}</option>`).join('');
+        }
+        document.getElementById('referral-code-input').value = '';
+        document.getElementById('referralRedeemSheet').style.display = 'flex';
+    }
+    function closeReferralRedeem() {
+        document.getElementById('referralRedeemSheet').style.display = 'none';
+    }
+    async function doRedeemReferral() {
+        const code = document.getElementById('referral-code-input')?.value?.trim();
+        const merchantId = document.getElementById('referral-merchant-select')?.value;
+        if (!code) { showSnack('Entrez le code'); return; }
+        if (!merchantId) { showSnack('Choisissez une enseigne'); return; }
+        const { data, error } = await supabaseClient.rpc('claim_referral_code', {
+            p_code: code, p_merchant_id: merchantId
+        });
+        if (error) { showSnack('❌ ' + error.message); return; }
+        showSnack(`🎉 +${data?.bonus || 0} points crédités !`);
+        closeReferralRedeem();
+        loadClientWallet();
+    }
+
+    // ─── Roue de la fortune ───
+    async function openWheelSheet() {
+        if (!currentQrMerchantId) return;
+        document.getElementById('wheel-merchant-name').innerText = currentQrMerchantName;
+        document.getElementById('wheel-result').classList.remove('show');
+        document.getElementById('wheel-result').innerHTML = '';
+        document.getElementById('wheel-disc').classList.remove('spinning');
+        document.getElementById('wheel-disc').style.removeProperty('--target-rotation');
+
+        // Vérifie l'éligibilité
+        const { data: card } = await supabaseClient
+            .from('merchant_cards')
+            .select('wheel_enabled, wheel_visits_required')
+            .eq('merchant_id', currentQrMerchantId)
+            .maybeSingle();
+
+        const required = card?.wheel_visits_required ?? 10;
+        const enabled  = card?.wheel_enabled !== false;
+
+        if (!enabled) {
+            document.getElementById('wheel-status-text').innerText = "La roue n'est pas activée par ce commerce.";
+            document.getElementById('wheel-spin-btn').disabled = true;
+            document.getElementById('wheel-spin-btn').style.opacity = 0.4;
+        } else {
+            // Compte visites depuis dernier spin
+            const [txRes, balRes] = await Promise.all([
+                supabaseClient.from('transactions')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('merchant_id', currentQrMerchantId).eq('client_id', currentClientId).eq('type', 'credit'),
+                supabaseClient.from('loyalty_balances')
+                    .select('wheel_last_spin_visits')
+                    .eq('merchant_id', currentQrMerchantId).eq('client_id', currentClientId).maybeSingle()
+            ]);
+            const visits   = txRes.count || 0;
+            const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
+            const progress = visits - lastSpin;
+            if (progress >= required) {
+                document.getElementById('wheel-status-text').innerHTML = `<strong style="color:#00e8cc;">Vous êtes éligible !</strong> Tournez la roue 🎉`;
+                document.getElementById('wheel-spin-btn').disabled = false;
+                document.getElementById('wheel-spin-btn').style.opacity = 1;
+            } else {
+                document.getElementById('wheel-status-text').innerHTML = `Encore <strong style="color:#c5b8ff;">${required - progress}</strong> visite${required - progress > 1 ? 's' : ''} pour débloquer un tour gratuit (${progress}/${required})`;
+                document.getElementById('wheel-spin-btn').disabled = true;
+                document.getElementById('wheel-spin-btn').style.opacity = 0.5;
+            }
+        }
+        document.getElementById('wheelSheet').style.display = 'flex';
+    }
+    function closeWheelSheet() {
+        document.getElementById('wheelSheet').style.display = 'none';
+    }
+    async function doSpinWheel() {
+        const btn = document.getElementById('wheel-spin-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Tirage…';
+
+        const { data, error } = await supabaseClient.rpc('spin_wheel', { p_merchant_id: currentQrMerchantId });
+
+        if (error) {
+            showSnack('❌ ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Tourner la roue';
+            return;
+        }
+
+        // Animation : rotation visuelle
+        const disc = document.getElementById('wheel-disc');
+        const targetDeg = 360 * 5 + (data?.roll || 0) * 3.6;
+        disc.style.setProperty('--target-rotation', targetDeg + 'deg');
+        disc.classList.add('spinning');
+
+        setTimeout(() => {
+            const res = document.getElementById('wheel-result');
+            res.innerHTML = `
+                <div style="font-size:32px;margin-bottom:6px;">${data?.prize_value > 0 ? '🎉' : '🍀'}</div>
+                <div style="font-weight:800;font-family:'Syne',sans-serif;font-size:16px;color:#fff;margin-bottom:4px;">${data?.prize_label || 'Résultat'}</div>
+                ${data?.prize_value > 0 ? `<div style="font-size:12px;color:#00e8cc;">Points crédités automatiquement sur votre carte</div>` : `<div style="font-size:12px;color:var(--muted);">Bonne chance pour la prochaine fois !</div>`}
+            `;
+            res.classList.add('show');
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Tour terminé';
+            // Recharge wallet
+            loadClientWallet();
+        }, 4100);
+    }
+
+    // ─── Cartes cadeaux ───
+    function openGiftSheet() {
+        if (!currentQrMerchantId) return;
+        document.getElementById('gift-merchant-info').innerHTML = `Solde actuel chez <strong>${currentQrMerchantName.replace(/</g,'&lt;')}</strong> : <strong style="color:#00e8cc;">${currentQrPoints} pts</strong>`;
+        document.getElementById('gift-amount').value = '';
+        document.getElementById('gift-message').value = '';
+        document.getElementById('gift-result').style.display = 'none';
+        document.getElementById('giftSheet').style.display = 'flex';
+    }
+    function closeGiftSheet() {
+        document.getElementById('giftSheet').style.display = 'none';
+    }
+    async function doCreateGiftCard() {
+        const amount  = parseInt(document.getElementById('gift-amount').value);
+        const message = document.getElementById('gift-message').value?.trim() || null;
+        if (!amount || amount < 1) { showSnack('Montant invalide'); return; }
+        if (amount > currentQrPoints) { showSnack('Solde insuffisant'); return; }
+
+        const btn = document.getElementById('gift-create-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Création…';
+
+        const { data, error } = await supabaseClient.rpc('create_gift_card', {
+            p_merchant_id: currentQrMerchantId, p_points: amount, p_message: message
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Générer le code';
+
+        if (error) { showSnack('❌ ' + error.message); return; }
+
+        document.getElementById('gift-result').innerHTML = `
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Code à partager</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:24px;letter-spacing:4px;color:#00e8cc;text-align:center;margin-bottom:10px;cursor:pointer;" onclick="navigator.clipboard.writeText('${data.code}');showSnack('✓ Code copié');">${data.code}</div>
+            <div style="font-size:12px;color:var(--muted);">Partagez ce code avec la personne de votre choix. Elle pourra l'utiliser dans son app Keepo pour recevoir <strong style="color:#fff;">${data.points} points</strong>.</div>
+        `;
+        document.getElementById('gift-result').style.display = 'block';
+        loadClientWallet();
+    }
+
+    function openRedeemGiftCard() {
+        closeGiftSheet();
+        document.getElementById('redeem-gift-input').value = '';
+        document.getElementById('redeemGiftSheet').style.display = 'flex';
+    }
+    function closeRedeemGift() {
+        document.getElementById('redeemGiftSheet').style.display = 'none';
+    }
+    async function doRedeemGift() {
+        const code = document.getElementById('redeem-gift-input').value?.trim();
+        if (!code) { showSnack('Entrez le code'); return; }
+        const { data, error } = await supabaseClient.rpc('redeem_gift_card', { p_code: code });
+        if (error) { showSnack('❌ ' + error.message); return; }
+        showSnack(`🎉 ${data.points} points reçus !`);
+        closeRedeemGift();
+        loadClientWallet();
+    }
+
+    function showSnack(msg) {
+        // Petit toast simple si pas de système existant
+        let s = document.getElementById('keepoSnack');
+        if (!s) {
+            s = document.createElement('div');
+            s.id = 'keepoSnack';
+            s.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0d0c18;border:1px solid rgba(124,106,247,0.4);color:#fff;padding:12px 20px;border-radius:50px;font-weight:600;font-size:13px;z-index:9999;box-shadow:0 8px 28px rgba(0,0,0,0.5);max-width:90vw;text-align:center;';
+            document.body.appendChild(s);
+        }
+        s.innerText = msg;
+        s.style.opacity = '1';
+        setTimeout(() => { s.style.opacity = '0'; s.style.transition = 'opacity .4s'; }, 2800);
     }
 
     // ═══════════════════════════════════════════════════════════

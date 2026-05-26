@@ -420,3 +420,483 @@ create policy "notif_sends_select" on public.notification_sends
 
 create policy "notif_sends_insert" on public.notification_sends
   for insert with check (true);
+
+-- ════════════════════════════════════════════════════════
+--  PHASE 3 — Marketing & Engagement
+-- ════════════════════════════════════════════════════════
+
+-- ── Colonnes ajoutées au profil client ────────────────
+alter table public.profiles add column if not exists birthday      date;
+alter table public.profiles add column if not exists referral_code text unique;
+
+-- Génère un code aléatoire à 6 caractères pour les profils qui n'en ont pas
+update public.profiles
+   set referral_code = upper(substring(replace(gen_random_uuid()::text, '-', ''), 1, 6))
+ where referral_code is null;
+
+-- ── Colonnes config par commerçant (sur merchant_cards) ─
+alter table public.merchant_cards add column if not exists referral_bonus           int  default 50;
+alter table public.merchant_cards add column if not exists birthday_bonus           int  default 100;
+alter table public.merchant_cards add column if not exists wheel_visits_required    int  default 10;
+alter table public.merchant_cards add column if not exists wheel_enabled            boolean default true;
+alter table public.merchant_cards add column if not exists tier_silver_threshold    int  default 500;
+alter table public.merchant_cards add column if not exists tier_gold_threshold      int  default 2000;
+alter table public.merchant_cards add column if not exists tier_silver_multiplier   numeric default 1.2;
+alter table public.merchant_cards add column if not exists tier_gold_multiplier     numeric default 1.5;
+
+-- ── Compteur de points cumulés (lifetime) pour calculer le tier ─
+alter table public.loyalty_balances add column if not exists lifetime_points        int  not null default 0;
+alter table public.loyalty_balances add column if not exists last_birthday_bonus    date;
+alter table public.loyalty_balances add column if not exists wheel_last_spin_visits int  not null default 0;
+
+-- ── PARRAINAGES ──────────────────────────────────────
+create table if not exists public.referrals (
+  id           bigserial primary key,
+  referrer_id  uuid not null references public.profiles(id) on delete cascade,
+  referred_id  uuid not null references public.profiles(id) on delete cascade,
+  merchant_id  uuid not null references public.profiles(id) on delete cascade,
+  bonus_given  int  not null default 50,
+  created_at   timestamptz default now(),
+  unique (referred_id, merchant_id)  -- un client ne peut être parrainé qu'une fois par commerce
+);
+
+alter table public.referrals enable row level security;
+
+drop policy if exists "referrals_select_own" on public.referrals;
+drop policy if exists "referrals_insert_any" on public.referrals;
+
+create policy "referrals_select_own" on public.referrals
+  for select using (auth.uid() = referrer_id or auth.uid() = referred_id or auth.uid() = merchant_id);
+
+create policy "referrals_insert_any" on public.referrals
+  for insert with check (true);
+
+-- ── ROUE DE LA FORTUNE — historique des tirages ──
+create table if not exists public.wheel_spins (
+  id          bigserial primary key,
+  client_id   uuid not null references public.profiles(id) on delete cascade,
+  merchant_id uuid not null references public.profiles(id) on delete cascade,
+  prize_type  text not null,    -- 'bonus_pts', 'reward', 'nothing'
+  prize_value int  not null default 0,
+  prize_label text,
+  spun_at     timestamptz default now()
+);
+
+alter table public.wheel_spins enable row level security;
+
+drop policy if exists "wheel_spins_select_own"  on public.wheel_spins;
+drop policy if exists "wheel_spins_insert_own"  on public.wheel_spins;
+
+create policy "wheel_spins_select_own" on public.wheel_spins
+  for select using (auth.uid() = client_id or auth.uid() = merchant_id);
+
+create policy "wheel_spins_insert_own" on public.wheel_spins
+  for insert with check (auth.uid() = client_id);
+
+-- ── CARTES CADEAUX ─────────────────────────────────
+create table if not exists public.gift_cards (
+  id            bigserial primary key,
+  code          text not null unique,
+  sender_id     uuid not null references public.profiles(id) on delete cascade,
+  merchant_id   uuid not null references public.profiles(id) on delete cascade,
+  points_amount int  not null check (points_amount > 0),
+  sender_msg    text,
+  redeemed_by   uuid references public.profiles(id) on delete set null,
+  redeemed_at   timestamptz,
+  created_at    timestamptz default now()
+);
+
+alter table public.gift_cards enable row level security;
+
+drop policy if exists "gift_cards_select_involved" on public.gift_cards;
+drop policy if exists "gift_cards_insert_sender"   on public.gift_cards;
+drop policy if exists "gift_cards_update_redeem"   on public.gift_cards;
+
+create policy "gift_cards_select_involved" on public.gift_cards
+  for select using (auth.uid() = sender_id or auth.uid() = merchant_id or auth.uid() = redeemed_by);
+
+create policy "gift_cards_insert_sender" on public.gift_cards
+  for insert with check (auth.uid() = sender_id);
+
+create policy "gift_cards_update_redeem" on public.gift_cards
+  for update using (true);  -- toute personne authentifiée peut tenter de redeem; RPC contrôle
+
+-- ════════════════════════════════════════════════════════
+--  RPC — Réclamer un code de parrainage
+-- ════════════════════════════════════════════════════════
+drop function if exists public.claim_referral_code(text, uuid);
+
+create or replace function public.claim_referral_code(
+  p_code        text,
+  p_merchant_id uuid
+) returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_referrer    uuid;
+  v_client      uuid;
+  v_bonus       int;
+begin
+  v_client := auth.uid();
+  if v_client is null then raise exception 'Non authentifié'; end if;
+
+  -- Trouve le parrain via son code
+  select id into v_referrer from public.profiles where upper(referral_code) = upper(p_code);
+  if v_referrer is null then raise exception 'Code de parrainage invalide'; end if;
+  if v_referrer = v_client then raise exception 'Vous ne pouvez pas vous parrainer vous-même'; end if;
+
+  -- Vérifie qu'il n'y a pas déjà un parrainage pour ce client/commerce
+  if exists (select 1 from public.referrals where referred_id = v_client and merchant_id = p_merchant_id) then
+    raise exception 'Vous avez déjà été parrainé chez ce commerce';
+  end if;
+
+  -- Récupère le bonus configuré chez ce commerçant
+  select coalesce(referral_bonus, 50) into v_bonus from public.merchant_cards where merchant_id = p_merchant_id;
+  if v_bonus is null then v_bonus := 50; end if;
+
+  -- Enregistre le parrainage
+  insert into public.referrals (referrer_id, referred_id, merchant_id, bonus_given)
+  values (v_referrer, v_client, p_merchant_id, v_bonus);
+
+  -- Crédite les deux (filleul + parrain)
+  insert into public.transactions (merchant_id, client_id, amount, points_changed, type)
+  values (p_merchant_id, v_client,   0, v_bonus, 'credit'),
+         (p_merchant_id, v_referrer, 0, v_bonus, 'credit');
+
+  insert into public.loyalty_balances (merchant_id, client_id, points_balance, lifetime_points)
+  values (p_merchant_id, v_client, v_bonus, v_bonus)
+  on conflict (merchant_id, client_id)
+  do update set points_balance  = loyalty_balances.points_balance  + v_bonus,
+                lifetime_points = loyalty_balances.lifetime_points + v_bonus;
+
+  insert into public.loyalty_balances (merchant_id, client_id, points_balance, lifetime_points)
+  values (p_merchant_id, v_referrer, v_bonus, v_bonus)
+  on conflict (merchant_id, client_id)
+  do update set points_balance  = loyalty_balances.points_balance  + v_bonus,
+                lifetime_points = loyalty_balances.lifetime_points + v_bonus;
+
+  return jsonb_build_object('bonus', v_bonus, 'referrer_id', v_referrer);
+end;
+$$;
+
+grant execute on function public.claim_referral_code to authenticated;
+
+-- ════════════════════════════════════════════════════════
+--  RPC — Spin de la Roue de la Fortune
+-- ════════════════════════════════════════════════════════
+drop function if exists public.spin_wheel(uuid);
+
+create or replace function public.spin_wheel(
+  p_merchant_id uuid
+) returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_client       uuid;
+  v_visits       int;
+  v_required     int;
+  v_last_spin    int;
+  v_enabled      boolean;
+  v_prize_roll   int;
+  v_prize_type   text;
+  v_prize_value  int;
+  v_prize_label  text;
+begin
+  v_client := auth.uid();
+  if v_client is null then raise exception 'Non authentifié'; end if;
+
+  -- Config roue
+  select coalesce(wheel_visits_required, 10), coalesce(wheel_enabled, true)
+  into   v_required, v_enabled
+  from   public.merchant_cards where merchant_id = p_merchant_id;
+  if not v_enabled then raise exception 'La roue n''est pas activée par ce commerce'; end if;
+
+  -- Combien de visites (credits) le client a déjà fait chez ce commerçant ?
+  select count(*) into v_visits
+  from   public.transactions
+  where  merchant_id = p_merchant_id and client_id = v_client and type = 'credit';
+
+  -- Combien de visites étaient comptées au dernier spin ?
+  select coalesce(wheel_last_spin_visits, 0) into v_last_spin
+  from   public.loyalty_balances
+  where  merchant_id = p_merchant_id and client_id = v_client;
+
+  if (v_visits - v_last_spin) < v_required then
+    raise exception 'Pas encore éligible (% / % visites)', v_visits - v_last_spin, v_required;
+  end if;
+
+  -- Tirage aléatoire (0-99)
+  v_prize_roll := floor(random() * 100)::int;
+  if v_prize_roll < 5 then          -- 5% : Gros lot (recompense gratuite virtuelle)
+    v_prize_type  := 'bonus_pts';
+    v_prize_value := 500;
+    v_prize_label := '🎁 JACKPOT — 500 points bonus !';
+  elsif v_prize_roll < 20 then      -- 15% : x3 pts
+    v_prize_type  := 'bonus_pts';
+    v_prize_value := 150;
+    v_prize_label := '🌟 150 points bonus';
+  elsif v_prize_roll < 45 then      -- 25% : x2 pts
+    v_prize_type  := 'bonus_pts';
+    v_prize_value := 50;
+    v_prize_label := '✨ 50 points bonus';
+  elsif v_prize_roll < 75 then      -- 30% : petit lot
+    v_prize_type  := 'bonus_pts';
+    v_prize_value := 20;
+    v_prize_label := '🪙 20 points bonus';
+  else                              -- 25% : rien
+    v_prize_type  := 'nothing';
+    v_prize_value := 0;
+    v_prize_label := '😅 Pas de chance cette fois — ressayez bientôt !';
+  end if;
+
+  -- Enregistre le spin
+  insert into public.wheel_spins (client_id, merchant_id, prize_type, prize_value, prize_label)
+  values (v_client, p_merchant_id, v_prize_type, v_prize_value, v_prize_label);
+
+  -- Met à jour le compteur "last spin visits"
+  update public.loyalty_balances
+  set wheel_last_spin_visits = v_visits
+  where merchant_id = p_merchant_id and client_id = v_client;
+
+  -- Crédite les points si gagnés
+  if v_prize_value > 0 then
+    insert into public.transactions (merchant_id, client_id, amount, points_changed, type)
+    values (p_merchant_id, v_client, 0, v_prize_value, 'credit');
+
+    update public.loyalty_balances
+    set points_balance  = points_balance  + v_prize_value,
+        lifetime_points = lifetime_points + v_prize_value
+    where merchant_id = p_merchant_id and client_id = v_client;
+  end if;
+
+  return jsonb_build_object(
+    'prize_type', v_prize_type,
+    'prize_value', v_prize_value,
+    'prize_label', v_prize_label,
+    'roll', v_prize_roll
+  );
+end;
+$$;
+
+grant execute on function public.spin_wheel to authenticated;
+
+-- ════════════════════════════════════════════════════════
+--  RPC — Acheter / Échanger une carte cadeau
+-- ════════════════════════════════════════════════════════
+drop function if exists public.create_gift_card(uuid, int, text);
+
+create or replace function public.create_gift_card(
+  p_merchant_id uuid,
+  p_points      int,
+  p_message     text default null
+) returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_sender uuid;
+  v_balance int;
+  v_code text;
+begin
+  v_sender := auth.uid();
+  if v_sender is null then raise exception 'Non authentifié'; end if;
+  if p_points <= 0 then raise exception 'Montant invalide'; end if;
+
+  -- Vérifie le solde
+  select points_balance into v_balance
+  from public.loyalty_balances
+  where merchant_id = p_merchant_id and client_id = v_sender
+  for update;
+
+  if v_balance is null or v_balance < p_points then
+    raise exception 'Solde insuffisant (% disponibles, % requis)', coalesce(v_balance, 0), p_points;
+  end if;
+
+  -- Code unique 8 caractères
+  v_code := upper(substring(replace(gen_random_uuid()::text, '-', ''), 1, 8));
+
+  -- Débite l'expéditeur
+  insert into public.transactions (merchant_id, client_id, amount, points_changed, type)
+  values (p_merchant_id, v_sender, 0, -p_points, 'debit');
+
+  update public.loyalty_balances
+  set points_balance = points_balance - p_points
+  where merchant_id = p_merchant_id and client_id = v_sender;
+
+  -- Crée la carte cadeau
+  insert into public.gift_cards (code, sender_id, merchant_id, points_amount, sender_msg)
+  values (v_code, v_sender, p_merchant_id, p_points, p_message);
+
+  return jsonb_build_object('code', v_code, 'points', p_points);
+end;
+$$;
+
+grant execute on function public.create_gift_card to authenticated;
+
+drop function if exists public.redeem_gift_card(text);
+
+create or replace function public.redeem_gift_card(
+  p_code text
+) returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_client      uuid;
+  v_card        record;
+begin
+  v_client := auth.uid();
+  if v_client is null then raise exception 'Non authentifié'; end if;
+
+  select * into v_card from public.gift_cards where upper(code) = upper(p_code) for update;
+  if v_card is null then raise exception 'Carte cadeau introuvable'; end if;
+  if v_card.redeemed_by is not null then raise exception 'Cette carte cadeau a déjà été utilisée'; end if;
+  if v_card.sender_id = v_client then raise exception 'Vous ne pouvez pas utiliser votre propre carte cadeau'; end if;
+
+  -- Marque comme utilisée
+  update public.gift_cards
+  set redeemed_by = v_client, redeemed_at = now()
+  where id = v_card.id;
+
+  -- Crédite le destinataire
+  insert into public.transactions (merchant_id, client_id, amount, points_changed, type)
+  values (v_card.merchant_id, v_client, 0, v_card.points_amount, 'credit');
+
+  insert into public.loyalty_balances (merchant_id, client_id, points_balance, lifetime_points)
+  values (v_card.merchant_id, v_client, v_card.points_amount, v_card.points_amount)
+  on conflict (merchant_id, client_id)
+  do update set points_balance  = loyalty_balances.points_balance  + v_card.points_amount,
+                lifetime_points = loyalty_balances.lifetime_points + v_card.points_amount;
+
+  return jsonb_build_object('points', v_card.points_amount, 'merchant_id', v_card.merchant_id);
+end;
+$$;
+
+grant execute on function public.redeem_gift_card to authenticated;
+
+-- ════════════════════════════════════════════════════════
+--  RPC — Anniversaire : crédite le bonus si applicable
+-- ════════════════════════════════════════════════════════
+drop function if exists public.claim_birthday_bonus(uuid);
+
+create or replace function public.claim_birthday_bonus(
+  p_merchant_id uuid
+) returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_client    uuid;
+  v_birthday  date;
+  v_today     date := current_date;
+  v_last      date;
+  v_bonus     int;
+begin
+  v_client := auth.uid();
+  if v_client is null then raise exception 'Non authentifié'; end if;
+
+  select birthday into v_birthday from public.profiles where id = v_client;
+  if v_birthday is null then return jsonb_build_object('claimed', false, 'reason', 'no_birthday'); end if;
+
+  -- Date d'anniversaire cette année
+  if extract(month from v_today) <> extract(month from v_birthday)
+     or extract(day from v_today) <> extract(day from v_birthday) then
+    return jsonb_build_object('claimed', false, 'reason', 'not_today');
+  end if;
+
+  -- Déjà crédité cette année ?
+  select last_birthday_bonus into v_last
+  from public.loyalty_balances
+  where merchant_id = p_merchant_id and client_id = v_client;
+  if v_last is not null and extract(year from v_last) = extract(year from v_today) then
+    return jsonb_build_object('claimed', false, 'reason', 'already_claimed_this_year');
+  end if;
+
+  -- Bonus config
+  select coalesce(birthday_bonus, 100) into v_bonus from public.merchant_cards where merchant_id = p_merchant_id;
+  if v_bonus is null or v_bonus <= 0 then return jsonb_build_object('claimed', false, 'reason', 'disabled'); end if;
+
+  -- Crédite
+  insert into public.transactions (merchant_id, client_id, amount, points_changed, type)
+  values (p_merchant_id, v_client, 0, v_bonus, 'credit');
+
+  insert into public.loyalty_balances (merchant_id, client_id, points_balance, lifetime_points, last_birthday_bonus)
+  values (p_merchant_id, v_client, v_bonus, v_bonus, v_today)
+  on conflict (merchant_id, client_id)
+  do update set points_balance      = loyalty_balances.points_balance  + v_bonus,
+                lifetime_points     = loyalty_balances.lifetime_points + v_bonus,
+                last_birthday_bonus = v_today;
+
+  return jsonb_build_object('claimed', true, 'bonus', v_bonus);
+end;
+$$;
+
+grant execute on function public.claim_birthday_bonus to authenticated;
+
+-- ════════════════════════════════════════════════════════
+--  Mise à jour automatique du compteur lifetime_points
+--  via trigger sur transactions (type = credit)
+-- ════════════════════════════════════════════════════════
+create or replace function public.bump_lifetime_points()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.type = 'credit' and new.points_changed > 0 then
+    update public.loyalty_balances
+    set lifetime_points = lifetime_points + new.points_changed
+    where merchant_id = new.merchant_id and client_id = new.client_id
+      and not exists (
+        -- évite double-bump pour les RPC qui maintiennent déjà lifetime_points (referral, wheel, gift)
+        select 1 from public.transactions
+        where id = new.id and false
+      );
+  end if;
+  return new;
+end;
+$$;
+-- (Trigger optionnel : les RPC actuelles gèrent déjà lifetime_points elles-mêmes,
+--  donc on n'active PAS de trigger global ici pour éviter les doubles comptages.
+--  La RPC apply_loyalty_credit standard sera modifiée pour incrémenter lifetime_points.)
+
+-- ── Mise à jour de apply_loyalty_credit pour gérer le tier + lifetime
+drop function if exists public.apply_loyalty_credit(uuid, uuid, numeric, int);
+
+create or replace function public.apply_loyalty_credit(
+  p_merchant_id uuid,
+  p_client_id   uuid,
+  p_amount      numeric,
+  p_points      int
+) returns int language plpgsql security definer set search_path = public as $$
+declare
+  v_new                  int;
+  v_lifetime_before      int;
+  v_silver_threshold     int;
+  v_gold_threshold       int;
+  v_silver_mult          numeric;
+  v_gold_mult            numeric;
+  v_final_points         int := p_points;
+begin
+  if auth.uid() is distinct from p_merchant_id then
+    raise exception 'Non autorisé';
+  end if;
+
+  -- Récupère le tier actuel du client (avant ce crédit)
+  select coalesce(lifetime_points, 0) into v_lifetime_before
+  from public.loyalty_balances
+  where merchant_id = p_merchant_id and client_id = p_client_id;
+  v_lifetime_before := coalesce(v_lifetime_before, 0);
+
+  -- Récupère config tier du commerçant
+  select coalesce(tier_silver_threshold, 500), coalesce(tier_gold_threshold, 2000),
+         coalesce(tier_silver_multiplier, 1.2), coalesce(tier_gold_multiplier, 1.5)
+  into   v_silver_threshold, v_gold_threshold, v_silver_mult, v_gold_mult
+  from   public.merchant_cards where merchant_id = p_merchant_id;
+
+  -- Applique le multiplicateur selon le tier
+  if v_lifetime_before >= coalesce(v_gold_threshold, 2000) then
+    v_final_points := round(p_points * coalesce(v_gold_mult, 1.5))::int;
+  elsif v_lifetime_before >= coalesce(v_silver_threshold, 500) then
+    v_final_points := round(p_points * coalesce(v_silver_mult, 1.2))::int;
+  end if;
+
+  insert into public.transactions (merchant_id, client_id, amount, points_changed, type)
+  values (p_merchant_id, p_client_id, p_amount, v_final_points, 'credit');
+
+  insert into public.loyalty_balances (merchant_id, client_id, points_balance, lifetime_points)
+  values (p_merchant_id, p_client_id, v_final_points, v_final_points)
+  on conflict (merchant_id, client_id)
+  do update set points_balance  = loyalty_balances.points_balance  + v_final_points,
+                lifetime_points = loyalty_balances.lifetime_points + v_final_points
+  returning points_balance into v_new;
+
+  return v_new;
+end;
+$$;
+
+grant execute on function public.apply_loyalty_credit to authenticated;

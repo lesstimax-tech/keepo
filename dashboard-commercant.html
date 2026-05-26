@@ -1881,6 +1881,102 @@
                     <button onclick="saveBusinessSettings()" class="btn-action"><i class="fa-solid fa-floppy-disk"></i> Enregistrer toutes les informations</button>
                 </div>
 
+                <!-- ═══════════ PHASE 3 — Programme avancé ═══════════ -->
+                <div class="card" style="margin-bottom:20px;">
+                    <div class="card-title"><i class="fa-solid fa-crown" style="color:#ffc34d;"></i> Programme avancé Marketing</div>
+                    <p style="color:var(--text-muted);font-size:12px;line-height:1.6;margin-bottom:18px;">
+                        Boostez l'engagement avec parrainage, niveaux VIP, anniversaire bonus, roue de la fortune et cartes cadeaux.
+                    </p>
+
+                    <!-- Parrainage -->
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:18px;">👥</span> Bonus parrainage
+                            <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;">Pour parrain + filleul</span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:13px;color:var(--text-sub);">Crédit de</span>
+                            <input type="number" id="cfg-referral-bonus" min="0" value="50" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(0,232,204,0.3);color:var(--secondary-accent);">
+                            <span style="font-size:13px;color:var(--text-sub);">points pour chaque parrainage validé</span>
+                        </div>
+                    </div>
+
+                    <!-- Anniversaire -->
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:18px;">🎂</span> Bonus anniversaire
+                            <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;">Auto le jour J</span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:13px;color:var(--text-sub);">Offrir</span>
+                            <input type="number" id="cfg-birthday-bonus" min="0" value="100" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(255,138,92,0.4);color:#ff8a5c;">
+                            <span style="font-size:13px;color:var(--text-sub);">points le jour d'anniversaire du client (0 = désactivé)</span>
+                        </div>
+                    </div>
+
+                    <!-- Roue de la fortune -->
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:18px;">🎰</span> Roue de la fortune
+                        </label>
+                        <div class="toggle-wrap" id="wheel-toggle-wrap" onclick="document.getElementById('cfg-wheel-enabled').classList.toggle('on')" style="margin-bottom:10px;">
+                            <div id="cfg-wheel-enabled" class="toggle on"></div>
+                            <span class="toggle-label" style="font-size:13px;color:var(--text-sub);">Activer la roue dans l'app client</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:13px;color:var(--text-sub);">Débloquer après</span>
+                            <input type="number" id="cfg-wheel-visits" min="1" value="10" style="width:70px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(124,106,247,0.4);color:#c5b8ff;">
+                            <span style="font-size:13px;color:var(--text-sub);">visites du client</span>
+                        </div>
+                    </div>
+
+                    <!-- Niveaux VIP -->
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:18px;">🏅</span> Niveaux VIP (multiplicateurs auto)
+                        </label>
+                        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:12px;padding:14px;">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                <div>
+                                    <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#c0c5d4;margin-bottom:6px;">
+                                        🥈 Silver (à partir de…)
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <input type="number" id="cfg-tier-silver-thr" min="1" value="500" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(192,197,212,0.3);color:#c0c5d4;">
+                                        <span style="font-size:11px;color:var(--text-muted);">pts cumulés</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+                                        <span style="font-size:11px;color:var(--text-muted);">×</span>
+                                        <input type="number" id="cfg-tier-silver-mult" min="1" max="3" step="0.1" value="1.2" style="width:60px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(192,197,212,0.3);color:#c0c5d4;">
+                                        <span style="font-size:11px;color:var(--text-muted);">sur points</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#ffd34d;margin-bottom:6px;">
+                                        🥇 Gold (à partir de…)
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <input type="number" id="cfg-tier-gold-thr" min="1" value="2000" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(255,211,77,0.3);color:#ffd34d;">
+                                        <span style="font-size:11px;color:var(--text-muted);">pts cumulés</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+                                        <span style="font-size:11px;color:var(--text-muted);">×</span>
+                                        <input type="number" id="cfg-tier-gold-mult" min="1" max="5" step="0.1" value="1.5" style="width:60px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(255,211,77,0.3);color:#ffd34d;">
+                                        <span style="font-size:11px;color:var(--text-muted);">sur points</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:12px;margin-bottom:0;">
+                                Les points cumulés (lifetime) déterminent le niveau. Les multiplicateurs s'appliquent <strong style="color:var(--text-sub)">automatiquement</strong> à chaque scan : un Silver à 100 pts gagne ${' '}120 pts, un Gold gagne 150 pts.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button onclick="saveAdvancedProgram()" class="btn-action btn-ai-suggest" style="width:100%;">
+                        <i class="fa-solid fa-floppy-disk"></i> Enregistrer le programme avancé
+                    </button>
+                </div>
+
                 <div class="card" style="margin-bottom:20px;">
                     <div class="card-title"><i class="fa-solid fa-shield-halved"></i> Sécurité du compte</div>
                     <div class="form-row" style="margin-bottom:14px;">
@@ -2374,7 +2470,7 @@
 
             const { data: existingCard } = await supabaseClient
                 .from('merchant_cards')
-                .select('title, color, address, points_per_euro, studio_json')
+                .select('title, color, address, points_per_euro, studio_json, referral_bonus, birthday_bonus, wheel_visits_required, wheel_enabled, tier_silver_threshold, tier_gold_threshold, tier_silver_multiplier, tier_gold_multiplier')
                 .eq('merchant_id', currentMerchantId)
                 .maybeSingle();
 
@@ -2567,6 +2663,9 @@
                 if (cp)    cp.value    = extras.postcode || '';
             } catch(e) {}
         }
+
+        // ── Phase 3 : programme avancé ──
+        loadAdvancedProgram(card);
 
         // ── Taux de conversion → reconstruire les deux inputs ──
         if (card && card.points_per_euro) {
@@ -4723,6 +4822,47 @@
     // ═══════════════════════════════════════════════════════════
     //  IA ASSISTANT — Email writer, Reward suggester, Design studio
     // ═══════════════════════════════════════════════════════════
+
+    // ─── PHASE 3 — Sauvegarde du programme avancé (parrainage / VIP / anniv / roue)
+    async function loadAdvancedProgram(card) {
+        if (!card) return;
+        const setVal = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+        setVal('cfg-referral-bonus',   card.referral_bonus           ?? 50);
+        setVal('cfg-birthday-bonus',   card.birthday_bonus           ?? 100);
+        setVal('cfg-wheel-visits',     card.wheel_visits_required    ?? 10);
+        setVal('cfg-tier-silver-thr',  card.tier_silver_threshold    ?? 500);
+        setVal('cfg-tier-gold-thr',    card.tier_gold_threshold      ?? 2000);
+        setVal('cfg-tier-silver-mult', card.tier_silver_multiplier   ?? 1.2);
+        setVal('cfg-tier-gold-mult',   card.tier_gold_multiplier     ?? 1.5);
+        const wEl = document.getElementById('cfg-wheel-enabled');
+        if (wEl) wEl.classList.toggle('on', card.wheel_enabled !== false);
+    }
+    async function saveAdvancedProgram() {
+        if (!currentMerchantId) return;
+        const v = id => document.getElementById(id)?.value;
+        const wheelEnabled = document.getElementById('cfg-wheel-enabled')?.classList.contains('on');
+
+        const payload = {
+            merchant_id              : currentMerchantId,
+            referral_bonus           : Math.max(0, parseInt(v('cfg-referral-bonus'))   || 50),
+            birthday_bonus           : Math.max(0, parseInt(v('cfg-birthday-bonus'))   || 100),
+            wheel_visits_required    : Math.max(1, parseInt(v('cfg-wheel-visits'))     || 10),
+            wheel_enabled            : !!wheelEnabled,
+            tier_silver_threshold    : Math.max(1, parseInt(v('cfg-tier-silver-thr'))  || 500),
+            tier_gold_threshold      : Math.max(1, parseInt(v('cfg-tier-gold-thr'))    || 2000),
+            tier_silver_multiplier   : Math.max(1, parseFloat(v('cfg-tier-silver-mult')) || 1.2),
+            tier_gold_multiplier     : Math.max(1, parseFloat(v('cfg-tier-gold-mult'))   || 1.5),
+        };
+        const { error } = await supabaseClient
+            .from('merchant_cards')
+            .upsert(payload, { onConflict: 'merchant_id' });
+
+        if (error) {
+            showToast('error', 'Erreur', error.message);
+        } else {
+            showToast('success', '✓ Programme avancé enregistré', 'Parrainage, anniversaire, roue et niveaux VIP mis à jour.');
+        }
+    }
 
     // Bouton bloqué : message différent selon le plan
     function aiFeatureLockedClick() {
