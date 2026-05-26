@@ -4843,7 +4843,6 @@
         const wheelEnabled = document.getElementById('cfg-wheel-enabled')?.classList.contains('on');
 
         const payload = {
-            merchant_id              : currentMerchantId,
             referral_bonus           : Math.max(0, parseInt(v('cfg-referral-bonus'))   || 50),
             birthday_bonus           : Math.max(0, parseInt(v('cfg-birthday-bonus'))   || 100),
             wheel_visits_required    : Math.max(1, parseInt(v('cfg-wheel-visits'))     || 10),
@@ -4852,10 +4851,14 @@
             tier_gold_threshold      : Math.max(1, parseInt(v('cfg-tier-gold-thr'))    || 2000),
             tier_silver_multiplier   : Math.max(1, parseFloat(v('cfg-tier-silver-mult')) || 1.2),
             tier_gold_multiplier     : Math.max(1, parseFloat(v('cfg-tier-gold-mult'))   || 1.5),
+            updated_at               : new Date().toISOString(),
         };
+
+        // La ligne merchant_cards existe forcément (onboarding obligatoire) → UPDATE
         const { error } = await supabaseClient
             .from('merchant_cards')
-            .upsert(payload, { onConflict: 'merchant_id' });
+            .update(payload)
+            .eq('merchant_id', currentMerchantId);
 
         if (error) {
             showToast('error', 'Erreur', error.message);
