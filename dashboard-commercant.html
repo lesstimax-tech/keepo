@@ -986,6 +986,71 @@
             .ai-msg-bubble { font-size: 13px; max-width: 82%; }
         }
 
+        /* ─── BOUTONS IA + MODAL IA ─── */
+        .btn-ai-suggest {
+            background: linear-gradient(135deg, rgba(124,106,247,0.2), rgba(0,232,204,0.15));
+            border: 1px solid rgba(124,106,247,0.4);
+            color: #c5b8ff !important;
+            font-weight: 700; transition: all .2s;
+        }
+        .btn-ai-suggest:hover {
+            background: linear-gradient(135deg, rgba(124,106,247,0.35), rgba(0,232,204,0.25));
+            border-color: rgba(124,106,247,0.7); transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(124,106,247,0.25);
+        }
+        .ai-modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px); display: none; align-items: center;
+            justify-content: center; z-index: 9999; padding: 20px;
+        }
+        .ai-modal-backdrop.show { display: flex; }
+        .ai-modal {
+            background: linear-gradient(160deg, #1a1828, #0d0c18);
+            border: 1px solid rgba(124,106,247,0.35); border-radius: 22px;
+            padding: 28px; max-width: 540px; width: 100%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: aiModalIn .25s;
+        }
+        @keyframes aiModalIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
+        .ai-modal-title {
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800;
+            font-size: 19px; margin-bottom: 6px;
+            background: linear-gradient(135deg, #c5b8ff, #00e8cc);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .ai-modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.6; }
+        .ai-modal textarea, .ai-modal input {
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(124,106,247,0.25);
+            color: var(--text-main); border-radius: 12px; padding: 12px 14px;
+            font-family: 'DM Sans', sans-serif; font-size: 14px; resize: vertical;
+        }
+        .ai-modal textarea:focus, .ai-modal input:focus { outline: none; border-color: rgba(124,106,247,0.6); }
+        .ai-modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+        .ai-suggestion-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; margin-top: 14px; }
+        .ai-suggestion-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 14px; background: rgba(124,106,247,0.06);
+            border: 1px solid rgba(124,106,247,0.2); border-radius: 12px;
+            transition: all .15s;
+        }
+        .ai-suggestion-item:hover { background: rgba(124,106,247,0.12); border-color: rgba(124,106,247,0.4); }
+        .ai-suggestion-item-info { flex: 1; }
+        .ai-suggestion-item-name { font-weight: 700; font-size: 14px; color: var(--text-main); }
+        .ai-suggestion-item-pts { font-size: 11px; color: var(--secondary-accent); margin-top: 2px; }
+        .ai-suggestion-add-btn {
+            background: rgba(0,232,204,0.15); border: 1px solid rgba(0,232,204,0.4);
+            color: var(--secondary-accent); padding: 8px 14px; border-radius: 8px;
+            cursor: pointer; font-size: 12px; font-weight: 700; transition: all .15s;
+        }
+        .ai-suggestion-add-btn:hover { background: rgba(0,232,204,0.3); }
+        .ai-suggestion-add-btn.added { background: rgba(0,232,204,0.5); color: #fff; cursor: default; }
+        .ai-color-preview {
+            display: flex; gap: 10px; padding: 16px; border-radius: 14px;
+            border: 1px solid rgba(124,106,247,0.2); margin-top: 14px;
+            align-items: center;
+        }
+        .ai-color-swatch { width: 38px; height: 38px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); }
+
         /* ─── INSIGHT CARD ─── */
         .insight-card {
             background: linear-gradient(135deg, rgba(0, 180, 216, 0.06), rgba(124, 106, 247, 0.04));
@@ -1287,9 +1352,16 @@
 
         <!-- ══════════ RÉCOMPENSES ══════════ -->
         <div id="view-rewards" class="panel-view">
-            <h2 class="panel-title">Créer un Avantage Client</h2>
-            <p class="panel-subtitle">Configurez les récompenses que vos clients peuvent débloquer avec leurs points</p>
-            <div class="reward-form-grid" style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+                <div>
+                    <h2 class="panel-title" style="margin-bottom:6px;">Créer un Avantage Client</h2>
+                    <p class="panel-subtitle" style="margin-bottom:0;">Configurez les récompenses que vos clients peuvent débloquer avec leurs points</p>
+                </div>
+                <button onclick="openAiRewardSuggestions()" class="btn-action btn-ai-suggest" style="padding:11px 18px;font-size:13px;white-space:nowrap;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Suggérer avec l'IA
+                </button>
+            </div>
+            <div class="reward-form-grid" style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start;margin-top:18px;">
                 <form id="reward-creation-form" class="card" onsubmit="handleRewardSubmit(event)">
                     <div class="card-title"><i class="fa-solid fa-plus-circle"></i> Nouvelle Récompense</div>
                     <div class="form-group">
@@ -1413,9 +1485,16 @@
 
         <!-- ══════════ STUDIO DESIGN ══════════ -->
         <div id="view-studio" class="panel-view">
-            <h2 class="panel-title">Studio Design Card</h2>
-            <p class="panel-subtitle">Personnalisez l'apparence de la carte de fidélité affichée sur l'application client</p>
-            <div class="studio-workspace">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+                <div>
+                    <h2 class="panel-title" style="margin-bottom:6px;">Studio Design Card</h2>
+                    <p class="panel-subtitle" style="margin-bottom:0;">Personnalisez l'apparence de la carte de fidélité affichée sur l'application client</p>
+                </div>
+                <button onclick="openAiDesignStudio()" class="btn-action btn-ai-suggest" style="padding:11px 18px;font-size:13px;white-space:nowrap;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-design par IA
+                </button>
+            </div>
+            <div class="studio-workspace" style="margin-top:18px;">
                 <div class="card">
                     <div class="card-title"><i class="fa-solid fa-sliders"></i> Personnalisation</div>
                     <div class="form-group">
@@ -1585,6 +1664,11 @@
                 </div>
 
                 <!-- ── Contenu e-mail ── -->
+                <div style="display:flex;justify-content:flex-end;margin-bottom:-4px;">
+                    <button type="button" onclick="openAiEmailWriter()" class="btn-action btn-ai-suggest" style="padding:8px 14px;font-size:12px;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Rédiger avec l'IA
+                    </button>
+                </div>
                 <div class="form-group"><label>Objet du mail</label><input type="text" id="notif-subject-field" placeholder="Ex : Vous nous manquez 🎁"></div>
                 <div class="form-group"><label>Corps du message</label><textarea id="notif-body-field" rows="7" placeholder="Rédigez votre message ici…"></textarea></div>
 
@@ -4214,6 +4298,216 @@
         await supabaseClient.auth.signOut();
         window.location.href = '/connexion';
     }
+
+    // ═══════════════════════════════════════════════════════════
+    //  IA ASSISTANT — Email writer, Reward suggester, Design studio
+    // ═══════════════════════════════════════════════════════════
+
+    function showAiModal(html) {
+        let backdrop = document.getElementById('ai-modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'ai-modal-backdrop';
+            backdrop.className = 'ai-modal-backdrop';
+            backdrop.onclick = (e) => { if (e.target === backdrop) closeAiModal(); };
+            document.body.appendChild(backdrop);
+        }
+        backdrop.innerHTML = '<div class="ai-modal" onclick="event.stopPropagation()">' + html + '</div>';
+        backdrop.classList.add('show');
+    }
+    function closeAiModal() {
+        const b = document.getElementById('ai-modal-backdrop');
+        if (b) b.classList.remove('show');
+    }
+
+    // ─── Rédacteur d'emails IA ───
+    function openAiEmailWriter() {
+        const type = document.getElementById('notif-template-selector')?.value || 'relance';
+        const typeLabels = { relance: 'Relance d\'inactivité', avis: 'Demande d\'avis Google', offre: 'Événement / promo', custom: 'Personnalisé' };
+        showAiModal(`
+            <div class="ai-modal-title">✨ Rédacteur IA</div>
+            <div class="ai-modal-sub">Décrivez ce que vous voulez communiquer. L'IA générera l'objet + le corps du mail (avec {{prenom}} et {{enseigne}} comme variables auto-remplies).</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Type : <strong style="color:var(--secondary-accent)">${typeLabels[type] || type}</strong></div>
+            <textarea id="ai-email-prompt" rows="4" placeholder="Ex : Je veux relancer mes clients qui n'ont pas commandé depuis 1 mois. Ton chaleureux, propose 50 points bonus s'ils reviennent cette semaine."></textarea>
+            <div class="ai-modal-actions">
+                <button onclick="closeAiModal()" class="btn-action btn-secondary" style="padding:11px 20px;">Annuler</button>
+                <button onclick="runAiEmailWriter()" class="btn-action btn-ai-suggest" style="flex:1;"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer</button>
+            </div>
+        `);
+        setTimeout(() => document.getElementById('ai-email-prompt')?.focus(), 80);
+    }
+    async function runAiEmailWriter() {
+        const prompt = document.getElementById('ai-email-prompt')?.value?.trim();
+        if (!prompt) { showToast('warning', 'Vide', 'Décrivez votre message.'); return; }
+        const type = document.getElementById('notif-template-selector')?.value || 'relance';
+        const merchantName = document.getElementById('merchant-title')?.innerText || 'mon commerce';
+        const btn = document.querySelector('#ai-modal-backdrop .btn-ai-suggest');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…'; }
+        try {
+            const res = await fetch('/api/ai-email-writer', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt, type, merchantName })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.subject) {
+                showToast('error', 'Erreur IA', data?.error || 'Échec de génération.');
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer'; }
+                return;
+            }
+            document.getElementById('notif-subject-field').value = data.subject;
+            document.getElementById('notif-body-field').value    = data.body;
+            closeAiModal();
+            showToast('success', 'Email rédigé !', 'Vous pouvez ajuster le texte avant d\'activer.');
+        } catch (err) {
+            showToast('error', 'Erreur réseau', 'Vérifiez votre connexion.');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer'; }
+        }
+    }
+
+    // ─── Suggestions de récompenses IA ───
+    function openAiRewardSuggestions() {
+        const sector = document.getElementById('settings-sector')?.value || '';
+        const sectorLabel = ({cafe:'Café/Boulangerie',alim:'Alimentaire',beaute:'Beauté',mode:'Mode',resto:'Restaurant',sport:'Sport'})[sector] || '';
+        showAiModal(`
+            <div class="ai-modal-title">🎁 Suggestions de récompenses IA</div>
+            <div class="ai-modal-sub">Décrivez votre commerce (type, ambiance, produits phares). L'IA proposera 5 récompenses progressives adaptées.</div>
+            <textarea id="ai-reward-prompt" rows="3" placeholder="${sectorLabel ? 'Ex : ' + sectorLabel + ' parisien spécialisé en pâtisseries artisanales et café de spécialité' : 'Ex : Salon de beauté avec services manucure et coloration'}">${sectorLabel}</textarea>
+            <div class="ai-modal-actions">
+                <button onclick="closeAiModal()" class="btn-action btn-secondary" style="padding:11px 20px;">Annuler</button>
+                <button onclick="runAiRewardSuggestions()" class="btn-action btn-ai-suggest" style="flex:1;"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer 5 idées</button>
+            </div>
+            <div id="ai-reward-results"></div>
+        `);
+        setTimeout(() => document.getElementById('ai-reward-prompt')?.focus(), 80);
+    }
+    async function runAiRewardSuggestions() {
+        const description = document.getElementById('ai-reward-prompt')?.value?.trim();
+        if (!description) { showToast('warning', 'Vide', 'Décrivez votre commerce.'); return; }
+        const pointsPerEuro = currentPointsPerEuro || 1;
+        const btn = document.querySelector('#ai-modal-backdrop .btn-ai-suggest');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…'; }
+        try {
+            const res = await fetch('/api/ai-reward-suggestions', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description, pointsPerEuro })
+            });
+            const data = await res.json();
+            if (!res.ok || !Array.isArray(data.rewards)) {
+                showToast('error', 'Erreur IA', data?.error || 'Échec.');
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer 5 idées'; }
+                return;
+            }
+            const list = data.rewards.map((r, i) => `
+                <div class="ai-suggestion-item" id="ai-rwd-${i}">
+                    <div class="ai-suggestion-item-info">
+                        <div class="ai-suggestion-item-name">${escapeHtml(r.name)}</div>
+                        <div class="ai-suggestion-item-pts">${r.points} points</div>
+                    </div>
+                    <button class="ai-suggestion-add-btn" onclick="aiAddRewardToCatalog(${i}, '${escapeHtml(r.name).replace(/'/g,"\\'")}', ${r.points})"><i class="fa-solid fa-plus"></i> Ajouter</button>
+                </div>
+            `).join('');
+            document.getElementById('ai-reward-results').innerHTML = '<div class="ai-suggestion-list">' + list + '</div>';
+            if (btn) { btn.style.display = 'none'; }
+        } catch (err) {
+            showToast('error', 'Erreur réseau', 'Vérifiez votre connexion.');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer 5 idées'; }
+        }
+    }
+    async function aiAddRewardToCatalog(idx, name, points) {
+        if (!currentMerchantId) return;
+        const btn = document.querySelector(`#ai-rwd-${idx} .ai-suggestion-add-btn`);
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+        try {
+            const { error } = await supabaseClient.from('rewards').insert({
+                merchant_id: currentMerchantId,
+                name,
+                points_required: points
+            });
+            if (error) {
+                showToast('error', 'Erreur', error.message);
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Ajouter'; }
+                return;
+            }
+            if (btn) { btn.classList.add('added'); btn.innerHTML = '<i class="fa-solid fa-check"></i> Ajouté'; }
+            if (typeof loadRewardsFromDB === 'function') loadRewardsFromDB();
+        } catch (err) {
+            showToast('error', 'Erreur', String(err));
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Ajouter'; }
+        }
+    }
+
+    // ─── Design Studio IA ───
+    function openAiDesignStudio() {
+        const sector = document.getElementById('settings-sector')?.value || '';
+        const sectorLabel = ({cafe:'café cosy/boulangerie',alim:'épicerie',beaute:'institut de beauté',mode:'boutique mode',resto:'restaurant',sport:'salle de sport'})[sector] || '';
+        showAiModal(`
+            <div class="ai-modal-title">🎨 Auto-design par IA</div>
+            <div class="ai-modal-sub">Décrivez l'ambiance de votre commerce. L'IA générera une palette de couleurs harmonieuse pour votre carte.</div>
+            <textarea id="ai-design-prompt" rows="3" placeholder="${sectorLabel ? 'Ex : ' + sectorLabel + ' chaleureux, ambiance scandinave, tons bois et vert' : 'Ex : Bistrot vintage parisien, ambiance art déco, tons or et bordeaux'}">${sectorLabel}</textarea>
+            <div class="ai-modal-actions">
+                <button onclick="closeAiModal()" class="btn-action btn-secondary" style="padding:11px 20px;">Annuler</button>
+                <button onclick="runAiDesignStudio()" class="btn-action btn-ai-suggest" style="flex:1;"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer le design</button>
+            </div>
+            <div id="ai-design-result"></div>
+        `);
+        setTimeout(() => document.getElementById('ai-design-prompt')?.focus(), 80);
+    }
+    async function runAiDesignStudio() {
+        const description = document.getElementById('ai-design-prompt')?.value?.trim();
+        if (!description) { showToast('warning', 'Vide', 'Décrivez votre ambiance.'); return; }
+        const btn = document.querySelector('#ai-modal-backdrop .btn-ai-suggest');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…'; }
+        try {
+            const res = await fetch('/api/ai-design-studio', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.bgColor) {
+                showToast('error', 'Erreur IA', data?.error || 'Échec.');
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer le design'; }
+                return;
+            }
+            document.getElementById('ai-design-result').innerHTML = `
+                <div class="ai-color-preview" style="background:${data.bgColor};">
+                    <div class="ai-color-swatch" style="background:${data.txtColor};"></div>
+                    <div class="ai-color-swatch" style="background:${data.borderColor};border-color:${data.borderColor};"></div>
+                    <div style="flex:1;color:${data.txtColor};font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:16px;">${escapeHtml(data.tagline)}</div>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:10px;font-style:italic;">${escapeHtml(data.rationale)}</div>
+                <div class="ai-modal-actions">
+                    <button onclick="closeAiModal()" class="btn-action btn-secondary" style="padding:11px 20px;">Annuler</button>
+                    <button onclick="aiApplyDesign('${data.bgColor}','${data.txtColor}','${data.borderColor}')" class="btn-action btn-ai-suggest" style="flex:1;"><i class="fa-solid fa-check"></i> Appliquer ces couleurs</button>
+                </div>
+            `;
+            if (btn) btn.style.display = 'none';
+        } catch (err) {
+            showToast('error', 'Erreur réseau', 'Vérifiez votre connexion.');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Générer le design'; }
+        }
+    }
+    function aiApplyDesign(bg, txt, border) {
+        const txtEl  = document.getElementById('studio-txt-color');
+        const brdEl  = document.getElementById('studio-border-color');
+        if (txtEl)  txtEl.value  = txt;
+        if (brdEl)  brdEl.value  = border;
+        // Store bgColor as a global tint (no bg image set)
+        const rendEl = document.getElementById('studio-card-element-render');
+        if (rendEl) rendEl.style.backgroundColor = bg;
+        if (typeof refreshStudioOutput === 'function') refreshStudioOutput();
+        closeAiModal();
+        showToast('success', 'Design appliqué', 'Cliquez sur "Enregistrer le design" pour sauvegarder.');
+    }
+
+    // Helper escape HTML (used in modals)
+    function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // ESC ferme la modale IA
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAiModal();
+    });
 </script>
 </body>
 </html>

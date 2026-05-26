@@ -927,6 +927,11 @@
 
         <div class="section-label" style="margin-top:20px;">Actions du compte</div>
         <div class="profile-actions">
+            <button class="profile-action-btn" onclick="openClientAiChat()">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color:#c5b8ff;"></i>
+                <span>Assistant IA <span style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:6px;">IA</span></span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
             <button class="profile-action-btn" onclick="openThemeChooser()">
                 <i class="fa-solid fa-palette"></i>
                 <span>Apparence de l'application</span>
@@ -1000,6 +1005,72 @@
         </button>
     </div>
 </div>
+
+<!-- ═══════════ AI CHAT MODAL ═══════════ -->
+<div class="popup-overlay" id="aiChatSheet" onclick="closeClientAiChat()">
+    <div class="popup-card" onclick="event.stopPropagation()" style="max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+        <div style="padding:18px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div class="sheet-handle" style="margin-bottom:14px;"></div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#7c6af7,#00e8cc);display:flex;align-items:center;justify-content:center;font-size:18px;">✨</div>
+                <div style="flex:1;text-align:left;">
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;">Assistant Keepo</div>
+                    <div style="font-size:11px;color:var(--muted);"><span style="color:#3ee36c;">●</span> En ligne · Posez n'importe quelle question</div>
+                </div>
+                <button onclick="closeClientAiChat()" style="background:rgba(255,255,255,0.06);border:none;width:34px;height:34px;border-radius:50%;color:var(--muted);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+        <div id="aiClientChatBody" style="flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-height:280px;"></div>
+        <div style="padding:12px 16px 16px;border-top:1px solid rgba(255,255,255,0.06);">
+            <div id="aiClientSuggestions" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                <button class="ai-client-chip" onclick="sendClientAiSuggestion('Comment je gagne des points ?')">Comment gagner des points ?</button>
+                <button class="ai-client-chip" onclick="sendClientAiSuggestion('Comment utiliser une récompense ?')">Utiliser une récompense</button>
+                <button class="ai-client-chip" onclick="sendClientAiSuggestion('Je ne trouve pas mon QR code')">Trouver mon QR code</button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="aiClientInput" placeholder="Posez votre question..."
+                    style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 14px;color:#fff;font-family:inherit;font-size:14px;outline:none;"
+                    onkeydown="if(event.key==='Enter')sendClientAiMessage()">
+                <button onclick="sendClientAiMessage()" id="aiClientSendBtn"
+                    style="background:linear-gradient(135deg,#7c6af7,#00e8cc);border:none;width:46px;height:46px;border-radius:14px;color:#0d0c18;font-size:16px;cursor:pointer;">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.ai-client-chip {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--muted); padding: 6px 12px; border-radius: 50px;
+    font-size: 11px; cursor: pointer; transition: all .15s;
+    font-family: inherit;
+}
+.ai-client-chip:hover { background: rgba(124,106,247,0.15); color: #c5b8ff; border-color: rgba(124,106,247,0.3); }
+.ai-client-msg { display: flex; gap: 9px; max-width: 88%; }
+.ai-client-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.ai-client-msg-bubble {
+    background: rgba(255,255,255,0.05); border-radius: 16px;
+    padding: 11px 14px; font-size: 13.5px; line-height: 1.55; color: #e8e9f0;
+}
+.ai-client-msg.user .ai-client-msg-bubble {
+    background: linear-gradient(135deg, #7c6af7, #00e8cc); color: #0d0c18; font-weight: 600;
+}
+.ai-client-msg-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+}
+.ai-client-msg.bot .ai-client-msg-avatar { background: linear-gradient(135deg,#7c6af7,#00e8cc); }
+.ai-client-msg.user .ai-client-msg-avatar { background: rgba(255,255,255,0.08); color: var(--muted); }
+.ai-client-typing-dots { display: flex; gap: 3px; padding: 4px 0; }
+.ai-client-typing-dots span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
+    animation: aiClientPulse 1.4s ease-in-out infinite;
+}
+.ai-client-typing-dots span:nth-child(2) { animation-delay: .2s; }
+.ai-client-typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes aiClientPulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+</style>
 
 <!-- ═══════════ BOTTOM NAV ═══════════ -->
 <nav class="bottom-nav">
@@ -1904,6 +1975,99 @@
         await stopCameraScanner();
         await supabaseClient.auth.signOut();
         window.location.href = '/connexion';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  ASSISTANT IA — Chatbot côté client
+    // ═══════════════════════════════════════════════════════════
+    let aiClientHistory = [];
+    const AI_CLIENT_WELCOME = "👋 Bonjour ! Je suis l'assistant Keepo. Posez-moi vos questions sur les points, récompenses, scan QR ou tout ce qui concerne votre carte de fidélité.";
+
+    function openClientAiChat() {
+        const sheet = document.getElementById('aiChatSheet');
+        if (!sheet) return;
+        sheet.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        if (aiClientHistory.length === 0) {
+            renderClientAiChat();
+            appendClientAiBubble('bot', AI_CLIENT_WELCOME);
+        }
+        setTimeout(() => document.getElementById('aiClientInput')?.focus(), 250);
+    }
+    function closeClientAiChat() {
+        const sheet = document.getElementById('aiChatSheet');
+        if (sheet) sheet.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    function renderClientAiChat() {
+        const body = document.getElementById('aiClientChatBody');
+        if (body) body.innerHTML = '';
+    }
+    function appendClientAiBubble(who, text, opts = {}) {
+        const body = document.getElementById('aiClientChatBody');
+        if (!body) return null;
+        const wrap = document.createElement('div');
+        wrap.className = 'ai-client-msg ' + who;
+        if (opts.id) wrap.id = opts.id;
+        const avatar = who === 'bot' ? '✨' : '<i class="fa-solid fa-user"></i>';
+        const inner  = opts.typing
+            ? '<div class="ai-client-typing-dots"><span></span><span></span><span></span></div>'
+            : formatClientAiText(text);
+        wrap.innerHTML = `<div class="ai-client-msg-avatar">${avatar}</div><div class="ai-client-msg-bubble">${inner}</div>`;
+        body.appendChild(wrap);
+        body.scrollTop = body.scrollHeight;
+        return wrap;
+    }
+    function formatClientAiText(t) {
+        return String(t || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+    }
+    function sendClientAiSuggestion(q) {
+        const input = document.getElementById('aiClientInput');
+        if (input) input.value = q;
+        const sugg = document.getElementById('aiClientSuggestions');
+        if (sugg) sugg.style.display = 'none';
+        sendClientAiMessage();
+    }
+    async function sendClientAiMessage() {
+        const input = document.getElementById('aiClientInput');
+        const text  = input?.value?.trim();
+        if (!text) return;
+        input.value = '';
+        appendClientAiBubble('user', text);
+        aiClientHistory.push({ role: 'user', content: text });
+        const sugg = document.getElementById('aiClientSuggestions');
+        if (sugg) sugg.style.display = 'none';
+
+        const sendBtn = document.getElementById('aiClientSendBtn');
+        if (sendBtn) sendBtn.disabled = true;
+        const typingEl = appendClientAiBubble('bot', '', { typing: true, id: 'ai-c-typing-' + Date.now() });
+
+        let reply;
+        try {
+            const res = await fetch('/api/ai-client-chat', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: aiClientHistory.slice(-10),
+                    userContext: {
+                        clientName: document.getElementById('user-display-name')?.innerText || '',
+                        cardCount: document.querySelectorAll('.wallet-card').length || 0
+                    }
+                })
+            });
+            const data = await res.json();
+            reply = res.ok ? (data.reply || "Je n'ai pas bien compris, reformulez ?") : "Désolé, l'assistant est momentanément indisponible. Réessayez dans un instant.";
+        } catch {
+            reply = "Pas de connexion 🛜 Vérifiez votre internet.";
+        }
+
+        if (typingEl?.parentNode) typingEl.parentNode.removeChild(typingEl);
+        aiClientHistory.push({ role: 'model', content: reply });
+        appendClientAiBubble('bot', reply);
+        if (sendBtn) sendBtn.disabled = false;
+        document.getElementById('aiClientInput')?.focus();
     }
 </script>
 </body>
