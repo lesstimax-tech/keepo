@@ -601,7 +601,7 @@
             background: rgba(10, 8, 20, 0.9);
             backdrop-filter: blur(24px) saturate(1.5);
             border-top: 1px solid var(--border);
-            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
             height: var(--nav-h);
             padding-bottom: env(safe-area-inset-bottom, 0px);
             z-index: 900;
@@ -1380,14 +1380,15 @@
         <i class="fa-solid fa-wallet nav-icon"></i>
         <span>Cartes</span>
     </button>
-    <button class="nav-item nav-scan-btn" id="nav-scan" onclick="switchView('view-scan')">
-        <div class="nav-scan-bubble"><i class="fa-solid fa-qrcode"></i></div>
-        <span>Scanner</span>
-    </button>
     <button class="nav-item" id="nav-history" onclick="switchView('view-history')">
         <i class="fa-solid fa-clock-rotate-left nav-icon"></i>
         <span>Historique</span>
     </button>
+    <button class="nav-item nav-scan-btn" id="nav-scan" onclick="switchView('view-scan')">
+        <div class="nav-scan-bubble"><i class="fa-solid fa-qrcode"></i></div>
+        <span>Scanner</span>
+    </button>
+    <div class="nav-item" style="pointer-events:none;" aria-hidden="true"></div>
     <button class="nav-item" id="nav-profile" onclick="switchView('view-profile')">
         <i class="fa-solid fa-user nav-icon"></i>
         <span>Profil</span>
