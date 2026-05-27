@@ -244,7 +244,7 @@ begin
 end;
 $$;
 
-grant execute on function public.apply_loyalty_credit to authenticated;
+grant execute on function public.apply_loyalty_credit(uuid, uuid, numeric, int) to authenticated;
 grant execute on function public.apply_loyalty_debit  to authenticated;
 
 -- ── RPC : réclamer une récompense (côté client) ───────
@@ -899,7 +899,7 @@ begin
 end;
 $$;
 
-grant execute on function public.apply_loyalty_credit to authenticated;
+grant execute on function public.apply_loyalty_credit(uuid, uuid, numeric, int) to authenticated;
 
 
 -- ════════════════════════════════════════════════════════
@@ -1055,4 +1055,4 @@ begin
 end;
 $$;
 
-grant execute on function public.apply_loyalty_credit to authenticated;
+grant execute on function public.apply_loyalty_credit(uuid, uuid, numeric, int, uuid) to authenticated;
