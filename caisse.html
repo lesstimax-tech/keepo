@@ -541,6 +541,18 @@ async function onQrScanned(qrData) {
     const parts = qrData.split(':');
     const clientId = parts[2];
     const expectedMerchant = parts[3];
+
+    // ── Anti-fraude : validation du timestamp ──
+    if (parts[4]) {
+        const qrBucket  = parseInt(parts[4], 10);
+        const nowBucket = Math.floor(Date.now() / 60000);
+        if (nowBucket - qrBucket > 2) {
+            showCaisseResult('error', 'QR expiré ⏱', 'Ce code a plus de 2 minutes. Demandez au client d\'actualiser son QR.');
+            setTimeout(() => { if (scanner) try { scanner.resume(); } catch {} }, 2500);
+            return;
+        }
+    }
+
     if (expectedMerchant !== merchantId) {
         showCaisseResult('error', 'Carte étrangère', 'Ce QR appartient à un autre commerce.');
         return;

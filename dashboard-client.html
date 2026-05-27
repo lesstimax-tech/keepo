@@ -601,11 +601,39 @@
             background: rgba(10, 8, 20, 0.9);
             backdrop-filter: blur(24px) saturate(1.5);
             border-top: 1px solid var(--border);
-            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
             height: var(--nav-h);
             padding-bottom: env(safe-area-inset-bottom, 0px);
             z-index: 900;
         }
+
+        /* ═══════════════════════════════════════
+           HISTORIQUE TRANSACTIONS
+        ═══════════════════════════════════════ */
+        .hist-filter-btn {
+            background: var(--glass); border: 1px solid var(--border);
+            color: var(--muted); padding: 7px 14px; border-radius: 50px;
+            font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;
+            font-family: 'Plus Jakarta Sans', sans-serif; transition: all .2s;
+        }
+        .hist-filter-btn.active { background: rgba(0,232,204,0.1); border-color: rgba(0,232,204,0.35); color: var(--cyan); }
+        .hist-filter-btn:hover:not(.active) { background: var(--glass-2); color: var(--text); }
+
+        .tx-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; border-radius: var(--r-sm);
+            border: 1px solid var(--border); background: var(--glass);
+            margin-bottom: 8px; transition: border-color .2s;
+        }
+        .tx-item:hover { border-color: var(--border-2); }
+        .tx-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .tx-info { flex: 1; min-width: 0; }
+        .tx-merchant { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .tx-pts { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; white-space: nowrap; flex-shrink: 0; }
+
+        /* ─── QR countdown ─── */
+        .qr-countdown { font-size:10px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-top:-10px; margin-bottom:10px; text-align:center; }
         .nav-item {
             background: none; border: none;
             color: var(--muted);
@@ -963,7 +991,26 @@
         </div>
     </div>
 
-    <!-- ═══════════ VUE 3 : PROFIL ═══════════ -->
+    <!-- ═══════════ VUE 3 : HISTORIQUE ═══════════ -->
+    <div id="view-history" class="app-view">
+        <h2 class="view-title">Historique</h2>
+        <p class="view-sub">Toutes vos transactions de fidélité</p>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;">
+            <button class="hist-filter-btn active" id="hf-all"    onclick="filterHistory('all',this)">Tout</button>
+            <button class="hist-filter-btn"         id="hf-credit" onclick="filterHistory('credit',this)">Points gagnés</button>
+            <button class="hist-filter-btn"         id="hf-debit"  onclick="filterHistory('debit',this)">Récompenses</button>
+        </div>
+
+        <div id="history-container">
+            <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
+                <div style="font-size:28px;margin-bottom:12px;">📋</div>
+                <p style="color:var(--muted);font-size:13px;">Ouvrez cet onglet pour charger votre historique.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ VUE 4 : PROFIL ═══════════ -->
     <div id="view-profile" class="app-view">
         <h2 class="view-title">Mon Profil</h2>
         <p class="view-sub">Gérez vos informations et préférences</p>
@@ -1108,6 +1155,7 @@
         <p class="modal-sub">Faites scanner ce code par votre commerçant</p>
 
         <div class="qr-zone" id="client-qr-rendering-zone"></div>
+        <div class="qr-countdown" id="qr-countdown"></div>
 
         <div class="modal-points-row">
             <div class="modal-stat-box">
@@ -1130,7 +1178,7 @@
                 </div>
                 <i class="fa-solid fa-chevron-right" style="color:var(--muted);"></i>
             </button>
-            <button onclick="openGiftSheet()" class="card-detail-action">
+            <button id="qrModalGiftBtn" onclick="openGiftSheet()" class="card-detail-action">
                 <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#ff8a5c,#ffc34d);">🎁</div>
                 <div class="card-detail-action-text">
                     <span>Cartes cadeaux</span>
@@ -1336,6 +1384,10 @@
         <div class="nav-scan-bubble"><i class="fa-solid fa-qrcode"></i></div>
         <span>Scanner</span>
     </button>
+    <button class="nav-item" id="nav-history" onclick="switchView('view-history')">
+        <i class="fa-solid fa-clock-rotate-left nav-icon"></i>
+        <span>Historique</span>
+    </button>
     <button class="nav-item" id="nav-profile" onclick="switchView('view-profile')">
         <i class="fa-solid fa-user nav-icon"></i>
         <span>Profil</span>
@@ -1405,6 +1457,18 @@
     let currentClientId = null;
     let html5QrCodeScanner = null;
     let walletCache = [];
+
+    // ─── Historique ───
+    let allTransactions  = [];
+    let historyFilter    = 'all';
+    let historyLoaded    = false;
+
+    // ─── QR anti-fraude ───
+    let qrRefreshInterval = null;
+    let qrCountdownTimer  = null;
+
+    // ─── Notifications ─── (points précédents pour détecter les nouveaux crédits)
+    let prevBalances = {};
 
     // ─── PALETTE for cards (cycles) ───
     const CARD_PALETTES = [
@@ -1507,10 +1571,24 @@
 
         splashProgress(80, 'Récupération des cartes');
         loadClientTheme(); // thème personnalisé avec ID connu
+        initPwa();
         await loadClientWallet();
         await loadMyPhase3Profile();
 
         splashHide(displayName);
+
+        // Notifications push (demande après splashHide pour ne pas perturber le chargement)
+        requestNotifPermission();
+
+        // Refresh automatique du portefeuille toutes les 60s quand l'app est au premier plan
+        setInterval(() => {
+            if (!document.hidden) loadClientWallet();
+        }, 60000);
+
+        // Recharge aussi au retour sur l'onglet
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) loadClientWallet();
+        }, { once: false });
     });
 
     // ─── HELPER : hex → glow rgba ───
@@ -1543,11 +1621,12 @@
         // ── Charger les designs et récompenses de chaque commerçant ──
         let rewardGoals  = {}; // merchantId → points du 1er palier
         let cardDesigns  = {}; // merchantId → { title, color, studio_json }
+        let merchantPlans = {}; // merchantId → plan ('essential' | 'pro' | ...)
 
         if (walletCache.length > 0) {
             const merchantIds = walletCache.map(c => c.merchant_id);
 
-            const [rewardsRes, cardsRes] = await Promise.all([
+            const [rewardsRes, cardsRes, plansRes] = await Promise.all([
                 supabaseClient
                     .from('rewards')
                     .select('merchant_id, points_required')
@@ -1556,7 +1635,11 @@
                 supabaseClient
                     .from('merchant_cards')
                     .select('merchant_id, title, color, studio_json, tier_silver_threshold, tier_gold_threshold, wheel_enabled, wheel_visits_required')
-                    .in('merchant_id', merchantIds)
+                    .in('merchant_id', merchantIds),
+                supabaseClient
+                    .from('profiles')
+                    .select('id, plan')
+                    .in('id', merchantIds)
             ]);
 
             if (rewardsRes.data) {
@@ -1566,6 +1649,9 @@
             }
             if (cardsRes.data) {
                 cardsRes.data.forEach(mc => { cardDesigns[mc.merchant_id] = mc; });
+            }
+            if (plansRes.data) {
+                plansRes.data.forEach(p => { merchantPlans[p.id] = p.plan; });
             }
         }
 
@@ -1593,6 +1679,20 @@
                 </div>`;
             return;
         }
+
+        // ── Détection nouveaux points (notifications) ──
+        walletData.forEach(card => {
+            const prev = prevBalances[card.merchant_id];
+            const curr = card.points_balance || 0;
+            if (prev !== undefined && curr > prev) {
+                notifyPointsGained(curr - prev, card.merchant_profile?.name || 'votre commerce');
+            }
+            prevBalances[card.merchant_id] = curr;
+        });
+
+        // Reset cache historique pour forcer un rechargement
+        historyLoaded = false;
+        allTransactions = [];
 
         container.innerHTML = "";
         walletData.forEach((card, idx) => {
@@ -1629,23 +1729,29 @@
                 ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,${cardOverlayOpacity});border-radius:inherit;pointer-events:none;z-index:0;"></div>`
                 : '';
 
-            // ── VIP Tier badge ──
+            // ── Plan du commerçant — détermine les fonctionnalités visibles ──
+            const merchantPlan = merchantPlans[card.merchant_id] || 'essential';
+            const isMerchantPro = merchantPlan !== 'essential';
+
+            // ── VIP Tier badge (Pro uniquement) ──
             const lifetime = card.lifetime_points || 0;
             const silverThr = design.tier_silver_threshold ?? 500;
             const goldThr   = design.tier_gold_threshold   ?? 2000;
             let tierBadge = '';
-            if (lifetime >= goldThr) {
-                tierBadge = `<div class="tier-badge tier-gold" title="Niveau Gold — multiplicateur appliqué">🥇 GOLD</div>`;
-            } else if (lifetime >= silverThr) {
-                tierBadge = `<div class="tier-badge tier-silver" title="Niveau Silver — multiplicateur appliqué">🥈 SILVER</div>`;
-            } else {
-                tierBadge = `<div class="tier-badge tier-bronze" title="Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver">🥉 BRONZE</div>`;
+            if (isMerchantPro) {
+                if (lifetime >= goldThr) {
+                    tierBadge = `<div class="tier-badge tier-gold" title="Niveau Gold — multiplicateur appliqué">🥇 GOLD</div>`;
+                } else if (lifetime >= silverThr) {
+                    tierBadge = `<div class="tier-badge tier-silver" title="Niveau Silver — multiplicateur appliqué">🥈 SILVER</div>`;
+                } else {
+                    tierBadge = `<div class="tier-badge tier-bronze" title="Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver">🥉 BRONZE</div>`;
+                }
             }
 
             const cardHtml = `
                 <div class="loyalty-card"
                     style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
-                    onclick="openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}')">
+                    onclick="openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}', '${merchantPlan}')">
                     ${overlayEl}
                     <div style="position:relative;z-index:1;">
                         <div class="card-top">
@@ -1690,7 +1796,7 @@
     }
 
     // ─── QR MODAL ───
-    async function openClientCardPopup(merchantName, currentPoints, merchantId) {
+    async function openClientCardPopup(merchantName, currentPoints, merchantId, merchantPlan) {
         document.getElementById('modal-merchant-name').innerText = merchantName;
         document.getElementById('modal-current-points').innerText = `${currentPoints} Pts`;
 
@@ -1703,49 +1809,81 @@
         const remaining = Math.max(goal - currentPoints, 0);
         document.getElementById('modal-next-reward').innerText = remaining > 0 ? `${remaining} pts` : '🎁 Dispo !';
 
-        document.getElementById('client-qr-rendering-zone').innerHTML = "";
+        // ── QR anti-fraude : timestamp 60s + auto-refresh ──
+        if (qrRefreshInterval) { clearInterval(qrRefreshInterval); qrRefreshInterval = null; }
+        if (qrCountdownTimer)  { clearInterval(qrCountdownTimer);  qrCountdownTimer  = null; }
 
-        // QR unique par commerce : keepo:card:CLIENT_UUID:MERCHANT_UUID
-        new QRCodeStyling({
-            width: 200, height: 200, type: "svg",
-            data: `keepo:card:${currentClientId}:${merchantId}`,
-            dotsOptions: { color: "#0a0911", type: "rounded" },
-            backgroundOptions: { color: "#ffffff" },
-            cornersSquareOptions: { type: "extra-rounded", color: "#0a0911" }
-        }).append(document.getElementById("client-qr-rendering-zone"));
+        function buildQr() {
+            const bucket = Math.floor(Date.now() / 60000); // granule de 1 min
+            document.getElementById('client-qr-rendering-zone').innerHTML = "";
+            new QRCodeStyling({
+                width: 200, height: 200, type: "svg",
+                data: `keepo:card:${currentClientId}:${merchantId}:${bucket}`,
+                dotsOptions: { color: "#0a0911", type: "rounded" },
+                backgroundOptions: { color: "#ffffff" },
+                cornersSquareOptions: { type: "extra-rounded", color: "#0a0911" }
+            }).append(document.getElementById("client-qr-rendering-zone"));
+            startQrCountdown();
+        }
 
-        // ── Vérifie l'éligibilité de la roue ──
-        const wheelBtn   = document.getElementById('qrModalWheelBtn');
-        const wheelSub   = document.getElementById('qrModalWheelSub');
-        if (wheelBtn && wheelSub) {
-            wheelBtn.style.display = 'flex';
-            wheelSub.innerText = 'Vérification…';
-            try {
-                const { data: card } = await supabaseClient
-                    .from('merchant_cards')
-                    .select('wheel_enabled, wheel_visits_required')
-                    .eq('merchant_id', merchantId).maybeSingle();
-                if (!card?.wheel_enabled) {
-                    wheelBtn.style.display = 'none';
-                } else {
-                    const required = card.wheel_visits_required ?? 10;
-                    const [txRes, balRes] = await Promise.all([
-                        supabaseClient.from('transactions').select('id', { count: 'exact', head: true })
-                            .eq('merchant_id', merchantId).eq('client_id', currentClientId).eq('type', 'credit'),
-                        supabaseClient.from('loyalty_balances').select('wheel_last_spin_visits')
-                            .eq('merchant_id', merchantId).eq('client_id', currentClientId).maybeSingle()
-                    ]);
-                    const visits   = txRes.count || 0;
-                    const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
-                    const progress = visits - lastSpin;
-                    if (progress >= required) {
-                        wheelSub.innerHTML = `<span style="color:#00e8cc;font-weight:700;">🎉 Tour gratuit disponible !</span>`;
+        function startQrCountdown() {
+            const el = document.getElementById('qr-countdown');
+            if (!el) return;
+            if (qrCountdownTimer) clearInterval(qrCountdownTimer);
+            const nextBucket = (Math.floor(Date.now() / 60000) + 1) * 60000;
+            qrCountdownTimer = setInterval(() => {
+                const rem = Math.max(0, Math.round((nextBucket - Date.now()) / 1000));
+                el.innerText = rem > 0 ? `🔄 Actualisation dans ${rem}s` : 'Actualisation…';
+                if (rem === 0) { clearInterval(qrCountdownTimer); qrCountdownTimer = null; }
+            }, 1000);
+        }
+
+        buildQr();
+        qrRefreshInterval = setInterval(buildQr, 55000); // refresh 5s avant le changement de bucket
+
+        // ── Fonctionnalités Pro — masquées si le commerçant est Essential ──
+        const isPro = merchantPlan && merchantPlan !== 'essential';
+        const wheelBtn = document.getElementById('qrModalWheelBtn');
+        const giftBtn  = document.getElementById('qrModalGiftBtn');
+        const wheelSub = document.getElementById('qrModalWheelSub');
+
+        if (!isPro) {
+            // Plan Essential : masquer roue et cartes cadeaux
+            if (wheelBtn) wheelBtn.style.display = 'none';
+            if (giftBtn)  giftBtn.style.display  = 'none';
+        } else {
+            // Plan Pro : afficher cartes cadeaux et vérifier éligibilité roue
+            if (giftBtn) giftBtn.style.display = 'flex';
+            if (wheelBtn && wheelSub) {
+                wheelBtn.style.display = 'flex';
+                wheelSub.innerText = 'Vérification…';
+                try {
+                    const { data: card } = await supabaseClient
+                        .from('merchant_cards')
+                        .select('wheel_enabled, wheel_visits_required')
+                        .eq('merchant_id', merchantId).maybeSingle();
+                    if (!card?.wheel_enabled) {
+                        wheelBtn.style.display = 'none';
                     } else {
-                        wheelSub.innerText = `Encore ${required - progress} visite${required - progress > 1 ? 's' : ''} pour débloquer (${progress}/${required})`;
+                        const required = card.wheel_visits_required ?? 10;
+                        const [txRes, balRes] = await Promise.all([
+                            supabaseClient.from('transactions').select('id', { count: 'exact', head: true })
+                                .eq('merchant_id', merchantId).eq('client_id', currentClientId).eq('type', 'credit'),
+                            supabaseClient.from('loyalty_balances').select('wheel_last_spin_visits')
+                                .eq('merchant_id', merchantId).eq('client_id', currentClientId).maybeSingle()
+                        ]);
+                        const visits   = txRes.count || 0;
+                        const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
+                        const progress = visits - lastSpin;
+                        if (progress >= required) {
+                            wheelSub.innerHTML = `<span style="color:#00e8cc;font-weight:700;">🎉 Tour gratuit disponible !</span>`;
+                        } else {
+                            wheelSub.innerText = `Encore ${required - progress} visite${required - progress > 1 ? 's' : ''} pour débloquer (${progress}/${required})`;
+                        }
                     }
+                } catch {
+                    wheelBtn.style.display = 'none';
                 }
-            } catch {
-                wheelBtn.style.display = 'none';
             }
         }
 
@@ -1754,6 +1892,10 @@
 
     function closeQrModal() {
         document.getElementById('qrModal').style.display = 'none';
+        if (qrRefreshInterval) { clearInterval(qrRefreshInterval); qrRefreshInterval = null; }
+        if (qrCountdownTimer)  { clearInterval(qrCountdownTimer);  qrCountdownTimer  = null; }
+        const cd = document.getElementById('qr-countdown');
+        if (cd) cd.innerText = '';
     }
 
     // ─── SCAN LOGIC ───
@@ -1783,18 +1925,106 @@
     // ─── NAVIGATION ───
     function switchView(viewId) {
         document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-        if (viewId === 'view-wallet') document.getElementById('nav-wallet').classList.add('active');
-        if (viewId === 'view-scan')   document.getElementById('nav-scan').classList.add('active');
-        if (viewId === 'view-profile') document.getElementById('nav-profile').classList.add('active');
+        if (viewId === 'view-wallet')  document.getElementById('nav-wallet')?.classList.add('active');
+        if (viewId === 'view-scan')    document.getElementById('nav-scan')?.classList.add('active');
+        if (viewId === 'view-history') document.getElementById('nav-history')?.classList.add('active');
+        if (viewId === 'view-profile') document.getElementById('nav-profile')?.classList.add('active');
 
         document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
+        document.getElementById(viewId)?.classList.add('active');
 
         if (viewId === 'view-scan') {
             startCameraScanner();
         } else {
             stopCameraScanner();
         }
+
+        if (viewId === 'view-history') {
+            loadHistoryView();
+        }
+    }
+
+    // ─── HISTORIQUE TRANSACTIONS ───
+    async function loadHistoryView() {
+        const container = document.getElementById('history-container');
+        if (!currentClientId || !container) return;
+
+        container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i></div>';
+
+        const { data, error } = await supabaseClient
+            .from('transactions')
+            .select('id, type, points_changed, amount, note, created_at, merchant:merchant_id(name)')
+            .eq('client_id', currentClientId)
+            .order('created_at', { ascending: false })
+            .limit(200);
+
+        if (error) {
+            container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">Erreur : ${error.message}</div>`;
+            return;
+        }
+
+        allTransactions = data || [];
+        historyLoaded = true;
+        renderHistory();
+    }
+
+    function filterHistory(type, btn) {
+        historyFilter = type;
+        document.querySelectorAll('.hist-filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        if (historyLoaded) renderHistory();
+    }
+
+    function renderHistory() {
+        const container = document.getElementById('history-container');
+        if (!container) return;
+        const filtered = historyFilter === 'all'
+            ? allTransactions
+            : allTransactions.filter(tx => tx.type === historyFilter);
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
+                    <div style="font-size:36px;margin-bottom:12px;">📋</div>
+                    <h3 style="font-family:'Syne',sans-serif;margin-bottom:8px;font-size:17px;">Aucune transaction</h3>
+                    <p style="color:var(--muted);font-size:13px;">Scannez un QR code pour commencer à cumuler des points.</p>
+                </div>`;
+            return;
+        }
+
+        // Grouper par date
+        const groups = {};
+        filtered.forEach(tx => {
+            const d = new Date(tx.created_at);
+            const key = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(tx);
+        });
+
+        container.innerHTML = Object.entries(groups).map(([date, txs]) => `
+            <div class="section-label" style="margin-bottom:8px;margin-top:16px;">${date}</div>
+            ${txs.map(tx => {
+                const isCredit = tx.type === 'credit';
+                const isReward = tx.type === 'reward' || tx.type === 'debit';
+                const pts      = Math.abs(tx.points_changed || 0);
+                const merchant = tx.merchant?.name || 'Commerce partenaire';
+                const time     = new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const icon     = isCredit ? '⬆️' : isReward ? '🎁' : '⬇️';
+                const ptsColor = isCredit ? 'var(--green)' : 'var(--pink)';
+                const ptsStr   = isCredit ? `+${pts}` : `-${pts}`;
+                const label    = isCredit ? 'Points gagnés' : isReward ? 'Récompense utilisée' : 'Points débités';
+                const amountStr = tx.amount ? ` · ${Number(tx.amount).toFixed(2)} €` : '';
+
+                return `<div class="tx-item">
+                    <div class="tx-icon" style="background:${isCredit ? 'rgba(34,212,122,0.1)' : 'rgba(255,77,130,0.1)'};">${icon}</div>
+                    <div class="tx-info">
+                        <div class="tx-merchant">${merchant}</div>
+                        <div class="tx-date">${label} · ${time}${amountStr}</div>
+                    </div>
+                    <div class="tx-pts" style="color:${ptsColor};">${ptsStr} pts</div>
+                </div>`;
+            }).join('')}
+        `).join('');
     }
 
     // ─── CAMERA (caméra arrière directe, sans étapes) ───
@@ -2276,6 +2506,43 @@
             }
             if (chk) chk.style.opacity = k === selectedKey ? '1' : '0';
         });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PWA — Service Worker + Notifications
+    // ═══════════════════════════════════════════════════════════
+
+    function initPwa() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    }
+
+    function notifyPointsGained(pts, merchantName) {
+        // Toast in-app
+        showToast('success', `+${pts} pts crédités !`, `Chez ${merchantName} — votre solde a été mis à jour.`);
+        // Browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+                new Notification('Keepo 🎉', {
+                    body : `+${pts} points chez ${merchantName} !`,
+                    icon : '/img/icon-192.png',
+                    tag  : 'keepo-pts',
+                    badge: '/img/icon-192.png'
+                });
+            } catch {}
+        }
+    }
+
+    async function requestNotifPermission() {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'granted') return;
+        if (Notification.permission !== 'denied') {
+            // Demande non-intrusive après 4s
+            setTimeout(async () => {
+                await Notification.requestPermission();
+            }, 4000);
+        }
     }
 
     // ─── LOGOUT ───

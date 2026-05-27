@@ -12,5 +12,9 @@
     "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
-  }
+  },
+  "vars": {
+  "RESEND_API_KEY": "re_b8rif7Zu_JzbdviwiMfRSo9dvByqZSKZP"
+}
+  
 }

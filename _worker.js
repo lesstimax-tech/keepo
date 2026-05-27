@@ -447,6 +447,147 @@ async function handleStripeWebhook(request, env) {
   return json({ received: true });
 }
 
+// ════════════════════════════════════════════════════════════════
+//  CAMPAGNES EMAIL — Feature 3
+// ════════════════════════════════════════════════════════════════
+
+async function handleSendCampaign(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+
+  let body;
+  try { body = await request.json(); }
+  catch { return json({ error: 'Corps invalide' }, 400); }
+
+  const { merchantId, segment, subject, emailBody } = body;
+  if (!merchantId || !subject || !emailBody) return json({ error: 'Champs manquants (merchantId, subject, emailBody)' }, 400);
+
+  const RESEND_KEY = env.RESEND_API_KEY;
+  if (!RESEND_KEY) return json({ error: 'RESEND_API_KEY non configuré dans wrangler' }, 500);
+
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+  if (!SUPA_KEY) return json({ error: 'SUPABASE_SERVICE_ROLE manquant' }, 500);
+
+  const supaHeaders = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` };
+
+  // ── 1. Récupère les clients selon segment ──
+  let balanceFilter = `merchant_id=eq.${merchantId}&select=client_id,lifetime_points,points_balance`;
+
+  if (segment === 'gold')   balanceFilter += '&lifetime_points=gte.2000';
+  if (segment === 'silver') balanceFilter += '&lifetime_points=gte.500&lifetime_points=lt.2000';
+  if (segment === 'bronze') balanceFilter += '&lifetime_points=lt.500';
+
+  const balRes = await fetch(`${SUPA_URL}/rest/v1/loyalty_balances?${balanceFilter}`, { headers: supaHeaders });
+  if (!balRes.ok) return json({ error: 'Erreur Supabase (balances)' }, 500);
+  const balances = await balRes.json();
+
+  if (!balances.length) return json({ sent: 0, total: 0, message: 'Aucun client dans ce segment' });
+
+  // ── 2. Segment inactifs (pas de transaction credit depuis 30j) ──
+  let clientIds = balances.map(b => b.client_id);
+
+  if (segment === 'inactive_30') {
+    const cutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+    const txRes = await fetch(
+      `${SUPA_URL}/rest/v1/transactions?merchant_id=eq.${merchantId}&type=eq.credit&created_at=gte.${cutoff}&select=client_id`,
+      { headers: supaHeaders }
+    );
+    const activeTx = txRes.ok ? await txRes.json() : [];
+    const activeSet = new Set(activeTx.map(t => t.client_id));
+    // Inactifs = clients qui n'ont PAS de tx récente
+    const allIdsRes = await fetch(
+      `${SUPA_URL}/rest/v1/loyalty_balances?merchant_id=eq.${merchantId}&select=client_id`,
+      { headers: supaHeaders }
+    );
+    const allBalances = allIdsRes.ok ? await allIdsRes.json() : [];
+    clientIds = allBalances.map(b => b.client_id).filter(id => !activeSet.has(id));
+    if (!clientIds.length) return json({ sent: 0, total: 0, message: 'Aucun client inactif depuis 30 jours' });
+  }
+
+  if (segment === 'new_7') {
+    const cutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const newRes = await fetch(
+      `${SUPA_URL}/rest/v1/loyalty_balances?merchant_id=eq.${merchantId}&created_at=gte.${cutoff}&select=client_id`,
+      { headers: supaHeaders }
+    );
+    const newBals = newRes.ok ? await newRes.json() : [];
+    clientIds = newBals.map(b => b.client_id);
+    if (!clientIds.length) return json({ sent: 0, total: 0, message: 'Aucun nouveau client ces 7 derniers jours' });
+  }
+
+  // ── 3. Récupère les emails des clients ──
+  const profilesRes = await fetch(
+    `${SUPA_URL}/rest/v1/profiles?id=in.(${clientIds.slice(0, 500).join(',')})&select=id,email,name`,
+    { headers: supaHeaders }
+  );
+  if (!profilesRes.ok) return json({ error: 'Erreur Supabase (profiles)' }, 500);
+  const profiles = await profilesRes.json();
+
+  // ── 4. Nom du commerce ──
+  const mcRes = await fetch(
+    `${SUPA_URL}/rest/v1/merchant_cards?merchant_id=eq.${merchantId}&select=title`,
+    { headers: supaHeaders }
+  );
+  const mcData = mcRes.ok ? await mcRes.json() : [];
+  const merchantName = mcData[0]?.title || 'Votre commerce';
+
+  // ── 5. Envoi via Resend ──
+  let sent = 0, failed = 0;
+
+  for (const profile of profiles) {
+    if (!profile.email) continue;
+
+    const firstName = (profile.name || '').split(' ')[0] || 'cher client';
+    const personalBody = emailBody
+      .replace(/\{\{prenom\}\}/gi, firstName)
+      .replace(/\{\{enseigne\}\}/gi, merchantName);
+
+    try {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from    : `${merchantName} <notifications@keepo.fr>`,
+          to      : [profile.email],
+          subject,
+          text    : personalBody,
+          html    : personalBody.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>').replace(/^/, '<p>').replace(/$/, '</p>'),
+        })
+      });
+      if (r.ok) sent++; else failed++;
+    } catch { failed++; }
+  }
+
+  return json({ sent, failed, total: profiles.length, merchantName });
+}
+
+// ── Décompte destinataires ──
+async function handleCampaignCount(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'Corps invalide' }, 400); }
+
+  const { merchantId, segment } = body;
+  if (!merchantId) return json({ error: 'merchantId requis' }, 400);
+
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+  if (!SUPA_KEY) return json({ count: 0 });
+
+  const supaHeaders = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` };
+
+  let filter = `merchant_id=eq.${merchantId}`;
+  if (segment === 'gold')   filter += '&lifetime_points=gte.2000';
+  if (segment === 'silver') filter += '&lifetime_points=gte.500&lifetime_points=lt.2000';
+  if (segment === 'bronze') filter += '&lifetime_points=lt.500';
+
+  const res = await fetch(`${SUPA_URL}/rest/v1/loyalty_balances?${filter}&select=client_id`, {
+    headers: { ...supaHeaders, 'Prefer': 'count=exact' }
+  });
+  const count = parseInt(res.headers.get('Content-Range')?.split('/')[1] || '0', 10);
+  return json({ count });
+}
+
 // ──────────── Router ────────────
 
 export default {
@@ -461,6 +602,8 @@ export default {
       case '/api/ai-design-studio':        return handleDesignStudio(request, env);
       case '/api/stripe-checkout':         return handleStripeCheckout(request, env);
       case '/api/stripe-webhook':          return handleStripeWebhook(request, env);
+      case '/api/send-campaign':           return handleSendCampaign(request, env);
+      case '/api/campaign-count':          return handleCampaignCount(request, env);
     }
 
     // Tout le reste → assets statiques
