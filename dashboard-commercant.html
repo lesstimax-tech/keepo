@@ -5045,100 +5045,14 @@
     }
 
     // ═══════════════════════════════════════════════════════════
-    //  MODALE UPGRADE PRO SCALE
+    //  UPGRADE — redirection vers la page marketing /pro
     // ═══════════════════════════════════════════════════════════
-    const PRO_BENEFITS = [
-        { icon: '∞',  title: 'Membres illimités',          desc: 'Pas de plafond de 50 clients fidèles' },
-        { icon: '📊', title: 'Analytics premium',          desc: 'Heatmap, churn, top clients, comparaison' },
-        { icon: '🧠', title: 'Intelligence prédictive',    desc: 'IA d\'analyse d\'affluence en temps réel' },
-        { icon: '✨', title: 'Toutes les IA actives',      desc: 'Rédacteur emails, design, suggestions' },
-        { icon: '📥', title: 'Export CSV illimité',        desc: 'Toutes vos données téléchargeables' },
-        { icon: '🔌', title: 'API & Webhooks',             desc: 'Intégrez votre logiciel de caisse' },
-        { icon: '👥', title: 'Multi-caissiers illimités',  desc: 'Comptes employés avec PIN' },
-        { icon: '🎁', title: 'Panier moyen fidélisé',      desc: 'Suivi du CA généré par la fidélité' },
-        { icon: '🎯', title: 'Support prioritaire',        desc: 'Réponse en moins de 4h en semaine' },
-        { icon: '🏷️', title: 'Marque blanche',             desc: 'Vos couleurs sur l\'app client' },
-    ];
-
     function openUpgradeModal(triggerReason) {
-        let modal = document.getElementById('upgradeModalBackdrop');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'upgradeModalBackdrop';
-            modal.className = 'upgrade-modal-backdrop';
-            modal.onclick = (e) => { if (e.target === modal) closeUpgradeModal(); };
-            document.body.appendChild(modal);
-        }
-
-        const reasonChip = triggerReason
-            ? `<div style="display:inline-block;background:rgba(255,77,130,0.12);border:1px solid rgba(255,77,130,0.3);color:#ff8aaa;padding:5px 12px;border-radius:50px;font-size:11px;font-weight:700;margin:0 auto 14px;font-family:'Cabinet Grotesk',sans-serif;">🔒 ${triggerReason}</div>`
-            : '';
-
-        const benefitsHtml = PRO_BENEFITS.map(b => `
-            <div class="upgrade-benefit">
-                <div class="upgrade-benefit-check"><i class="fa-solid fa-check"></i></div>
-                <div class="upgrade-benefit-text"><strong>${b.title}</strong><br>${b.desc}</div>
-            </div>
-        `).join('');
-
-        modal.innerHTML = `
-            <div class="upgrade-modal">
-                <button class="upgrade-close-btn" onclick="closeUpgradeModal()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
-                <div class="upgrade-modal-inner">
-                    <div class="upgrade-crown">👑</div>
-                    <div style="text-align:center;">${reasonChip}</div>
-                    <h2 class="upgrade-title">Passer à Pro Scale</h2>
-                    <p class="upgrade-sub">Débloquez tout le potentiel de Keepo et faites passer votre programme<br>de fidélité au niveau supérieur.</p>
-
-                    <div class="upgrade-price-box">
-                        <div class="upgrade-price-tag">⚡ OFFRE DE LANCEMENT</div>
-                        <div class="upgrade-price-val">
-                            <span class="currency">€</span>29<span class="period">/mois</span>
-                        </div>
-                        <div class="upgrade-price-detail">
-                            <strike style="color:rgba(255,255,255,0.3);margin-right:6px;">49 €</strike>
-                            <span style="color:#ffc34d;font-weight:700;">Sans engagement</span> · Annulez en 1 clic
-                        </div>
-                    </div>
-
-                    <div style="font-size:12px;color:var(--text-muted);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;text-align:center;font-family:'Cabinet Grotesk',sans-serif;">
-                        ⭐ Tout ce que vous obtenez
-                    </div>
-
-                    <div class="upgrade-benefits">
-                        ${benefitsHtml}
-                    </div>
-
-                    <button onclick="confirmUpgradeFromModal()" id="upgradeModalCta" class="upgrade-cta-btn">
-                        <i class="fa-solid fa-crown"></i>&nbsp; Passer Pro Scale maintenant
-                    </button>
-                    <button onclick="closeUpgradeModal()" class="upgrade-secondary-btn">
-                        Plus tard
-                    </button>
-
-                    <div class="upgrade-footer">
-                        <div class="upgrade-footer-item"><i class="fa-solid fa-shield-halved"></i> Paiement sécurisé Stripe</div>
-                        <div class="upgrade-footer-item"><i class="fa-solid fa-rotate-left"></i> Remboursé sous 14j</div>
-                        <div class="upgrade-footer-item"><i class="fa-solid fa-clock"></i> Activation immédiate</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
+        // Redirection directe vers la page marketing
+        const url = '/pro' + (triggerReason ? '?from=' + encodeURIComponent(triggerReason) : '');
+        window.location.href = url;
     }
-    function closeUpgradeModal() {
-        const modal = document.getElementById('upgradeModalBackdrop');
-        if (modal) modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-    async function confirmUpgradeFromModal() {
-        const btn = document.getElementById('upgradeModalCta');
-        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Redirection vers Stripe…'; }
-        await startStripeUpgrade();
-    }
-    // ESC ferme la modale
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUpgradeModal(); });
+    function closeUpgradeModal() { /* no-op : la modale est remplacée par la page /pro */ }
 
     async function handleLogout() {
         if (realTimeHtml5QrScanner) {
