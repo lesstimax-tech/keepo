@@ -276,6 +276,15 @@
                 <i class="fa-solid fa-arrow-left"></i> Choisir un autre profil
             </button>
         </div>
+
+        <!-- Étape 4 : sélection de la boutique (si multi-boutique) -->
+        <div id="step4-boutique" class="login-section" style="display:none;">
+            <div class="login-label">Étape 4 — Dans quelle boutique êtes-vous ?</div>
+            <div id="boutiques-grid" class="cashier-grid" style="margin-top:16px;"></div>
+            <button onclick="skipBoutiqueSelect()" class="btn-action secondary" style="margin-top:14px;width:100%;">
+                <i class="fa-solid fa-store-slash"></i> Continuer sans boutique
+            </button>
+        </div>
     </div>
 </div>
 
@@ -357,6 +366,9 @@ let dailyPoints     = 0;
 let creditClientId  = null;
 let creditClientName= '';
 let pointsPerEuroCaisse = 1;
+let boutiquesList   = [];
+let selectedBoutiqueId   = null;
+let selectedBoutiqueName = null;
 
 async function init() {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
@@ -390,7 +402,15 @@ async function init() {
     document.getElementById('merchantNameLabel').innerText = merchantName;
 
     // Vérifier session caissier en cours
-    const savedCashier = sessionStorage.getItem('keepo_caisse_cashier');
+    const savedCashier   = sessionStorage.getItem('keepo_caisse_cashier');
+    const savedBoutique  = sessionStorage.getItem('keepo_caisse_boutique');
+    if (savedBoutique) {
+        try {
+            const b = JSON.parse(savedBoutique);
+            selectedBoutiqueId   = b.id   || null;
+            selectedBoutiqueName = b.name || null;
+        } catch {}
+    }
     if (savedCashier) {
         try {
             const c = JSON.parse(savedCashier);
@@ -480,28 +500,94 @@ async function pinSubmit() {
         currentPin = ''; refreshPinDisplay();
         return;
     }
+    // Vérifier si le commerçant a plusieurs boutiques actives
+    await loadBoutiqueStep();
+}
+
+async function loadBoutiqueStep() {
+    const { data } = await window.supabaseClient
+        .from('boutiques')
+        .select('id, name, address')
+        .eq('merchant_id', merchantId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+
+    boutiquesList = data || [];
+
+    if (boutiquesList.length === 0) {
+        // Pas de boutiques configurées → entrer directement
+        enterCaisse(selectedCashier);
+        return;
+    }
+    if (boutiquesList.length === 1) {
+        // Une seule boutique → sélection automatique
+        selectedBoutiqueId   = boutiquesList[0].id;
+        selectedBoutiqueName = boutiquesList[0].name;
+        enterCaisse(selectedCashier);
+        return;
+    }
+
+    // Plusieurs boutiques → afficher le sélecteur
+    document.getElementById('step3-pin').style.display = 'none';
+    document.getElementById('step4-boutique').style.display = 'block';
+
+    const grid = document.getElementById('boutiques-grid');
+    grid.innerHTML = boutiquesList.map(b => `
+        <button class="cashier-btn" onclick="selectBoutique('${b.id}', '${escapeHtml(b.name).replace(/'/g,"\\'")}')">
+            <div class="cashier-avatar" style="background:rgba(0,232,204,.15);color:#00e8cc;">
+                <i class="fa-solid fa-store" style="font-size:18px;"></i>
+            </div>
+            <div class="cashier-name">${escapeHtml(b.name)}</div>
+            <div class="cashier-role">${b.address ? escapeHtml(b.address) : ''}</div>
+        </button>
+    `).join('');
+}
+
+function selectBoutique(boutiqueId, boutiqueName) {
+    selectedBoutiqueId   = boutiqueId;
+    selectedBoutiqueName = boutiqueName;
+    enterCaisse(selectedCashier);
+}
+
+function skipBoutiqueSelect() {
+    selectedBoutiqueId   = null;
+    selectedBoutiqueName = null;
     enterCaisse(selectedCashier);
 }
 
 function enterCaisse(cashier) {
     selectedCashier = cashier;
     sessionStorage.setItem('keepo_caisse_cashier', JSON.stringify(cashier));
+    if (selectedBoutiqueId) {
+        sessionStorage.setItem('keepo_caisse_boutique', JSON.stringify({ id: selectedBoutiqueId, name: selectedBoutiqueName }));
+    } else {
+        sessionStorage.removeItem('keepo_caisse_boutique');
+    }
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('caisseScreen').classList.add('active');
     document.getElementById('caisse-merchant-name').innerText = merchantName;
-    document.getElementById('caisse-cashier-badge').innerHTML = `<i class="fa-solid fa-user"></i> ${escapeHtml(cashier.name)}`;
+
+    let badge = `<i class="fa-solid fa-user"></i> ${escapeHtml(cashier.name)}`;
+    if (selectedBoutiqueName) {
+        badge += ` &nbsp;<span style="font-size:11px;opacity:.7;"><i class="fa-solid fa-store"></i> ${escapeHtml(selectedBoutiqueName)}</span>`;
+    }
+    document.getElementById('caisse-cashier-badge').innerHTML = badge;
     loadDailyStats();
 }
 
 function lockCaisse() {
     if (scanner) { try { scanner.stop(); } catch {} scanner = null; }
     sessionStorage.removeItem('keepo_caisse_cashier');
+    sessionStorage.removeItem('keepo_caisse_boutique');
     document.getElementById('caisseScreen').classList.remove('active');
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('step1-merchant').style.display = 'none';
     document.getElementById('step3-pin').style.display = 'none';
+    document.getElementById('step4-boutique').style.display = 'none';
     document.getElementById('step2-cashier').style.display = 'block';
     currentPin = '';
+    selectedBoutiqueId   = null;
+    selectedBoutiqueName = null;
 }
 
 async function loadDailyStats() {
@@ -581,9 +667,11 @@ async function onQrScanned(qrData) {
     }
 
     const points = Math.max(1, Math.round(amount * pointsPerEuroCaisse));
-    const { data: newBalance, error } = await window.supabaseClient.rpc('apply_loyalty_credit', {
+    const rpcParams = {
         p_merchant_id: merchantId, p_client_id: clientId, p_amount: amount, p_points: points
-    });
+    };
+    if (selectedBoutiqueId) rpcParams.p_boutique_id = selectedBoutiqueId;
+    const { data: newBalance, error } = await window.supabaseClient.rpc('apply_loyalty_credit', rpcParams);
 
     if (error) {
         showCaisseResult('error', 'Erreur', error.message);
@@ -593,7 +681,8 @@ async function onQrScanned(qrData) {
         window.supabaseClient.from('cashier_audit').insert({
             merchant_id: merchantId, cashier_id: selectedCashier.id,
             cashier_name: selectedCashier.name, action: 'credit',
-            client_id: clientId, meta: { amount, points }
+            client_id: clientId,
+            meta: { amount, points, boutique_id: selectedBoutiqueId || null, boutique_name: selectedBoutiqueName || null }
         });
         loadDailyStats();
     }

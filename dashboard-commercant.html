@@ -1377,6 +1377,13 @@
             </button>
         </nav>
 
+        <span class="nav-section-label" style="margin-top:8px;">Établissement</span>
+        <nav style="display:flex;flex-direction:column;gap:2px;">
+            <button class="nav-btn" onclick="switchPanel('view-boutiques')">
+                <i class="fa-solid fa-store"></i> Mes Boutiques
+            </button>
+        </nav>
+
         <span class="nav-section-label" style="margin-top:8px;">Compte</span>
         <nav style="display:flex;flex-direction:column;gap:2px;">
             <button class="nav-btn" onclick="switchPanel('view-settings')">
@@ -2048,6 +2055,47 @@
                 <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px;">
                     <i class="fa-solid fa-circle-info"></i> Nécessite <code>RESEND_API_KEY</code> dans les variables d'environnement Wrangler.
                 </p>
+            </div>
+        </div>
+
+        <!-- ══════════ MES BOUTIQUES ══════════ -->
+        <div id="view-boutiques" class="panel-view">
+            <h2 class="panel-title">Mes Boutiques</h2>
+            <p class="panel-subtitle">Gérez vos points de vente. Chaque boutique partage le même programme de fidélité.</p>
+
+            <!-- Ajouter une boutique -->
+            <div class="settings-card" style="margin-bottom:18px;">
+                <h3 class="settings-section-title"><i class="fa-solid fa-plus"></i> Ajouter une boutique</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+                    <div style="grid-column:1/-1;">
+                        <label class="settings-label">Nom de la boutique *</label>
+                        <input id="new-boutique-name" type="text" class="settings-input" placeholder="Ex : Boutique Centre-Ville" maxlength="60">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label class="settings-label">Adresse</label>
+                        <input id="new-boutique-address" type="text" class="settings-input" placeholder="Ex : 12 rue de la Paix, Paris" maxlength="120">
+                    </div>
+                </div>
+                <button onclick="addBoutique()" class="btn-action btn-primary-gradient" style="width:100%;margin-top:14px;">
+                    <i class="fa-solid fa-store"></i> Créer la boutique
+                </button>
+            </div>
+
+            <!-- Liste des boutiques -->
+            <div id="boutiques-list" style="display:flex;flex-direction:column;gap:14px;">
+                <div style="text-align:center;padding:32px;color:var(--text-muted);">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:22px;"></i>
+                </div>
+            </div>
+
+            <!-- QR modal -->
+            <div id="boutique-qr-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(5,4,9,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;" onclick="closeBoutiqueQrModal()">
+                <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:20px;padding:32px;text-align:center;max-width:320px;width:90%;" onclick="event.stopPropagation()">
+                    <h3 id="boutique-qr-modal-title" style="margin-bottom:16px;font-size:17px;"></h3>
+                    <div id="boutique-qr-zone" style="display:flex;justify-content:center;align-items:center;min-height:200px;margin-bottom:16px;"></div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Le client scanne ce QR pour rejoindre votre programme de fidélité depuis cette boutique.</p>
+                    <button onclick="closeBoutiqueQrModal()" class="btn-action" style="background:rgba(255,255,255,.07);border:1px solid var(--glass-border);color:var(--text-main);padding:10px 24px;border-radius:10px;cursor:pointer;font-size:13px;width:100%;">Fermer</button>
+                </div>
             </div>
         </div>
 
@@ -3380,6 +3428,10 @@
         // Charger le compteur de campagne quand on ouvre les notifications
         if (panelId === 'view-notifications') {
             setTimeout(() => updateCampaignCount(), 300);
+        }
+        // Charger les boutiques
+        if (panelId === 'view-boutiques' && currentMerchantId) {
+            loadBoutiques();
         }
         if (panelId === 'view-scan') {
             setTimeout(() => { initializeCameraScannerDevice(); }, 100);
@@ -5388,12 +5440,12 @@
 
     async function updateCampaignCount() {
         const chip = document.getElementById('campaign-count-chip');
-        if (!chip || !activeMerchantId) return;
+        if (!chip || !currentMerchantId) return;
         chip.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp;Calcul…';
         try {
             const res = await fetch('/api/campaign-count', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ merchantId: activeMerchantId, segment: activeCampaignSegment })
+                body: JSON.stringify({ merchantId: currentMerchantId, segment: activeCampaignSegment })
             });
             const d = await res.json();
             const n = d.count ?? 0;
@@ -5463,7 +5515,7 @@
         try {
             const res = await fetch('/api/send-campaign', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ merchantId: activeMerchantId, segment: activeCampaignSegment, subject, emailBody })
+                body: JSON.stringify({ merchantId: currentMerchantId, segment: activeCampaignSegment, subject, emailBody })
             });
             const d = await res.json();
             if (!res.ok) throw new Error(d.error || 'Erreur serveur');
@@ -5679,6 +5731,136 @@
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeAiModal();
     });
+
+    // ════════════════════════════════════════════════════════
+    //  MES BOUTIQUES
+    // ════════════════════════════════════════════════════════
+    let boutiquesCache = [];
+
+    async function loadBoutiques() {
+        const container = document.getElementById('boutiques-list');
+        if (!container || !currentMerchantId) return;
+        container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:22px;"></i></div>';
+
+        const { data, error } = await supabaseClient
+            .from('boutiques')
+            .select('id, name, address, is_active, created_at')
+            .eq('merchant_id', currentMerchantId)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            container.innerHTML = `<div style="color:var(--danger);padding:16px;">${escapeHtml(error.message)}</div>`;
+            return;
+        }
+        boutiquesCache = data || [];
+
+        if (!boutiquesCache.length) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:40px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;">
+                    <i class="fa-solid fa-store" style="font-size:32px;margin-bottom:12px;display:block;opacity:.4;"></i>
+                    <p style="font-size:14px;">Aucune boutique configurée.<br>Ajoutez votre première boutique ci-dessus.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = boutiquesCache.map(b => `
+            <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:16px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(0,232,204,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-store" style="color:var(--secondary-accent);font-size:18px;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:15px;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(b.name)}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${b.address ? escapeHtml(b.address) : '<em>Adresse non renseignée</em>'}</div>
+                    <div style="font-size:11px;margin-top:4px;">
+                        <span style="background:${b.is_active ? 'rgba(34,212,122,.15)' : 'rgba(255,77,109,.12)'};color:${b.is_active ? 'var(--success)' : 'var(--danger)'};padding:2px 8px;border-radius:20px;">${b.is_active ? 'Active' : 'Inactive'}</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-shrink:0;">
+                    <button onclick="showBoutiqueQr('${b.id}','${escapeHtml(b.name).replace(/'/g,"\\'")}' )" title="Afficher QR" style="background:rgba(0,232,204,.1);border:1px solid rgba(0,232,204,.2);color:var(--secondary-accent);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px;">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </button>
+                    <button onclick="toggleBoutiqueStatus('${b.id}', ${b.is_active})" title="${b.is_active ? 'Désactiver' : 'Activer'}" style="background:rgba(255,255,255,.06);border:1px solid var(--glass-border);color:var(--text-sub);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px;">
+                        <i class="fa-solid ${b.is_active ? 'fa-pause' : 'fa-play'}"></i>
+                    </button>
+                    <button onclick="deleteBoutique('${b.id}')" title="Supprimer" style="background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.2);color:var(--danger);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function addBoutique() {
+        const name    = document.getElementById('new-boutique-name')?.value?.trim();
+        const address = document.getElementById('new-boutique-address')?.value?.trim();
+        if (!name) { showToast('warning', 'Nom requis', 'Donnez un nom à la boutique.'); return; }
+        if (!currentMerchantId) return;
+
+        const { error } = await supabaseClient
+            .from('boutiques')
+            .insert([{ merchant_id: currentMerchantId, name, address: address || null }]);
+
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+
+        document.getElementById('new-boutique-name').value    = '';
+        document.getElementById('new-boutique-address').value = '';
+        showToast('success', 'Boutique créée !', `"${name}" est maintenant dans votre réseau.`);
+        loadBoutiques();
+    }
+
+    async function toggleBoutiqueStatus(boutiqueId, currentActive) {
+        const { error } = await supabaseClient
+            .from('boutiques')
+            .update({ is_active: !currentActive })
+            .eq('id', boutiqueId)
+            .eq('merchant_id', currentMerchantId);
+
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+        showToast('success', currentActive ? 'Boutique désactivée' : 'Boutique activée', '');
+        loadBoutiques();
+    }
+
+    async function deleteBoutique(boutiqueId) {
+        const b = boutiquesCache.find(x => x.id === boutiqueId);
+        if (!confirm(`Supprimer "${b?.name || 'cette boutique'}" ?\n\nLes transactions existantes ne seront pas effacées.`)) return;
+
+        const { error } = await supabaseClient
+            .from('boutiques')
+            .delete()
+            .eq('id', boutiqueId)
+            .eq('merchant_id', currentMerchantId);
+
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+        showToast('success', 'Boutique supprimée', '');
+        loadBoutiques();
+    }
+
+    let _boutiqueQrInstance = null;
+    function showBoutiqueQr(boutiqueId, boutiqueName) {
+        const modal = document.getElementById('boutique-qr-modal');
+        const zone  = document.getElementById('boutique-qr-zone');
+        const title = document.getElementById('boutique-qr-modal-title');
+        if (!modal || !zone) return;
+
+        title.textContent = '📍 ' + boutiqueName;
+        zone.innerHTML = '';
+        modal.style.display = 'flex';
+
+        _boutiqueQrInstance = new QRCodeStyling({
+            width: 200, height: 200, type: 'svg',
+            data: `keepo:boutique:${boutiqueId}`,
+            dotsOptions: { color: '#0a0911', type: 'rounded' },
+            backgroundOptions: { color: '#ffffff' },
+            cornersSquareOptions: { type: 'extra-rounded', color: '#0a0911' }
+        });
+        _boutiqueQrInstance.append(zone);
+    }
+
+    function closeBoutiqueQrModal() {
+        const modal = document.getElementById('boutique-qr-modal');
+        if (modal) modal.style.display = 'none';
+        _boutiqueQrInstance = null;
+    }
 </script>
 </body>
 </html>

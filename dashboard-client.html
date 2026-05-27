@@ -1937,25 +1937,55 @@
 
     // ─── SCAN LOGIC ───
     async function handleStoreQrCodeScanned(qrData) {
+        // QR de fidélité principal : keepo:merchant:{merchant_id}
         if (qrData.startsWith("keepo:merchant:")) {
             const merchantId = qrData.split(":")[2];
+            await _joinMerchantLoyalty(merchantId);
 
-            const { error } = await supabaseClient
-                .from('loyalty_balances')
-                .insert([{ client_id: currentClientId, merchant_id: merchantId, points_balance: 0 }]);
+        // QR de boutique physique : keepo:boutique:{boutique_id}
+        } else if (qrData.startsWith("keepo:boutique:")) {
+            const boutiqueId = qrData.split(":")[2];
+            if (!boutiqueId) { showToast('error', 'QR invalide', 'Boutique introuvable.'); return; }
 
-            if (error && error.code !== '23505') {
-                showToast('error', 'Erreur de liaison', error.message);
-            } else if (error && error.code === '23505') {
-                showToast('warning', 'Carte déjà obtenue', 'Vous possédez déjà la carte de fidélité de ce commerce !');
-                switchView('view-wallet');
-            } else {
-                showToast('success', 'Nouvelle carte ajoutée ! 🎉', 'Bienvenue dans ce programme de fidélité.');
-                loadClientWallet();
-                switchView('view-wallet');
+            // Récupère le merchant_id depuis la boutique
+            const { data: boutique, error: bErr } = await supabaseClient
+                .from('boutiques')
+                .select('merchant_id, name, is_active')
+                .eq('id', boutiqueId)
+                .maybeSingle();
+
+            if (bErr || !boutique) {
+                showToast('error', 'Boutique introuvable', 'Ce QR ne correspond à aucune boutique Keepo.');
+                return;
             }
+            if (!boutique.is_active) {
+                showToast('warning', 'Boutique inactive', 'Cette boutique n\'accepte plus de nouveaux membres.');
+                return;
+            }
+            await _joinMerchantLoyalty(boutique.merchant_id, boutique.name);
+
         } else {
             showToast('error', 'QR invalide', 'Ce QR Code n\'est pas un code de comptoir Keepo valide.');
+        }
+    }
+
+    // Rejoint le programme de fidélité d'un commerçant (partagé entre toutes ses boutiques)
+    async function _joinMerchantLoyalty(merchantId, boutiqueName) {
+        const { error } = await supabaseClient
+            .from('loyalty_balances')
+            .insert([{ client_id: currentClientId, merchant_id: merchantId, points_balance: 0 }]);
+
+        if (error && error.code !== '23505') {
+            showToast('error', 'Erreur de liaison', error.message);
+        } else if (error && error.code === '23505') {
+            const label = boutiqueName ? `"${boutiqueName}"` : 'ce commerce';
+            showToast('warning', 'Carte déjà obtenue', `Vous possédez déjà la carte de fidélité de ${label} !`);
+            switchView('view-wallet');
+        } else {
+            const label = boutiqueName ? `Boutique "${boutiqueName}"` : 'Nouveau commerce';
+            showToast('success', 'Nouvelle carte ajoutée ! 🎉', `${label} — bienvenue dans ce programme de fidélité.`);
+            loadClientWallet();
+            switchView('view-wallet');
         }
     }
 

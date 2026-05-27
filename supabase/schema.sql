@@ -963,3 +963,96 @@ create policy "audit_insert_any" on public.cashier_audit
 alter table public.profiles add column if not exists stripe_customer_id     text;
 alter table public.profiles add column if not exists stripe_subscription_id text;
 alter table public.profiles add column if not exists plan_renews_at         timestamptz;
+
+-- ════════════════════════════════════════════════════════
+--  PHASE 5 — Multi-boutique
+-- ════════════════════════════════════════════════════════
+
+-- ── BOUTIQUES ────────────────────────────────────────────
+-- Un commerçant peut avoir plusieurs points de vente physiques.
+-- La fidélité (loyalty_balances) reste partagée par merchant_id.
+create table if not exists public.boutiques (
+    id          uuid primary key default gen_random_uuid(),
+    merchant_id uuid not null references public.profiles(id) on delete cascade,
+    name        text not null,
+    address     text,
+    is_active   boolean not null default true,
+    created_at  timestamptz default now()
+);
+
+alter table public.boutiques enable row level security;
+
+drop policy if exists "boutiques_read"  on public.boutiques;
+drop policy if exists "boutiques_write" on public.boutiques;
+
+-- Tout le monde peut lire (client qui scanne le QR d'une boutique)
+create policy "boutiques_read" on public.boutiques
+    for select using (true);
+
+-- Seul le commerçant propriétaire peut écrire
+create policy "boutiques_write" on public.boutiques
+    for all using (auth.uid() = merchant_id)
+    with check (auth.uid() = merchant_id);
+
+-- ── Colonne boutique_id sur les transactions ─────────────
+-- Permet de savoir dans quelle boutique chaque transaction a eu lieu.
+alter table public.transactions add column if not exists boutique_id uuid references public.boutiques(id) on delete set null;
+
+-- ── Mise à jour de apply_loyalty_credit pour passer boutique_id ──
+drop function if exists public.apply_loyalty_credit(uuid, uuid, numeric, int, uuid);
+drop function if exists public.apply_loyalty_credit(uuid, uuid, numeric, int);
+
+create or replace function public.apply_loyalty_credit(
+  p_merchant_id uuid,
+  p_client_id   uuid,
+  p_amount      numeric,
+  p_points      int,
+  p_boutique_id uuid default null
+) returns int language plpgsql security definer set search_path = public as $$
+declare
+  v_new                  int;
+  v_lifetime_before      int;
+  v_silver_threshold     int;
+  v_gold_threshold       int;
+  v_silver_mult          numeric;
+  v_gold_mult            numeric;
+  v_final_points         int := p_points;
+begin
+  if auth.uid() is distinct from p_merchant_id then
+    raise exception 'Non autorisé';
+  end if;
+
+  -- Récupère le tier actuel du client (avant ce crédit)
+  select coalesce(lifetime_points, 0) into v_lifetime_before
+  from public.loyalty_balances
+  where merchant_id = p_merchant_id and client_id = p_client_id;
+  v_lifetime_before := coalesce(v_lifetime_before, 0);
+
+  -- Récupère config tier du commerçant
+  select coalesce(tier_silver_threshold, 500), coalesce(tier_gold_threshold, 2000),
+         coalesce(tier_silver_multiplier, 1.2), coalesce(tier_gold_multiplier, 1.5)
+  into   v_silver_threshold, v_gold_threshold, v_silver_mult, v_gold_mult
+  from   public.merchant_cards where merchant_id = p_merchant_id;
+
+  -- Applique le multiplicateur selon le tier
+  if v_lifetime_before >= coalesce(v_gold_threshold, 2000) then
+    v_final_points := round(p_points * coalesce(v_gold_mult, 1.5))::int;
+  elsif v_lifetime_before >= coalesce(v_silver_threshold, 500) then
+    v_final_points := round(p_points * coalesce(v_silver_mult, 1.2))::int;
+  end if;
+
+  insert into public.transactions (merchant_id, client_id, amount, points_changed, type, boutique_id)
+  values (p_merchant_id, p_client_id, p_amount, v_final_points, 'credit', p_boutique_id);
+
+  insert into public.loyalty_balances (merchant_id, client_id, points_balance, lifetime_points)
+  values (p_merchant_id, p_client_id, v_final_points, v_final_points)
+  on conflict (merchant_id, client_id)
+  do update set points_balance  = loyalty_balances.points_balance  + v_final_points,
+                lifetime_points = loyalty_balances.lifetime_points + v_final_points
+  returning points_balance into v_new;
+
+  return v_new;
+end;
+$$;
+
+grant execute on function public.apply_loyalty_credit to authenticated;
