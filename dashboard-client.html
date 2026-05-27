@@ -2220,7 +2220,7 @@
 
         const { data, error } = await supabaseClient
             .from('transactions')
-            .select('id, type, points_changed, amount, note, created_at, merchant:merchant_id(name), boutique:boutique_id(name)')
+            .select('id, type, points_changed, amount, created_at, merchant:merchant_id(name), boutique:boutique_id(name)')
             .eq('client_id', currentClientId)
             .order('created_at', { ascending: false })
             .limit(200);
