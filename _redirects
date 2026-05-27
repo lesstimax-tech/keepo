@@ -11,5 +11,5 @@
 /client         /dashboard-client       301
 /commercant     /dashboard-commercant   301
 /merchant       /dashboard-commercant   301
-/pro            /dashboard-commercant   301
 /essai          /connexion              301
+# NB: /pro doit être servi par pro.html (page marketing) — pas de redirection ici !
