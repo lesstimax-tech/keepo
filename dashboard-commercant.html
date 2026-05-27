@@ -1883,22 +1883,22 @@
                     <input type="hidden" id="notif-template-selector" value="relance">
                     <div class="notif-type-grid">
                         <div class="notif-type-card active" id="ntc-relance" onclick="selectNotifType('relance',this)">
-                            <div class="ntc-icon">🔄</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-rotate-left"></i></div>
                             <div class="ntc-title">Relance Inactivité</div>
                             <div class="ntc-sub">Après X jours sans achat</div>
                         </div>
                         <div class="notif-type-card" id="ntc-avis" onclick="selectNotifType('avis',this)">
-                            <div class="ntc-icon">⭐</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-star"></i></div>
                             <div class="ntc-title">Avis Google</div>
                             <div class="ntc-sub">X minutes après achat</div>
                         </div>
                         <div class="notif-type-card" id="ntc-offre" onclick="selectNotifType('offre',this)">
-                            <div class="ntc-icon">📢</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-bullhorn"></i></div>
                             <div class="ntc-title">Événement Général</div>
                             <div class="ntc-sub">Entre 2 dates choisies</div>
                         </div>
                         <div class="notif-type-card" id="ntc-custom" onclick="selectNotifType('custom',this)">
-                            <div class="ntc-icon">✏️</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-pen-to-square"></i></div>
                             <div class="ntc-title">Personnaliser</div>
                             <div class="ntc-sub">Déclenchement libre</div>
                         </div>
@@ -2007,23 +2007,23 @@
                     <label>Segment destinataires</label>
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
                         <div class="notif-type-card active" id="seg-all" onclick="selectCampaignSegment('all',this)" style="padding:14px 12px;">
-                            <div class="ntc-icon" style="font-size:20px;">👥</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-users" style="font-size:20px;"></i></div>
                             <div class="ntc-title" style="font-size:12px;">Tous les clients</div>
                         </div>
                         <div class="notif-type-card" id="seg-gold" onclick="selectCampaignSegment('gold',this)" style="padding:14px 12px;">
-                            <div class="ntc-icon" style="font-size:20px;">🥇</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-medal" style="font-size:20px;color:#ffd700;"></i></div>
                             <div class="ntc-title" style="font-size:12px;">Niveau Gold</div>
                         </div>
                         <div class="notif-type-card" id="seg-silver" onclick="selectCampaignSegment('silver',this)" style="padding:14px 12px;">
-                            <div class="ntc-icon" style="font-size:20px;">🥈</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-medal" style="font-size:20px;color:#c0c0c0;"></i></div>
                             <div class="ntc-title" style="font-size:12px;">Niveau Silver</div>
                         </div>
                         <div class="notif-type-card" id="seg-inactive" onclick="selectCampaignSegment('inactive_30',this)" style="padding:14px 12px;">
-                            <div class="ntc-icon" style="font-size:20px;">💤</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-moon" style="font-size:20px;"></i></div>
                             <div class="ntc-title" style="font-size:12px;">Inactifs 30 j</div>
                         </div>
                         <div class="notif-type-card" id="seg-new" onclick="selectCampaignSegment('new_7',this)" style="padding:14px 12px;">
-                            <div class="ntc-icon" style="font-size:20px;">✨</div>
+                            <div class="ntc-icon"><i class="fa-solid fa-user-plus" style="font-size:20px;"></i></div>
                             <div class="ntc-title" style="font-size:12px;">Nouveaux 7 j</div>
                         </div>
                     </div>
@@ -2183,7 +2183,7 @@
                     <!-- Parrainage -->
                     <div class="form-group">
                         <label style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:18px;">👥</span> Bonus parrainage
+                            <i class="fa-solid fa-users" style="font-size:16px;color:var(--secondary-accent);"></i> Bonus parrainage
                             <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;">Pour parrain + filleul</span>
                         </label>
                         <div style="display:flex;align-items:center;gap:10px;">
@@ -2196,7 +2196,7 @@
                     <!-- Anniversaire -->
                     <div class="form-group">
                         <label style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:18px;">🎂</span> Bonus anniversaire
+                            <i class="fa-solid fa-cake-candles" style="font-size:16px;color:#ff8a5c;"></i> Bonus anniversaire
                             <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;">Auto le jour J</span>
                         </label>
                         <div style="display:flex;align-items:center;gap:10px;">
@@ -2209,7 +2209,7 @@
                     <!-- Roue de la fortune -->
                     <div class="form-group">
                         <label style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:18px;">🎰</span> Roue de la fortune
+                            <i class="fa-solid fa-dice" style="font-size:16px;color:#c5b8ff;"></i> Roue de la fortune
                         </label>
                         <div class="toggle-wrap" id="wheel-toggle-wrap" onclick="document.getElementById('cfg-wheel-enabled').classList.toggle('on')" style="margin-bottom:10px;">
                             <div id="cfg-wheel-enabled" class="toggle on"></div>
@@ -2225,13 +2225,13 @@
                     <!-- Niveaux VIP -->
                     <div class="form-group">
                         <label style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:18px;">🏅</span> Niveaux VIP (multiplicateurs auto)
+                            <i class="fa-solid fa-ranking-star" style="font-size:16px;color:#ffd700;"></i> Niveaux VIP (multiplicateurs auto)
                         </label>
                         <div style="background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:12px;padding:14px;">
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                                 <div>
                                     <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#c0c5d4;margin-bottom:6px;">
-                                        🥈 Silver (à partir de…)
+                                        <i class="fa-solid fa-medal" style="color:#c0c0c0;"></i> Silver (à partir de…)
                                     </div>
                                     <div style="display:flex;align-items:center;gap:6px;">
                                         <input type="number" id="cfg-tier-silver-thr" min="1" value="500" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(192,197,212,0.3);color:#c0c5d4;">
@@ -2245,7 +2245,7 @@
                                 </div>
                                 <div>
                                     <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#ffd34d;margin-bottom:6px;">
-                                        🥇 Gold (à partir de…)
+                                        <i class="fa-solid fa-medal" style="color:#ffd700;"></i> Gold (à partir de…)
                                     </div>
                                     <div style="display:flex;align-items:center;gap:6px;">
                                         <input type="number" id="cfg-tier-gold-thr" min="1" value="2000" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(255,211,77,0.3);color:#ffd34d;">
@@ -3279,7 +3279,11 @@
             const isPast   = e.ends_at < today;
             const isCurrent = e.starts_at <= today && e.ends_at >= today;
             const statusColor = isCurrent ? 'var(--secondary-accent)' : isPast ? 'var(--text-muted)' : 'var(--warning)';
-            const statusLabel = isCurrent ? '🟢 En cours' : isPast ? '⬛ Terminé' : '🟡 À venir';
+            const statusLabel = isCurrent
+                ? '<i class="fa-solid fa-circle-dot" style="color:var(--secondary-accent);"></i> En cours'
+                : isPast
+                    ? '<i class="fa-solid fa-circle-check" style="color:var(--text-muted);"></i> Terminé'
+                    : '<i class="fa-solid fa-clock" style="color:var(--warning);"></i> À venir';
             return `<div style="display:flex;align-items:center;justify-content:space-between;
                         padding:12px 0;border-bottom:1px solid var(--glass-border);">
                         <div>
@@ -3469,7 +3473,7 @@
     function applySaaSPlanRestrictions() {
         const badge = document.getElementById('merchant-plan-badge');
         if (activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale') {
-            badge.innerText = "👑 Pro Scale"; badge.className = "plan-badge plan-pro";
+            badge.innerHTML = '<i class="fa-solid fa-crown"></i> Pro Scale'; badge.className = "plan-badge plan-pro";
             document.getElementById('lock-panier').outerHTML = "";
             document.getElementById('lock-predictive').outerHTML = "";
             document.getElementById('lock-export-csv').outerHTML = "";
@@ -3477,7 +3481,7 @@
             document.getElementById('lock-marketing-pro')?.remove();
             document.getElementById('lock-caisse-mode')?.remove();
         } else {
-            badge.innerText = "🏪 Essential"; badge.className = "plan-badge plan-essential";
+            badge.innerHTML = '<i class="fa-solid fa-store"></i> Essential'; badge.className = "plan-badge plan-essential";
             const buildLock = (reason) => `<div class="lock-overlay" onclick="openUpgradeModal('${reason.replace(/'/g, "\\'")}')"><i class="fa-solid fa-lock"></i><span class="lock-title">Exclusivité Pro Scale</span><span class="lock-subtitle">Cliquez pour découvrir</span><span class="lock-cta">👑 PASSER PRO</span></div>`;
             document.getElementById('lock-panier').innerHTML        = buildLock('Panier moyen fidélisé');
             document.getElementById('lock-predictive').innerHTML    = buildLock('Intelligence prédictive');
@@ -4815,7 +4819,13 @@
         box.innerHTML = arr.map((c, i) => {
             const rank = i + 1;
             const cls  = rank === 1 ? 'top-rank-1' : rank === 2 ? 'top-rank-2' : rank === 3 ? 'top-rank-3' : 'top-rank-x';
-            const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+            const medal = rank === 1
+                ? '<i class="fa-solid fa-medal" style="color:#ffd700;"></i>'
+                : rank === 2
+                    ? '<i class="fa-solid fa-medal" style="color:#c0c0c0;"></i>'
+                    : rank === 3
+                        ? '<i class="fa-solid fa-medal" style="color:#cd7f32;"></i>'
+                        : `#${rank}`;
             return `<div class="top-client-row">
                 <div class="top-rank-badge ${cls}">${medal}</div>
                 <div class="top-client-info">
@@ -5267,7 +5277,7 @@
                 <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#7c6af7,#00e8cc);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0d0c18;">${escape(c.name).charAt(0).toUpperCase()}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:700;font-size:13px;color:var(--text-main);">${escape(c.name)}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">${c.role === 'manager' ? '👔 Manager' : '👤 Caissier'} ${c.active ? '· actif' : '· inactif'}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">${c.role === 'manager' ? '<i class="fa-solid fa-user-tie"></i> Manager' : '<i class="fa-solid fa-user"></i> Caissier'} ${c.active ? '· actif' : '· inactif'}</div>
                 </div>
                 <button onclick="resetCashierPin(${c.id}, '${escape(c.name).replace(/'/g,"\\'")}')" title="Changer le PIN" style="background:rgba(255,255,255,0.05);border:none;color:var(--text-sub);width:30px;height:30px;border-radius:8px;cursor:pointer;">
                     <i class="fa-solid fa-key"></i>

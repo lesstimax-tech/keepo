@@ -941,7 +941,7 @@
 
         <div id="cards-container" class="cards-grid">
             <div class="empty-wallet">
-                <div class="empty-wallet-icon">🎫</div>
+                <div class="empty-wallet-icon"><i class="fa-solid fa-wallet"></i></div>
                 <h3>Chargement...</h3>
                 <p>Récupération de votre portefeuille en cours.</p>
             </div>
@@ -1004,7 +1004,7 @@
 
         <div id="history-container">
             <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
-                <div style="font-size:28px;margin-bottom:12px;">📋</div>
+                <i class="fa-solid fa-clock-rotate-left" style="font-size:28px;margin-bottom:12px;display:block;color:var(--muted);"></i>
                 <p style="color:var(--muted);font-size:13px;">Ouvrez cet onglet pour charger votre historique.</p>
             </div>
         </div>
@@ -1023,7 +1023,7 @@
         </div>
         <div id="rewards-global-container">
             <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
-                <div style="font-size:28px;margin-bottom:12px;">🎁</div>
+                <i class="fa-solid fa-gift" style="font-size:28px;margin-bottom:12px;display:block;color:var(--muted);"></i>
                 <p style="color:var(--muted);font-size:13px;">Ouvrez cet onglet pour charger vos récompenses.</p>
             </div>
         </div>
@@ -1078,7 +1078,7 @@
 
         <div class="referral-box">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                <span style="font-size:18px;">👥</span>
+                <i class="fa-solid fa-users" style="font-size:16px;color:#c5b8ff;"></i>
                 <span style="font-weight:700;font-size:14px;color:#fff;">Mon code de parrainage</span>
             </div>
             <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.5;">
@@ -1097,11 +1097,11 @@
 
         <div class="referral-box" style="background:linear-gradient(135deg,rgba(255,138,92,0.08),rgba(255,195,77,0.06));border-color:rgba(255,138,92,0.25);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                <span style="font-size:18px;">🎂</span>
+                <i class="fa-solid fa-cake-candles" style="font-size:16px;color:#ffc34d;"></i>
                 <span style="font-weight:700;font-size:14px;color:#fff;">Date d'anniversaire</span>
             </div>
             <p style="font-size:11px;color:var(--muted);margin:0 0 10px;line-height:1.5;">
-                Renseignez votre date pour recevoir un cadeau automatique chaque année 🎁
+                Renseignez votre date pour recevoir un cadeau automatique chaque année.
             </p>
             <div style="display:flex;gap:8px;align-items:center;">
                 <input type="date" id="my-birthday-input" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,138,92,0.3);color:#fff;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px;">
@@ -1196,7 +1196,7 @@
         <!-- Actions Phase 3 -->
         <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0;">
             <button id="qrModalWheelBtn" onclick="openWheelSheet()" class="card-detail-action" style="display:none;">
-                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#7c6af7,#c5b8ff);">🎰</div>
+                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#7c6af7,#c5b8ff);"><i class="fa-solid fa-dice" style="color:#fff;font-size:18px;"></i></div>
                 <div class="card-detail-action-text">
                     <span id="qrModalWheelLabel">Roue de la fortune</span>
                     <small id="qrModalWheelSub">Bientôt débloquée…</small>
@@ -1204,7 +1204,7 @@
                 <i class="fa-solid fa-chevron-right" style="color:var(--muted);"></i>
             </button>
             <button id="qrModalGiftBtn" onclick="openGiftSheet()" class="card-detail-action">
-                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#ff8a5c,#ffc34d);">🎁</div>
+                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#ff8a5c,#ffc34d);"><i class="fa-solid fa-gift" style="color:#fff;font-size:18px;"></i></div>
                 <div class="card-detail-action-text">
                     <span>Cartes cadeaux</span>
                     <small>Offrir des points ou en recevoir</small>
@@ -1269,7 +1269,7 @@
         <div class="wheel-container">
             <div class="wheel-arrow"></div>
             <div class="wheel-disc" id="wheel-disc"></div>
-            <div class="wheel-center">🎯</div>
+            <div class="wheel-center"><i class="fa-solid fa-bullseye" style="font-size:16px;"></i></div>
         </div>
         <div id="wheel-result" class="wheel-result"></div>
         <button id="wheel-spin-btn" onclick="doSpinWheel()" class="modal-close-btn" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;border:none;font-weight:800;font-family:'Syne',sans-serif;">
@@ -1339,7 +1339,7 @@
         <div style="padding:18px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.06);">
             <div class="sheet-handle" style="margin-bottom:14px;"></div>
             <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#7c6af7,#00e8cc);display:flex;align-items:center;justify-content:center;font-size:18px;">✨</div>
+                <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#7c6af7,#00e8cc);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-robot" style="color:#fff;font-size:18px;"></i></div>
                 <div style="flex:1;text-align:left;">
                     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;">Assistant Keepo</div>
                     <div style="font-size:11px;color:var(--muted);"><span style="color:#3ee36c;">●</span> En ligne · Posez n'importe quelle question</div>
@@ -1430,7 +1430,7 @@
     <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid rgba(0,232,204,0.3);
                 border-radius:28px;padding:30px 24px;max-width:360px;width:100%;text-align:center;
                 box-shadow:0 20px 60px rgba(0,0,0,0.6);">
-        <div style="font-size:48px;margin-bottom:12px;">🎁</div>
+        <div style="margin-bottom:12px;"><i class="fa-solid fa-gift" style="font-size:48px;color:var(--cyan);"></i></div>
         <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:4px;">Récompense réclamée !</div>
         <div id="claim-modal-name" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;"></div>
 
@@ -1491,6 +1491,7 @@
     let currentClientId = null;
     let html5QrCodeScanner = null;
     let walletCache = [];
+    let merchantCardDesigns = {}; // merchantId → { title, color } — chargé par loadClientWallet, réutilisé dans l'historique
 
     // ─── Historique ───
     let allTransactions  = [];
@@ -1649,7 +1650,7 @@
             .eq('client_id', currentClientId);
 
         if (error) {
-            container.innerHTML = `<div class="empty-wallet"><div class="empty-wallet-icon">⚠️</div><h3>Erreur de sync</h3><p>${error.message}</p></div>`;
+            container.innerHTML = `<div class="empty-wallet"><div class="empty-wallet-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>Erreur de sync</h3><p>${error.message}</p></div>`;
             return;
         }
 
@@ -1691,7 +1692,10 @@
                 });
             }
             if (cardsRes.data) {
-                cardsRes.data.forEach(mc => { cardDesigns[mc.merchant_id] = mc; });
+                cardsRes.data.forEach(mc => {
+                    cardDesigns[mc.merchant_id] = mc;
+                    merchantCardDesigns[mc.merchant_id] = mc; // cache global pour l'historique
+                });
             }
             if (plansRes.data) {
                 plansRes.data.forEach(p => { merchantPlans[p.id] = p.plan; });
@@ -1734,7 +1738,7 @@
         if (!walletData || walletData.length === 0) {
             container.innerHTML = `
                 <div class="empty-wallet">
-                    <div class="empty-wallet-icon">🎫</div>
+                    <div class="empty-wallet-icon"><i class="fa-solid fa-ticket"></i></div>
                     <h3>Portefeuille vide</h3>
                     <p>Scannez le QR Code d'un commerçant partenaire pour obtenir votre première carte !</p>
                     <button class="empty-wallet-btn" onclick="switchView('view-scan')">
@@ -1805,11 +1809,11 @@
             let tierBadge = '';
             if (isMerchantPro) {
                 if (lifetime >= goldThr) {
-                    tierBadge = `<div class="tier-badge tier-gold" title="Niveau Gold — multiplicateur appliqué">🥇 GOLD</div>`;
+                    tierBadge = `<div class="tier-badge tier-gold" title="Niveau Gold — multiplicateur appliqué"><i class="fa-solid fa-medal" style="color:#ffd700;"></i> GOLD</div>`;
                 } else if (lifetime >= silverThr) {
-                    tierBadge = `<div class="tier-badge tier-silver" title="Niveau Silver — multiplicateur appliqué">🥈 SILVER</div>`;
+                    tierBadge = `<div class="tier-badge tier-silver" title="Niveau Silver — multiplicateur appliqué"><i class="fa-solid fa-medal" style="color:#c0c0c0;"></i> SILVER</div>`;
                 } else {
-                    tierBadge = `<div class="tier-badge tier-bronze" title="Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver">🥉 BRONZE</div>`;
+                    tierBadge = `<div class="tier-badge tier-bronze" title="Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver"><i class="fa-solid fa-medal" style="color:#cd7f32;"></i> BRONZE</div>`;
                 }
             }
 
@@ -1880,7 +1884,7 @@
 
         const goal = 10;
         const remaining = Math.max(goal - currentPoints, 0);
-        document.getElementById('modal-next-reward').innerText = remaining > 0 ? `${remaining} pts` : '🎁 Dispo !';
+        document.getElementById('modal-next-reward').innerHTML = remaining > 0 ? `${remaining} pts` : '<i class="fa-solid fa-gift"></i> Dispo !';
 
         // ── Multi-boutique : afficher la liste des boutiques dans le modal ──
         const boutiquesForMerchant = merchantBoutiquesMap[merchantId] || [];
@@ -1924,7 +1928,7 @@
             const nextBucket = (Math.floor(Date.now() / 60000) + 1) * 60000;
             qrCountdownTimer = setInterval(() => {
                 const rem = Math.max(0, Math.round((nextBucket - Date.now()) / 1000));
-                el.innerText = rem > 0 ? `🔄 Actualisation dans ${rem}s` : 'Actualisation…';
+                el.innerText = rem > 0 ? `↻ Actualisation dans ${rem}s` : 'Actualisation…';
                 if (rem === 0) { clearInterval(qrCountdownTimer); qrCountdownTimer = null; }
             }, 1000);
         }
@@ -1967,7 +1971,7 @@
                         const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
                         const progress = visits - lastSpin;
                         if (progress >= required) {
-                            wheelSub.innerHTML = `<span style="color:#00e8cc;font-weight:700;">🎉 Tour gratuit disponible !</span>`;
+                            wheelSub.innerHTML = `<span style="color:#00e8cc;font-weight:700;"><i class="fa-solid fa-circle-check"></i> Tour gratuit disponible !</span>`;
                         } else {
                             wheelSub.innerText = `Encore ${required - progress} visite${required - progress > 1 ? 's' : ''} pour débloquer (${progress}/${required})`;
                         }
@@ -2081,7 +2085,7 @@
         if (!walletCache.length) {
             container.innerHTML = `
                 <div class="empty-wallet">
-                    <div class="empty-wallet-icon">🎁</div>
+                    <div class="empty-wallet-icon"><i class="fa-solid fa-gift"></i></div>
                     <h3>Aucune carte</h3>
                     <p>Scannez le QR d'un commerçant pour rejoindre son programme et débloquer des récompenses.</p>
                     <button class="empty-wallet-btn" onclick="switchView('view-scan')"><i class="fa-solid fa-qrcode"></i> Scanner</button>
@@ -2101,7 +2105,7 @@
         if (error || !allRewards?.length) {
             container.innerHTML = `
                 <div class="empty-wallet">
-                    <div class="empty-wallet-icon">🎁</div>
+                    <div class="empty-wallet-icon"><i class="fa-solid fa-gift"></i></div>
                     <h3>Aucune récompense</h3>
                     <p>Vos commerçants n'ont pas encore configuré de récompenses.</p>
                 </div>`;
@@ -2160,7 +2164,7 @@
                     const nameSafe   = r.name.replace(/'/g, "\\'");
                     return `
                     <div class="reward-row${isUnlocked ? ' unlocked' : ''}" style="${isUnlocked ? `border-color:${hexToGlow(color,0.35)};background:${hexToGlow(color,0.05)};` : ''}">
-                        <div class="reward-row-icon">${isUnlocked ? '🎁' : '🔒'}</div>
+                        <div class="reward-row-icon">${isUnlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>
                         <div class="reward-row-info">
                             <div class="reward-row-name">${r.name}</div>
                             <div class="reward-row-pts">${r.points_required} pts requis${isUnlocked
@@ -2218,19 +2222,35 @@
 
         container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i></div>';
 
-        const { data, error } = await supabaseClient
-            .from('transactions')
-            .select('id, type, points_changed, amount, created_at, merchant:merchant_id(name), boutique:boutique_id(name)')
-            .eq('client_id', currentClientId)
-            .order('created_at', { ascending: false })
-            .limit(200);
+        // On n'utilise PAS de join profiles (RLS empêche la lecture des profils marchands)
+        // On récupère les titres depuis merchant_cards (public) en parallèle
+        const [txRes, mcRes] = await Promise.all([
+            supabaseClient
+                .from('transactions')
+                .select('id, type, points_changed, amount, created_at, merchant_id, boutique:boutique_id(name)')
+                .eq('client_id', currentClientId)
+                .order('created_at', { ascending: false })
+                .limit(200),
+            supabaseClient
+                .from('merchant_cards')
+                .select('merchant_id, title')
+                .in('merchant_id', walletCache.map(c => c.merchant_id).filter(Boolean))
+        ]);
 
-        if (error) {
-            container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">Erreur : ${error.message}</div>`;
+        if (txRes.error) {
+            container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);">Erreur : ${txRes.error.message}</div>`;
             return;
         }
 
-        allTransactions = data || [];
+        // Construit le map nom marchand : merchant_id → title
+        const nameMap = { ...merchantCardDesigns }; // commence avec le cache global déjà chargé
+        (mcRes.data || []).forEach(c => { nameMap[c.merchant_id] = { title: c.title }; });
+
+        // Enrichit chaque transaction avec le nom marchand résolu
+        allTransactions = (txRes.data || []).map(t => ({
+            ...t,
+            merchantName: (nameMap[t.merchant_id]?.title) || 'Commerce partenaire'
+        }));
         historyLoaded = true;
         renderHistory();
     }
@@ -2252,7 +2272,7 @@
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
-                    <div style="font-size:36px;margin-bottom:12px;">📋</div>
+                    <i class="fa-solid fa-clock-rotate-left" style="font-size:36px;margin-bottom:12px;display:block;color:var(--muted);"></i>
                     <h3 style="font-family:'Syne',sans-serif;margin-bottom:8px;font-size:17px;">Aucune transaction</h3>
                     <p style="color:var(--muted);font-size:13px;">Scannez un QR code pour commencer à cumuler des points.</p>
                 </div>`;
@@ -2274,18 +2294,24 @@
                 const isCredit  = tx.type === 'credit';
                 const isReward  = tx.type === 'reward' || tx.type === 'debit';
                 const pts       = Math.abs(tx.points_changed || 0);
-                const merchant  = tx.merchant?.name || 'Commerce partenaire';
+                const merchant  = tx.merchantName || 'Commerce partenaire';
                 const boutique  = tx.boutique?.name || null;
                 const time      = new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                const icon      = isCredit ? '⬆️' : isReward ? '🎁' : '⬇️';
+                const iconHtml  = isCredit
+                    ? `<i class="fa-solid fa-arrow-up" style="color:var(--green);"></i>`
+                    : isReward
+                        ? `<i class="fa-solid fa-gift" style="color:var(--pink);"></i>`
+                        : `<i class="fa-solid fa-arrow-down" style="color:var(--pink);"></i>`;
                 const ptsColor  = isCredit ? 'var(--green)' : 'var(--pink)';
                 const ptsStr    = isCredit ? `+${pts}` : `-${pts}`;
                 const label     = isCredit ? 'Points gagnés' : isReward ? 'Récompense utilisée' : 'Points débités';
                 const amountStr = tx.amount ? ` · ${Number(tx.amount).toFixed(2)} €` : '';
-                const boutiqueStr = boutique ? ` <span style="opacity:.6;"><i class="fa-solid fa-store" style="font-size:9px;"></i> ${escapeHtml(boutique)}</span>` : '';
+                const boutiqueStr = boutique
+                    ? ` <span style="opacity:.6;"><i class="fa-solid fa-store" style="font-size:9px;"></i> ${escapeHtml(boutique)}</span>`
+                    : '';
 
                 return `<div class="tx-item">
-                    <div class="tx-icon" style="background:${isCredit ? 'rgba(34,212,122,0.1)' : 'rgba(255,77,130,0.1)'};">${icon}</div>
+                    <div class="tx-icon" style="background:${isCredit ? 'rgba(34,212,122,0.1)' : 'rgba(255,77,130,0.1)'};">${iconHtml}</div>
                     <div class="tx-info">
                         <div class="tx-merchant">${escapeHtml(merchant)}</div>
                         <div class="tx-date">${label} · ${time}${amountStr}${boutiqueStr}</div>
@@ -2385,7 +2411,7 @@
 
             return `
                 <div class="reward-row${unlocked ? ' unlocked' : ''}">
-                    <div class="reward-row-icon">${unlocked ? '🎁' : '🔒'}</div>
+                    <div class="reward-row-icon">${unlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>
                     <div class="reward-row-info">
                         <div class="reward-row-name">${r.name}</div>
                         <div class="reward-row-pts">${r.points_required} pts requis${unlocked
