@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page introuvable — Keepo</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@800;900&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: radial-gradient(ellipse at top, #1a0d2e, #06050d 70%);
+            color: #e8e9f0; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px; text-align: center;
+        }
+        .err-num {
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-size: clamp(120px, 22vw, 220px); line-height: 1;
+            background: linear-gradient(135deg, #ff4d82, #ffc34d, #00e8cc);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800;
+            font-size: clamp(22px, 3vw, 32px); margin-bottom: 14px;
+        }
+        p { color: #b8b6cf; font-size: 16px; max-width: 480px; margin: 0 auto 32px; line-height: 1.6; }
+        .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        a {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 13px 28px; border-radius: 50px;
+            font-weight: 700; font-size: 14px; text-decoration: none;
+            transition: all .15s;
+            font-family: 'Cabinet Grotesk', sans-serif;
+        }
+        a.primary {
+            background: linear-gradient(135deg, #7c6af7, #00e8cc);
+            color: #06050d;
+            box-shadow: 0 8px 24px rgba(124,106,247,0.3);
+        }
+        a.primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(124,106,247,0.5); }
+        a.ghost {
+            background: rgba(255,255,255,0.05); color: #e8e9f0;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+        a.ghost:hover { background: rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="err-num">404</div>
+        <h1>Cette page n'existe pas</h1>
+        <p>Le lien que vous avez suivi est cassé ou la page a été déplacée. Pas de panique, vous pouvez revenir à l'accueil.</p>
+        <div class="actions">
+            <a href="/" class="primary">🏠 Retour à l'accueil</a>
+            <a href="/dashboard-commercant" class="ghost">Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
