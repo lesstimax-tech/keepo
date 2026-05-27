@@ -915,7 +915,7 @@
         const { data: { session } } = await window.supabaseClient.auth.getSession();
         if (!session) {
             alert('Connectez-vous d\'abord à votre compte commerçant pour souscrire.');
-            window.location.href = '/connexion?next=/pro';
+            window.location.href = '/connexion?next=/upgrade';
             return;
         }
 

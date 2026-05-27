@@ -5049,7 +5049,7 @@
     // ═══════════════════════════════════════════════════════════
     function openUpgradeModal(triggerReason) {
         // Redirection directe vers la page marketing
-        const url = '/pro' + (triggerReason ? '?from=' + encodeURIComponent(triggerReason) : '');
+        const url = '/upgrade' + (triggerReason ? '?from=' + encodeURIComponent(triggerReason) : '');
         window.location.href = url;
     }
     function closeUpgradeModal() { /* no-op : la modale est remplacée par la page /pro */ }
