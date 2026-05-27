@@ -2063,7 +2063,8 @@
                 </div>
 
                 <!-- ═══════════ PHASE 3 — Programme avancé ═══════════ -->
-                <div class="card" style="margin-bottom:20px;">
+                <div class="card pro-locked-container" style="margin-bottom:20px;">
+                    <div id="lock-marketing-pro"></div>
                     <div class="card-title"><i class="fa-solid fa-crown" style="color:#ffc34d;"></i> Programme avancé Marketing</div>
                     <p style="color:var(--text-muted);font-size:12px;line-height:1.6;margin-bottom:18px;">
                         Boostez l'engagement avec parrainage, niveaux VIP, anniversaire bonus, roue de la fortune et cartes cadeaux.
@@ -2159,7 +2160,8 @@
                 </div>
 
                 <!-- ═══════════ PHASE 4 — Multi-caissiers & Mode Caisse Tablette ═══════════ -->
-                <div class="card" style="margin-bottom:20px;">
+                <div class="card pro-locked-container" style="margin-bottom:20px;">
+                    <div id="lock-caisse-mode"></div>
                     <div class="card-title">
                         <i class="fa-solid fa-cash-register" style="color:#00e8cc;"></i>&nbsp; Caissiers & Mode Caisse
                     </div>
@@ -3354,13 +3356,19 @@
             document.getElementById('lock-predictive').outerHTML = "";
             document.getElementById('lock-export-csv').outerHTML = "";
             document.getElementById('lock-api-webhooks').outerHTML = "";
+            document.getElementById('lock-marketing-pro')?.remove();
+            document.getElementById('lock-caisse-mode')?.remove();
         } else {
             badge.innerText = "🏪 Essential"; badge.className = "plan-badge plan-essential";
             const buildLock = (reason) => `<div class="lock-overlay" onclick="openUpgradeModal('${reason.replace(/'/g, "\\'")}')"><i class="fa-solid fa-lock"></i><span class="lock-title">Exclusivité Pro Scale</span><span class="lock-subtitle">Cliquez pour découvrir</span><span class="lock-cta">👑 PASSER PRO</span></div>`;
-            document.getElementById('lock-panier').innerHTML       = buildLock('Panier moyen fidélisé');
-            document.getElementById('lock-predictive').innerHTML   = buildLock('Intelligence prédictive');
-            document.getElementById('lock-export-csv').innerHTML   = buildLock('Export CSV illimité');
-            document.getElementById('lock-api-webhooks').innerHTML = buildLock('API & Webhooks');
+            document.getElementById('lock-panier').innerHTML        = buildLock('Panier moyen fidélisé');
+            document.getElementById('lock-predictive').innerHTML    = buildLock('Intelligence prédictive');
+            document.getElementById('lock-export-csv').innerHTML    = buildLock('Export CSV illimité');
+            document.getElementById('lock-api-webhooks').innerHTML  = buildLock('API & Webhooks');
+            const mktLock = document.getElementById('lock-marketing-pro');
+            if (mktLock) mktLock.innerHTML = buildLock('Programme avancé Marketing');
+            const caisseLock = document.getElementById('lock-caisse-mode');
+            if (caisseLock) caisseLock.innerHTML = buildLock('Mode caisse tablette');
         }
     }
 
