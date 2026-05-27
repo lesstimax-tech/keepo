@@ -1176,6 +1176,12 @@
         <div class="qr-zone" id="client-qr-rendering-zone"></div>
         <div class="qr-countdown" id="qr-countdown"></div>
 
+        <!-- Multi-boutique info (visible si le commerce a plusieurs boutiques) -->
+        <div id="modal-boutiques-info" style="display:none;margin:-4px 0 12px;padding:10px 14px;background:rgba(0,232,204,0.06);border:1px solid rgba(0,232,204,0.18);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.4px;margin-bottom:6px;text-transform:uppercase;"><i class="fa-solid fa-store"></i> Carte multi-boutiques</div>
+            <div id="modal-boutiques-list" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+
         <div class="modal-points-row">
             <div class="modal-stat-box">
                 <div class="modal-stat-label">Solde actuel</div>
@@ -1476,6 +1482,11 @@
 
 <!-- ═══════════ JAVASCRIPT ═══════════ -->
 <script>
+    // ─── HELPERS ───
+    function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
     // ─── STATE ───
     let currentClientId = null;
     let html5QrCodeScanner = null;
@@ -1485,6 +1496,9 @@
     let allTransactions  = [];
     let historyFilter    = 'all';
     let historyLoaded    = false;
+
+    // ─── Multi-boutique ───
+    let merchantBoutiquesMap = {}; // merchantId → [{ id, name, address }]
 
     // ─── QR anti-fraude ───
     let qrRefreshInterval = null;
@@ -1649,7 +1663,7 @@
         if (walletCache.length > 0) {
             const merchantIds = walletCache.map(c => c.merchant_id);
 
-            const [rewardsRes, cardsRes, plansRes] = await Promise.all([
+            const [rewardsRes, cardsRes, plansRes, boutiquesRes] = await Promise.all([
                 supabaseClient
                     .from('rewards')
                     .select('merchant_id, points_required')
@@ -1662,7 +1676,13 @@
                 supabaseClient
                     .from('profiles')
                     .select('id, plan')
-                    .in('id', merchantIds)
+                    .in('id', merchantIds),
+                supabaseClient
+                    .from('boutiques')
+                    .select('id, merchant_id, name, address')
+                    .in('merchant_id', merchantIds)
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: true })
             ]);
 
             if (rewardsRes.data) {
@@ -1675,6 +1695,14 @@
             }
             if (plansRes.data) {
                 plansRes.data.forEach(p => { merchantPlans[p.id] = p.plan; });
+            }
+            // Boutiques : grouper par merchant_id
+            merchantBoutiquesMap = {};
+            if (boutiquesRes.data) {
+                boutiquesRes.data.forEach(b => {
+                    if (!merchantBoutiquesMap[b.merchant_id]) merchantBoutiquesMap[b.merchant_id] = [];
+                    merchantBoutiquesMap[b.merchant_id].push(b);
+                });
             }
         }
 
@@ -1785,6 +1813,13 @@
                 }
             }
 
+            // ── Badge multi-boutique ──
+            const boutiques = merchantBoutiquesMap[card.merchant_id] || [];
+            const boutiquesCount = boutiques.length;
+            const boutiquesBadge = boutiquesCount > 1
+                ? `<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;margin-bottom:4px;"><i class="fa-solid fa-store" style="font-size:9px;"></i> Valable dans ${boutiquesCount} boutiques</div>`
+                : '';
+
             const cardHtml = `
                 <div class="loyalty-card"
                     style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
@@ -1800,6 +1835,7 @@
                         </div>
                         ${tierBadge}
                         <div class="merchant-name">${shopName}</div>
+                        ${boutiquesBadge}
                         <div class="card-progress-wrap">
                             <div class="card-progress-labels">
                                 <span>${points} pts</span>
@@ -1845,6 +1881,24 @@
         const goal = 10;
         const remaining = Math.max(goal - currentPoints, 0);
         document.getElementById('modal-next-reward').innerText = remaining > 0 ? `${remaining} pts` : '🎁 Dispo !';
+
+        // ── Multi-boutique : afficher la liste des boutiques dans le modal ──
+        const boutiquesForMerchant = merchantBoutiquesMap[merchantId] || [];
+        const boutiqueInfoBox  = document.getElementById('modal-boutiques-info');
+        const boutiqueListEl   = document.getElementById('modal-boutiques-list');
+        if (boutiqueInfoBox && boutiqueListEl) {
+            if (boutiquesForMerchant.length > 1) {
+                boutiqueListEl.innerHTML = boutiquesForMerchant.map(b =>
+                    `<div style="font-size:12px;color:rgba(255,255,255,0.75);display:flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-location-dot" style="color:var(--cyan);font-size:10px;flex-shrink:0;"></i>
+                        <span><strong>${escapeHtml(b.name)}</strong>${b.address ? ' — ' + escapeHtml(b.address) : ''}</span>
+                    </div>`
+                ).join('');
+                boutiqueInfoBox.style.display = 'block';
+            } else {
+                boutiqueInfoBox.style.display = 'none';
+            }
+        }
 
         // ── QR anti-fraude : timestamp 60s + auto-refresh ──
         if (qrRefreshInterval) { clearInterval(qrRefreshInterval); qrRefreshInterval = null; }
@@ -2166,7 +2220,7 @@
 
         const { data, error } = await supabaseClient
             .from('transactions')
-            .select('id, type, points_changed, amount, note, created_at, merchant:merchant_id(name)')
+            .select('id, type, points_changed, amount, note, created_at, merchant:merchant_id(name), boutique:boutique_id(name)')
             .eq('client_id', currentClientId)
             .order('created_at', { ascending: false })
             .limit(200);
@@ -2217,22 +2271,24 @@
         container.innerHTML = Object.entries(groups).map(([date, txs]) => `
             <div class="section-label" style="margin-bottom:8px;margin-top:16px;">${date}</div>
             ${txs.map(tx => {
-                const isCredit = tx.type === 'credit';
-                const isReward = tx.type === 'reward' || tx.type === 'debit';
-                const pts      = Math.abs(tx.points_changed || 0);
-                const merchant = tx.merchant?.name || 'Commerce partenaire';
-                const time     = new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                const icon     = isCredit ? '⬆️' : isReward ? '🎁' : '⬇️';
-                const ptsColor = isCredit ? 'var(--green)' : 'var(--pink)';
-                const ptsStr   = isCredit ? `+${pts}` : `-${pts}`;
-                const label    = isCredit ? 'Points gagnés' : isReward ? 'Récompense utilisée' : 'Points débités';
+                const isCredit  = tx.type === 'credit';
+                const isReward  = tx.type === 'reward' || tx.type === 'debit';
+                const pts       = Math.abs(tx.points_changed || 0);
+                const merchant  = tx.merchant?.name || 'Commerce partenaire';
+                const boutique  = tx.boutique?.name || null;
+                const time      = new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const icon      = isCredit ? '⬆️' : isReward ? '🎁' : '⬇️';
+                const ptsColor  = isCredit ? 'var(--green)' : 'var(--pink)';
+                const ptsStr    = isCredit ? `+${pts}` : `-${pts}`;
+                const label     = isCredit ? 'Points gagnés' : isReward ? 'Récompense utilisée' : 'Points débités';
                 const amountStr = tx.amount ? ` · ${Number(tx.amount).toFixed(2)} €` : '';
+                const boutiqueStr = boutique ? ` <span style="opacity:.6;"><i class="fa-solid fa-store" style="font-size:9px;"></i> ${escapeHtml(boutique)}</span>` : '';
 
                 return `<div class="tx-item">
                     <div class="tx-icon" style="background:${isCredit ? 'rgba(34,212,122,0.1)' : 'rgba(255,77,130,0.1)'};">${icon}</div>
                     <div class="tx-info">
-                        <div class="tx-merchant">${merchant}</div>
-                        <div class="tx-date">${label} · ${time}${amountStr}</div>
+                        <div class="tx-merchant">${escapeHtml(merchant)}</div>
+                        <div class="tx-date">${label} · ${time}${amountStr}${boutiqueStr}</div>
                     </div>
                     <div class="tx-pts" style="color:${ptsColor};">${ptsStr} pts</div>
                 </div>`;
