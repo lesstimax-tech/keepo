@@ -1010,7 +1010,26 @@
         </div>
     </div>
 
-    <!-- ═══════════ VUE 4 : PROFIL ═══════════ -->
+    <!-- ═══════════ VUE 4 : RÉCOMPENSES GLOBALES ═══════════ -->
+    <div id="view-rewards" class="app-view">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px;">
+            <div>
+                <h2 class="view-title">Récompenses</h2>
+                <p class="view-sub">Tous vos paliers en un coup d'œil</p>
+            </div>
+            <div id="rewards-unlocked-chip" style="display:none;background:rgba(0,232,204,0.1);border:1px solid rgba(0,232,204,0.25);border-radius:50px;padding:6px 14px;font-size:11px;font-weight:700;color:var(--cyan);white-space:nowrap;align-self:center;">
+                <i class="fa-solid fa-gift"></i> <span id="rewards-unlocked-count">0</span> dispo
+            </div>
+        </div>
+        <div id="rewards-global-container">
+            <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
+                <div style="font-size:28px;margin-bottom:12px;">🎁</div>
+                <p style="color:var(--muted);font-size:13px;">Ouvrez cet onglet pour charger vos récompenses.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ VUE 5 : PROFIL ═══════════ -->
     <div id="view-profile" class="app-view">
         <h2 class="view-title">Mon Profil</h2>
         <p class="view-sub">Gérez vos informations et préférences</p>
@@ -1388,7 +1407,10 @@
         <div class="nav-scan-bubble"><i class="fa-solid fa-qrcode"></i></div>
         <span>Scanner</span>
     </button>
-    <div class="nav-item" style="pointer-events:none;" aria-hidden="true"></div>
+    <button class="nav-item" id="nav-rewards" onclick="switchView('view-rewards')">
+        <i class="fa-solid fa-gift nav-icon"></i>
+        <span>Récompenses</span>
+    </button>
     <button class="nav-item" id="nav-profile" onclick="switchView('view-profile')">
         <i class="fa-solid fa-user nav-icon"></i>
         <span>Profil</span>
@@ -1668,6 +1690,19 @@
         document.getElementById('profile-total-pts').innerText = totalPts + ' pts';
         document.getElementById('profile-nb-stores').innerText = nbCards + ' partenaire' + (nbCards > 1 ? 's' : '');
 
+        // Badge récompenses (calcul rapide avec les données déjà chargées)
+        (async () => {
+            if (!walletCache.length) return;
+            const mids = walletCache.map(c => c.merchant_id);
+            const { data: rw } = await supabaseClient
+                .from('rewards').select('merchant_id, points_required').in('merchant_id', mids);
+            if (!rw) return;
+            const bmap = {};
+            walletCache.forEach(c => { bmap[c.merchant_id] = c.points_balance || 0; });
+            const unlocked = rw.filter(r => bmap[r.merchant_id] >= r.points_required).length;
+            updateRewardsBadge(unlocked);
+        })();
+
         if (!walletData || walletData.length === 0) {
             container.innerHTML = `
                 <div class="empty-wallet">
@@ -1691,9 +1726,10 @@
             prevBalances[card.merchant_id] = curr;
         });
 
-        // Reset cache historique pour forcer un rechargement
+        // Reset caches pour forcer un rechargement
         historyLoaded = false;
         allTransactions = [];
+        rewardsGlobalLoaded = false;
 
         container.innerHTML = "";
         walletData.forEach((card, idx) => {
@@ -1929,6 +1965,7 @@
         if (viewId === 'view-wallet')  document.getElementById('nav-wallet')?.classList.add('active');
         if (viewId === 'view-scan')    document.getElementById('nav-scan')?.classList.add('active');
         if (viewId === 'view-history') document.getElementById('nav-history')?.classList.add('active');
+        if (viewId === 'view-rewards') document.getElementById('nav-rewards')?.classList.add('active');
         if (viewId === 'view-profile') document.getElementById('nav-profile')?.classList.add('active');
 
         document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
@@ -1942,6 +1979,151 @@
 
         if (viewId === 'view-history') {
             loadHistoryView();
+        }
+        if (viewId === 'view-rewards') {
+            loadGlobalRewardsView();
+        }
+    }
+
+    // ─── VUE RÉCOMPENSES GLOBALES ───
+    let rewardsGlobalLoaded = false;
+
+    async function loadGlobalRewardsView() {
+        const container = document.getElementById('rewards-global-container');
+        if (!container || !currentClientId) return;
+
+        container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i></div>';
+
+        if (!walletCache.length) {
+            container.innerHTML = `
+                <div class="empty-wallet">
+                    <div class="empty-wallet-icon">🎁</div>
+                    <h3>Aucune carte</h3>
+                    <p>Scannez le QR d'un commerçant pour rejoindre son programme et débloquer des récompenses.</p>
+                    <button class="empty-wallet-btn" onclick="switchView('view-scan')"><i class="fa-solid fa-qrcode"></i> Scanner</button>
+                </div>`;
+            return;
+        }
+
+        const merchantIds = walletCache.map(c => c.merchant_id);
+
+        // Charge toutes les récompenses de tous les commerçants
+        const { data: allRewards, error } = await supabaseClient
+            .from('rewards')
+            .select('id, merchant_id, name, points_required')
+            .in('merchant_id', merchantIds)
+            .order('points_required', { ascending: true });
+
+        if (error || !allRewards?.length) {
+            container.innerHTML = `
+                <div class="empty-wallet">
+                    <div class="empty-wallet-icon">🎁</div>
+                    <h3>Aucune récompense</h3>
+                    <p>Vos commerçants n'ont pas encore configuré de récompenses.</p>
+                </div>`;
+            return;
+        }
+
+        // Charge les designs pour les noms de commerces
+        const { data: cardDesignsData } = await supabaseClient
+            .from('merchant_cards')
+            .select('merchant_id, title, color')
+            .in('merchant_id', merchantIds);
+
+        const designMap = {};
+        (cardDesignsData || []).forEach(d => { designMap[d.merchant_id] = d; });
+
+        // Balance par merchant
+        const balanceMap = {};
+        walletCache.forEach(c => { balanceMap[c.merchant_id] = c.points_balance || 0; });
+
+        // Groupe par commerçant
+        const grouped = {};
+        allRewards.forEach(r => {
+            if (!grouped[r.merchant_id]) grouped[r.merchant_id] = [];
+            grouped[r.merchant_id].push(r);
+        });
+
+        let totalUnlocked = 0;
+        let html = '';
+
+        Object.entries(grouped).forEach(([mid, rewards]) => {
+            const design   = designMap[mid] || {};
+            const balance  = balanceMap[mid] || 0;
+            const shopName = design.title || walletCache.find(c => c.merchant_id === mid)?.merchant_profile?.name || 'Commerce';
+            const color    = design.color || '#00e8cc';
+            const initial  = shopName.charAt(0).toUpperCase();
+            const shopSafe = shopName.replace(/'/g, "\\'");
+
+            const unlocked = rewards.filter(r => balance >= r.points_required);
+            totalUnlocked += unlocked.length;
+
+            html += `
+            <div style="margin-bottom:20px;">
+                <!-- En-tête commerce -->
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:${hexToGlow(color,0.2)};border:1px solid ${hexToGlow(color,0.35)};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:${color};flex-shrink:0;">${initial}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${shopName}</div>
+                        <div style="font-size:11px;color:var(--muted);">${balance} pts disponibles${unlocked.length ? ` · <span style="color:var(--cyan);font-weight:700;">${unlocked.length} dispo${unlocked.length > 1 ? 's' : ''} 🎉</span>` : ''}</div>
+                    </div>
+                </div>
+                <!-- Récompenses -->
+                ${rewards.map(r => {
+                    const pct      = Math.min((balance / r.points_required) * 100, 100);
+                    const isUnlocked = balance >= r.points_required;
+                    const remaining  = Math.max(r.points_required - balance, 0);
+                    const nameSafe   = r.name.replace(/'/g, "\\'");
+                    return `
+                    <div class="reward-row${isUnlocked ? ' unlocked' : ''}" style="${isUnlocked ? `border-color:${hexToGlow(color,0.35)};background:${hexToGlow(color,0.05)};` : ''}">
+                        <div class="reward-row-icon">${isUnlocked ? '🎁' : '🔒'}</div>
+                        <div class="reward-row-info">
+                            <div class="reward-row-name">${r.name}</div>
+                            <div class="reward-row-pts">${r.points_required} pts requis${isUnlocked
+                                ? ` · <span style="color:${color};font-weight:700;">Débloquée !</span>`
+                                : ` · encore ${remaining} pt${remaining > 1 ? 's' : ''}`}</div>
+                        </div>
+                        ${isUnlocked
+                            ? `<button class="reward-claim-btn" style="background:${color};"
+                                onclick="claimReward('${mid}', ${r.points_required}, '${nameSafe}', ${balance}); rewardsGlobalLoaded=false;">
+                                    <i class="fa-solid fa-check"></i> Réclamer
+                               </button>`
+                            : `<div class="reward-prog-wrap">
+                                   <div class="reward-prog-track"><div class="reward-prog-fill" style="width:${pct}%;background:${color};"></div></div>
+                                   <div class="reward-prog-pct">${Math.round(pct)}%</div>
+                               </div>`
+                        }
+                    </div>`;
+                }).join('')}
+            </div>`;
+        });
+
+        container.innerHTML = html;
+        rewardsGlobalLoaded = true;
+
+        // Badge "X dispo"
+        const chip  = document.getElementById('rewards-unlocked-chip');
+        const count = document.getElementById('rewards-unlocked-count');
+        if (chip && count) {
+            count.innerText = totalUnlocked;
+            chip.style.display = totalUnlocked > 0 ? 'block' : 'none';
+        }
+
+        // Badge dans la nav
+        updateRewardsBadge(totalUnlocked);
+    }
+
+    function updateRewardsBadge(n) {
+        const btn = document.getElementById('nav-rewards');
+        if (!btn) return;
+        const existing = btn.querySelector('.nav-reward-badge');
+        if (existing) existing.remove();
+        if (n > 0) {
+            const badge = document.createElement('div');
+            badge.className = 'nav-reward-badge';
+            badge.style.cssText = 'position:absolute;top:8px;right:calc(50% - 18px);width:16px;height:16px;background:var(--pink);border-radius:50%;font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);';
+            badge.innerText = n > 9 ? '9+' : n;
+            btn.appendChild(badge);
         }
     }
 
