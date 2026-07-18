@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>KEEPO — Flyer A5 (à imprimer)</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+<style>
+  :root{ --violet:#5B3AA0; --teal:#16B8C4; --teal-deep:#0E7C8C; --ink:#14141B; --muted:#5F5E6E; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{ background:#E9E9EF; font-family:'Instrument Sans',sans-serif; display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px 16px; }
+  .toolbar{ font-size:13px; color:#46455A; background:#fff; border:1px solid rgba(20,20,27,.1); border-radius:12px; padding:12px 16px; max-width:460px; text-align:center; line-height:1.6; }
+  .toolbar b{ color:var(--ink); }
+  .toolbar button{ margin-top:8px; background:linear-gradient(125deg,var(--violet),var(--teal)); color:#fff; border:none; border-radius:50px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+
+  /* A5 portrait : 148 × 210 mm */
+  .a5{
+    width:148mm; height:210mm; background:#fff; position:relative; overflow:hidden;
+    box-shadow:0 18px 50px rgba(20,20,27,.22); color:var(--ink);
+    display:flex; flex-direction:column;
+  }
+  /* Bandeau haut dégradé */
+  .top{
+    background:linear-gradient(135deg,#1C1733,#131125 55%,#0E1F26);
+    color:#fff; padding:13mm 12mm 11mm; position:relative; overflow:hidden;
+  }
+  .top::before{ content:""; position:absolute; inset:0;
+    background:radial-gradient(120mm 80mm at 15% 0%,rgba(91,58,160,.5),transparent 60%),
+               radial-gradient(120mm 80mm at 100% 100%,rgba(22,184,196,.32),transparent 60%); }
+  .top>*{ position:relative; }
+  .logo{ height:11mm; margin-bottom:8mm; filter:brightness(0) invert(1); }
+  .eyebrow{ font-size:10pt; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#4ED3DE; margin-bottom:4mm; }
+  .htitle{ font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:25pt; line-height:1.1; letter-spacing:-.5px; }
+  .htitle span{ background:linear-gradient(125deg,#a98bdb,#4ED3DE); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hsub{ color:#C9C8D6; font-size:11pt; margin-top:4mm; line-height:1.5; max-width:110mm; }
+
+  /* Corps */
+  .body{ flex:1; padding:10mm 12mm; display:flex; flex-direction:column; }
+  .benefits{ display:flex; flex-direction:column; gap:5mm; margin-bottom:8mm; }
+  .ben{ display:flex; align-items:flex-start; gap:4mm; }
+  .ben .ico{ width:9mm; height:9mm; border-radius:2.5mm; flex-shrink:0;
+    background:linear-gradient(135deg,rgba(91,58,160,.12),rgba(22,184,196,.14));
+    border:1px solid rgba(91,58,160,.18); display:flex; align-items:center; justify-content:center; font-size:13pt; }
+  .ben b{ font-family:'Bricolage Grotesque',sans-serif; font-size:12pt; display:block; }
+  .ben span{ font-size:9.5pt; color:var(--muted); line-height:1.45; }
+
+  /* Zone QR + offre */
+  .cta-zone{ display:flex; gap:6mm; align-items:center; background:#FAFAFC; border:1px solid rgba(20,20,27,.09); border-radius:5mm; padding:6mm; margin-top:auto; }
+  #flyer-qr{ width:30mm; height:30mm; flex-shrink:0; }
+  #flyer-qr canvas, #flyer-qr svg{ width:30mm !important; height:30mm !important; }
+  .cta-txt .offer{ display:inline-block; background:linear-gradient(125deg,var(--violet),var(--teal)); color:#fff; font-weight:800; font-size:10pt; padding:2mm 4mm; border-radius:50px; margin-bottom:2.5mm; }
+  .cta-txt b{ font-family:'Bricolage Grotesque',sans-serif; font-size:12.5pt; display:block; line-height:1.2; }
+  .cta-txt span{ font-size:9pt; color:var(--muted); display:block; margin-top:1.5mm; }
+
+  /* Pied contact */
+  .foot{ background:#15131D; color:#fff; padding:6mm 12mm; display:flex; align-items:center; justify-content:space-between; font-size:9.5pt; }
+  .foot .site{ font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:12pt; }
+  .foot .contact{ text-align:right; color:#C9C8D6; line-height:1.5; }
+  .foot .contact b{ color:#fff; }
+
+  @media print{
+    @page{ size:A5 portrait; margin:0; }
+    body{ background:#fff; padding:0; gap:0; }
+    .toolbar{ display:none; }
+    .a5{ box-shadow:none; width:148mm; height:210mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <b>Flyer prêt à imprimer (A5).</b><br>
+  Vérifie le numéro de téléphone dans le pied de page, puis imprime.<br>
+  <button onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+</div>
+
+<div class="a5">
+  <div class="top">
+    <img class="logo" src="img/logo.png" alt="KEEPO">
+    <div class="eyebrow">Programme de fidélité · Nouvelle génération</div>
+    <div class="htitle">Offrez à vos clients<br>un vrai <span>programme<br>de fidélité</span>.</div>
+    <div class="hsub">Points, cartes à tampons et récompenses — directement dans le téléphone de vos clients. Sans matériel, prêt en 2 minutes.</div>
+  </div>
+
+  <div class="body">
+    <div class="benefits">
+      <div class="ben">
+        <div class="ico">📱</div>
+        <div><b>Aucun matériel, aucune app à installer</b><span>Vos clients scannent votre QR de comptoir, leur carte est dans leur téléphone. Vous scannez avec le vôtre.</span></div>
+      </div>
+      <div class="ben">
+        <div class="ico">📧</div>
+        <div><b>Vous récupérez nom + e-mail dès la 1ʳᵉ visite</b><span>Et un outil marketing qui relance vos clients automatiquement pour les faire revenir.</span></div>
+      </div>
+      <div class="ben">
+        <div class="ico">🎯</div>
+        <div><b>Rentable dès quelques clients fidèles</b><span>La fidélité des grandes enseignes, accessible à votre commerce. Données 100 % RGPD, hébergées en Europe.</span></div>
+      </div>
+    </div>
+
+    <div class="cta-zone">
+      <div id="flyer-qr"></div>
+      <div class="cta-txt">
+        <span class="offer">14 JOURS D'ESSAI GRATUIT</span>
+        <b>Scannez pour découvrir<br>&amp; tester sans engagement</b>
+        <span>0 € aujourd'hui · résiliable en 1 clic</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="site">keepo.eu</div>
+    <div class="contact">
+      <b>Une question ? Parlons-en.</b><br>
+      contact@keepo.eu · 06 XX XX XX XX
+    </div>
+  </div>
+</div>
+
+<script>
+  new QRCodeStyling({
+    width: 300, height: 300, type: 'svg',
+    data: 'https://keepo.eu/?utm_source=flyer',
+    dotsOptions: { color: '#15131D', type: 'rounded' },
+    cornersSquareOptions: { type: 'extra-rounded', color: '#5B3AA0' },
+    cornersDotOptions: { color: '#16B8C4' },
+    backgroundOptions: { color: '#FAFAFC' }
+  }).append(document.getElementById('flyer-qr'));
+</script>
+</body>
+</html>

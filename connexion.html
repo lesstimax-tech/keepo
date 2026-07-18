@@ -2,368 +2,841 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keepo | Authentification Premium</title>
-    <link rel="icon" href="/favicon.png" type="image/png">
-    <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
-    <link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
-    <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
-    <meta name="theme-color" content="#00e8cc">
-    <link rel="stylesheet" href="css/style.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion — KEEPO</title>
+<meta name="description" content="Connectez-vous à votre espace KEEPO ou créez votre compte pour lancer votre programme de fidélité.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+<meta name="theme-color" content="#16B8C4">
+<meta property="og:title" content="Connexion — KEEPO">
+<meta property="og:description" content="Accédez à votre espace KEEPO.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        .auth-tabs { display: flex; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); }
-        .tab-btn { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--secondary-accent); }
-        
-        .social-auth-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .btn-social { display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); border-radius: 14px; color: var(--text-main); padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .btn-social:hover { background: rgba(255, 255, 255, 0.05); transform: translateY(-2px); border-color: var(--text-muted); }
-        
-        .auth-separator { display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 25px; }
-        .auth-separator::before, .auth-separator::after { content: ''; flex: 1; border-bottom: 1px solid var(--glass-border); }
-        .auth-separator:not(:empty)::before { margin-right: .5em; }
-        .auth-separator:not(:empty)::after { margin-left: .5em; }
-        
-        .auth-form { display: none; animation: fadeIn 0.4s ease; }
-        .auth-form.active { display: block; }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
 
-        .form-group { display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 20px; position: relative; }
-        .form-group label { font-weight: 700; font-size: 12px; letter-spacing: 0.5px; color: var(--text-muted); }
-        .form-group input, .form-group select { width: 100%; padding: 14px; border: 1px solid var(--glass-border); border-radius: 12px; font-size: 15px; background-color: rgba(0, 0, 0, 0.15); color: var(--text-main); transition: all 0.3s; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--secondary-accent); }
-        .form-group select option { background-color: #0a0911; color: white; }
+<style>
+:root{
+  --ink:#14141B; --ink-2:#46455A; --muted:#5F5E6E;
+  --bg:#FAFAFC; --card:#FFFFFF;
+  --line:rgba(20,20,27,.09); --line-2:rgba(20,20,27,.16);
+  --violet:#5B3AA0; --teal:#16B8C4; --teal-deep:#0E7C8C;
+  --grad:linear-gradient(125deg,#5B3AA0,#16B8C4);
+  --danger:#E0245E; --success:#15A34A;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --font-d:'Bricolage Grotesque',system-ui,sans-serif;
+  --font-b:'Instrument Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font-b);background:var(--bg);color:var(--ink);
+  min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;line-height:1.6;
+}
+::selection{background:#5B3AA0;color:#fff}
+button{-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);outline-offset:2px}
 
-        .toggle-password { position: absolute; right: 15px; top: 38px; cursor: pointer; opacity: 0.5; }
+/* ════════ LAYOUT SPLIT ════════ */
+.shell{display:grid;grid-template-columns:1fr 1.1fr;min-height:100vh;min-height:100dvh}
 
-        .plans-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0 25px; }
-        .plan-card { border: 1px solid var(--glass-border); background: rgba(255,255,255,0.01); padding: 15px; border-radius: 16px; cursor: pointer; text-align: left; transition: all 0.3s; }
-        .plan-card.active { border-color: var(--secondary-accent); background: rgba(46, 230, 212, 0.05); box-shadow: 0 0 15px rgba(46, 230, 212, 0.2); }
-        .plan-card h4 { margin: 0 0 5px; font-size: 15px; color: white; font-weight: 800; }
-        .plan-card .price { font-size: 18px; font-weight: 900; color: var(--secondary-accent); }
+/* ── Panneau gauche : marque ── */
+.brand-pane{
+  position:relative;background:#15131D;color:#fff;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:44px 52px;
+}
+.brand-pane::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(560px 380px at 12% 0%,rgba(91,58,160,.40),transparent 62%),
+    radial-gradient(520px 360px at 95% 100%,rgba(22,184,196,.22),transparent 60%);
+}
+.brand-pane>*{position:relative}
+.bp-logo img{height:44px;width:auto}
+.bp-mid{max-width:430px}
+.bp-mid h1{
+  font-family:var(--font-d);font-weight:800;font-size:clamp(1.7rem,2.6vw,2.4rem);
+  line-height:1.12;letter-spacing:-.02em;margin-bottom:16px;
+}
+.bp-mid h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.bp-mid p{color:#A7A5B8;font-size:15px;margin-bottom:26px}
+.bp-checks{display:flex;flex-direction:column;gap:12px}
+.bp-checks span{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:500;color:#D8D7E2}
+.bp-checks i{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  background:rgba(22,184,196,.15);border:1px solid rgba(22,184,196,.35);
+  display:flex;align-items:center;justify-content:center;
+  font-style:normal;font-size:11px;color:#4ED3DE;font-weight:800;
+}
+.bp-quote{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;padding:18px 20px;max-width:430px;
+}
+.bp-quote p{font-size:13.5px;color:#C9C8D6;line-height:1.65;margin-bottom:12px}
+.bp-quote .who{display:flex;align-items:center;gap:10px}
+.bp-quote .av{
+  width:34px;height:34px;border-radius:50%;background:var(--grad);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-weight:800;font-size:12px;color:#fff;
+}
+.bp-quote b{display:block;font-size:12.5px}
+.bp-quote small{font-size:11px;color:#8C8A9E}
+.bp-stat{
+  display:inline-flex;align-items:baseline;gap:8px;margin-top:18px;
+  font-size:12.5px;color:#A7A5B8;
+}
+.bp-stat b{
+  font-family:var(--font-d);font-weight:800;font-size:22px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
 
-        .payment-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .payment-modal { background: #0e0d16; border: 1px solid var(--glass-border); width: 100%; max-width: 400px; padding: 30px; border-radius: 28px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+/* ── Panneau droit : formulaires ── */
+.form-pane{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 24px;
+}
+.form-pane::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(480px 320px at 88% 0%,rgba(22,184,196,.06),transparent 60%),
+    radial-gradient(420px 300px at 8% 100%,rgba(91,58,160,.05),transparent 60%);
+}
+.back-link{
+  position:absolute;top:22px;left:26px;z-index:2;
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+  font-size:13px;font-weight:600;color:var(--muted);
+  padding:8px 14px;border-radius:100px;transition:.25s;
+}
+.back-link:hover{color:var(--ink);background:rgba(20,20,27,.05)}
+.mobile-logo{display:none;margin-bottom:22px}
+.mobile-logo img{height:42px}
 
-        .verify-screen { display: none; text-align: center; animation: fadeIn 0.5s ease; }
-        .verify-icon { font-size: 54px; margin-bottom: 20px; animation: float 2s ease-in-out infinite; }
+.auth-card{
+  position:relative;width:100%;max-width:430px;
+  background:var(--card);border:1px solid var(--line);border-radius:26px;
+  padding:34px 32px 28px;
+  box-shadow:0 1px 2px rgba(20,20,27,.04),0 24px 60px -24px rgba(20,20,27,.16);
+}
+.auth-title{font-family:var(--font-d);font-weight:800;font-size:23px;letter-spacing:-.01em;text-align:center;margin-bottom:4px}
+.auth-sub{font-size:13.5px;color:var(--muted);text-align:center;margin-bottom:24px}
 
-        .toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1a1829; border: 1px solid var(--glass-border); color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: transform 0.4s; z-index: 9999; display: flex; align-items: center; gap: 10px; }
-        .toast-notification.show { transform: translateX(-50%) translateY(0); }
-        .toast-error { border-color: #ea4335; color: #ff8a80; }
-        .toast-success { border-color: var(--secondary-accent); color: #a7ffeb; }
+/* Tabs segmentées */
+.auth-tabs{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  background:#F1F1F6;border-radius:100px;padding:4px;margin-bottom:26px;
+}
+.tab-btn{
+  border:none;border-radius:100px;padding:10px;cursor:pointer;
+  font-family:var(--font-b);font-size:14px;font-weight:700;color:var(--muted);
+  background:none;transition:.3s var(--ease);
+}
+.tab-btn.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(20,20,27,.10)}
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    </style>
+.auth-form{display:none;animation:formIn .35s var(--ease)}
+.auth-form.active{display:block}
+@keyframes formIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.form-group{margin-bottom:16px;text-align:left;position:relative}
+.form-group label{
+  display:block;font-size:11px;font-weight:700;letter-spacing:.7px;
+  text-transform:uppercase;color:var(--ink-2);margin-bottom:7px;
+}
+.form-group input{
+  width:100%;padding:13px 15px;font-size:15px;font-family:var(--font-b);
+  background:#fff;border:1px solid var(--line-2);border-radius:13px;color:var(--ink);
+  transition:border-color .25s,box-shadow .25s;
+}
+.form-group input::placeholder{color:#B4B3C0}
+.form-group input:focus{outline:none;border-color:var(--teal-deep);box-shadow:0 0 0 3.5px rgba(22,184,196,.14)}
+.toggle-password{
+  position:absolute;right:6px;top:31px;width:38px;height:42px;
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:none;cursor:pointer;color:#9C9BAB;transition:color .2s;
+}
+.toggle-password:hover{color:var(--ink-2)}
+.toggle-password svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Sélecteur de rôle */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.role-card{
+  border:1.5px solid var(--line-2);border-radius:15px;padding:14px 12px;cursor:pointer;
+  background:#fff;text-align:center;transition:.25s var(--ease);
+}
+.role-card:hover{border-color:rgba(14,124,140,.4)}
+.role-card.active{
+  border-color:var(--teal-deep);
+  background:linear-gradient(135deg,rgba(91,58,160,.05),rgba(22,184,196,.06));
+  box-shadow:0 0 0 3.5px rgba(22,184,196,.12);
+}
+.role-card .ri{font-size:21px;display:block;margin-bottom:6px}
+.role-card b{display:block;font-size:13.5px;font-family:var(--font-d);font-weight:700}
+.role-card small{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* Note essai commerçant */
+#merchant-trial-note{
+  display:none;margin-bottom:16px;padding:12px 15px;border-radius:13px;
+  background:linear-gradient(135deg,rgba(91,58,160,.06),rgba(22,184,196,.07));
+  border:1px solid rgba(14,124,140,.25);
+  font-size:12.5px;color:var(--ink-2);line-height:1.55;
+}
+#merchant-trial-note b{color:var(--ink)}
+
+/* Boutons */
+.btn-main{
+  width:100%;padding:15px;border:none;border-radius:100px;cursor:pointer;
+  font-family:var(--font-b);font-size:15.5px;font-weight:700;color:#fff;
+  background:var(--grad);
+  box-shadow:0 12px 26px -10px rgba(91,58,160,.45);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 16px 32px -10px rgba(91,58,160,.5)}
+.btn-main:active{transform:scale(.98)}
+.btn-main:disabled{opacity:.65;cursor:wait;transform:none}
+.spinner{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+  animation:spin .7s linear infinite;display:none;
+}
+.btn-main.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.auth-foot{font-size:11.5px;color:var(--muted);text-align:center;margin-top:18px;line-height:1.6}
+.auth-foot a{color:var(--teal-deep);text-decoration:none;font-weight:600}
+.auth-foot a:hover{text-decoration:underline}
+.switch-hint{font-size:13px;color:var(--muted);text-align:center;margin-top:16px}
+.switch-hint a{color:var(--teal-deep);font-weight:700;text-decoration:none;cursor:pointer}
+.mini-link{font-size:12.5px;color:var(--teal-deep);font-weight:600;cursor:pointer;text-decoration:none}
+.mini-link:hover{text-decoration:underline}
+
+/* ════════ MODAL ESSAI ════════ */
+.payment-overlay{
+  position:fixed;inset:0;background:rgba(20,20,27,.55);backdrop-filter:blur(10px);
+  z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;
+}
+.payment-modal{
+  background:#fff;border:1px solid var(--line);width:100%;max-width:410px;
+  padding:32px 30px 26px;border-radius:26px;text-align:center;
+  box-shadow:0 40px 90px -20px rgba(20,20,27,.35);
+  animation:modalIn .4s var(--ease);
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.pm-icon{
+  width:58px;height:58px;border-radius:18px;margin:0 auto 16px;
+  background:linear-gradient(135deg,rgba(91,58,160,.10),rgba(22,184,196,.12));
+  border:1px solid rgba(91,58,160,.15);
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+}
+.payment-modal h3{font-family:var(--font-d);font-weight:800;font-size:20px;margin-bottom:6px}
+.payment-modal .pm-sub{color:var(--muted);font-size:13.5px;margin-bottom:20px}
+.pm-checks{display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:22px}
+.pm-checks span{display:flex;gap:10px;font-size:13.5px;color:var(--ink-2);align-items:baseline}
+.pm-checks i{font-style:normal;color:var(--teal-deep);font-weight:800;font-size:13px}
+.pm-cancel{
+  background:none;border:none;color:var(--muted);font-size:12.5px;margin-top:14px;
+  cursor:pointer;text-decoration:underline;font-family:var(--font-b);
+}
+
+/* ════════ ÉCRAN VÉRIFICATION E-MAIL ════════ */
+.verify-screen{display:none;text-align:center;animation:formIn .45s var(--ease)}
+.verify-icon{
+  width:74px;height:74px;border-radius:22px;margin:0 auto 20px;
+  background:linear-gradient(135deg,rgba(91,58,160,.10),rgba(22,184,196,.12));
+  border:1px solid rgba(91,58,160,.15);
+  display:flex;align-items:center;justify-content:center;font-size:32px;
+  animation:floaty 2.6s ease-in-out infinite;
+}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.verify-wait{
+  display:inline-flex;align-items:center;gap:9px;margin-top:6px;
+  font-size:12.5px;color:var(--teal-deep);font-weight:600;
+  background:rgba(22,184,196,.08);border:1px solid rgba(22,184,196,.25);
+  padding:9px 16px;border-radius:100px;
+}
+.verify-wait .dot{
+  width:7px;height:7px;border-radius:50%;background:var(--teal-deep);
+  animation:pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}
+
+/* ════════ TOAST ════════ */
+.toast-notification{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%) translateY(-90px);
+  background:rgba(18,15,30,.96);border:1px solid rgba(255,255,255,.14);color:#fff;
+  padding:13px 22px;border-radius:100px;font-size:13.5px;font-weight:600;
+  box-shadow:0 14px 40px rgba(20,20,27,.35);transition:transform .4s var(--ease);
+  z-index:10000;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 40px);
+}
+.toast-notification.show{transform:translateX(-50%) translateY(0)}
+.toast-error{border-color:rgba(224,36,94,.5)}
+.toast-success{border-color:rgba(22,184,196,.5)}
+
+/* ════════ RESPONSIVE ════════ */
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .brand-pane{display:none}
+  .mobile-logo{display:block}
+  .form-pane{padding:74px 18px 40px}
+  .auth-card{padding:28px 22px 24px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
 </head>
-<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; position: relative;">
+<body>
 
-    <div class="cyber-grid" style="display: block;"></div>
-    <div id="toastMessage" class="toast-notification"></div>
+<div id="toastMessage" class="toast-notification"></div>
 
-    <div class="payment-overlay" id="paymentOverlay">
-        <div class="payment-modal">
-            <div style="font-size: 32px; margin-bottom: 10px;">🔒</div>
-            <h3 style="font-weight: 800; font-size: 20px; margin-bottom: 5px;">Paiement Sécurisé Keepo</h3>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Forfait <span id="modal-plan-name" style="color:var(--secondary-accent); font-weight:700;">Essential</span> par carte bancaire.</p>
-            
-            <div class="form-group">
-                <label>NUMÉRO DE CARTE</label>
-                <input type="text" value="4242 4242 4242 4242" disabled style="opacity: 0.6; text-align: center; letter-spacing: 2px;">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="form-group"><label>EXPIRATION</label><input type="text" value="12/29" disabled style="opacity: 0.6; text-align: center;"></div>
-                <div class="form-group"><label>CVC</label><input type="text" value="123" disabled style="opacity: 0.6; text-align: center;"></div>
-            </div>
+<!-- ════════ MODAL : ESSAI 14 JOURS (commerçants) ════════ -->
+<div class="payment-overlay" id="paymentOverlay">
+  <div class="payment-modal">
+    <div class="pm-icon">🎁</div>
+    <h3>14 jours d'essai offerts</h3>
+    <p class="pm-sub">Votre compte commerçant démarre avec <strong style="color:var(--ink);">toutes les fonctionnalités</strong>, sans payer aujourd'hui.</p>
+    <div class="pm-checks">
+      <span><i>✓</i>Toutes les fonctionnalités pendant 14 jours</span>
+      <span><i>✓</i>0&nbsp;€ aujourd'hui — premier prélèvement à la fin de l'essai</span>
+      <span><i>✓</i>Annulable en 1 clic à tout moment pendant l'essai</span>
+    </div>
+    <button onclick="processMerchantRegistrationAfterPayment()" id="btnConfirmPayment" class="btn-main">
+      <span class="spinner"></span>Activer mon essai gratuit →
+    </button>
+    <button onclick="closePaymentModal()" class="pm-cancel">Annuler et modifier</button>
+  </div>
+</div>
 
-            <button onclick="processMerchantRegistrationAfterPayment()" id="btnConfirmPayment" class="btn btn-main-cta" style="width: 100%; margin-top: 10px; padding: 14px;">
-                Valider le paiement (<span id="modal-plan-price">49€</span>/mois)
-            </button>
-            <button onclick="closePaymentModal()" style="background: none; border: none; color: var(--text-muted); font-size: 12px; margin-top: 15px; cursor: pointer; text-decoration: underline;">
-                Annuler et modifier
-            </button>
-        </div>
+<div class="shell">
+
+  <!-- ════════ PANNEAU MARQUE ════════ -->
+  <aside class="brand-pane" aria-hidden="true">
+    <div class="bp-logo"><a href="/"><img src="img/logo.png" alt="KEEPO"></a></div>
+    <div class="bp-mid">
+      <h1>La fidélité qui fait <span>revenir vos clients</span>.</h1>
+      <p>Points, cartes à tampons, récompenses et marketing automatisé — dans le téléphone de vos clients.</p>
+      <div class="bp-checks">
+        <span><i>✓</i>Prêt en 2 minutes, sans matériel</span>
+        <span><i>✓</i>14 jours d'essai — 0&nbsp;€ aujourd'hui</span>
+        <span><i>✓</i>Données hébergées en Europe · RGPD</span>
+      </div>
+      <div class="bp-stat"><b>2 min</b> pour lancer votre programme, sans matériel</div>
+    </div>
+    <div class="bp-quote">
+      <p>« KEEPO démarre auprès des commerces indépendants. Rejoignez les premiers et façonnez l'outil avec nous. »</p>
+      <div class="who">
+        <div class="av">K</div>
+        <div><b>L'équipe KEEPO</b><small>Fidélité digitale, sans complications</small></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════════ PANNEAU FORMULAIRES ════════ -->
+  <main class="form-pane">
+    <a href="/" class="back-link">← Retour au site</a>
+    <div class="mobile-logo"><a href="/"><img src="img/logo.png" alt="KEEPO"></a></div>
+
+    <!-- Écran : vérification e-mail -->
+    <div class="auth-card verify-screen" id="verificationScreen">
+      <div class="verify-icon">✉️</div>
+      <h2 class="auth-title">Confirmez votre e-mail</h2>
+      <p class="auth-sub" style="margin-bottom:8px;">
+        Un lien de validation vient d'être envoyé à<br>
+        <strong id="user-sent-email" style="color:var(--ink);">…</strong>
+      </p>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:18px;">Cliquez sur ce lien pour activer votre compte. Pensez à vérifier vos spams.</p>
+      <div class="verify-wait"><span class="dot"></span>En attente de votre confirmation — la page se redirigera toute seule</div>
     </div>
 
-    <div style="margin-bottom: 25px; z-index: 10;">
-        <a href="index.html" class="logo-container"><img src="img/logo.png" alt="Keepo Logo" style="height: 52px;"></a>
-    </div>
+    <!-- Écran principal -->
+    <div class="auth-card" id="mainAuthBlock">
+      <h2 class="auth-title" id="authTitle">Bienvenue</h2>
+      <p class="auth-sub" id="authSub">Connectez-vous à votre espace KEEPO</p>
 
-    <div class="login-container verify-screen" id="verificationScreen" style="max-width: 440px; width: 100%; padding: 40px; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 36px; z-index: 100%;">
-        <div class="verify-icon">✉️</div>
-        <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 10px;">Confirmez votre e-mail</h2>
-        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 25px;">
-            Un lien de validation unique vient d'être envoyé à <strong id="user-sent-email" style="color: white;">...</strong>.<br>
-            Cliquez sur ce lien pour déverrouiller instantanément votre accès Keepo.
-        </p>
-        <div style="font-size: 12px; color: var(--secondary-accent); font-weight: 700; background: rgba(46,230,212,0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(46,230,212,0.1);">
-            🔄 En attente de votre confirmation... la page se redirigera toute seule !
-        </div>
-    </div>
+      <div class="auth-tabs" role="tablist">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')" role="tab">Se connecter</button>
+        <button class="tab-btn" id="tab-register" onclick="switchTab('register')" role="tab">Créer un compte</button>
+      </div>
 
-    <div class="login-container" id="mainAuthBlock" style="max-width: 440px; margin: 0; width: 100%; padding: 40px; background: var(--bg-card); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-radius: 36px; box-shadow: 0 40px 80px rgba(0,0,0,0.5); text-align: center; z-index: 10;">
-        
-        <div class="auth-tabs">
-            <button class="tab-btn active" onclick="switchTab('login')">Se connecter</button>
-            <button class="tab-btn" onclick="switchTab('register')">S'inscrire</button>
+      <!-- FORMULAIRE : CONNEXION -->
+      <form id="loginForm" class="auth-form active" novalidate>
+        <div class="form-group">
+          <label for="login-email">Adresse e-mail</label>
+          <input type="email" id="login-email" placeholder="nom@exemple.com" autocomplete="email" required>
         </div>
 
-        <div class="social-auth-container">
-            <button class="btn-social" onclick="handleOAuthLogin('google')">Google</button>
-            <button class="btn-social" onclick="handleOAuthLogin('apple')">Apple</button>
-        </div>
-
-        <div class="auth-separator">OU IDENTIFIANTS SÉCURISÉS</div>
-
-        <!-- FORMULAIRE : CONNEXION -->
-        <form id="loginForm" class="auth-form active">
-            <div class="form-group">
-                <label>ADRESSE EMAIL</label>
-                <input type="email" id="login-email" placeholder="nom@exemple.com" required>
-            </div>
-            <div class="form-group">
-                <label>MOT DE PASSE</label>
-                <input type="password" id="login-password" placeholder="••••••••" required>
-                <span class="toggle-password" onclick="togglePasswordVisibility('login-password')">👁️</span>
-            </div>
-            <button type="submit" class="btn btn-main-cta" style="width: 100%; margin-top: 10px; padding: 15px;">
-                Se connecter
+        <!-- Mode mot de passe -->
+        <div id="pwdPanel">
+          <div class="form-group" style="margin-bottom:8px;">
+            <label for="login-password">Mot de passe</label>
+            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('login-password', this)" aria-label="Afficher le mot de passe">
+              <svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
-        </form>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+            <a class="mini-link" onclick="sendResetPassword()">Mot de passe oublié ?</a>
+          </div>
+          <button type="submit" class="btn-main" id="loginBtn"><span class="spinner"></span>Se connecter</button>
+          <p style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:12px;">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--teal-deep);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+            Connexion protégée par vérification en 2 étapes
+          </p>
+        </div>
 
-        <!-- FORMULAIRE : INSCRIPTION -->
-        <form id="registerForm" class="auth-form">
-            <div class="form-group">
-                <label>JE SOUHAITE REJOINDRE EN TANT QUE</label>
-                <select id="register-role" onchange="handleRoleChange()" required>
-                    <option value="client">📱 Client (Utiliser mes cartes de fidélité)</option>
-                    <option value="commercant">🏪 Commerçant (Créer un programme pour mes clients)</option>
-                </select>
-            </div>
+        <!-- Mode code e-mail (OTP) -->
+        <div id="otpPanel" style="display:none;">
+          <div id="otpCodeGroup" class="form-group" style="display:none;">
+            <label for="otp-code">Code reçu par e-mail</label>
+            <input type="text" id="otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••"
+                   oninput="handleOtpInput(this)"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault(); if(otpStage==='verify'&&!otpBusy) otpAction();}"
+                   style="text-align:center;letter-spacing:8px;font-size:22px;font-weight:700;font-family:var(--font-d);">
+          </div>
+          <p id="otpHint" style="font-size:12.5px;color:var(--muted);margin:-4px 0 14px;line-height:1.5;">
+            Un code de connexion à usage unique va être envoyé à votre adresse e-mail.
+          </p>
+          <button type="button" class="btn-main" id="otpBtn" onclick="otpAction()"><span class="spinner"></span>Recevoir mon code</button>
+          <p class="switch-hint" style="margin-top:14px;">
+            <a onclick="otpResend()" id="otpResendLink" style="display:none;">Renvoyer le code</a>
+            <span id="otpResendSep" style="display:none;color:var(--muted);"> · </span>
+            <a onclick="showPasswordMode()">← Connexion par mot de passe</a>
+          </p>
+        </div>
 
-            <div id="merchant-plans-zone" style="display: none; text-align: left;">
-                <label style="font-weight: 700; font-size: 12px; color: var(--text-muted); letter-spacing: 0.5px;">CHOISISSEZ VOTRE PLAN KEEPO PRO</label>
-                <div class="plans-container">
-                    <div class="plan-card active" id="plan-essential" onclick="selectPlan('essential', 'Essential', '49€')">
-                        <h4>Essential 🏪</h4>
-                        <div class="price">49€<span style="font-size:10px; color:var(--text-muted);">/mois</span></div>
-                    </div>
-                    <div class="plan-card" id="plan-pro" onclick="selectPlan('pro', 'Pro Scale', '99€')">
-                        <h4>Pro Scale ⚡</h4>
-                        <div class="price">99€<span style="font-size:10px; color:var(--text-muted);">/mois</span></div>
-                    </div>
-                </div>
-            </div>
+        <p class="switch-hint">Pas encore de compte ? <a onclick="switchTab('register')">Créer un compte</a></p>
+      </form>
 
-            <div class="form-group">
-                <label>NOM COMPLET OU DE L'ENSEIGNE</label>
-                <input type="text" id="register-name" placeholder="Ex: Jean Dupont / Le Bistrot" required>
+      <!-- FORMULAIRE : INSCRIPTION -->
+      <form id="registerForm" class="auth-form" novalidate>
+        <input type="hidden" id="register-role" value="client">
+        <div class="form-group">
+          <label>Je suis…</label>
+          <div class="role-grid">
+            <div class="role-card active" id="role-client" onclick="setRole('client')" role="button" tabindex="0">
+              <span class="ri">👤</span><b>Client</b>
+              <small>J'utilise mes cartes de fidélité</small>
             </div>
-            <div class="form-group">
-                <label>ADRESSE EMAIL</label>
-                <input type="email" id="register-email" placeholder="nom@domaine.com" required>
+            <div class="role-card" id="role-commercant" onclick="setRole('commercant')" role="button" tabindex="0">
+              <span class="ri">🏪</span><b>Commerçant</b>
+              <small>Je fidélise mes clients</small>
             </div>
-            <div class="form-group">
-                <label>CRÉER UN MOT DE PASSE</label>
-                <input type="password" id="register-password" placeholder="Minimum 6 caractères" required>
-                <span class="toggle-password" onclick="togglePasswordVisibility('register-password')">👁️</span>
-            </div>
-            <div class="form-group">
-                <label>CONFIRMER LE MOT DE PASSE</label>
-                <input type="password" id="register-confirm-password" placeholder="Répétez le mot de passe" required>
-                <span class="toggle-password" onclick="togglePasswordVisibility('register-confirm-password')">👁️</span>
-            </div>
-            <button type="submit" class="btn btn-teal" style="width: 100%; margin-top: 10px; padding: 15px;">
-                Créer mon compte Keepo
-            </button>
-        </form>
+          </div>
+        </div>
+
+        <div id="merchant-trial-note">
+          🎁 <b>14 jours d'essai offerts</b> — toutes les fonctionnalités, 0&nbsp;€ aujourd'hui, annulable en 1 clic.
+        </div>
+
+        <div class="form-group">
+          <label for="register-name" id="register-name-label">Votre nom</label>
+          <input type="text" id="register-name" placeholder="Jean Dupont" autocomplete="name" required>
+        </div>
+        <div class="form-group">
+          <label for="register-email">Adresse e-mail</label>
+          <input type="email" id="register-email" placeholder="nom@exemple.com" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label for="register-password">Mot de passe</label>
+          <input type="password" id="register-password" placeholder="Minimum 6 caractères" autocomplete="new-password" required>
+          <button type="button" class="toggle-password" onclick="togglePasswordVisibility('register-password', this)" aria-label="Afficher le mot de passe">
+            <svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="form-group">
+          <label for="register-confirm-password">Confirmer le mot de passe</label>
+          <input type="password" id="register-confirm-password" placeholder="Répétez le mot de passe" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="btn-main" id="registerBtn"><span class="spinner"></span>Créer mon compte</button>
+        <p class="auth-foot">En créant un compte, vous acceptez les <a href="cgu-cgv.html" target="_blank">CGU</a> et la <a href="confidentialite.html" target="_blank">politique de confidentialité</a>.</p>
+      </form>
     </div>
 
-    <script>
-        let selectedPlan = 'client';
+  </main>
+</div>
 
-        // 🛡️ BOUCLIER ANTI-BOUCLE : On affiche un bouton plutôt qu'une redirection forcée.
-        window.addEventListener('DOMContentLoaded', async () => {
-            if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-                    const userRole = profile ? profile.role : 'client';
-                    
-                    // Remplacement du formulaire par un écran de bienvenue fixe
-                    document.getElementById('mainAuthBlock').innerHTML = `
-                        <div style="padding: 20px;">
-                            <div style="font-size: 50px; margin-bottom: 15px; animation: float 2s infinite ease-in-out;">👋</div>
-                            <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 10px;">Vous êtes déjà connecté</h2>
-                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 30px;">Votre session est active et sécurisée.</p>
-                            
-                            <button onclick="redirectUser('${userRole}')" class="btn btn-main-cta" style="width: 100%; padding: 16px; font-size: 16px; margin-bottom: 15px;">
-                                Accéder à mon Espace
-                            </button>
-                            
-                            <button onclick="forceLogout()" style="background: none; border: none; color: #ff477e; cursor: pointer; font-size: 13px; font-weight: bold; text-decoration: underline;">
-                                Me déconnecter et changer de compte
-                            </button>
-                        </div>
-                    `;
-                }
+<script>
+// ─── Déjà connecté ? → écran de bienvenue (pas de redirection forcée) ───
+window.addEventListener('DOMContentLoaded', async () => {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+            const userRole = profile ? profile.role : 'client';
+            document.getElementById('mainAuthBlock').innerHTML = `
+                <div style="text-align:center;padding:8px 0;">
+                    <div class="verify-icon" style="font-size:30px;">👋</div>
+                    <h2 class="auth-title">Vous êtes déjà connecté</h2>
+                    <p class="auth-sub">Votre session est active et sécurisée.</p>
+                    <button onclick="redirectUser('${userRole}')" class="btn-main" style="margin-top:6px;">Accéder à mon espace →</button>
+                    <button onclick="forceLogout()" class="pm-cancel">Me déconnecter et changer de compte</button>
+                </div>`;
+        }
+    }
+
+    // Pré-remplit le dernier e-mail utilisé (re-connexion plus rapide)
+    try {
+        const last = localStorage.getItem('KEEPO_last_email');
+        const emailField = document.getElementById('login-email');
+        if (last && emailField && !emailField.value) {
+            emailField.value = last;
+            document.getElementById('login-password')?.focus();
+        }
+    } catch (_) {}
+
+    // ?tab=register pour arriver directement sur l'inscription
+    if (new URLSearchParams(window.location.search).get('tab') === 'register') switchTab('register');
+
+    // ?ref=CODE : code de parrainage commerçant, mémorisé jusqu'à l'inscription
+    try {
+        const r = (new URLSearchParams(window.location.search).get('ref') || '').trim();
+        if (r) localStorage.setItem('keepo_ref', r);
+    } catch (_) {}
+});
+
+// Récupère le code de parrainage éventuellement mémorisé.
+function getRefCode() {
+    try { return (localStorage.getItem('keepo_ref') || '').trim(); } catch (_) { return ''; }
+}
+
+async function forceLogout() {
+    await supabaseClient.auth.signOut();
+    window.location.reload();
+}
+
+// ─── Helpers UI ───
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toastMessage');
+    toast.innerHTML = (type === 'error' ? '⚠️ ' : '✅ ') + message;
+    toast.className = `toast-notification show toast-${type}`;
+    setTimeout(() => { toast.classList.remove('show'); }, 4200);
+}
+
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    if (btn) btn.style.color = input.type === 'text' ? 'var(--teal-deep)' : '';
+}
+
+function setLoading(btn, on) {
+    if (!btn) return;
+    btn.disabled = on;
+    btn.classList.toggle('loading', on);
+}
+
+function switchTab(type) {
+    document.getElementById('tab-login').classList.toggle('active', type === 'login');
+    document.getElementById('tab-register').classList.toggle('active', type === 'register');
+    document.getElementById('loginForm').classList.toggle('active', type === 'login');
+    document.getElementById('registerForm').classList.toggle('active', type === 'register');
+    document.getElementById('authTitle').innerText = type === 'login' ? 'Bienvenue' : 'Créer votre compte';
+    document.getElementById('authSub').innerText = type === 'login'
+        ? 'Connectez-vous à votre espace KEEPO'
+        : 'Rejoignez KEEPO en moins d\'une minute';
+}
+
+// ─── Sélecteur de rôle ───
+function setRole(role) {
+    document.getElementById('register-role').value = role;
+    document.getElementById('role-client').classList.toggle('active', role === 'client');
+    document.getElementById('role-commercant').classList.toggle('active', role === 'commercant');
+    document.getElementById('merchant-trial-note').style.display = role === 'commercant' ? 'block' : 'none';
+    const nameLabel = document.getElementById('register-name-label');
+    const nameInput = document.getElementById('register-name');
+    if (role === 'commercant') {
+        nameLabel.innerText = 'Nom de votre enseigne';
+        nameInput.placeholder = 'Le Bistrot de Jean';
+    } else {
+        nameLabel.innerText = 'Votre nom';
+        nameInput.placeholder = 'Jean Dupont';
+    }
+}
+
+// ─── Redirection (avec respect du ?next=) ───
+function safeNext() {
+    const n = new URLSearchParams(window.location.search).get('next') || '';
+    return (n.startsWith('/') && !n.startsWith('//')) ? n : null;
+}
+function redirectUser(role) {
+    const next = safeNext();
+    window.location.href = next || (role === 'commercant' ? '/dashboard-commercant' : '/dashboard-client');
+}
+
+// ─── Inscription ───
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+
+    if (!name) { showToast('Indiquez votre nom (ou celui de votre enseigne).'); return; }
+    if (!email || !email.includes('@')) { showToast('Adresse e-mail invalide.'); return; }
+    if (password.length < 6) { showToast('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+    if (password !== confirmPassword) { showToast('Les mots de passe ne correspondent pas.'); return; }
+
+    const role = document.getElementById('register-role').value;
+    if (role === 'commercant') {
+        document.getElementById('paymentOverlay').style.display = 'flex';
+    } else {
+        processRegistrationEngine();
+    }
+});
+
+function processMerchantRegistrationAfterPayment() {
+    processRegistrationEngine();
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentOverlay').style.display = 'none';
+}
+
+async function processRegistrationEngine() {
+    const role = document.getElementById('register-role').value;
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+
+    const btn = document.getElementById('paymentOverlay').style.display === 'flex'
+        ? document.getElementById('btnConfirmPayment')
+        : document.getElementById('registerBtn');
+    setLoading(btn, true);
+
+    try {
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                redirectTo: window.location.origin + '/validation',
+                // Le profil est créé côté serveur par le trigger handle_new_user
+                // à partir de ces métadonnées. Le plan n'est jamais décidé ici :
+                // l'essai et l'abonnement se gèrent après connexion (Stripe).
+                // ref_code (parrainage) : n'a d'effet que pour un compte commerçant.
+                data: (function () {
+                    const d = { name: name, role: role };
+                    const rc = getRefCode();
+                    if (role === 'commercant' && rc) d.ref_code = rc;
+                    return d;
+                })()
             }
         });
+        if (authError) throw authError;
 
-        async function forceLogout() {
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        }
-
-        function showToast(message, type = 'error') {
-            const toast = document.getElementById('toastMessage');
-            toast.innerHTML = type === 'error' ? `⚠️ ${message}` : `✅ ${message}`;
-            toast.className = `toast-notification show toast-${type}`;
-            setTimeout(() => { toast.classList.remove('show'); }, 4000);
-        }
-
-        function togglePasswordVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            input.type = input.type === "password" ? "text" : "password";
-        }
-
-        function handleRoleChange() {
-            const role = document.getElementById('register-role').value;
-            const planZone = document.getElementById('merchant-plans-zone');
-            if(role === 'commercant') {
-                planZone.style.display = 'block';
-                selectedPlan = 'essential';
+        if (authData.user) {
+            closePaymentModal();
+            try { localStorage.removeItem('keepo_ref'); } catch (_) {} // parrainage consommé
+            if (authData.session) {
+                showToast('Compte créé avec succès !', 'success');
+                setTimeout(() => { redirectUser(role); }, 1200);
             } else {
-                planZone.style.display = 'none';
-                selectedPlan = 'client';
+                document.getElementById('user-sent-email').innerText = email;
+                document.getElementById('mainAuthBlock').style.display = 'none';
+                document.getElementById('verificationScreen').style.display = 'block';
+                startVerificationWatcher(role);
             }
         }
+    } catch (error) {
+        showToast(error.message, 'error');
+    } finally {
+        setLoading(btn, false);
+    }
+}
 
-        function selectPlan(planCode, label, price) {
-            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active'));
-            document.getElementById(`plan-${planCode}`).classList.add('active');
-            selectedPlan = planCode;
-            document.getElementById('modal-plan-name').innerText = label;
-            document.getElementById('modal-plan-price').innerText = price;
-        }
+// ─── L'écran "confirmez votre e-mail" surveille la validation ───
+// Dès que le lien est cliqué (même dans un autre onglet), la session
+// apparaît dans ce navigateur → on redirige automatiquement.
+function startVerificationWatcher(role) {
+    const timer = setInterval(async () => {
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                clearInterval(timer);
+                showToast('E-mail confirmé — bienvenue !', 'success');
+                setTimeout(() => redirectUser(role), 900);
+            }
+        } catch { /* on retentera au prochain tick */ }
+    }, 3000);
+}
 
-        function closePaymentModal() {
-            document.getElementById('paymentOverlay').style.display = 'none';
-        }
+// ─── Connexion par mot de passe ───
+// ─── Appareil de confiance ───
+// Après une 2FA réussie, on mémorise l'appareil 30 jours : plus de code à
+// saisir à chaque connexion sur ce téléphone/ordinateur (comportement banque).
+function _trustKey(email){ return 'KEEPO_trust_' + (email||'').toLowerCase().trim(); }
+function isDeviceTrusted(email){
+    try { return Number(localStorage.getItem(_trustKey(email)) || 0) > Date.now(); }
+    catch { return false; }
+}
+function trustDevice(email){
+    try { localStorage.setItem(_trustKey(email), String(Date.now() + 30*24*3600*1000)); } catch {}
+}
+function rememberEmail(email){ try { localStorage.setItem('KEEPO_last_email', (email||'').trim()); } catch {} }
 
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const password = document.getElementById('register-password').value;
-            const confirmPassword = document.getElementById('register-confirm-password').value;
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (document.getElementById('otpPanel').style.display !== 'none') return; // mode code actif
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) { showToast('Renseignez votre e-mail et votre mot de passe.'); return; }
 
-            if (password !== confirmPassword) {
-                showToast("Les mots de passe ne correspondent pas.", "error");
+    const btn = document.getElementById('loginBtn');
+    setLoading(btn, true);
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+            // E-mail jamais confirmé → on bascule sur le code par e-mail
+            // (le code confirme l'adresse ET connecte en une étape).
+            if (/confirm/i.test(error.message || '')) {
+                showToast('E-mail non confirmé — on vous envoie un code de connexion.', 'success');
+                showOtpMode();
+                await otpAction();
                 return;
             }
-            if (password.length < 6) {
-                showToast("Le mot de passe doit contenir au moins 6 caractères.", "error");
-                return;
-            }
+            throw new Error('Identifiants incorrects.');
+        }
 
-            const role = document.getElementById('register-role').value;
-            if(role === 'commercant') {
-                document.getElementById('paymentOverlay').style.display = 'flex';
-            } else {
-                processRegistrationEngine();
-            }
+        // ── Appareil déjà de confiance ? → on saute la 2FA ──
+        // (le mot de passe + l'appareil mémorisé suffisent pendant 30 jours)
+        if (isDeviceTrusted(email)) {
+            rememberEmail(email);
+            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+            showToast('Connexion réussie !', 'success');
+            redirectUser(profile ? profile.role : 'client'); // immédiat
+            return;
+        }
+
+        // ── Vérification en 2 étapes (nouvel appareil) ──
+        // Le mot de passe est correct, mais la session ne sera définitive
+        // qu'après validation du code : on détruit la session temporaire
+        // (localement) et on envoie le code.
+        await supabaseClient.auth.signOut({ scope: 'local' });
+        showOtpMode();
+        await otpAction(); // envoie le code immédiatement
+        const hint = document.getElementById('otpHint');
+        hint.innerHTML = '🔐 <strong>Vérification en 2 étapes</strong> : entrez le code reçu par e-mail. Cet appareil sera ensuite <strong>mémorisé 30 jours</strong> — plus de code à saisir pendant ce temps.';
+        hint.style.display = 'block';
+    } catch (error) {
+        showToast(error.message, 'error');
+    } finally {
+        setLoading(btn, false);
+    }
+});
+
+// ─── Mot de passe oublié ───
+async function sendResetPassword() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email || !email.includes('@')) {
+        showToast('Entrez d\'abord votre adresse e-mail ci-dessus.');
+        document.getElementById('login-email').focus();
+        return;
+    }
+    try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/reset-mot-de-passe'
         });
+        if (error) throw error;
+        showToast('Lien de réinitialisation envoyé — vérifiez votre boîte mail (et vos spams).', 'success');
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
 
-        function processMerchantRegistrationAfterPayment() {
-            document.getElementById('paymentOverlay').style.display = 'none';
-            processRegistrationEngine();
+// ─── Connexion par code e-mail (OTP) ───
+let otpStage = 'request';
+function lockEmailField(locked) {
+    // Pendant la saisie du code, l'e-mail ne doit PAS pouvoir changer :
+    // le code a été envoyé à CETTE adresse, en changer = code invalide.
+    const f = document.getElementById('login-email');
+    if (!f) return;
+    f.readOnly = locked;
+    f.style.opacity = locked ? '0.6' : '';
+    f.style.cursor = locked ? 'not-allowed' : '';
+    f.style.background = locked ? '#F1F1F6' : '';
+}
+function showOtpMode() {
+    document.getElementById('pwdPanel').style.display = 'none';
+    document.getElementById('otpPanel').style.display = 'block';
+    otpStage = 'request';
+    document.getElementById('otpCodeGroup').style.display = 'none';
+    document.getElementById('otpHint').style.display = 'block';
+    document.getElementById('otpResendLink').style.display = 'none';
+    document.getElementById('otpResendSep').style.display = 'none';
+    document.getElementById('otpBtn').innerHTML = '<span class="spinner"></span>Recevoir mon code';
+    lockEmailField(true);
+}
+function showPasswordMode() {
+    document.getElementById('otpPanel').style.display = 'none';
+    document.getElementById('pwdPanel').style.display = 'block';
+    lockEmailField(false);
+}
+let otpBusy = false;
+let otpAutoTimer = null;
+// Filtre les chiffres et auto-valide une fois que l'utilisateur a fini de taper.
+// Temporisé (650 ms après la dernière frappe) → fonctionne que le code fasse
+// 6 chiffres ou davantage, sans jamais le couper.
+function handleOtpInput(el) {
+    el.value = el.value.replace(/\D/g, '');
+    clearTimeout(otpAutoTimer);
+    if (el.value.length >= 6 && otpStage === 'verify' && !otpBusy) {
+        otpAutoTimer = setTimeout(() => { if (!otpBusy) otpAction(); }, 650);
+    }
+}
+async function otpAction() {
+    if (otpBusy) return;            // évite la double-validation (auto-submit + clic)
+    const email = document.getElementById('login-email').value.trim();
+    if (!email || !email.includes('@')) {
+        showToast('Entrez votre adresse e-mail ci-dessus.');
+        document.getElementById('login-email').focus();
+        return;
+    }
+    otpBusy = true;
+    const btn = document.getElementById('otpBtn');
+    setLoading(btn, true);
+    try {
+        if (otpStage === 'request') {
+            const { error } = await supabaseClient.auth.signInWithOtp({
+                email,
+                options: { shouldCreateUser: false }
+            });
+            if (error) throw error;
+            otpStage = 'verify';
+            document.getElementById('otpCodeGroup').style.display = 'block';
+            document.getElementById('otpHint').style.display = 'none';
+            document.getElementById('otpResendLink').style.display = 'inline';
+            document.getElementById('otpResendSep').style.display = 'inline';
+            btn.innerHTML = '<span class="spinner"></span>Valider le code';
+            document.getElementById('otp-code').focus();
+            showToast('Code envoyé ! Vérifiez votre boîte mail.', 'success');
+        } else {
+            const token = document.getElementById('otp-code').value.trim();
+            if (token.length < 6) { showToast('Entrez le code à 6 chiffres.'); setLoading(btn, false); return; }
+            const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type: 'email' });
+            if (error) throw new Error('Code invalide ou expiré.');
+            trustDevice(email);   // ← cet appareil ne redemandera plus de code pendant 30 jours
+            rememberEmail(email);
+            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+            showToast('Connexion réussie !', 'success');
+            redirectUser(profile ? profile.role : 'client'); // redirection immédiate, sans attente
+            return;
         }
-
-        async function processRegistrationEngine() {
-            const role = document.getElementById('register-role').value;
-            const name = document.getElementById('register-name').value.trim();
-            const email = document.getElementById('register-email').value.trim();
-            const password = document.getElementById('register-password').value;
-
-            try {
-                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: { redirectTo: window.location.origin + '/validation' }
-                });
-                if (authError) throw authError;
-
-                if (authData.user) {
-                    const { error: profileError } = await supabaseClient.from('profiles').upsert([
-                        { 
-                            id: authData.user.id, 
-                            name: name, 
-                            role: role, 
-                            email: email, 
-                            plan: selectedPlan 
-                        }
-                    ]);
-                    
-                    if (profileError) throw profileError;
-
-                    if (authData.session) {
-                        showToast("Compte configuré avec succès !", "success");
-                        setTimeout(() => { redirectUser(role); }, 1500);
-                    } else {
-                        document.getElementById('user-sent-email').innerText = email;
-                        document.getElementById('mainAuthBlock').style.display = 'none';
-                        document.getElementById('verificationScreen').style.display = 'block';
-                    }
-                }
-            } catch (error) {
-                showToast(error.message, "error");
-            }
-        }
-
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) throw new Error("Identifiants incorrects ou email non vérifié.");
-
-                const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
-                if (profile) redirectUser(profile.role);
-            } catch (error) {
-                showToast(error.message, "error");
-            }
-        });
-
-        async function handleOAuthLogin(provider) {
-            try {
-                const redirectUrl = window.location.origin + '/validation';
-                await supabaseClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: redirectUrl } });
-            } catch (error) { showToast(error.message, "error"); }
-        }
-
-        function switchTab(type) {
-            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            
-            if (type === 'login') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('loginForm').classList.add('active');
-            } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('registerForm').classList.add('active');
-            }
-        }
-
-        function redirectUser(role) {
-            window.location.href = role === 'commercant' ? '/dashboard-commercant' : '/dashboard-client';
-        }
-    </script>
+    } catch (error) {
+        showToast(error.message, 'error');
+        document.getElementById('otp-code').value = '';
+    }
+    otpBusy = false;
+    setLoading(btn, false);
+}
+async function otpResend() {
+    otpStage = 'request';
+    await otpAction();
+}
+</script>
 </body>
 </html>

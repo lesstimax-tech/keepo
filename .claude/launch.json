@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "keepo-static",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "3000"],
+      "name": "KEEPO-static",
+      "runtimeExecutable": "E:\\Keepo\\.claude\\serve.cmd",
+      "runtimeArgs": [],
       "port": 3000
     }
   ]

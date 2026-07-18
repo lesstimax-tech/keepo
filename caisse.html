@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/img/icon-180.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
@@ -15,17 +15,17 @@
 
     <style>
         :root {
-            --bg: #0a0911;
-            --bg-2: #12101e;
-            --card: #1a1828;
-            --border: rgba(255,255,255,0.08);
-            --muted: rgba(255,255,255,0.5);
-            --txt: #e8e9f0;
-            --cyan: #00e8cc;
-            --violet: #7c6af7;
-            --gold: #ffc34d;
-            --red: #ff4d82;
-            --green: #3ee36c;
+            --bg: #F6F6FA;
+            --bg-2: #FFFFFF;
+            --card: #FFFFFF;
+            --border: rgba(17,24,39,0.10);
+            --muted: #6B6A78;
+            --txt: #14141B;
+            --cyan: #0E7C8C;
+            --violet: #5B3AA0;
+            --gold: #B8860B;
+            --red: #E0245E;
+            --green: #15A34A;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -38,8 +38,8 @@
         .login-wrap {
             min-height: 100vh; display: flex; flex-direction: column;
             align-items: center; justify-content: center; padding: 24px;
-            background: radial-gradient(ellipse at top, rgba(124,106,247,0.15), transparent 50%),
-                        radial-gradient(ellipse at bottom, rgba(0,232,204,0.12), transparent 50%);
+            background: radial-gradient(ellipse at top, rgba(91,58,160,0.15), transparent 50%),
+                        radial-gradient(ellipse at bottom, rgba(14,124,140,0.12), transparent 50%);
         }
         .login-card {
             background: linear-gradient(160deg, var(--card), var(--bg-2));
@@ -51,11 +51,11 @@
             width: 64px; height: 64px; border-radius: 18px;
             background: linear-gradient(135deg, var(--violet), var(--cyan));
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
             color: var(--bg); font-size: 30px; margin: 0 auto 18px;
         }
         .login-title {
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
             font-size: 28px; text-align: center; margin-bottom: 6px;
         }
         .login-sub {
@@ -66,36 +66,36 @@
         .login-label {
             font-size: 11px; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.6px; color: var(--muted); margin-bottom: 8px;
-            font-family: 'Cabinet Grotesk', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
         }
         .cashier-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: 10px;
         }
         .cashier-btn {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(17,24,39,0.04); border: 1px solid var(--border);
             border-radius: 14px; padding: 18px 14px; cursor: pointer;
-            transition: all .15s; font-family: inherit; color: #fff;
+            transition: all .15s; font-family: inherit; color: var(--txt);
         }
         .cashier-btn:hover, .cashier-btn.selected {
-            background: linear-gradient(135deg, rgba(124,106,247,0.15), rgba(0,232,204,0.1));
-            border-color: rgba(0,232,204,0.5); transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,232,204,0.15);
+            background: linear-gradient(135deg, rgba(91,58,160,0.15), rgba(14,124,140,0.1));
+            border-color: rgba(14,124,140,0.5); transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(14,124,140,0.15);
         }
         .cashier-avatar {
             width: 44px; height: 44px; border-radius: 14px;
             background: linear-gradient(135deg, var(--violet), var(--cyan));
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
             color: var(--bg); font-size: 19px; margin: 0 auto 10px;
         }
         .cashier-name { font-size: 13px; font-weight: 700; text-align: center; }
         .cashier-role { font-size: 10px; color: var(--muted); text-align: center; margin-top: 2px; }
 
         .pin-display {
-            background: #000; border: 2px solid rgba(0,232,204,0.3);
+            background: #F1F1F6; border: 2px solid rgba(14,124,140,0.3);
             border-radius: 14px; padding: 16px; text-align: center;
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
             font-size: 32px; letter-spacing: 16px; color: var(--cyan);
             margin-bottom: 14px; min-height: 60px;
         }
@@ -103,24 +103,24 @@
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
         }
         .pin-key {
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            background: rgba(17,24,39,0.04); border: 1px solid var(--border);
             border-radius: 14px; padding: 18px;
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700;
-            font-size: 22px; color: #fff; cursor: pointer; transition: all .12s;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
+            font-size: 22px; color: var(--txt); cursor: pointer; transition: all .12s;
         }
-        .pin-key:active { background: rgba(0,232,204,0.2); transform: scale(0.97); }
+        .pin-key:active { background: rgba(14,124,140,0.2); transform: scale(0.97); }
         .pin-key.fn { background: rgba(255,77,130,0.08); color: #ff8aaa; }
 
         .btn-action {
             background: linear-gradient(135deg, var(--violet), var(--cyan));
             border: none; color: var(--bg); font-weight: 800; font-size: 14px;
             padding: 14px 22px; border-radius: 14px; cursor: pointer;
-            font-family: 'Cabinet Grotesk', sans-serif; transition: all .15s;
+            font-family: 'Bricolage Grotesque', sans-serif; transition: all .15s;
             width: 100%; margin-top: 8px;
         }
-        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,232,204,0.25); }
+        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(14,124,140,0.25); }
         .btn-action:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        .btn-action.secondary { background: rgba(255,255,255,0.05); color: var(--txt); }
+        .btn-action.secondary { background: rgba(17,24,39,0.05); color: var(--txt); }
 
         /* ─── CAISSE INTERFACE ─── */
         .caisse-wrap {
@@ -138,11 +138,11 @@
         .caisse-merchant-chip {
             background: linear-gradient(135deg, var(--violet), var(--cyan));
             color: var(--bg); padding: 6px 14px; border-radius: 50px;
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
             font-size: 13px;
         }
         .caisse-cashier-badge {
-            background: rgba(0,232,204,0.1); border: 1px solid rgba(0,232,204,0.3);
+            background: rgba(14,124,140,0.1); border: 1px solid rgba(14,124,140,0.3);
             color: var(--cyan); padding: 6px 14px; border-radius: 50px;
             font-size: 12px; font-weight: 700;
         }
@@ -164,7 +164,7 @@
             border: 1px solid var(--border); border-radius: 22px; padding: 22px;
         }
         .caisse-panel-title {
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
             font-size: 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
         }
         .caisse-panel-title i { color: var(--cyan); }
@@ -172,7 +172,7 @@
         .scanner-zone {
             position: relative; background: #000;
             border-radius: 18px; overflow: hidden;
-            border: 2px solid rgba(0,232,204,0.3);
+            border: 2px solid rgba(14,124,140,0.3);
             min-height: 320px;
         }
         #scanner-reader { width: 100%; }
@@ -185,16 +185,16 @@
             background: linear-gradient(135deg, var(--violet), var(--cyan));
             border: none; color: var(--bg); padding: 14px 26px;
             border-radius: 14px; font-weight: 800; font-size: 15px;
-            cursor: pointer; font-family: 'Cabinet Grotesk', sans-serif;
+            cursor: pointer; font-family: 'Bricolage Grotesque', sans-serif;
         }
 
         .code-input-wrap {
             display: flex; gap: 8px; margin-bottom: 14px;
         }
         .code-input-wrap input {
-            flex: 1; background: #000; border: 2px dashed rgba(0,232,204,0.3);
+            flex: 1; background: #F1F1F6; border: 2px dashed rgba(14,124,140,0.3);
             color: var(--cyan); padding: 16px;
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
             font-size: 24px; letter-spacing: 8px; text-align: center;
             border-radius: 12px; text-transform: uppercase;
         }
@@ -202,15 +202,15 @@
         .credit-form { display: flex; flex-direction: column; gap: 10px; }
         .credit-form label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
         .credit-form input {
-            background: rgba(0,0,0,0.4); border: 1px solid rgba(0,232,204,0.2);
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(14,124,140,0.2);
             color: var(--cyan); padding: 14px;
-            font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
             font-size: 22px; text-align: center; border-radius: 12px;
         }
-        .credit-form input:focus { outline: none; border-color: rgba(0,232,204,0.6); }
+        .credit-form input:focus { outline: none; border-color: rgba(14,124,140,0.6); }
 
         .result-box {
-            background: linear-gradient(135deg, rgba(62,227,108,0.08), rgba(0,232,204,0.05));
+            background: linear-gradient(135deg, rgba(62,227,108,0.08), rgba(14,124,140,0.05));
             border: 1px solid rgba(62,227,108,0.3); border-radius: 14px;
             padding: 16px; margin-top: 12px;
         }
@@ -220,11 +220,117 @@
 
         .stat-row { display: flex; gap: 10px; margin-bottom: 14px; }
         .stat-mini {
-            flex: 1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            flex: 1; background: rgba(17,24,39,0.03); border: 1px solid var(--border);
             border-radius: 12px; padding: 12px;
         }
-        .stat-mini-val { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900; font-size: 22px; color: var(--cyan); }
+        .stat-mini-val { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900; font-size: 22px; color: var(--cyan); }
         .stat-mini-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ─── MODAL CRÉDIT CLIENT ─── */
+        .credit-modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .credit-modal-overlay.open { display: flex; }
+        .credit-modal {
+            background: var(--card);
+            border: 1px solid rgba(17,24,39,0.1);
+            border-radius: 28px; padding: 32px 28px;
+            width: 100%; max-width: 420px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+            animation: modalPop .25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes modalPop {
+            from { opacity:0; transform: scale(0.88) translateY(20px); }
+            to   { opacity:1; transform: scale(1)    translateY(0); }
+        }
+        .cm-client-row {
+            display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+        }
+        .cm-avatar {
+            width: 64px; height: 64px; border-radius: 20px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
+            font-size: 26px; color: var(--bg); overflow: hidden;
+            border: 2px solid rgba(14,124,140,0.35);
+            box-shadow: 0 8px 24px rgba(14,124,140,0.2);
+        }
+        .cm-avatar img {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 18px;
+        }
+        .cm-client-info { flex: 1; min-width: 0; }
+        .cm-client-name {
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
+            font-size: 20px; color: var(--txt); white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .cm-client-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(14,124,140,0.1); border: 1px solid rgba(14,124,140,0.25);
+            color: var(--cyan); padding: 3px 10px; border-radius: 50px;
+            font-size: 11px; font-weight: 700; margin-top: 5px;
+        }
+        .cm-divider {
+            height: 1px; background: rgba(17,24,39,0.07); margin-bottom: 24px;
+        }
+        .cm-label {
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .6px; margin-bottom: 10px;
+        }
+        .cm-amount-wrap { position: relative; margin-bottom: 16px; }
+        .cm-amount-input {
+            width: 100%; background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(14,124,140,0.3); border-radius: 16px;
+            color: var(--cyan); padding: 18px 56px 18px 20px;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-weight: 900; font-size: 32px; text-align: center;
+            transition: border-color .2s;
+        }
+        .cm-amount-input:focus { outline: none; border-color: rgba(14,124,140,0.7); }
+        .cm-currency {
+            position: absolute; right: 18px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 22px; color: var(--muted); font-weight: 700;
+            font-family: 'Bricolage Grotesque', sans-serif; pointer-events: none;
+        }
+        .cm-pts-preview {
+            text-align: center; margin-bottom: 24px;
+            font-family: 'Bricolage Grotesque', sans-serif;
+        }
+        .cm-pts-number {
+            font-size: 36px; font-weight: 900; color: var(--cyan);
+            line-height: 1;
+        }
+        .cm-pts-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+        .cm-actions { display: flex; gap: 10px; }
+        .cm-btn-confirm {
+            flex: 1; padding: 16px;
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+            border: none; border-radius: 14px; color: var(--bg);
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
+            font-size: 16px; cursor: pointer; transition: all .15s;
+        }
+        .cm-btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(14,124,140,0.3); }
+        .cm-btn-cancel {
+            padding: 16px 20px;
+            background: rgba(255,77,130,0.08); border: 1px solid rgba(255,77,130,0.25);
+            border-radius: 14px; color: #ff8aaa;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
+            font-size: 14px; cursor: pointer; transition: all .15s;
+        }
+        .cm-btn-cancel:hover { background: rgba(255,77,130,0.15); }
+
+        /* ─── Couche PRO : accessibilité & micro-interactions ─── */
+        :focus-visible { outline: 2px solid #16B8C4; outline-offset: 2px; border-radius: 6px; }
+        a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
+        ::selection { background: rgba(14,124,140, 0.28); color: var(--txt); }
+        a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
+        button:active { transform: translateY(1px) scale(0.99); }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+        }
     </style>
 </head>
 <body>
@@ -296,7 +402,7 @@
             <div class="caisse-cashier-badge" id="caisse-cashier-badge">…</div>
         </div>
         <div style="display:flex;gap:8px;">
-            <button onclick="lockCaisse()" class="caisse-logout-btn" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.3);color:#c5b8ff;">
+            <button onclick="lockCaisse()" class="caisse-logout-btn" style="background:rgba(91,58,160,0.1);border-color:rgba(91,58,160,0.3);color:#c5b8ff;">
                 <i class="fa-solid fa-lock"></i> Verrouiller
             </button>
         </div>
@@ -350,6 +456,50 @@
     </div>
 </div>
 
+<!-- ═══════════ MODAL CRÉDIT CLIENT ═══════════ -->
+<div class="credit-modal-overlay" id="creditModalOverlay">
+    <div class="credit-modal">
+        <!-- Profil client -->
+        <div class="cm-client-row">
+            <div class="cm-avatar" id="cm-avatar">A</div>
+            <div class="cm-client-info">
+                <div class="cm-client-name" id="cm-client-name">Client</div>
+                <div class="cm-client-badge">
+                    <i class="fa-solid fa-id-card"></i> Membre Keepo
+                </div>
+            </div>
+        </div>
+        <div class="cm-divider"></div>
+
+        <!-- Saisie montant (mode Points uniquement) -->
+        <div id="cm-amount-section">
+            <div class="cm-label"><i class="fa-solid fa-euro-sign" style="margin-right:4px;"></i>Montant de la commande</div>
+            <div class="cm-amount-wrap">
+                <input type="number" class="cm-amount-input" id="cm-amount-input"
+                       placeholder="0.00" min="0.01" step="0.01"
+                       oninput="refreshCreditPreview()">
+                <span class="cm-currency">€</span>
+            </div>
+        </div>
+
+        <!-- Prévisualisation -->
+        <div class="cm-pts-preview">
+            <div class="cm-pts-number" id="cm-pts-number">0</div>
+            <div class="cm-pts-label" id="cm-pts-label">points qui seront crédités</div>
+        </div>
+
+        <!-- Boutons -->
+        <div class="cm-actions">
+            <button class="cm-btn-cancel" onclick="closeCreditModal()">
+                <i class="fa-solid fa-xmark"></i> Annuler
+            </button>
+            <button class="cm-btn-confirm" id="cm-btn-confirm" onclick="confirmCredit()">
+                <i class="fa-solid fa-bolt"></i> Créditer les points
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════
 //  Mode Caisse — Logique
@@ -366,6 +516,9 @@ let dailyPoints     = 0;
 let creditClientId  = null;
 let creditClientName= '';
 let pointsPerEuroCaisse = 1;
+let loyaltyModeCaisse    = 'points';   // 'points' | 'stamps'
+let stampsRequiredCaisse = 10;
+let stampRewardCaisse    = '';
 let boutiquesList   = [];
 let selectedBoutiqueId   = null;
 let selectedBoutiqueName = null;
@@ -393,11 +546,14 @@ async function init() {
 
     const { data: mc } = await window.supabaseClient
         .from('merchant_cards')
-        .select('title, points_per_euro')
+        .select('*')
         .eq('merchant_id', merchantId)
         .maybeSingle();
     merchantName = mc?.title || profile.name || 'Mon Commerce';
     pointsPerEuroCaisse = mc?.points_per_euro || 1;
+    loyaltyModeCaisse   = (mc && mc.loyalty_mode) || 'points';
+    stampsRequiredCaisse = (mc && mc.stamps_required) || 10;
+    stampRewardCaisse    = (mc && mc.stamp_reward) || '';
 
     document.getElementById('merchantNameLabel').innerText = merchantName;
 
@@ -492,16 +648,49 @@ async function sha256Hex(text) {
 
 async function pinSubmit() {
     if (currentPin.length < 4) { alert('PIN trop court (4 chiffres minimum)'); return; }
-    const hash = await sha256Hex(currentPin);
-    const { data: full } = await window.supabaseClient
-        .from('cashiers').select('pin_hash').eq('id', selectedCashier.id).maybeSingle();
-    if (!full || full.pin_hash !== hash) {
+    const ok = await verifyCashierPin(selectedCashier.id, currentPin);
+    if (!ok) {
         alert('PIN incorrect');
         currentPin = ''; refreshPinDisplay();
         return;
     }
     // Vérifier si le commerçant a plusieurs boutiques actives
     await loadBoutiqueStep();
+}
+
+// Vérifie le PIN côté serveur via une fonction SECURITY DEFINER : le hash
+// n'est JAMAIS renvoyé au navigateur. Repli transitoire sur l'ancienne
+// méthode tant que la fonction SQL n'est pas déployée, pour ne pas bloquer
+// la caisse pendant la migration.
+async function verifyCashierPin(cashierId, pin) {
+    try {
+        const { data, error } = await window.supabaseClient
+            .rpc('verify_cashier_pin', { p_cashier_id: cashierId, p_pin: pin });
+        if (error) {
+            const code = String(error.code || '');
+            const msg  = String(error.message || '');
+            // Fonction pas encore déployée → repli legacy (transitoire)
+            if (code === 'PGRST202' || code === '42883' || code === '404' ||
+                /not exist|could not find|introuvable|schema cache/i.test(msg)) {
+                return await legacyPinCheck(cashierId, pin);
+            }
+            return false;
+        }
+        return data === true;
+    } catch (_) {
+        return await legacyPinCheck(cashierId, pin);
+    }
+}
+
+// LEGACY — vérification côté client. À RETIRER une fois la fonction SQL
+// verify_cashier_pin déployée et le verrouillage de la colonne pin_hash actif.
+async function legacyPinCheck(cashierId, pin) {
+    try {
+        const hash = await sha256Hex(pin);
+        const { data: full } = await window.supabaseClient
+            .from('cashiers').select('pin_hash').eq('id', cashierId).maybeSingle();
+        return !!(full && full.pin_hash === hash);
+    } catch (_) { return false; }
 }
 
 async function loadBoutiqueStep() {
@@ -534,7 +723,7 @@ async function loadBoutiqueStep() {
     const grid = document.getElementById('boutiques-grid');
     grid.innerHTML = boutiquesList.map(b => `
         <button class="cashier-btn" onclick="selectBoutique('${b.id}', '${escapeHtml(b.name).replace(/'/g,"\\'")}')">
-            <div class="cashier-avatar" style="background:rgba(0,232,204,.15);color:#00e8cc;">
+            <div class="cashier-avatar" style="background:rgba(14,124,140,.15);color:#16B8C4;">
                 <i class="fa-solid fa-store" style="font-size:18px;"></i>
             </div>
             <div class="cashier-name">${escapeHtml(b.name)}</div>
@@ -621,7 +810,7 @@ function startCaisseScanner() {
 }
 
 async function onQrScanned(qrData) {
-    if (!qrData.startsWith('keepo:card:')) {
+    if (!qrData.startsWith('KEEPO:card:')) {
         return; // ignore non-Keepo QRs
     }
     const parts = qrData.split(':');
@@ -646,50 +835,162 @@ async function onQrScanned(qrData) {
     // Stop scanner during action
     if (scanner) { try { await scanner.pause(); } catch {} }
 
-    // Récupère le profil client
+    // Récupère le profil client (nom + avatar)
     const { data: client } = await window.supabaseClient
-        .from('profiles').select('name').eq('id', clientId).maybeSingle();
+        .from('profiles').select('name, avatar_url').eq('id', clientId).maybeSingle();
 
-    creditClientId = clientId;
+    creditClientId   = clientId;
     creditClientName = client?.name || 'Client';
 
-    // Demander le montant (prompt simple)
-    const amountStr = prompt(`Client : ${creditClientName}\n\nMontant de l'achat en euros ?`);
-    if (!amountStr) {
-        if (scanner) try { await scanner.resume(); } catch {}
-        return;
+    openCreditModal(creditClientName, client?.avatar_url || null);
+}
+
+function openCreditModal(name, avatarUrl) {
+    // Avatar : photo réelle ou initiale
+    const avatarEl = document.getElementById('cm-avatar');
+    if (avatarUrl) {
+        avatarEl.innerHTML = `<img src="${avatarUrl}" alt="${name}">`;
+    } else {
+        avatarEl.innerHTML = name.charAt(0).toUpperCase();
+        avatarEl.style.background = 'linear-gradient(135deg, var(--violet), var(--cyan))';
     }
-    const amount = parseFloat(amountStr.replace(',', '.'));
-    if (!amount || amount <= 0) {
-        showCaisseResult('error', 'Montant invalide', '');
-        if (scanner) try { await scanner.resume(); } catch {}
-        return;
+    document.getElementById('cm-client-name').innerText = name;
+
+    // Adapter le modal selon le mode (Points / Tampons)
+    const isStamps   = loyaltyModeCaisse === 'stamps';
+    const amountSec  = document.getElementById('cm-amount-section');
+    const ptsLabel   = document.getElementById('cm-pts-label');
+    const confirmBtn = document.getElementById('cm-btn-confirm');
+    const input = document.getElementById('cm-amount-input');
+    input.value = '';
+    if (amountSec) amountSec.style.display = isStamps ? 'none' : '';
+
+    if (isStamps) {
+        document.getElementById('cm-pts-number').innerText = '+1';
+        if (ptsLabel)   ptsLabel.innerText = 'tampon ajouté';
+        if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.innerHTML = '<i class="fa-solid fa-stamp"></i> Ajouter 1 tampon'; }
+    } else {
+        if (ptsLabel)   ptsLabel.innerText = 'points qui seront crédités';
+        if (confirmBtn) confirmBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Créditer les points';
+        refreshCreditPreview();
     }
 
-    const points = Math.max(1, Math.round(amount * pointsPerEuroCaisse));
+    document.getElementById('creditModalOverlay').classList.add('open');
+    if (!isStamps) setTimeout(() => input.focus(), 100);
+}
+
+function refreshCreditPreview() {
+    if (loyaltyModeCaisse === 'stamps') return; // pas d'aperçu montant en mode tampon
+    const val = parseFloat(document.getElementById('cm-amount-input').value) || 0;
+    const pts = val > 0 ? Math.max(1, Math.round(val * pointsPerEuroCaisse)) : 0;
+    document.getElementById('cm-pts-number').innerText = pts;
+    document.getElementById('cm-btn-confirm').disabled = val <= 0;
+}
+
+function closeCreditModal() {
+    document.getElementById('creditModalOverlay').classList.remove('open');
+    document.getElementById('cm-amount-input').value = '';
+    if (scanner) try { scanner.resume(); } catch {}
+}
+
+async function confirmCredit() {
+    const isStamps = loyaltyModeCaisse === 'stamps';
+    const amount = parseFloat(document.getElementById('cm-amount-input').value);
+    if (!isStamps && (!amount || amount <= 0)) return;
+
+    const btn = document.getElementById('cm-btn-confirm');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + (isStamps ? 'Ajout…' : 'Crédit en cours…');
+
+    const creditAmount = isStamps ? 0 : amount;
+    const points = isStamps ? 1 : Math.max(1, Math.round(amount * pointsPerEuroCaisse));
     const rpcParams = {
-        p_merchant_id: merchantId, p_client_id: clientId, p_amount: amount, p_points: points
+        p_merchant_id: merchantId, p_client_id: creditClientId,
+        p_amount: creditAmount, p_points: points
     };
     if (selectedBoutiqueId) rpcParams.p_boutique_id = selectedBoutiqueId;
+
     const { data: newBalance, error } = await window.supabaseClient.rpc('apply_loyalty_credit', rpcParams);
+
+    document.getElementById('creditModalOverlay').classList.remove('open');
+    btn.disabled = false;
+    btn.innerHTML = isStamps ? '<i class="fa-solid fa-stamp"></i> Ajouter 1 tampon' : '<i class="fa-solid fa-bolt"></i> Créditer les points';
 
     if (error) {
         showCaisseResult('error', 'Erreur', error.message);
+        setTimeout(() => { if (scanner) { try { scanner.resume(); } catch {} } }, 2500);
+        return;
+    }
+
+    window.supabaseClient.from('cashier_audit').insert({
+        merchant_id: merchantId, cashier_id: selectedCashier.id,
+        cashier_name: selectedCashier.name, action: 'credit',
+        client_id: creditClientId,
+        meta: { amount: creditAmount, points, mode: loyaltyModeCaisse, boutique_id: selectedBoutiqueId || null, boutique_name: selectedBoutiqueName || null }
+    });
+    loadDailyStats();
+
+    if (isStamps) {
+        const req = stampsRequiredCaisse || 10;
+        if ((newBalance || 0) >= req) {
+            // Carte pleine → proposer de valider la récompense + réinitialiser (persistant, pas d'auto-reprise)
+            showStampRewardPrompt(creditClientId, creditClientName, newBalance);
+            return;
+        }
+        showCaisseResult('success', '+1 tampon !', `${creditClientName} : ${newBalance}/${req} tampons`);
     } else {
         showCaisseResult('success', `+${points} pts crédités !`, `${creditClientName} a maintenant ${newBalance} pts (${amount.toFixed(2)} €)`);
-        // Audit
-        window.supabaseClient.from('cashier_audit').insert({
-            merchant_id: merchantId, cashier_id: selectedCashier.id,
-            cashier_name: selectedCashier.name, action: 'credit',
-            client_id: clientId,
-            meta: { amount, points, boutique_id: selectedBoutiqueId || null, boutique_name: selectedBoutiqueName || null }
-        });
-        loadDailyStats();
     }
 
     setTimeout(() => {
         if (scanner) { try { scanner.resume(); } catch {} }
     }, 2500);
+}
+
+// ─── Carte à tampons pleine : valider la récompense + repartir à zéro ───
+function showStampRewardPrompt(clientId, clientName, balance) {
+    const box = document.getElementById('caisse-result');
+    if (!box) return;
+    const req = stampsRequiredCaisse || 10;
+    const reward = stampRewardCaisse || 'la récompense';
+    box.className = 'result-box';
+    box.style.display = 'block';
+    box.innerHTML = `
+        <div style="font-weight:800;font-size:16px;margin-bottom:4px;">🎉 Carte pleine&nbsp;! (${balance}/${req})</div>
+        <div style="font-size:13px;opacity:0.9;margin-bottom:14px;">Remettez <strong>${escapeHtml(reward)}</strong> à ${escapeHtml(clientName)}, puis validez pour démarrer une nouvelle carte.</div>
+        <div style="display:flex;gap:10px;">
+            <button onclick="dismissStampPrompt()" class="btn-action secondary" style="flex:1;padding:11px;">Plus tard</button>
+            <button onclick="redeemStampCard('${clientId}', ${Number(balance) || 0})" class="credit-btn" style="flex:1;padding:11px;"><i class="fa-solid fa-check"></i> Récompense remise</button>
+        </div>`;
+}
+
+function dismissStampPrompt() {
+    const box = document.getElementById('caisse-result');
+    if (box) box.style.display = 'none';
+    if (scanner) { try { scanner.resume(); } catch {} }
+}
+
+async function redeemStampCard(clientId, balance) {
+    const req = stampsRequiredCaisse || 10;
+    const newBal = Math.max(0, (Number(balance) || 0) - req);
+    const { error } = await window.supabaseClient.from('loyalty_balances')
+        .update({ points_balance: newBal })
+        .eq('merchant_id', merchantId).eq('client_id', clientId);
+    if (error) { showCaisseResult('error', 'Erreur', error.message); return; }
+    // Trace (best-effort) : transaction "debit" + audit caissier
+    window.supabaseClient.from('transactions').insert({
+        merchant_id: merchantId, client_id: clientId, type: 'debit', amount: 0, points_changed: -req
+    });
+    window.supabaseClient.from('cashier_audit').insert({
+        merchant_id: merchantId, cashier_id: selectedCashier?.id, cashier_name: selectedCashier?.name,
+        action: 'stamp_reward', client_id: clientId,
+        meta: { stamps: req, reward: stampRewardCaisse, boutique_id: selectedBoutiqueId || null }
+    });
+    const box = document.getElementById('caisse-result');
+    if (box) box.style.display = 'none';
+    showCaisseResult('success', 'Récompense validée ✓', `Nouvelle carte démarrée (${newBal}/${req} tampons).`);
+    loadDailyStats();
+    if (scanner) { try { scanner.resume(); } catch {} }
 }
 
 // ─── Valider code récompense ───

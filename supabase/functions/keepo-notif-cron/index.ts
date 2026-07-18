@@ -1,19 +1,19 @@
-// ════════════════════════════════════════════════════════════════
-//  Keepo — Edge Function : Cron d'envoi automatique des e-mails
+﻿// ════════════════════════════════════════════════════════════════
+//  KEEPO — Edge Function : Cron d'envoi automatique des e-mails
 // ════════════════════════════════════════════════════════════════
 //
 //  Déploiement :
-//    supabase functions deploy keepo-notif-cron --no-verify-jwt
+//    supabase functions deploy KEEPO-notif-cron --no-verify-jwt
 //
 //  Planification (pg_cron — toutes les 15 min) :
 //    Dans Supabase SQL Editor :
 //
 //    select cron.schedule(
-//      'keepo-notif-cron',
+//      'KEEPO-notif-cron',
 //      '*/15 * * * *',
 //      $$
 //        select net.http_post(
-//          url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/keepo-notif-cron',
+//          url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/KEEPO-notif-cron',
 //          headers := jsonb_build_object(
 //            'Content-Type',  'application/json',
 //            'Authorization', 'Bearer <SUPABASE_SERVICE_ROLE_KEY>'
@@ -38,7 +38,17 @@ import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-
 const RESEND_API_KEY   = Deno.env.get('RESEND_API_KEY') ?? '';
 const SUPABASE_URL     = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const FROM_EMAIL       = 'Keepo <notifications@keepo.app>';
+// Expéditeur : domaine vérifié keepo.eu par défaut. Le secret RESEND_FROM peut
+// surcharger l'adresse ; le NOM affiché est toujours celui du commerce.
+const FROM_EMAIL       = Deno.env.get('RESEND_FROM') ?? 'notifications@keepo.eu';
+
+function senderFor(merchantName: string): string {
+  const raw  = FROM_EMAIL.trim();
+  const m    = raw.match(/<([^>]+)>/);
+  const addr = m ? m[1].trim() : (raw.includes('@') ? raw : 'notifications@keepo.eu');
+  const safe = (merchantName || 'KEEPO').replace(/["<>\r\n]/g, '').trim() || 'KEEPO';
+  return `${safe} <${addr}>`;
+}
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
@@ -49,36 +59,53 @@ const CORS_HEADERS = {
 // ─── HTML email builder ───────────────────────────────────────
 function textToHtml(text: string): string {
   const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return escaped
+  const linkified = escaped.replace(/(https?:\/\/[^\s<]+)/g,
+    '<a href="$1" style="color:#0E7C8C;font-weight:bold;">$1</a>');
+  return linkified
     .split(/\n\n+/)
     .map(p => `<p style="margin:0 0 12px 0;">${p.replace(/\n/g, '<br>')}</p>`)
     .join('\n');
 }
 
-function buildEmailHtml(bodyText: string, merchantName: string): string {
+function buildEmailHtml(
+  bodyText: string,
+  merchantName: string,
+  merchantId: string,
+  cta?: { url: string; label: string },
+): string {
+  const safeName = merchantName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const logoUrl  = `https://keepo.eu/logo/${merchantId}`;
+  const ctaBlock = cta
+    ? `<table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:8px auto 18px;"><tr><td style="border-radius:50px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);background-color:#5B3AA0;">
+         <a href="${cta.url}" style="display:inline-block;padding:14px 34px;color:#ffffff;font-weight:bold;font-size:15px;text-decoration:none;border-radius:50px;">${cta.label}</a>
+       </td></tr></table>`
+    : '';
   return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f7;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f7;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#F4F4F8;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F4F8;padding:32px 16px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" border="0"
-             style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+             style="background:#ffffff;border-radius:18px;overflow:hidden;max-width:600px;box-shadow:0 4px 24px rgba(20,20,27,0.07);">
         <tr>
-          <td style="background:linear-gradient(135deg,#7c3aed 0%,#00e8cc 100%);padding:28px 32px;text-align:center;">
-            <div style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">Keepo</div>
-            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:4px;letter-spacing:0.5px;">PROGRAMME DE FIDÉLITÉ DIGITAL</div>
+          <td style="padding:30px 36px 22px;text-align:center;border-bottom:1px solid #EFEFF4;">
+            <img src="${logoUrl}" width="62" height="62" alt="${safeName}"
+                 style="border-radius:16px;display:inline-block;object-fit:cover;">
+            <div style="font-size:22px;font-weight:900;color:#14141B;margin-top:12px;letter-spacing:-0.3px;">${safeName}</div>
+            <div style="color:#8C8A9E;font-size:11px;margin-top:3px;letter-spacing:1px;text-transform:uppercase;">Programme de fidélité</div>
           </td>
         </tr>
         <tr>
-          <td style="padding:32px 36px;color:#333333;font-size:15px;line-height:1.7;">
+          <td style="padding:30px 36px 18px;color:#34333F;font-size:15px;line-height:1.7;">
             ${textToHtml(bodyText)}
+            ${ctaBlock}
           </td>
         </tr>
         <tr>
-          <td style="padding:16px 36px 24px;background:#f8f8fb;font-size:11px;color:#aaaaaa;text-align:center;border-top:1px solid #eeeeee;">
-            Vous recevez cet e-mail car vous êtes membre du programme de fidélité
-            <strong style="color:#888888;">${merchantName}</strong> via Keepo.
+          <td style="padding:16px 36px 22px;background:#FAFAFC;font-size:11px;color:#A6A4B2;text-align:center;border-top:1px solid #EFEFF4;">
+            Vous recevez cet e-mail car vous êtes membre du programme de fidélité de
+            <strong style="color:#6B6A78;">${safeName}</strong>, propulsé par <a href="https://keepo.eu" style="color:#0E7C8C;text-decoration:none;font-weight:bold;">KEEPO</a>.
           </td>
         </tr>
       </table>
@@ -97,10 +124,22 @@ async function sendAndLog(
   recipient: { email: string; name: string; client_id: string | null },
   subjectTemplate: string,
   bodyTemplate: string,
+  opts?: { ctaLabel?: string },
 ): Promise<void> {
   const clientName   = recipient.name || 'cher client';
   const finalSubject = subjectTemplate.replace(/\[Client\]/gi, clientName).replace(/\[Enseigne\]/gi, merchantName);
-  const finalBody    = bodyTemplate.replace(/\[Client\]/gi, clientName).replace(/\[Enseigne\]/gi, merchantName);
+  let   finalBody    = bodyTemplate.replace(/\[Client\]/gi, clientName).replace(/\[Enseigne\]/gi, merchantName);
+
+  // CTA : si demandé (ex. avis Google), la première URL du message devient
+  // un vrai bouton — et disparaît du texte brut.
+  let cta: { url: string; label: string } | undefined;
+  if (opts?.ctaLabel) {
+    const urlMatch = finalBody.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) {
+      cta = { url: urlMatch[0], label: opts.ctaLabel };
+      finalBody = finalBody.replace(urlMatch[0], '').replace(/[ \t]*:\s*$/m, '').replace(/\n{3,}/g, '\n\n').trim();
+    }
+  }
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -109,10 +148,10 @@ async function sendAndLog(
       'Content-Type':  'application/json',
     },
     body: JSON.stringify({
-      from:    FROM_EMAIL,
+      from:    senderFor(merchantName),
       to:      [recipient.email],
       subject: finalSubject,
-      html:    buildEmailHtml(finalBody, merchantName),
+      html:    buildEmailHtml(finalBody, merchantName, merchantId, cta),
     }),
   });
 
@@ -129,6 +168,40 @@ async function sendAndLog(
     status,
     error_msg:       errorMsg,
   });
+}
+
+// ─── Push : notifie une liste de clients via la fonction keepo-push ──
+// Best-effort : un échec push ne doit JAMAIS bloquer l'envoi des e-mails.
+// Un seul appel groupé par automation (le push est générique, contrairement
+// à l'e-mail personnalisé). keepo-push ne touche que les clients abonnés.
+async function pushToClients(
+  clientIds: string[],
+  merchantName: string,
+  subject: string,
+): Promise<void> {
+  if (!clientIds.length) return;
+  const cleanBody = (subject || '')
+    .replace(/\[Client\]/gi, '')
+    .replace(/\[Enseigne\]/gi, merchantName)
+    .replace(/\s{2,}/g, ' ')
+    .trim() || 'Vous avez du nouveau sur votre carte de fidélité.';
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/keepo-push`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify({
+        client_ids: clientIds,
+        title: merchantName,
+        body:  cleanBody,
+        url:   '/dashboard-client',
+      }),
+    });
+  } catch (err) {
+    console.error('pushToClients error:', err);
+  }
 }
 
 // ─── Récupérer tous les clients d'un commerçant (avec email) ──
@@ -181,12 +254,18 @@ async function processRelance(supabase: SupabaseClient, auto: any, merchantName:
       { email: client.email, name: client.name, client_id: client.id },
       auto.subject, auto.body);
   }
+  await pushToClients(toNotify.map((c: any) => c.id), merchantName, auto.subject);
 }
 
-// ─── AVIS : clients ayant acheté dans les N minutes ───────────
+// ─── AVIS : N minutes APRÈS un achat ──────────────────────────
+// Sémantique : l'e-mail part une fois le délai écoulé (le client a quitté
+// la boutique), pas avant. Fenêtre = achats dont l'âge est compris entre
+// [délai, délai + 6 h] — la borne haute couvre les pannes/espacements du
+// cron, et la déduplication 24 h empêche tout doublon.
 async function processAvis(supabase: SupabaseClient, auto: any, merchantName: string) {
-  const mins       = auto.trigger_mins ?? 30;
-  const cutoff     = new Date(Date.now() - mins * 60000).toISOString();
+  const mins        = Math.max(1, Number(auto.trigger_mins) || 30);
+  const newestEdge  = new Date(Date.now() - mins * 60000).toISOString();          // âge ≥ délai
+  const oldestEdge  = new Date(Date.now() - (mins * 60000 + 6 * 3600000)).toISOString(); // pas plus vieux que délai + 6 h
   const dedupCutoff = new Date(Date.now() - 864e5).toISOString(); // 24 h
 
   const { data: recentTx } = await supabase
@@ -194,7 +273,8 @@ async function processAvis(supabase: SupabaseClient, auto: any, merchantName: st
     .select('client_id')
     .eq('merchant_id', auto.merchant_id)
     .eq('type', 'credit')
-    .gte('created_at', cutoff);
+    .lte('created_at', newestEdge)
+    .gte('created_at', oldestEdge);
 
   if (!recentTx?.length) return;
   const clientIds = [...new Set(recentTx.map((t: any) => t.client_id))] as string[];
@@ -219,8 +299,10 @@ async function processAvis(supabase: SupabaseClient, auto: any, merchantName: st
     if (!p.email) continue;
     await sendAndLog(supabase, auto.id, auto.merchant_id, merchantName,
       { email: p.email, name: p.name, client_id: p.id },
-      auto.subject, auto.body);
+      auto.subject, auto.body,
+      { ctaLabel: '⭐ Laisser mon avis sur Google' });
   }
+  await pushToClients(toNotify, merchantName, auto.subject);
 }
 
 // ─── OFFRE : entre date_start et date_end (envoi unique/client) ─
@@ -246,6 +328,7 @@ async function processOffre(supabase: SupabaseClient, auto: any, merchantName: s
       { email: client.email, name: client.name, client_id: client.id },
       auto.subject, auto.body);
   }
+  await pushToClients(toNotify.map((c: any) => c.id), merchantName, auto.subject);
 }
 
 // ─── CUSTOM : envoi unique selon le mode ──────────────────────
@@ -273,10 +356,22 @@ async function processCustom(supabase: SupabaseClient, auto: any, merchantName: 
       { email: client.email, name: client.name, client_id: client.id },
       auto.subject, auto.body);
   }
+  await pushToClients(clients.map((c: any) => c.id), merchantName, auto.subject);
 }
 
 // ─── Boucle principale ────────────────────────────────────────
 async function runCron(supabase: SupabaseClient): Promise<{ processed: number; total: number }> {
+  // ─── Essais Pro expirés → retour au plan Essentiel ───
+  // Les abonnés payants ont un stripe_subscription_id (posé par le webhook
+  // Stripe) ; les comptes en essai n'en ont pas. Les comptes sans
+  // trial_ends_at (anciens / passés Pro manuellement) ne sont jamais touchés.
+  await supabase
+    .from('profiles')
+    .update({ plan: 'essential' })
+    .eq('plan', 'pro scale')
+    .is('stripe_subscription_id', null)
+    .lt('trial_ends_at', new Date().toISOString());
+
   const { data: automations } = await supabase
     .from('notification_automations')
     .select('*')
@@ -342,7 +437,7 @@ Deno.serve(async (req) => {
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error('keepo-notif-cron fatal error:', err);
+    console.error('KEEPO-notif-cron fatal error:', err);
     return new Response(JSON.stringify({ error: 'Erreur serveur', details: String(err) }), {
       status: 500,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },

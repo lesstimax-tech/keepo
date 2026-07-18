@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * Génère js/config.js depuis les variables d'environnement Cloudflare Pages.
  * Build command exemple : node scripts/inject-config.js

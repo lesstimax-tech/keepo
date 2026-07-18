@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard-commercant
+Disallow: /dashboard-client
+Disallow: /caisse.html
+Disallow: /validation.html
+Disallow: /upgrade.html
+Disallow: /connexion.html
+
+Sitemap: https://keepo.eu/sitemap.xml

@@ -1,4 +1,4 @@
-/** Application commerçant Keepo */
+﻿/** Application commerçant KEEPO */
 (function () {
   let currentMerchantId = null;
   let isDemoMode = false;
@@ -153,7 +153,7 @@
 
   window.downloadQrCode = function () {
     if (window.activeQrCodeDesigner) {
-      window.activeQrCodeDesigner.download({ name: "Keepo-QR-Code-Magasin", extension: "png" });
+      window.activeQrCodeDesigner.download({ name: "KEEPO-QR-Code-Magasin", extension: "png" });
     }
   };
 
@@ -336,7 +336,7 @@
     });
     const link = document.createElement("a");
     link.href = encodeURI(csv);
-    link.download = "keepo_export_caisse.csv";
+    link.download = "KEEPO_export_caisse.csv";
     document.body.appendChild(link);
     link.click();
     link.remove();

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nouveau mot de passe — KEEPO</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.png" type="image/png">
+<meta name="theme-color" content="#16B8C4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<style>
+:root{
+  --ink:#14141B;--ink-2:#46455A;--muted:#5F5E6E;--bg:#FAFAFC;
+  --line:rgba(20,20,27,.09);--line-2:rgba(20,20,27,.16);
+  --teal-deep:#0E7C8C;--grad:linear-gradient(125deg,#5B3AA0,#16B8C4);
+  --font-d:'Bricolage Grotesque',system-ui,sans-serif;
+  --font-b:'Instrument Sans',system-ui,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font-b);background:var(--bg);color:var(--ink);line-height:1.6;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;-webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(480px 320px at 85% 0%,rgba(22,184,196,.07),transparent 60%),
+             radial-gradient(420px 300px at 10% 100%,rgba(91,58,160,.06),transparent 60%);
+}
+.logo{margin-bottom:26px;position:relative}
+.logo img{height:44px}
+.card{
+  position:relative;width:100%;max-width:420px;background:#fff;
+  border:1px solid var(--line);border-radius:26px;padding:34px 32px 30px;text-align:center;
+  box-shadow:0 1px 2px rgba(20,20,27,.04),0 24px 60px -24px rgba(20,20,27,.16);
+}
+.icon{
+  width:64px;height:64px;border-radius:20px;margin:0 auto 18px;font-size:28px;
+  background:linear-gradient(135deg,rgba(91,58,160,.10),rgba(22,184,196,.12));
+  border:1px solid rgba(91,58,160,.15);display:flex;align-items:center;justify-content:center;
+}
+h1{font-family:var(--font-d);font-weight:800;font-size:22px;margin-bottom:6px;letter-spacing:-.01em}
+.sub{font-size:13.5px;color:var(--muted);margin-bottom:22px}
+.form-group{margin-bottom:16px;text-align:left}
+.form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-2);margin-bottom:7px}
+.form-group input{
+  width:100%;padding:13px 15px;font-size:15px;font-family:var(--font-b);
+  background:#fff;border:1px solid var(--line-2);border-radius:13px;color:var(--ink);
+  transition:border-color .25s,box-shadow .25s;
+}
+.form-group input:focus{outline:none;border-color:var(--teal-deep);box-shadow:0 0 0 3.5px rgba(22,184,196,.14)}
+.btn-main{
+  width:100%;padding:15px;border:none;border-radius:100px;cursor:pointer;
+  font-family:var(--font-b);font-size:15.5px;font-weight:700;color:#fff;background:var(--grad);
+  box-shadow:0 12px 26px -10px rgba(91,58,160,.45);
+  transition:transform .3s var(--ease),opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+}
+.btn-main:hover{transform:translateY(-2px)}
+.btn-main:disabled{opacity:.65;cursor:wait;transform:none}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite;display:none}
+.btn-main.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.foot-link{display:inline-block;margin-top:18px;font-size:13px;color:var(--teal-deep);font-weight:600;text-decoration:none;cursor:pointer}
+.foot-link:hover{text-decoration:underline}
+.toast{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%) translateY(-90px);
+  background:rgba(18,15,30,.96);border:1px solid rgba(255,255,255,.14);color:#fff;
+  padding:13px 22px;border-radius:100px;font-size:13.5px;font-weight:600;z-index:99;
+  transition:transform .4s var(--ease);display:flex;align-items:center;gap:9px;max-width:calc(100vw - 40px);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+#state-loading .dots{display:inline-flex;gap:5px;margin-top:4px}
+#state-loading .dots i{width:8px;height:8px;border-radius:50%;background:var(--teal-deep);animation:bounce 1.2s ease-in-out infinite}
+#state-loading .dots i:nth-child(2){animation-delay:.15s}
+#state-loading .dots i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-5px)}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="logo"><a href="/"><img src="img/logo.png" alt="KEEPO"></a></div>
+
+<div class="card">
+  <!-- Vérification du lien -->
+  <div id="state-loading">
+    <div class="icon">🔐</div>
+    <h1>Vérification du lien…</h1>
+    <p class="sub">Un instant, nous validons votre lien de réinitialisation.</p>
+    <div class="dots"><i></i><i></i><i></i></div>
+  </div>
+
+  <!-- Formulaire nouveau mot de passe -->
+  <div id="state-form" hidden>
+    <div class="icon">🔑</div>
+    <h1>Choisissez un nouveau mot de passe</h1>
+    <p class="sub">Il protège l'accès à votre compte KEEPO.</p>
+    <form id="resetForm" novalidate>
+      <div class="form-group">
+        <label for="new-password">Nouveau mot de passe</label>
+        <input type="password" id="new-password" placeholder="Minimum 6 caractères" autocomplete="new-password" required>
+      </div>
+      <div class="form-group">
+        <label for="confirm-password">Confirmer le mot de passe</label>
+        <input type="password" id="confirm-password" placeholder="Répétez le mot de passe" autocomplete="new-password" required>
+      </div>
+      <button type="submit" class="btn-main" id="saveBtn"><span class="spinner"></span>Enregistrer mon mot de passe</button>
+    </form>
+  </div>
+
+  <!-- Succès -->
+  <div id="state-done" hidden>
+    <div class="icon">✅</div>
+    <h1>Mot de passe modifié !</h1>
+    <p class="sub">Votre nouveau mot de passe est actif. Vous êtes connecté.</p>
+    <button class="btn-main" onclick="goToApp()">Accéder à mon espace →</button>
+  </div>
+
+  <!-- Lien invalide -->
+  <div id="state-invalid" hidden>
+    <div class="icon">⌛</div>
+    <h1>Lien invalide ou expiré</h1>
+    <p class="sub">Les liens de réinitialisation expirent après une heure. Redemandez-en un depuis la page de connexion.</p>
+    <a class="btn-main" href="/connexion" style="text-decoration:none;">Retour à la connexion</a>
+  </div>
+</div>
+
+<script>
+function show(id) {
+    ['state-loading','state-form','state-done','state-invalid'].forEach(s =>
+        document.getElementById(s).hidden = (s !== id));
+}
+function showToast(msg, ok) {
+    const t = document.getElementById('toast');
+    t.innerHTML = (ok ? '✅ ' : '⚠️ ') + msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4200);
+}
+
+// Trois formats de lien possibles selon la config du template Supabase :
+//  1. ?token_hash=...&type=recovery  → verifyOtp (recommandé : marche dans
+//     N'IMPORTE quel navigateur, y compris l'app Gmail)
+//  2. ?code=...                      → flux PKCE (auto-géré par supabase-js,
+//     même navigateur uniquement)
+//  3. #access_token=...              → ancien flux implicite
+let resolved = false;
+supabaseClient.auth.onAuthStateChange((event) => {
+    if (resolved) return;
+    if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        resolved = true;
+        show('state-form');
+    }
+});
+window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
+
+    if (tokenHash) {
+        // Format 1 : vérification directe, indépendante du navigateur
+        const { error } = await supabaseClient.auth.verifyOtp({
+            type: params.get('type') || 'recovery',
+            token_hash: tokenHash
+        });
+        resolved = true;
+        show(error ? 'state-invalid' : 'state-form');
+        return;
+    }
+
+    // Formats 2 et 3 : on laisse supabase-js détecter, avec une marge généreuse
+    setTimeout(async () => {
+        if (resolved) return;
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        resolved = true;
+        show(session ? 'state-form' : 'state-invalid');
+    }, 6000);
+});
+
+document.getElementById('resetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pwd = document.getElementById('new-password').value;
+    const confirm = document.getElementById('confirm-password').value;
+    if (pwd.length < 6) { showToast('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+    if (pwd !== confirm) { showToast('Les mots de passe ne correspondent pas.'); return; }
+
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.classList.add('loading');
+    try {
+        const { error } = await supabaseClient.auth.updateUser({ password: pwd });
+        if (error) throw error;
+        show('state-done');
+    } catch (error) {
+        showToast(error.message);
+        btn.disabled = false; btn.classList.remove('loading');
+    }
+});
+
+async function goToApp() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { window.location.href = '/connexion'; return; }
+    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+    window.location.href = (profile && profile.role === 'commercant') ? '/dashboard-commercant' : '/dashboard-client';
+}
+</script>
+</body>
+</html>

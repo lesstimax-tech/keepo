@@ -21,13 +21,25 @@ alter table public.profiles add column if not exists avatar_url text;  -- data U
 
 alter table public.profiles enable row level security;
 
-drop policy if exists "profiles_select_own"       on public.profiles;
-drop policy if exists "profiles_update_own"        on public.profiles;
-drop policy if exists "profiles_insert_own_client" on public.profiles;
-drop policy if exists "profiles_insert_any"        on public.profiles;
+drop policy if exists "profiles_select_own"            on public.profiles;
+drop policy if exists "profiles_update_own"             on public.profiles;
+drop policy if exists "profiles_insert_own_client"      on public.profiles;
+drop policy if exists "profiles_insert_any"             on public.profiles;
+drop policy if exists "profiles_merchant_read_members"  on public.profiles;
 
+-- Lecture de son propre profil
 create policy "profiles_select_own" on public.profiles
   for select using (auth.uid() = id);
+
+-- Un commerçant peut lire le profil de ses membres (pour la caisse)
+create policy "profiles_merchant_read_members" on public.profiles
+  for select using (
+    exists (
+      select 1 from public.loyalty_balances lb
+      where lb.client_id = id
+        and lb.merchant_id = auth.uid()
+    )
+  );
 
 create policy "profiles_update_own" on public.profiles
   for update using (auth.uid() = id)
@@ -39,16 +51,36 @@ create policy "profiles_insert_any" on public.profiles
 -- ── TRIGGER : créer le profil à l'inscription ─────────
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_role     text := coalesce(nullif(new.raw_user_meta_data->>'role', ''), 'client');
+  v_ref_code text := nullif(upper(trim(new.raw_user_meta_data->>'ref_code')), '');
+  v_referrer uuid;
 begin
-  insert into public.profiles (id, name, email, role, plan)
+  insert into public.profiles (id, name, email, role, plan, referral_code)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'full_name', 'Utilisateur'),
     new.email,
-    coalesce(nullif(new.raw_user_meta_data->>'role', ''), 'client'),
-    coalesce(nullif(new.raw_user_meta_data->>'plan', ''), 'essential')
+    v_role,
+    coalesce(nullif(new.raw_user_meta_data->>'plan', ''), 'essential'),
+    -- Code de parrainage unique pour les commerçants (dérivé de l'id → jamais de collision)
+    case when v_role = 'commercant' then upper(substr(md5(new.id::text), 1, 8)) else null end
   )
   on conflict (id) do nothing;
+
+  -- Parrainage commerçant : si un code de parrain valide accompagne l'inscription,
+  -- on enregistre le lien (statut 'pending' — la récompense est versée au 1er paiement).
+  if v_role = 'commercant' and v_ref_code is not null then
+    select id into v_referrer from public.profiles
+      where referral_code = v_ref_code and role = 'commercant' and id <> new.id
+      limit 1;
+    if v_referrer is not null then
+      insert into public.merchant_referrals (referrer_id, referred_id, status)
+      values (v_referrer, new.id, 'pending')
+      on conflict (referred_id) do nothing;
+    end if;
+  end if;
+
   return new;
 end;
 $$;
@@ -74,6 +106,8 @@ alter table public.merchant_cards add column if not exists studio_json     text;
 alter table public.merchant_cards add column if not exists points_per_euro numeric default 0.1;
 alter table public.merchant_cards add column if not exists address         text;
 alter table public.merchant_cards add column if not exists updated_at      timestamptz default now();
+-- plan dupliqué depuis profiles pour lecture publique (profiles est RLS-restreint aux propriétaires)
+alter table public.merchant_cards add column if not exists plan            text not null default 'essential';
 
 alter table public.merchant_cards enable row level security;
 
@@ -580,6 +614,12 @@ $$;
 grant execute on function public.claim_referral_code to authenticated;
 
 -- ════════════════════════════════════════════════════════
+--  Colonne lots personnalisés de la roue
+-- ════════════════════════════════════════════════════════
+alter table public.merchant_cards
+  add column if not exists wheel_prizes jsonb;
+
+-- ════════════════════════════════════════════════════════
 --  RPC — Spin de la Roue de la Fortune
 -- ════════════════════════════════════════════════════════
 drop function if exists public.spin_wheel(uuid);
@@ -588,31 +628,43 @@ create or replace function public.spin_wheel(
   p_merchant_id uuid
 ) returns jsonb language plpgsql security definer set search_path = public as $$
 declare
-  v_client       uuid;
-  v_visits       int;
-  v_required     int;
-  v_last_spin    int;
-  v_enabled      boolean;
-  v_prize_roll   int;
-  v_prize_type   text;
-  v_prize_value  int;
-  v_prize_label  text;
+  v_client         uuid;
+  v_visits         int;
+  v_required       int;
+  v_last_spin      int;
+  v_enabled        boolean;
+  v_prizes         jsonb;
+  v_default_prizes jsonb;
+  v_prize_roll     int;
+  v_cumulative     int := 0;
+  v_prize_type     text := 'nothing';
+  v_prize_value    int  := 0;
+  v_prize_label    text := 'Pas de chance';
+  v_item           jsonb;
 begin
   v_client := auth.uid();
   if v_client is null then raise exception 'Non authentifié'; end if;
 
-  -- Config roue
-  select coalesce(wheel_visits_required, 10), coalesce(wheel_enabled, true)
-  into   v_required, v_enabled
+  v_default_prizes := '[
+    {"label":"Jackpot 500 pts","points":500,"probability":5,"color":"#ffc34d"},
+    {"label":"150 pts bonus","points":150,"probability":15,"color":"#7c6af7"},
+    {"label":"50 pts bonus","points":50,"probability":25,"color":"#00e8cc"},
+    {"label":"20 pts bonus","points":20,"probability":30,"color":"#ff8a5c"},
+    {"label":"Pas de chance","points":0,"probability":25,"color":"#3a3556"}
+  ]'::jsonb;
+
+  select coalesce(wheel_visits_required, 10),
+         coalesce(wheel_enabled, true),
+         coalesce(wheel_prizes, v_default_prizes)
+  into   v_required, v_enabled, v_prizes
   from   public.merchant_cards where merchant_id = p_merchant_id;
+
   if not v_enabled then raise exception 'La roue n''est pas activée par ce commerce'; end if;
 
-  -- Combien de visites (credits) le client a déjà fait chez ce commerçant ?
   select count(*) into v_visits
   from   public.transactions
   where  merchant_id = p_merchant_id and client_id = v_client and type = 'credit';
 
-  -- Combien de visites étaient comptées au dernier spin ?
   select coalesce(wheel_last_spin_visits, 0) into v_last_spin
   from   public.loyalty_balances
   where  merchant_id = p_merchant_id and client_id = v_client;
@@ -621,40 +673,27 @@ begin
     raise exception 'Pas encore éligible (% / % visites)', v_visits - v_last_spin, v_required;
   end if;
 
-  -- Tirage aléatoire (0-99)
+  -- Tirage aléatoire 0-99
   v_prize_roll := floor(random() * 100)::int;
-  if v_prize_roll < 5 then          -- 5% : Gros lot (recompense gratuite virtuelle)
-    v_prize_type  := 'bonus_pts';
-    v_prize_value := 500;
-    v_prize_label := '🎁 JACKPOT — 500 points bonus !';
-  elsif v_prize_roll < 20 then      -- 15% : x3 pts
-    v_prize_type  := 'bonus_pts';
-    v_prize_value := 150;
-    v_prize_label := '🌟 150 points bonus';
-  elsif v_prize_roll < 45 then      -- 25% : x2 pts
-    v_prize_type  := 'bonus_pts';
-    v_prize_value := 50;
-    v_prize_label := '✨ 50 points bonus';
-  elsif v_prize_roll < 75 then      -- 30% : petit lot
-    v_prize_type  := 'bonus_pts';
-    v_prize_value := 20;
-    v_prize_label := '🪙 20 points bonus';
-  else                              -- 25% : rien
-    v_prize_type  := 'nothing';
-    v_prize_value := 0;
-    v_prize_label := '😅 Pas de chance cette fois — ressayez bientôt !';
-  end if;
 
-  -- Enregistre le spin
+  -- Détermine le lot gagnant selon les probabilités cumulées
+  for v_item in select * from jsonb_array_elements(v_prizes) loop
+    v_cumulative := v_cumulative + (v_item->>'probability')::int;
+    if v_prize_roll < v_cumulative then
+      v_prize_value := coalesce((v_item->>'points')::int, 0);
+      v_prize_label := coalesce(v_item->>'label', 'Résultat');
+      v_prize_type  := case when v_prize_value > 0 then 'bonus_pts' else 'nothing' end;
+      exit;
+    end if;
+  end loop;
+
   insert into public.wheel_spins (client_id, merchant_id, prize_type, prize_value, prize_label)
   values (v_client, p_merchant_id, v_prize_type, v_prize_value, v_prize_label);
 
-  -- Met à jour le compteur "last spin visits"
   update public.loyalty_balances
   set wheel_last_spin_visits = v_visits
   where merchant_id = p_merchant_id and client_id = v_client;
 
-  -- Crédite les points si gagnés
   if v_prize_value > 0 then
     insert into public.transactions (merchant_id, client_id, amount, points_changed, type)
     values (p_merchant_id, v_client, 0, v_prize_value, 'credit');
@@ -666,15 +705,16 @@ begin
   end if;
 
   return jsonb_build_object(
-    'prize_type', v_prize_type,
+    'prize_type',  v_prize_type,
     'prize_value', v_prize_value,
     'prize_label', v_prize_label,
-    'roll', v_prize_roll
+    'roll',        v_prize_roll,
+    'prizes',      v_prizes
   );
 end;
 $$;
 
-grant execute on function public.spin_wheel to authenticated;
+grant execute on function public.spin_wheel(uuid) to authenticated;
 
 -- ════════════════════════════════════════════════════════
 --  RPC — Acheter / Échanger une carte cadeau
@@ -1056,3 +1096,123 @@ end;
 $$;
 
 grant execute on function public.apply_loyalty_credit(uuid, uuid, numeric, int, uuid) to authenticated;
+
+-- ── PHASE 6 — Lecture publique du plan commerçant ──────────
+-- Les clients ne peuvent pas lire profiles (RLS restreint au propriétaire).
+-- Cette fonction SECURITY DEFINER contourne le RLS pour exposer uniquement
+-- le champ `plan` des commerçants demandés.
+create or replace function public.get_merchant_plans(p_merchant_ids uuid[])
+returns table(merchant_id uuid, plan text)
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select id as merchant_id, coalesce(plan, 'essential') as plan
+  from public.profiles
+  where id = any(p_merchant_ids);
+$$;
+
+grant execute on function public.get_merchant_plans(uuid[]) to authenticated, anon;
+
+-- ════════════════════════════════════════════════════════
+--  PHASE 7 — Pages publiques commerçants (/c/[slug])
+-- ════════════════════════════════════════════════════════
+alter table public.merchant_cards add column if not exists slug text unique;
+
+create index if not exists idx_merchant_cards_slug
+  on public.merchant_cards(slug)
+  where slug is not null;
+
+-- ════════════════════════════════════════════════════════
+--  PHASE 8 — Notifications Push (Web Push / VAPID)
+-- ════════════════════════════════════════════════════════
+-- Un client peut avoir plusieurs abonnements (un par appareil / navigateur).
+-- L'endpoint est unique : on remplace l'abonnement si le même navigateur
+-- se ré-abonne (upsert on conflict). Le serveur (cron / Edge Function avec
+-- service role) lit toutes les lignes pour envoyer ; le RLS ci-dessous ne
+-- concerne que les accès depuis le client (chacun ne voit que les siens).
+create table if not exists public.push_subscriptions (
+  id          bigserial primary key,
+  client_id   uuid not null references public.profiles(id) on delete cascade,
+  endpoint    text not null unique,
+  p256dh      text not null,
+  auth        text not null,
+  user_agent  text,
+  created_at  timestamptz default now()
+);
+
+create index if not exists idx_push_subscriptions_client
+  on public.push_subscriptions(client_id);
+
+alter table public.push_subscriptions enable row level security;
+
+drop policy if exists "push_subs_select_own" on public.push_subscriptions;
+drop policy if exists "push_subs_insert_own" on public.push_subscriptions;
+drop policy if exists "push_subs_update_own" on public.push_subscriptions;
+drop policy if exists "push_subs_delete_own" on public.push_subscriptions;
+
+create policy "push_subs_select_own" on public.push_subscriptions
+  for select using (auth.uid() = client_id);
+
+create policy "push_subs_insert_own" on public.push_subscriptions
+  for insert with check (auth.uid() = client_id);
+
+-- Nécessaire pour l'upsert on conflict (endpoint) côté client.
+create policy "push_subs_update_own" on public.push_subscriptions
+  for update using (auth.uid() = client_id)
+  with check (auth.uid() = client_id);
+
+create policy "push_subs_delete_own" on public.push_subscriptions
+  for delete using (auth.uid() = client_id);
+
+
+-- ════════════════════════════════════════════════════════════════
+--  PHASE 9 — PARRAINAGE COMMERÇANT (affiliation)
+--  Un commerçant parraine un confrère : le filleul a un essai prolongé
+--  (30 j au lieu de 14, appliqué au checkout), et le parrain gagne 1 mois
+--  gratuit dès que le filleul effectue son 1er vrai paiement (webhook).
+-- ════════════════════════════════════════════════════════════════
+
+-- Code de parrainage unique par commerçant (dérivé de l'id → sans collision).
+alter table public.profiles add column if not exists referral_code text;
+create unique index if not exists idx_profiles_referral_code
+  on public.profiles(referral_code) where referral_code is not null;
+
+-- Backfill des commerçants existants.
+update public.profiles
+   set referral_code = upper(substr(md5(id::text), 1, 8))
+ where role = 'commercant' and referral_code is null;
+
+-- Table de suivi des parrainages.
+create table if not exists public.merchant_referrals (
+  id           bigserial primary key,
+  referrer_id  uuid not null references public.profiles(id) on delete cascade,
+  referred_id  uuid not null references public.profiles(id) on delete cascade unique,
+  status       text not null default 'pending' check (status in ('pending','rewarded','cancelled')),
+  created_at   timestamptz default now(),
+  rewarded_at  timestamptz
+);
+create index if not exists idx_merchant_referrals_referrer on public.merchant_referrals(referrer_id);
+
+alter table public.merchant_referrals enable row level security;
+
+-- Le parrain peut lire ses propres parrainages (pour l'encart du dashboard).
+-- L'écriture est réservée au serveur (trigger security definer + webhook service role).
+drop policy if exists "mref_select_referrer" on public.merchant_referrals;
+create policy "mref_select_referrer" on public.merchant_referrals
+  for select using (auth.uid() = referrer_id);
+
+-- Le parrain doit voir le NOM de ses filleuls, mais le RLS de profiles interdit
+-- de lire le profil d'un autre commerçant. Cette fonction SECURITY DEFINER ne
+-- renvoie que les parrainages de l'appelant, avec le nom du filleul joint.
+create or replace function public.get_my_referrals()
+returns table (referred_name text, status text, created_at timestamptz)
+language sql security definer set search_path = public stable as $$
+  select coalesce(p.name, 'Commerçant'), r.status, r.created_at
+  from public.merchant_referrals r
+  left join public.profiles p on p.id = r.referred_id
+  where r.referrer_id = auth.uid()
+  order by r.created_at desc;
+$$;
+grant execute on function public.get_my_referrals() to authenticated;

@@ -1,18 +1,18 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keepo | Démo interactive — essayez sans inscription</title>
-    <meta name="description" content="Essayez Keepo en mode démo. Simulez un scanner de fidélité, personnalisez votre carte, et voyez votre tableau de bord en action — aucun compte requis.">
+    <title>KEEPO | Démo interactive — essayez sans inscription</title>
+    <meta name="description" content="Essayez KEEPO en mode démo. Simulez un scanner de fidélité, personnalisez votre carte, et voyez votre tableau de bord en action — aucun compte requis.">
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
     <link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
     <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
-    <meta name="theme-color" content="#00e8cc">
+    <meta name="theme-color" content="#16B8C4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -24,12 +24,12 @@
             --text:      #f0eeff;
             --muted:     #6e6b88;
             --sub:       #9b97b5;
-            --accent:    #00e8cc;
-            --accent-g:  rgba(0,232,204,0.18);
+            --accent:    #16B8C4;
+            --accent-g:  rgba(14,124,140,0.18);
             --pink:      #ff4d82;
-            --purple:    #7c6af7;
+            --purple:    #5B3AA0;
             --success:   #22d47a;
-            --demo-color: #00e8cc;
+            --demo-color: #16B8C4;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -44,14 +44,14 @@
             content: '';
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background:
-                radial-gradient(ellipse 70% 55% at 15% 0%, rgba(124,106,247,0.09) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 50% at 85% 100%, rgba(0,232,204,0.07) 0%, transparent 55%);
+                radial-gradient(ellipse 70% 55% at 15% 0%, rgba(91,58,160,0.09) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 100%, rgba(14,124,140,0.07) 0%, transparent 55%);
         }
 
         /* ── TOP BANNER ── */
         .demo-banner {
             position: sticky; top: 0; z-index: 100;
-            background: linear-gradient(90deg, #4a2b82, #1e9488);
+            background: linear-gradient(90deg, #5B3AA0, #16B8C4);
             padding: 10px 24px;
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
             flex-wrap: wrap;
@@ -67,7 +67,7 @@
         }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
         .demo-banner-cta {
-            background: #fff; color: #4a2b82;
+            background: #fff; color: #5B3AA0;
             font-size: 13px; font-weight: 800;
             padding: 7px 18px; border-radius: 50px; border: none; cursor: pointer;
             transition: transform .15s;
@@ -88,8 +88,8 @@
             -webkit-text-fill-color: transparent;
         }
         .demo-tag {
-            background: rgba(0,232,204,0.12); color: var(--accent);
-            border: 1px solid rgba(0,232,204,0.25);
+            background: rgba(14,124,140,0.12); color: var(--accent);
+            border: 1px solid rgba(14,124,140,0.25);
             font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 50px;
             letter-spacing: .05em; text-transform: uppercase;
         }
@@ -100,7 +100,7 @@
             text-decoration: none; display: inline-block;
             transition: box-shadow .2s, transform .15s;
         }
-        .nav-cta:hover { box-shadow: 0 0 28px rgba(0,232,204,0.4); transform: translateY(-1px); }
+        .nav-cta:hover { box-shadow: 0 0 28px rgba(14,124,140,0.4); transform: translateY(-1px); }
 
         /* ── HERO ── */
         .hero {
@@ -110,16 +110,16 @@
         }
         .hero-eyebrow {
             display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(0,232,204,0.08); border: 1px solid rgba(0,232,204,0.2);
+            background: rgba(14,124,140,0.08); border: 1px solid rgba(14,124,140,0.2);
             color: var(--accent); font-size: 13px; font-weight: 700;
             padding: 6px 16px; border-radius: 50px; margin-bottom: 24px;
         }
         .hero h1 {
-            font-family: 'Cabinet Grotesk', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: clamp(32px,5vw,58px); font-weight: 900; line-height: 1.08;
             margin-bottom: 20px;
         }
-        .grad { background: linear-gradient(120deg,#a370ff,#2ee6d4); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+        .grad { background: linear-gradient(120deg,#5B3AA0,#16B8C4); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
         .hero p { font-size: 18px; color: var(--sub); max-width: 600px; margin: 0 auto 36px; line-height: 1.65; }
         .hero-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
         .btn-primary {
@@ -128,13 +128,13 @@
             padding: 14px 32px; border-radius: 50px; border: none; cursor: pointer;
             transition: box-shadow .2s, transform .15s;
         }
-        .btn-primary:hover { box-shadow: 0 0 32px rgba(0,232,204,0.45); transform: translateY(-2px); }
+        .btn-primary:hover { box-shadow: 0 0 32px rgba(14,124,140,0.45); transform: translateY(-2px); }
         .btn-outline {
             background: transparent; color: var(--text); font-weight: 600; font-size: 15px;
             padding: 14px 28px; border-radius: 50px; border: 1px solid var(--glass-b2); cursor: pointer;
             transition: border-color .2s, background .2s;
         }
-        .btn-outline:hover { border-color: var(--accent); background: rgba(0,232,204,0.05); }
+        .btn-outline:hover { border-color: var(--accent); background: rgba(14,124,140,0.05); }
 
         /* ── DEMO TABS ── */
         .demo-section {
@@ -154,7 +154,7 @@
             border-radius: 12px; cursor: pointer; display: flex; align-items: center;
             justify-content: center; gap: 7px; transition: all .2s; white-space: nowrap;
         }
-        .demo-tab.active { background: rgba(0,232,204,0.1); color: var(--accent); }
+        .demo-tab.active { background: rgba(14,124,140,0.1); color: var(--accent); }
         .demo-tab:hover:not(.active) { background: rgba(255,255,255,0.04); color: var(--text); }
 
         .demo-panel { display: none; }
@@ -168,7 +168,7 @@
             backdrop-filter: blur(12px);
         }
         .card-title {
-            font-family: 'Cabinet Grotesk', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 17px; font-weight: 800; margin-bottom: 18px;
             display: flex; align-items: center; gap: 8px;
         }
@@ -192,7 +192,7 @@
         @media(max-width:640px){ .scan-layout { grid-template-columns: 1fr; } }
 
         .scan-box {
-            background: rgba(0,232,204,0.04); border: 2px dashed rgba(0,232,204,0.25);
+            background: rgba(14,124,140,0.04); border: 2px dashed rgba(14,124,140,0.25);
             border-radius: 20px; padding: 36px 24px;
             display: flex; flex-direction: column; align-items: center; gap: 16px;
             text-align: center;
@@ -208,12 +208,12 @@
         }
         .demo-btn:hover { opacity: .9; transform: translateY(-1px); }
         .demo-btn.secondary {
-            background: transparent; color: var(--accent); border: 1px solid rgba(0,232,204,0.3);
+            background: transparent; color: var(--accent); border: 1px solid rgba(14,124,140,0.3);
         }
-        .demo-btn.secondary:hover { background: rgba(0,232,204,0.07); }
+        .demo-btn.secondary:hover { background: rgba(14,124,140,0.07); }
 
         .client-result-card {
-            background: rgba(255,255,255,0.025); border: 1px solid rgba(0,232,204,0.2);
+            background: rgba(255,255,255,0.025); border: 1px solid rgba(14,124,140,0.2);
             border-radius: 16px; padding: 20px; display: none;
             animation: fadeIn .3s ease;
         }
@@ -227,7 +227,7 @@
             color: #fff; flex-shrink: 0;
         }
         .pts-big {
-            font-family: 'Cabinet Grotesk', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 36px; font-weight: 900; color: var(--accent);
             text-align: center; line-height: 1;
         }
@@ -237,7 +237,7 @@
         .scan-feed-item {
             display: flex; align-items: center; gap: 10px;
             padding: 10px 14px; border-radius: 12px;
-            background: rgba(0,232,204,0.04); border: 1px solid rgba(0,232,204,0.1);
+            background: rgba(14,124,140,0.04); border: 1px solid rgba(14,124,140,0.1);
             margin-bottom: 8px; font-size: 13px; animation: fadeIn .3s ease;
         }
         .scan-feed-item .sf-icon { font-size: 16px; flex-shrink: 0; }
@@ -270,7 +270,7 @@
         }
         .lcp-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .lcp-logo {
-            font-family: 'Cabinet Grotesk',sans-serif;
+            font-family: 'Bricolage Grotesque',sans-serif;
             font-size: 18px; font-weight: 900; color: #fff;
         }
         .lcp-badge {
@@ -281,7 +281,7 @@
             font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 6px;
         }
         .lcp-pts {
-            font-family: 'Cabinet Grotesk',sans-serif;
+            font-family: 'Bricolage Grotesque',sans-serif;
             font-size: 42px; font-weight: 900; line-height: 1; color: #fff;
         }
         .lcp-pts span { font-size: 16px; font-weight: 500; opacity: .6; }
@@ -310,7 +310,7 @@
             font-size: 16px; margin-bottom: 14px;
         }
         .stat-tile .st-val {
-            font-family: 'Cabinet Grotesk', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 30px; font-weight: 900; line-height: 1;
         }
         .stat-tile .st-label { font-size: 12px; color: var(--muted); margin-top: 5px; }
@@ -326,7 +326,7 @@
         }
         .chart-bar {
             flex: 1; border-radius: 6px 6px 0 0;
-            background: rgba(0,232,204,0.25);
+            background: rgba(14,124,140,0.25);
             transition: height .8s cubic-bezier(.22,1,.36,1);
         }
         .chart-bar.highlight { background: var(--accent); }
@@ -354,7 +354,7 @@
             max-width: 760px; margin: 0 auto;
         }
         .cta-section h2 {
-            font-family: 'Cabinet Grotesk', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: clamp(26px,4vw,46px); font-weight: 900; margin-bottom: 16px;
         }
         .cta-section p { color: var(--sub); font-size: 17px; margin-bottom: 36px; line-height: 1.6; }
@@ -366,7 +366,7 @@
             display: flex; flex-direction: column; gap: 10px; pointer-events: none;
         }
         .d-toast {
-            background: var(--bg-card); border: 1px solid rgba(0,232,204,0.3);
+            background: var(--bg-card); border: 1px solid rgba(14,124,140,0.3);
             backdrop-filter: blur(16px); border-radius: 14px;
             padding: 14px 20px; font-size: 13px; font-weight: 600;
             display: flex; align-items: center; gap: 10px;
@@ -392,7 +392,7 @@
         }
         .rup-emoji { font-size: 64px; margin-bottom: 16px; }
         .rup-title {
-            font-family: 'Cabinet Grotesk', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 26px; font-weight: 900; margin-bottom: 8px;
         }
         .rup-sub { color: var(--sub); font-size: 15px; margin-bottom: 28px; line-height: 1.5; }
@@ -401,6 +401,17 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+        /* ── Couche PRO : accessibilité & micro-interactions ── */
+        :focus-visible { outline: 2px solid #16B8C4; outline-offset: 2px; border-radius: 6px; }
+        a:focus:not(:focus-visible), button:focus:not(:focus-visible),
+        input:focus:not(:focus-visible) { outline: none; }
+        ::selection { background: rgba(14,124,140, 0.28); color: #fff; }
+        a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
+        button:active { transform: translateY(1px) scale(0.99); }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+        }
     </style>
 </head>
 <body>
@@ -429,7 +440,7 @@
         <i class="fa-solid fa-wand-magic-sparkles"></i>
         Aucun compte, aucune CB requise
     </div>
-    <h1>Voyez Keepo <span class="grad">en action</span><br>avant de vous lancer</h1>
+    <h1>Voyez KEEPO <span class="grad">en action</span><br>avant de vous lancer</h1>
     <p>Simulez un vrai scanner de fidélité, personnalisez votre carte et consultez le dashboard — comme si vous étiez déjà en production.</p>
     <div class="hero-actions">
         <button class="btn-primary" onclick="scrollToDemo()">
@@ -530,14 +541,14 @@
                     <div style="margin-bottom:14px;">
                         <div class="label-txt">Couleur principale</div>
                         <div class="color-swatches" id="color-swatches">
-                            <div class="color-swatch selected" data-color="#00e8cc" style="background:#00e8cc;" onclick="selectSwatch(this)"></div>
-                            <div class="color-swatch" data-color="#7c6af7" style="background:#7c6af7;" onclick="selectSwatch(this)"></div>
+                            <div class="color-swatch selected" data-color="#16B8C4" style="background:#16B8C4;" onclick="selectSwatch(this)"></div>
+                            <div class="color-swatch" data-color="#5B3AA0" style="background:#5B3AA0;" onclick="selectSwatch(this)"></div>
                             <div class="color-swatch" data-color="#ff4d82" style="background:#ff4d82;" onclick="selectSwatch(this)"></div>
                             <div class="color-swatch" data-color="#f4a432" style="background:#f4a432;" onclick="selectSwatch(this)"></div>
                             <div class="color-swatch" data-color="#22d47a" style="background:#22d47a;" onclick="selectSwatch(this)"></div>
                             <div class="color-swatch" data-color="#00b4d8" style="background:#00b4d8;" onclick="selectSwatch(this)"></div>
                         </div>
-                        <input type="color" style="width:100%;height:36px;border-radius:10px;border:1px solid var(--glass-b2);background:transparent;cursor:pointer;margin-top:8px;" value="#00e8cc" oninput="setCardColor(this.value)">
+                        <input type="color" style="width:100%;height:36px;border-radius:10px;border:1px solid var(--glass-b2);background:transparent;cursor:pointer;margin-top:8px;" value="#16B8C4" oninput="setCardColor(this.value)">
                     </div>
                 </div>
 
@@ -575,7 +586,7 @@
                     <div class="lcp-name-tag">Thomas M.</div>
                 </div>
 
-                <div style="margin-top:20px;background:rgba(0,232,204,0.05);border:1px solid rgba(0,232,204,0.15);border-radius:16px;padding:18px;">
+                <div style="margin-top:20px;background:rgba(14,124,140,0.05);border:1px solid rgba(14,124,140,0.15);border-radius:16px;padding:18px;">
                     <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px;"><i class="fa-solid fa-mobile-screen"></i> &nbsp;Ce que voient vos clients</div>
                     <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
                         <li style="font-size:13px;color:var(--sub);display:flex;gap:8px;"><span style="color:var(--success);">✓</span> Solde de points visible en temps réel</li>
@@ -593,13 +604,13 @@
         <!-- stats -->
         <div class="stats-grid">
             <div class="stat-tile">
-                <div class="st-icon" style="background:rgba(0,232,204,0.1);color:var(--accent);"><i class="fa-solid fa-users"></i></div>
+                <div class="st-icon" style="background:rgba(14,124,140,0.1);color:var(--accent);"><i class="fa-solid fa-users"></i></div>
                 <div class="st-val" id="demo-stat-clients">0</div>
                 <div class="st-label">Clients inscrits</div>
                 <div class="st-delta delta-up"><i class="fa-solid fa-arrow-trend-up"></i> +8 ce mois</div>
             </div>
             <div class="stat-tile">
-                <div class="st-icon" style="background:rgba(124,106,247,0.1);color:var(--purple);"><i class="fa-solid fa-star"></i></div>
+                <div class="st-icon" style="background:rgba(91,58,160,0.1);color:var(--purple);"><i class="fa-solid fa-star"></i></div>
                 <div class="st-val" id="demo-stat-pts">0</div>
                 <div class="st-label">Points distribués</div>
                 <div class="st-delta delta-up"><i class="fa-solid fa-arrow-trend-up"></i> +23% cette semaine</div>
@@ -665,7 +676,7 @@
             <div id="demo-history-list"></div>
         </div>
 
-        <div style="margin-top:18px;background:rgba(124,106,247,0.06);border:1px solid rgba(124,106,247,0.15);border-radius:18px;padding:20px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="margin-top:18px;background:rgba(91,58,160,0.06);border:1px solid rgba(91,58,160,0.15);border-radius:18px;padding:20px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
             <div style="flex:1;min-width:200px;">
                 <div style="font-weight:800;font-size:15px;margin-bottom:4px;">Ces données sont simulées</div>
                 <div style="font-size:13px;color:var(--sub);">Créez votre compte pour voir vos vraies statistiques en temps réel, exporter les données et configurer des automations.</div>
@@ -709,7 +720,7 @@
     let demoClients = {};
     let demoPtsGoal = 100;
     let scanFeedItems = [];
-    let demoStudioColor = '#00e8cc';
+    let demoStudioColor = '#16B8C4';
 
     const DEMO_CLIENT_PRESETS = [
         {name:'Marie Dupont', pts:347}, {name:'Jean-Michel B.', pts:182},

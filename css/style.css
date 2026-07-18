@@ -9,18 +9,18 @@
     --glass-border: rgba(255, 255, 255, 0.07);
     --text-main: #f3f3f6;
     --text-muted: #7e7b91;
-    --primary-accent: #4a2b82;
-    --secondary-accent: #1e9488; /* Vert d'eau mat de confiance */
-    --btn-cta-bg: linear-gradient(135deg, #4a2b82, #5a32a3);
+    --primary-accent: #5B3AA0;
+    --secondary-accent: #16B8C4; /* Vert d'eau mat de confiance */
+    --btn-cta-bg: linear-gradient(135deg, #5B3AA0, #16B8C4);
     --card-hover-border: rgba(255, 255, 255, 0.15);
     --shadow-main: rgba(0, 0, 0, 0.5);
-    --primary-purple: #4a2b82;
+    --primary-purple: #5B3AA0;
     --bezier-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     
     /* Variables de bascule désactivées par défaut */
     --display-neon-elements: none;
     --laser-animation: none;
-    --laser-bg: #1e9488;
+    --laser-bg: #16B8C4;
     --body-animation: none;
     --cta-animation: none;
 }
@@ -32,10 +32,10 @@ body.light-mode {
     --glass-border: rgba(0, 0, 0, 0.06);
     --text-main: #12111a;
     --text-muted: #6b697c;
-    --primary-accent: #4a2b82;
+    --primary-accent: #5B3AA0;
     --secondary-accent: #22a699;
-    --btn-cta-bg: linear-gradient(135deg, #4a2b82, #22a699);
-    --card-hover-border: rgba(74, 43, 130, 0.2);
+    --btn-cta-bg: linear-gradient(135deg, #5B3AA0, #22a699);
+    --card-hover-border: rgba(91,58,160, 0.2);
     --shadow-main: rgba(0, 0, 0, 0.06);
     --display-neon-elements: none;
 }
@@ -45,13 +45,13 @@ body.neon-mode {
     background: linear-gradient(-45deg, #07050f, #1e1136, #092623, #0f0c1b) !important;
     background-size: 400% 400% !important;
     animation: gradientMove 15s ease infinite !important;
-    --secondary-accent: #2ee6d4;
-    --btn-cta-bg: linear-gradient(135deg, #4a2b82, #7e42eb, #2ee6d4);
-    --card-hover-border: rgba(46, 230, 212, 0.3);
-    --shadow-glow: rgba(46, 230, 212, 0.3);
+    --secondary-accent: #16B8C4;
+    --btn-cta-bg: linear-gradient(135deg, #5B3AA0, #7e42eb, #16B8C4);
+    --card-hover-border: rgba(14,124,140, 0.3);
+    --shadow-glow: rgba(14,124,140, 0.3);
     --display-neon-elements: block;
     --laser-animation: laserMove 2.5s linear infinite;
-    --laser-bg: linear-gradient(90deg, transparent, #2ee6d4, transparent);
+    --laser-bg: linear-gradient(90deg, transparent, #16B8C4, transparent);
     --cta-animation: ctaPulseFloat 4s ease-in-out infinite;
 }
 
@@ -65,7 +65,7 @@ html {
     margin: 0;
     padding: 0;
     box-sizing: inherit;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -77,6 +77,15 @@ body {
     overflow-x: hidden;
     position: relative;
     transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* Titres en police d'affichage premium (fallback gracieux si le webfont ne charge pas) */
+h1, h2, h3, h4,
+.section-tag,
+.stat-big,
+.price-amount {
+    font-family: 'Cabinet Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
 }
 
 /* --- 5. EFFETS ET AURAS DE FOND (AFFICCHÉS UNIQUEMENT EN MODE NÉON) --- */
@@ -144,7 +153,7 @@ body.light-mode header {
     text-decoration: none;
 }
 .logo-container img {
-    height: 46px;
+    height: 80px;
     display: block;
     transition: transform 0.4s var(--bezier-smooth);
 }
@@ -199,7 +208,7 @@ nav a:hover::after {
 }
 .btn-purple:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 25px rgba(74, 43, 130, 0.3);
+    box-shadow: 0 12px 25px rgba(91,58,160, 0.3);
 }
 
 .btn-teal {
@@ -251,13 +260,13 @@ nav a:hover::after {
     color: var(--text-main);
 }
 .hero h1 span {
-    background: linear-gradient(120deg, #a370ff, #2ee6d4);
+    background: linear-gradient(120deg, #5B3AA0, #16B8C4);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 body.light-mode .hero h1 span {
-    background: linear-gradient(120deg, #4a2b82, #1e9488);
+    background: linear-gradient(120deg, #5B3AA0, #16B8C4);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -418,9 +427,9 @@ body.neon-mode .price-card.featured {
     white-space: nowrap;
 }
 body.neon-mode .badge {
-    background: linear-gradient(90deg, #2ee6d4, #0a0911);
+    background: linear-gradient(90deg, #16B8C4, #0a0911);
     color: #0a0911;
-    box-shadow: 0 4px 15px rgba(46, 230, 212, 0.4);
+    box-shadow: 0 4px 15px rgba(14,124,140, 0.4);
 }
 
 .price {
@@ -685,7 +694,7 @@ body.light-mode .gift-card { background: #fdfdfd; }
 /* --- 20. RENDU STUDIO DE PERSONNALISATION WALLET SMARTPHONE --- */
 .studio-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 50px; align-items: center; }
 .mockup-phone { width: 290px; height: 520px; background: #0c0b14; border: 10px solid #222; border-radius: 44px; padding: 22px; margin: 0 auto; box-shadow: 0 30px 60px rgba(0,0,0,0.4); display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-.mockup-card { width: 100%; height: 160px; border-radius: 20px; padding: 20px; color: white; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 24px rgba(0,0,0,0.3); background: linear-gradient(135deg, #4a2b82, #140d24); position: relative; overflow: hidden; }
+.mockup-card { width: 100%; height: 160px; border-radius: 20px; padding: 20px; color: white; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 24px rgba(0,0,0,0.3); background: linear-gradient(135deg, #5B3AA0, #140d24); position: relative; overflow: hidden; }
 .mockup-card-bg-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; display: none; z-index: 0; }
 .card-inner-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
 
@@ -746,5 +755,173 @@ body.light-mode .mini-stat-card { background: #fafafa; }
     text-align: center;
 }
 .toast-notification.show { transform: translateX(-50%) translateY(0); }
+
+/* --- 25. PAGES LÉGALES (mentions, CGU/CGV, confidentialité) --- */
+.legal-wrap {
+    max-width: 860px;
+    margin: 60px auto 40px;
+    padding: 0 6%;
+    animation: fadeIn 0.6s ease both;
+}
+.legal-head {
+    text-align: center;
+    margin-bottom: 50px;
+}
+.legal-head .section-tag { margin: 0 auto 18px; }
+.legal-head h1 {
+    font-size: clamp(30px, 5vw, 44px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+.legal-head .legal-updated {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+.legal-content {
+    background: rgba(255,255,255,0.01);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 48px clamp(24px, 5vw, 56px);
+}
+body.light-mode .legal-content { background: #fafafa; }
+.legal-content h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 40px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--glass-border);
+}
+.legal-content h2:first-child { margin-top: 0; }
+.legal-content h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 26px 0 10px;
+}
+.legal-content p,
+.legal-content li {
+    color: var(--text-muted);
+    font-size: 15.5px;
+    line-height: 1.75;
+    margin-bottom: 14px;
+}
+.legal-content ul { padding-left: 22px; margin-bottom: 14px; }
+.legal-content li { margin-bottom: 8px; }
+.legal-content strong { color: var(--text-main); font-weight: 600; }
+.legal-content a { color: var(--secondary-accent); text-decoration: none; }
+.legal-content a:hover { text-decoration: underline; }
+.legal-content .legal-fill {
+    background: rgba(91,58,160,0.12);
+    border: 1px dashed rgba(91,58,160,0.5);
+    border-radius: 6px;
+    padding: 1px 7px;
+    color: var(--text-main);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.legal-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+.legal-back:hover { color: var(--text-main); }
+@media (max-width: 600px) {
+    .legal-content { padding: 30px 22px; border-radius: 18px; }
+    .legal-content h2 { font-size: 19px; }
+}
 .toast-error { border-color: #ea4335; color: #ff8a80; }
 .toast-success { border-color: var(--secondary-accent); color: #a7ffeb; }
+
+/* ==========================================================================
+   --- 26. COUCHE "PRO" : ACCESSIBILITÉ, DÉFILEMENT & MICRO-INTERACTIONS ---
+   ========================================================================== */
+
+/* Focus clavier visible (a11y) — masqué à la souris pour rester élégant */
+:focus-visible {
+    outline: 2px solid var(--secondary-accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) { outline: none; }
+
+/* Sélection de texte aux couleurs de la marque */
+::selection { background: rgba(14,124,140, 0.28); color: var(--text-main); }
+
+/* Barre de défilement fine et discrète */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.14);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.30); background-clip: content-box; }
+body.light-mode * { scrollbar-color: rgba(0,0,0,0.22) transparent; }
+body.light-mode ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); background-clip: content-box; }
+
+/* Suppression du flash bleu au tap (mobile) */
+a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
+
+/* Retour tactile au clic */
+.btn:active, .btn-purple:active, .btn-teal:active, .btn-outline:active,
+.btn-main-cta:active, .empty-wallet-btn:active { transform: translateY(1px) scale(0.985); }
+
+/* Squelettes de chargement (effet shimmer) — performance perçue */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+}
+body.light-mode .skeleton { background: rgba(0,0,0,0.05); }
+.skeleton::after {
+    content: '';
+    position: absolute; inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    animation: skeletonShimmer 1.4s infinite;
+}
+@keyframes skeletonShimmer { 100% { transform: translateX(100%); } }
+.skeleton-line { height: 12px; margin-bottom: 10px; border-radius: 6px; }
+.skeleton-line.w-40 { width: 40%; }
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-80 { width: 80%; }
+.skeleton-block { height: 80px; margin-bottom: 14px; }
+
+/* Spinner circulaire réutilisable */
+.spinner-ring {
+    width: 26px; height: 26px;
+    border: 3px solid rgba(255,255,255,0.12);
+    border-top-color: var(--secondary-accent);
+    border-radius: 50%;
+    animation: spinnerRotate 0.8s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+}
+@keyframes spinnerRotate { to { transform: rotate(360deg); } }
+
+/* Respect de la préférence système "réduire les animations" (a11y) */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+    .reveal { opacity: 1 !important; transform: none !important; }
+}

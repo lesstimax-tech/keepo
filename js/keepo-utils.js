@@ -1,4 +1,4 @@
-/** Utilitaires partagés Keepo */
+﻿/** Utilitaires partagés KEEPO */
 window.KEEPO = window.KEEPO || {};
 
 KEEPO.isUuid = function (value) {

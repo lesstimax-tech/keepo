@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Installer Keepo</title>
+    <meta name="description" content="Ajoutez Keepo à votre écran d'accueil pour suivre vos points de fidélité.">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#06050d">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+        :root{
+            --bg:#06050d; --card:#0d0c18; --card2:#131122;
+            --teal:#16B8C4; --purple:#5B3AA0; --green:#3ddc84;
+            --txt:#ffffff; --sub:rgba(255,255,255,.65); --muted:rgba(255,255,255,.42);
+            --border:rgba(255,255,255,.10);
+        }
+        html,body{min-height:100%;}
+        body{
+            background:radial-gradient(120% 80% at 50% 0%, #131122 0%, var(--bg) 55%);
+            color:var(--txt);
+            font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            min-height:100dvh;padding:28px 20px calc(28px + env(safe-area-inset-bottom));
+            text-align:center;
+        }
+        .logo{display:flex;align-items:center;gap:11px;margin-bottom:30px;}
+        .logo img{width:46px;height:46px;border-radius:13px;box-shadow:0 8px 30px rgba(14,124,140,.25);}
+        .logo span{font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:25px;letter-spacing:-.5px;}
+        .card{
+            background:linear-gradient(160deg,var(--card2),var(--card));
+            border:1px solid var(--border);border-radius:26px;
+            padding:30px 24px;max-width:380px;width:100%;
+            box-shadow:0 20px 60px rgba(0,0,0,.45);
+        }
+        .pill{
+            display:inline-flex;align-items:center;gap:7px;
+            font-size:12px;font-weight:700;padding:6px 13px;border-radius:50px;margin-bottom:18px;
+        }
+        .pill.android{background:rgba(61,220,132,.13);color:var(--green);border:1px solid rgba(61,220,132,.3);}
+        .pill.ios{background:rgba(91,58,160,.13);color:var(--purple);border:1px solid rgba(91,58,160,.3);}
+        .emoji{font-size:44px;margin-bottom:12px;}
+        h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:23px;line-height:1.2;margin-bottom:10px;}
+        .lead{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:24px;}
+        .steps{display:flex;flex-direction:column;gap:14px;text-align:left;margin-bottom:24px;}
+        .step{display:flex;align-items:center;gap:13px;}
+        .step .n{
+            width:28px;height:28px;border-radius:50%;flex-shrink:0;
+            background:rgba(14,124,140,.14);border:1px solid rgba(14,124,140,.35);
+            display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--teal);font-size:13px;
+        }
+        .step .t{font-size:14px;color:rgba(255,255,255,.9);line-height:1.45;}
+        .step .t strong{color:#fff;}
+        .key{background:rgba(255,255,255,.1);border-radius:6px;padding:1px 7px;font-size:15px;}
+        .btn{
+            display:flex;align-items:center;justify-content:center;gap:9px;
+            width:100%;border:none;cursor:pointer;
+            font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;
+            padding:16px;border-radius:50px;color:#06050d;
+            background:linear-gradient(135deg,var(--purple),var(--teal));
+            box-shadow:0 10px 30px rgba(14,124,140,.28);transition:transform .12s ease,opacity .2s;
+        }
+        .btn:active{transform:scale(.97);}
+        .btn:disabled{opacity:.5;cursor:default;box-shadow:none;}
+        .btn.ghost{background:transparent;color:var(--sub);box-shadow:none;border:1px solid var(--border);margin-top:12px;}
+        .hint{font-size:12px;color:var(--muted);margin-top:18px;line-height:1.55;}
+        .hint a{color:var(--teal);text-decoration:none;}
+        .hint strong{color:rgba(255,255,255,.85);}
+        .sec-note{
+            font-size:11.5px;color:var(--sub);text-align:left;line-height:1.55;
+            background:rgba(255,255,255,.04);border:1px solid var(--border);
+            border-radius:13px;padding:11px 14px;margin-top:14px;
+        }
+        .sec-note strong{color:#fff;}
+        .hide{display:none!important;}
+        .ok-icon{color:var(--teal);font-size:46px;margin-bottom:12px;}
+        @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+        .arrow{animation:bob 1.4s ease-in-out infinite;font-size:24px;color:var(--teal);margin-top:8px;}
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="/img/icon-192.png" alt="Keepo">
+        <span>KEEPO</span>
+    </div>
+
+    <!-- ── ANDROID ── -->
+    <div id="card-android" class="card hide">
+        <span class="pill android">🤖 Android</span>
+        <div class="emoji">📲</div>
+        <h1>Installez Keepo<br>sur votre téléphone</h1>
+        <p class="lead">Gardez vos points de fidélité à portée de main. L'app s'ajoute à votre écran d'accueil — aucun téléchargement depuis un store.</p>
+        <button id="android-install-btn" class="btn"><span>📥</span> Installer l'application</button>
+        <div class="sec-note">
+            🔒 Si votre téléphone affiche un <strong>avertissement de sécurité</strong> (Play Protect ou « application inconnue »), c'est <strong>tout à fait normal</strong> — appuyez sur <strong>« Installer quand même »</strong>. KEEPO est une application web, sans danger.
+        </div>
+        <div id="android-manual" class="hint hide">
+            <div id="manual-chrome">
+                Si rien ne se passe : ouvrez le menu <strong>⋮</strong> de Chrome (en haut à droite) → <strong>« Installer l'application »</strong>.
+            </div>
+            <div id="manual-samsung" class="hide">
+                Sur <strong>Samsung Internet</strong> : menu <strong>☰</strong> (en bas) → <strong>« Ajouter la page à »</strong> → <strong>« Écran d'accueil »</strong>.<br>
+                <span style="color:var(--teal);">Astuce : ouvrez plutôt cette page dans <strong>Chrome</strong> pour une vraie application.</span>
+            </div>
+            <div style="margin-top:10px;">
+                Toujours bloqué ? Autorisez l'installation une fois : <strong>Paramètres → Applications → votre navigateur → Installer des applications inconnues → Autoriser</strong>.
+            </div>
+        </div>
+    </div>
+
+    <!-- ── iOS ── -->
+    <div id="card-ios" class="card hide">
+        <span class="pill ios">🍎 iPhone / iPad</span>
+        <div class="emoji">📲</div>
+        <h1>Ajoutez Keepo à<br>votre écran d'accueil</h1>
+        <p class="lead">En 3 secondes, depuis Safari :</p>
+        <div class="steps">
+            <div class="step"><div class="n">1</div><div class="t">Appuyez sur <strong>Partager</strong> <span class="key">⬆</span> dans la barre Safari</div></div>
+            <div class="step"><div class="n">2</div><div class="t">Faites défiler puis choisissez <strong>« Sur l'écran d'accueil »</strong></div></div>
+            <div class="step"><div class="n">3</div><div class="t">Appuyez sur <strong>« Ajouter »</strong> en haut à droite</div></div>
+        </div>
+        <div id="ios-safari-note" class="hint hide">⚠️ Ouvrez cette page dans <strong>Safari</strong> (pas Chrome ni Instagram) pour pouvoir l'installer.</div>
+        <div class="arrow">↓</div>
+        <div class="hint">Le bouton <strong>Partager</strong> se trouve en bas de Safari.</div>
+    </div>
+
+    <!-- ── DESKTOP / autre ── -->
+    <div id="card-desktop" class="card hide">
+        <span class="pill android">💻 Ordinateur</span>
+        <div class="emoji">📲</div>
+        <h1>Scannez avec votre téléphone</h1>
+        <p class="lead">Keepo s'installe sur smartphone. Ouvrez cette page sur votre téléphone (ou scannez le QR Code à la caisse) pour l'ajouter à votre écran d'accueil.</p>
+        <button id="desktop-install-btn" class="btn hide"><span>📥</span> Installer sur cet ordinateur</button>
+        <a class="btn ghost" href="/dashboard-client">Ouvrir Keepo dans le navigateur</a>
+    </div>
+
+    <!-- ── DÉJÀ INSTALLÉ / SUCCÈS ── -->
+    <div id="card-done" class="card hide">
+        <div class="ok-icon">✓</div>
+        <h1>Keepo est installé&nbsp;!</h1>
+        <p class="lead">Retrouvez l'icône Keepo sur votre écran d'accueil. Ouvrez-la pour accéder à votre carte de fidélité.</p>
+        <a class="btn" href="/dashboard-client">Ouvrir Keepo</a>
+    </div>
+
+    <script>
+        (function () {
+            // Enregistre le service worker → indispensable pour rendre la PWA installable
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(function () {});
+            }
+
+            var params  = new URLSearchParams(location.search);
+            var forced  = params.get('install'); // 'android' | 'ios' | null
+            var ua      = navigator.userAgent || '';
+            var isIOS   = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document);
+            var isAndro = /Android/i.test(ua);
+            var isSamsung = /SamsungBrowser/i.test(ua); // Samsung Internet : menu différent
+            var inSafari= /Safari/i.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS|GSA|mercury|FBAN|FBAV|Instagram|Line/i.test(ua);
+            var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            function show(id) {
+                ['card-android','card-ios','card-desktop','card-done'].forEach(function (c) {
+                    document.getElementById(c).classList.toggle('hide', c !== id);
+                });
+            }
+
+            // Déjà installé / ouvert en mode app
+            if (standalone) { show('card-done'); return; }
+
+            // Choix de la plateforme : paramètre prioritaire, sinon détection
+            var platform = forced;
+            if (platform !== 'android' && platform !== 'ios') {
+                platform = isIOS ? 'ios' : (isAndro ? 'android' : 'desktop');
+            }
+
+            // ── iOS ──
+            if (platform === 'ios') {
+                show('card-ios');
+                if (isIOS && !inSafari) document.getElementById('ios-safari-note').classList.remove('hide');
+                return;
+            }
+
+            // ── Android (et desktop Chrome installable) ──
+            var deferred = null;
+            var installed = false;
+            var card  = platform === 'desktop' ? 'card-desktop' : 'card-android';
+            var btnId = platform === 'desktop' ? 'desktop-install-btn' : 'android-install-btn';
+            show(card);
+
+            // Samsung Internet : afficher les instructions manuelles spécifiques
+            // (menu ☰ → Ajouter la page à → Écran d'accueil) au lieu de celles de Chrome.
+            if (platform === 'android' && isSamsung) {
+                var mc = document.getElementById('manual-chrome');
+                var ms = document.getElementById('manual-samsung');
+                if (mc) mc.classList.add('hide');
+                if (ms) ms.classList.remove('hide');
+            }
+
+            window.addEventListener('beforeinstallprompt', function (e) {
+                e.preventDefault();
+                deferred = e;
+                var b = document.getElementById(btnId);
+                if (b) b.classList.remove('hide');
+            });
+
+            window.addEventListener('appinstalled', function () {
+                installed = true;
+                show('card-done');
+            });
+
+            var btn = document.getElementById(btnId);
+            if (btn) {
+                btn.addEventListener('click', async function () {
+                    if (!deferred) {
+                        // L'événement n'a pas (encore) été capté → instructions manuelles
+                        var manual = document.getElementById('android-manual');
+                        if (manual) manual.classList.remove('hide');
+                        return;
+                    }
+                    deferred.prompt();
+                    try {
+                        var choice = await deferred.userChoice;
+                        if (choice && choice.outcome === 'accepted') {
+                            // appinstalled prendra le relais ; sécurité si l'event ne se déclenche pas
+                            setTimeout(function () { if (!installed) show('card-done'); }, 1200);
+                        }
+                    } catch (_) {}
+                    deferred = null;
+                });
+            }
+
+            // Sur Android, si beforeinstallprompt ne se déclenche pas (déjà installé,
+            // critères non remplis, navigateur non compatible) → afficher l'aide manuelle.
+            if (platform === 'android') {
+                setTimeout(function () {
+                    if (!deferred && !installed) {
+                        var manual = document.getElementById('android-manual');
+                        if (manual) manual.classList.remove('hide');
+                    }
+                }, 2500);
+            }
+        })();
+    </script>
+</body>
+</html>

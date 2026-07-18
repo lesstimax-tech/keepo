@@ -1,4 +1,4 @@
-# 🤖 Assistant IA Keepo — Guide de déploiement
+﻿# 🤖 Assistant IA KEEPO — Guide de déploiement
 
 Cette Edge Function alimente le chat IA dans `Aide & Support` du dashboard commerçant.
 Elle utilise **Google Gemini 2.0 Flash** (gratuit jusqu'à 1500 requêtes/jour).
@@ -28,7 +28,7 @@ npm i -g supabase
 ## 3️⃣ Lier votre projet local au projet Supabase
 
 ```bash
-cd G:/Keepo
+cd G:/KEEPO
 
 # Connexion (ouvre votre navigateur)
 supabase login
@@ -48,7 +48,7 @@ supabase secrets set GEMINI_API_KEY=AIzaSyXXXX...VOTRE_CLE
 ## 5️⃣ Déployer la fonction
 
 ```bash
-supabase functions deploy keepo-ai-support --no-verify-jwt
+supabase functions deploy KEEPO-ai-support --no-verify-jwt
 ```
 
 Le flag `--no-verify-jwt` permet aux utilisateurs anonymes d'utiliser le chat (le frontend envoie déjà l'auth Bearer quand l'utilisateur est connecté, et la sécurité repose sur la clé Gemini cachée).
@@ -62,7 +62,7 @@ La réponse arrive en ~1-2 secondes.
 
 Si vous modifiez `index.ts`, redéployez avec :
 ```bash
-supabase functions deploy keepo-ai-support --no-verify-jwt
+supabase functions deploy KEEPO-ai-support --no-verify-jwt
 ```
 
 ## 📊 Suivi de la consommation
@@ -84,7 +84,7 @@ Puis redéployez.
 ## 🐛 Logs et debug
 
 ```bash
-supabase functions logs keepo-ai-support --tail
+supabase functions logs KEEPO-ai-support --tail
 ```
 
 Vous voyez en temps réel les requêtes entrantes et erreurs.

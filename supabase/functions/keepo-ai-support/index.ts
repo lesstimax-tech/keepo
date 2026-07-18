@@ -1,5 +1,5 @@
-// ════════════════════════════════════════════════════════════════
-//  Keepo — Edge Function : Assistant IA Support (Gemini Flash)
+﻿// ════════════════════════════════════════════════════════════════
+//  KEEPO — Edge Function : Assistant IA Support (Gemini Flash)
 // ════════════════════════════════════════════════════════════════
 //
 //  Déploiement :
@@ -10,7 +10,7 @@
 //    5. Stockez-la comme secret :
 //         `supabase secrets set GEMINI_API_KEY=AIza...`
 //    6. Déployez :
-//         `supabase functions deploy keepo-ai-support --no-verify-jwt`
+//         `supabase functions deploy KEEPO-ai-support --no-verify-jwt`
 //
 //  La clé GEMINI_API_KEY reste côté serveur, jamais exposée au client.
 // ════════════════════════════════════════════════════════════════
@@ -30,7 +30,7 @@ const CORS_HEADERS = {
 };
 
 // Prompt système — définit la personnalité et les limites de l'assistant
-const SYSTEM_PROMPT = `Tu es l'Assistant Keepo, le support officiel pour les commerçants utilisant Keepo, une plateforme de fidélité digitale française.
+const SYSTEM_PROMPT = `Tu es l'Assistant KEEPO, le support officiel pour les commerçants utilisant KEEPO, une plateforme de fidélité digitale française.
 
 CONTEXTE PRODUIT :
 - Les commerçants gèrent un programme de fidélité où leurs clients cumulent des points en achetant.
@@ -48,9 +48,9 @@ TON RÔLE :
 - Utilise des listes numérotées pour les procédures pas-à-pas.
 - Tu peux utiliser **gras** pour les mots clés et \`code\` pour les noms de boutons/sections.
 - Si la question concerne une fonctionnalité Pro Scale et que l'utilisateur est en Essential, mentionne-le.
-- Si la question est hors sujet (politique, médical, code informatique étranger à Keepo), redirige poliment vers l'utilisation de Keepo.
+- Si la question est hors sujet (politique, médical, code informatique étranger à KEEPO), redirige poliment vers l'utilisation de KEEPO.
 - N'invente JAMAIS de fonctionnalités qui n'existent pas. En cas de doute, suggère "Ouvrir un ticket" pour le support humain.
-- Si on te demande quel modèle d'IA tu utilises, réponds : "Je suis l'Assistant Keepo, un outil interne basé sur de l'IA."`;
+- Si on te demande quel modèle d'IA tu utilises, réponds : "Je suis l'Assistant KEEPO, un outil interne basé sur de l'IA."`;
 
 Deno.serve(async (req) => {
   // Préflight CORS

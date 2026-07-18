@@ -1,60 +1,61 @@
-<!-- dashboard-client.html -->
+﻿<!-- dashboard-client.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Keepo | Portefeuille Client</title>
+    <title>KEEPO | Portefeuille Client</title>
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
     <link rel="icon" href="/img/icon-512.png" type="image/png" sizes="512x512">
     <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#00e8cc">
+    <meta name="theme-color" content="#FBFBFD">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Keepo">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KEEPO">
     <link rel="stylesheet" href="css/style.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <style>
         /* ═══════════════════════════════════════
            TOKENS & RESET
         ═══════════════════════════════════════ */
         :root {
-            --bg: #06050d;
-            --bg-2: #0d0b18;
-            --bg-3: #131122;
-            --card-bg: rgba(18, 15, 32, 0.82);
-            --glass: rgba(255,255,255,0.055);
-            --glass-2: rgba(255,255,255,0.10);
-            --border: rgba(255,255,255,0.07);
-            --border-2: rgba(255,255,255,0.13);
+            --bg: #FBFBFD;
+            --bg-2: #F3F3F7;
+            --bg-3: #FFFFFF;
+            --card-bg: #FFFFFF;
+            --glass: rgba(17,24,39,0.04);
+            --glass-2: rgba(17,24,39,0.07);
+            --border: rgba(17,24,39,0.09);
+            --border-2: rgba(17,24,39,0.14);
 
-            --text: #f2efff;
-            --muted: #635f84;
-            --sub: #9490b8;
+            --text: #14141B;
+            --muted: #6B6A78;
+            --sub: #46455A;
 
-            --cyan: #00e8cc;
-            --cyan-glow: rgba(0,232,204,0.22);
-            --cyan-soft: rgba(0,232,204,0.08);
-            --pink: #ff4d82;
-            --pink-glow: rgba(255,77,130,0.22);
-            --violet: #8b7cf8;
-            --violet-glow: rgba(139,124,248,0.2);
-            --gold: #ffc34d;
-            --gold-glow: rgba(255,195,77,0.2);
-            --green: #22d47a;
+            --cyan: #0E7C8C;
+            --cyan-glow: rgba(14,124,140,0.18);
+            --cyan-soft: rgba(14,124,140,0.07);
+            --pink: #E0245E;
+            --pink-glow: rgba(224,36,94,0.18);
+            --violet: #5B3AA0;
+            --violet-glow: rgba(91,58,160,0.18);
+            --gold: #B8860B;
+            --gold-glow: rgba(184,134,11,0.18);
+            --green: #15A34A;
 
             --nav-h: 76px;
             --r: 22px;
@@ -68,7 +69,7 @@
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Instrument Sans', sans-serif;
             min-height: 100vh;
             min-height: 100dvh;
             overflow-x: hidden;
@@ -80,8 +81,8 @@
             content: '';
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background:
-                radial-gradient(ellipse 70% 50% at 15% 5%, rgba(139,124,248,.1) 0%, transparent 55%),
-                radial-gradient(ellipse 55% 40% at 85% 85%, rgba(0,232,204,.07) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 50% at 15% 5%, rgba(91,58,160,.1) 0%, transparent 55%),
+                radial-gradient(ellipse 55% 40% at 85% 85%, rgba(14,124,140,.07) 0%, transparent 55%),
                 radial-gradient(ellipse 45% 35% at 50% 50%, rgba(255,77,130,.04) 0%, transparent 65%);
         }
 
@@ -102,13 +103,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0 16px;
+            /* Respecte la barre d'état iOS (notch/encoche) : le header ne passe
+               plus sous l'heure / la batterie. */
+            padding: calc(16px + env(safe-area-inset-top, 0px)) 0 16px;
             position: sticky; top: 0; z-index: 50;
         }
         header::before {
             content: '';
-            position: absolute; inset: -4px -18px 0;
-            background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+            position: absolute; left: -18px; right: -18px; bottom: 0;
+            top: calc(-1 * env(safe-area-inset-top, 0px) - 4px);
+            background: linear-gradient(to bottom, var(--bg) 72%, transparent);
             pointer-events: none;
             z-index: -1;
         }
@@ -120,10 +124,12 @@
             border-radius: 50px;
             border: 1px solid var(--border);
             backdrop-filter: blur(12px);
-            cursor: default;
-            transition: border-color .2s;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(20,20,27,.04);
+            transition: border-color .2s, transform .2s, box-shadow .2s;
         }
-        .user-badge:hover { border-color: var(--border-2); }
+        .user-badge:hover { border-color: rgba(14,124,140,.35); transform: translateY(-1px); box-shadow: 0 6px 16px -6px rgba(20,20,27,.12); }
+        .user-badge:active { transform: scale(.97); }
 
         .user-avatar {
             width: 32px; height: 32px;
@@ -131,7 +137,7 @@
             background-size: cover; background-position: center;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 13px; font-weight: 800;
             flex-shrink: 0; overflow: hidden;
             box-shadow: 0 0 12px var(--violet-glow);
@@ -148,7 +154,7 @@
             border-radius: 50px;
             border: 1px solid transparent;
             transition: all .2s;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Instrument Sans', sans-serif;
         }
         .btn-logout:hover { color: var(--pink); border-color: rgba(255,77,130,.2); background: rgba(255,77,130,.05); }
 
@@ -163,7 +169,7 @@
         }
 
         .view-title {
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 26px; font-weight: 800;
             letter-spacing: -.5px;
             margin-bottom: 4px;
@@ -184,11 +190,12 @@
             padding: 12px 14px;
             text-align: center;
             backdrop-filter: blur(10px);
-            transition: border-color .2s;
+            box-shadow: 0 1px 2px rgba(20,20,27,.04);
+            transition: border-color .2s, transform .25s cubic-bezier(.4,0,.2,1);
         }
-        .stat-pill:hover { border-color: var(--border-2); }
+        .stat-pill:hover { border-color: rgba(14,124,140,.30); transform: translateY(-2px); }
         .stat-pill-val {
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 20px; font-weight: 800;
             color: var(--cyan);
             line-height: 1;
@@ -205,51 +212,52 @@
             padding: 22px;
             position: relative; overflow: hidden;
             cursor: pointer;
+            color: #fff;
             transition: transform .28s cubic-bezier(.4,0,.2,1), box-shadow .28s;
-            border: 1px solid var(--border);
-            background: linear-gradient(135deg, #15122600 0%, #0f0d1a 100%);
-            background-color: #13112080;
+            border: 1px solid rgba(255,255,255,.09);
+            background: linear-gradient(140deg, #1C1733 0%, #131125 46%, #0E1F26 100%);
+            box-shadow: 0 2px 4px rgba(20,20,27,.10), 0 18px 40px -18px rgba(20,20,27,.40);
         }
         .loyalty-card::before {
             content: '';
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            position: absolute; inset: 0;
             background: linear-gradient(135deg,
-                rgba(139,124,248,.06) 0%,
-                transparent 40%,
-                rgba(0,232,204,.04) 100%);
+                rgba(91,58,160,.16) 0%,
+                transparent 45%,
+                rgba(22,184,196,.08) 100%);
             pointer-events: none;
         }
         .loyalty-card::after {
             content: '';
             position: absolute; top: -60px; right: -60px;
-            width: 160px; height: 160px;
+            width: 180px; height: 180px;
             background: radial-gradient(circle, var(--card-glow, var(--cyan-glow)) 0%, transparent 70%);
             border-radius: 50%; pointer-events: none;
             transition: opacity .3s;
         }
-        .loyalty-card:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 20px 50px rgba(0,0,0,.4); border-color: var(--border-2); }
-        .loyalty-card:active { transform: translateY(-1px) scale(1); }
+        .loyalty-card:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 4px 8px rgba(20,20,27,.12), 0 28px 60px -20px rgba(20,20,27,.5); border-color: rgba(255,255,255,.16); }
+        .loyalty-card:active { transform: translateY(-1px) scale(.985); }
 
         .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
         .card-logo-chip {
             width: 40px; height: 40px; border-radius: 12px;
             background: linear-gradient(135deg, var(--card-color1, var(--violet)), var(--card-color2, var(--cyan)));
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+            font-family: 'Bricolage Grotesque', sans-serif; font-size: 16px; font-weight: 800;
             color: white; flex-shrink: 0;
             box-shadow: 0 4px 14px var(--card-glow, var(--violet-glow));
         }
         .card-points-block { text-align: right; }
         .card-points-num {
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 28px; font-weight: 800;
             color: var(--card-accent, var(--cyan));
             line-height: 1;
         }
-        .card-points-lbl { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-top: 2px; }
+        .card-points-lbl { font-size: 10px; color: rgba(255,255,255,.5); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-top: 2px; }
 
         .merchant-name {
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 17px; font-weight: 700;
             letter-spacing: -.3px;
             margin-bottom: 12px;
@@ -257,8 +265,8 @@
 
         /* progress bar inside card */
         .card-progress-wrap { margin-bottom: 14px; }
-        .card-progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 6px; }
-        .card-progress-track { height: 5px; background: rgba(255,255,255,.06); border-radius: 6px; overflow: hidden; }
+        .card-progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,.55); margin-bottom: 6px; }
+        .card-progress-track { height: 5px; background: rgba(255,255,255,.10); border-radius: 6px; overflow: hidden; }
         .card-progress-fill {
             height: 100%; border-radius: 6px;
             background: linear-gradient(90deg, var(--card-accent, var(--cyan)), var(--card-accent2, var(--violet)));
@@ -287,7 +295,7 @@
         .tier-badge {
             display: inline-block; padding: 4px 10px; border-radius: 50px;
             font-size: 9px; font-weight: 900; letter-spacing: 0.8px;
-            font-family: 'Syne', sans-serif; margin-bottom: 6px;
+            font-family: 'Bricolage Grotesque', sans-serif; margin-bottom: 6px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .tier-bronze { background: linear-gradient(135deg, #cd8158, #a05f3c); color: #fff; }
@@ -298,33 +306,21 @@
         .wheel-container {
             width: 220px; height: 220px; margin: 18px auto; position: relative;
         }
-        .wheel-disc {
-            width: 100%; height: 100%; border-radius: 50%; position: relative;
-            background: conic-gradient(
-                #7c6af7 0deg 60deg, #00e8cc 60deg 120deg,
-                #ffc34d 120deg 180deg, #ff8a5c 180deg 240deg,
-                #c5b8ff 240deg 300deg, #3ee36c 300deg 360deg
-            );
-            box-shadow: 0 0 40px rgba(124,106,247,0.4), inset 0 0 0 6px rgba(255,255,255,0.06);
+        #wheel-canvas {
+            width: 220px; height: 220px; border-radius: 50%; display: block;
+            box-shadow: 0 0 40px rgba(91,58,160,0.4);
             transition: transform 4s cubic-bezier(.17,.67,.3,1);
         }
-        .wheel-disc.spinning { transform: rotate(var(--target-rotation, 1080deg)); }
         .wheel-arrow {
             position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
             width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
             border-top: 24px solid #fff; z-index: 5;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
         }
-        .wheel-center {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 70px; height: 70px; background: #0d0c18; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; box-shadow: inset 0 0 0 3px #00e8cc;
-        }
         .wheel-result {
             text-align: center; padding: 16px; margin-top: 12px;
-            background: linear-gradient(135deg, rgba(124,106,247,0.1), rgba(0,232,204,0.08));
-            border: 1px solid rgba(0,232,204,0.3); border-radius: 16px;
+            background: linear-gradient(135deg, rgba(91,58,160,0.1), rgba(14,124,140,0.08));
+            border: 1px solid rgba(14,124,140,0.3); border-radius: 16px;
             display: none;
         }
         .wheel-result.show { display: block; animation: wheelResultIn .4s; }
@@ -338,7 +334,7 @@
             cursor: pointer; transition: all .15s; width: 100%;
             color: #fff; font-family: inherit; font-size: 13px; text-align: left;
         }
-        .card-detail-action:hover { background: rgba(124,106,247,0.1); border-color: rgba(124,106,247,0.3); }
+        .card-detail-action:hover { background: rgba(91,58,160,0.1); border-color: rgba(91,58,160,0.3); }
         .card-detail-action.disabled { opacity: 0.5; cursor: not-allowed; }
         .card-detail-action-icon { font-size: 18px; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .card-detail-action-text { flex: 1; }
@@ -346,16 +342,16 @@
 
         /* Referral box on profile */
         .referral-box {
-            background: linear-gradient(135deg, rgba(124,106,247,0.08), rgba(0,232,204,0.06));
-            border: 1px solid rgba(124,106,247,0.25); border-radius: 16px;
+            background: linear-gradient(135deg, rgba(91,58,160,0.08), rgba(14,124,140,0.06));
+            border: 1px solid rgba(91,58,160,0.25); border-radius: 16px;
             padding: 16px; margin-bottom: 14px;
         }
         .referral-code {
-            font-family: 'Syne', sans-serif; font-weight: 900; font-size: 24px;
-            letter-spacing: 4px; color: #fff; text-align: center;
-            background: rgba(0,0,0,0.4); padding: 12px;
+            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900; font-size: 24px;
+            letter-spacing: 4px; color: #5B3AA0; text-align: center;
+            background: rgba(91,58,160,0.07); padding: 12px;
             border-radius: 12px; margin: 10px 0;
-            border: 2px dashed rgba(124,106,247,0.4);
+            border: 2px dashed rgba(91,58,160,0.4);
         }
 
         /* ─── empty wallet ─── */
@@ -365,20 +361,22 @@
             border-radius: var(--r);
         }
         .empty-wallet-icon {
-            width: 72px; height: 72px; border-radius: 20px;
-            background: var(--cyan-soft); border: 1px solid rgba(0,232,204,.15);
+            width: 72px; height: 72px; border-radius: 22px;
+            background: linear-gradient(135deg, rgba(91,58,160,.10), rgba(22,184,196,.12));
+            border: 1px solid rgba(91,58,160,.15);
             display: flex; align-items: center; justify-content: center;
             font-size: 28px; margin: 0 auto 18px;
+            color: var(--cyan);
         }
-        .empty-wallet h3 { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; margin-bottom:8px; }
+        .empty-wallet h3 { font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:800; margin-bottom:8px; }
         .empty-wallet p { color:var(--muted); font-size:13px; line-height:1.6; max-width:240px; margin:0 auto 20px; }
         .empty-wallet-btn {
             display: inline-flex; align-items: center; gap: 7px;
-            background: var(--cyan); color: #06050d;
+            background: var(--cyan); color: #fff;
             border: none; border-radius: 50px;
             padding: 11px 22px; font-weight: 700; font-size: 13px;
             cursor: pointer; transition: all .2s;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Instrument Sans', sans-serif;
         }
         .empty-wallet-btn:hover { box-shadow: 0 8px 24px var(--cyan-glow); transform: translateY(-2px); }
 
@@ -429,8 +427,8 @@
         .scan-hint-icon {
             flex-shrink: 0;
             width: 38px; height: 38px;
-            background: rgba(0,232,204,0.1);
-            border: 1px solid rgba(0,232,204,0.2);
+            background: rgba(14,124,140,0.1);
+            border: 1px solid rgba(14,124,140,0.2);
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             color: var(--cyan); font-size: 15px;
@@ -465,7 +463,7 @@
             background-size: cover; background-position: center;
             border-radius: 50%; margin: 0 auto 14px;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800;
+            font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800;
             box-shadow: 0 0 28px var(--violet-glow);
             position: relative; overflow: hidden; cursor: pointer;
             transition: transform .2s;
@@ -477,7 +475,7 @@
             font-family: 'Font Awesome 6 Free'; font-weight: 900;
             position: absolute; bottom: 2px; right: 2px;
             width: 26px; height: 26px;
-            background: var(--cyan); color: #06050d;
+            background: var(--cyan); color: #fff;
             border-radius: 50%;
             border: 2px solid var(--bg-2);
             display: flex; align-items: center; justify-content: center;
@@ -486,11 +484,11 @@
         }
         .profile-avatar-big:hover::after { transform: scale(1.1); }
         @keyframes avatar-ring { 0%,100%{transform:scale(1);opacity:.3} 50%{transform:scale(1.08);opacity:.15} }
-        .profile-name { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin-bottom:4px; }
+        .profile-name { font-family:'Bricolage Grotesque',sans-serif; font-size:20px; font-weight:800; margin-bottom:4px; }
         .profile-status-badge {
             display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(0,232,204,.08); color: var(--cyan);
-            border: 1px solid rgba(0,232,204,.18);
+            background: rgba(14,124,140,.08); color: var(--cyan);
+            border: 1px solid rgba(14,124,140,.18);
             padding: 4px 12px; border-radius: 50px;
             font-size: 11px; font-weight: 700;
         }
@@ -513,7 +511,7 @@
             display: flex; align-items: center; gap: 12px;
             cursor: pointer; transition: all .2s;
             width: 100%; text-align: left;
-            font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text);
+            font-family: 'Instrument Sans', sans-serif; color: var(--text);
         }
         .profile-action-btn:hover { background: var(--glass); border-color: var(--border-2); }
         .profile-action-btn i:first-child { font-size: 14px; color: var(--sub); width: 18px; text-align: center; }
@@ -534,16 +532,32 @@
             padding: 0;
         }
         .popup-card {
-            background: #12101e;
-            border: 1px solid var(--border-2);
+            background: linear-gradient(170deg, #171430, #100E1E 55%);
+            border: 1px solid rgba(255,255,255,.10);
             border-radius: 32px 32px 0 0;
             width: 100%; max-width: 500px;
-            padding: 10px 28px 40px;
+            padding: 10px 28px calc(40px + env(safe-area-inset-bottom, 0px));
             text-align: center;
+            color: #fff;
             box-shadow: 0 -20px 60px rgba(0,0,0,.5);
             animation: sheetUp .38s cubic-bezier(.4,0,.2,1);
             position: relative;
         }
+        /* Le sheet est volontairement sombre (le QR ressort) : on force des
+           encres claires pour tout ce qui hérite du thème clair de la page. */
+        .popup-card .sheet-handle { background: rgba(255,255,255,.22); }
+        .popup-card .modal-merchant-chip { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.75); }
+        .popup-card .modal-sub { color: rgba(255,255,255,.55); }
+        .popup-card .modal-stat-box { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.10); }
+        .popup-card .modal-stat-label { color: rgba(255,255,255,.45); }
+        .popup-card .modal-close-btn { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.75); }
+        .popup-card .modal-close-btn:hover { background: rgba(255,255,255,.10); color: #fff; }
+        .popup-card .reward-row { background: rgba(255,255,255,.045); border-color: rgba(255,255,255,.10); }
+        .popup-card .reward-row.unlocked { border-color: rgba(22,184,196,.40); background: rgba(22,184,196,.08); }
+        .popup-card .reward-row-pts { color: rgba(255,255,255,.5); }
+        .popup-card .modal-stat-val,
+        .popup-card .rewards-pts-chip { color: #4ED3DE; }
+        .popup-card .rewards-pts-chip { background: rgba(22,184,196,.10); border-color: rgba(22,184,196,.28); }
         @keyframes sheetUp {
             from { transform: translateY(100%); opacity: 0; }
             to   { transform: translateY(0); opacity: 1; }
@@ -560,7 +574,7 @@
             font-size: 12px; color: var(--sub); margin-bottom: 4px;
         }
         #modal-merchant-name {
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 22px; font-weight: 800;
             margin-bottom: 4px;
         }
@@ -582,13 +596,13 @@
             border-radius: var(--r-sm); padding: 12px;
         }
         .modal-stat-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-        .modal-stat-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--cyan); }
+        .modal-stat-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 800; color: var(--cyan); }
 
         .modal-close-btn {
             width: 100%; background: var(--glass); border: 1px solid var(--border);
             color: var(--sub); border-radius: var(--r-sm); padding: 13px;
             font-size: 13px; font-weight: 700; cursor: pointer;
-            transition: all .2s; font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all .2s; font-family: 'Instrument Sans', sans-serif;
         }
         .modal-close-btn:hover { background: var(--glass-2); color: var(--text); }
 
@@ -598,9 +612,11 @@
         .bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 100%; max-width: 500px;
-            background: rgba(10, 8, 20, 0.9);
-            backdrop-filter: blur(24px) saturate(1.5);
+            background: rgba(255, 255, 255, 0.86);
+            backdrop-filter: blur(24px) saturate(1.6);
+            -webkit-backdrop-filter: blur(24px) saturate(1.6);
             border-top: 1px solid var(--border);
+            box-shadow: 0 -8px 30px -12px rgba(20,20,27,.10);
             display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
             height: var(--nav-h);
             padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -614,23 +630,24 @@
             background: var(--glass); border: 1px solid var(--border);
             color: var(--muted); padding: 7px 14px; border-radius: 50px;
             font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;
-            font-family: 'Plus Jakarta Sans', sans-serif; transition: all .2s;
+            font-family: 'Instrument Sans', sans-serif; transition: all .2s;
         }
-        .hist-filter-btn.active { background: rgba(0,232,204,0.1); border-color: rgba(0,232,204,0.35); color: var(--cyan); }
+        .hist-filter-btn.active { background: rgba(14,124,140,0.1); border-color: rgba(14,124,140,0.35); color: var(--cyan); }
         .hist-filter-btn:hover:not(.active) { background: var(--glass-2); color: var(--text); }
 
         .tx-item {
             display: flex; align-items: center; gap: 12px;
             padding: 12px 14px; border-radius: var(--r-sm);
-            border: 1px solid var(--border); background: var(--glass);
-            margin-bottom: 8px; transition: border-color .2s;
+            border: 1px solid var(--border); background: var(--card-bg);
+            box-shadow: 0 1px 2px rgba(20,20,27,.04);
+            margin-bottom: 8px; transition: border-color .2s, transform .2s;
         }
-        .tx-item:hover { border-color: var(--border-2); }
+        .tx-item:hover { border-color: rgba(14,124,140,.28); transform: translateX(2px); }
         .tx-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
         .tx-info { flex: 1; min-width: 0; }
         .tx-merchant { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tx-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
-        .tx-pts { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; white-space: nowrap; flex-shrink: 0; }
+        .tx-pts { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 16px; white-space: nowrap; flex-shrink: 0; }
 
         /* ─── QR countdown ─── */
         .qr-countdown { font-size:10px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-top:-10px; margin-bottom:10px; text-align:center; }
@@ -643,37 +660,34 @@
             cursor: pointer;
             transition: color .25s;
             text-transform: uppercase; letter-spacing: .5px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Instrument Sans', sans-serif;
             position: relative;
         }
-        .nav-item::before {
-            content: '';
-            position: absolute; top: 0; left: 30%; right: 30%;
-            height: 2px; border-radius: 0 0 4px 4px;
-            background: var(--cyan);
-            transform: scaleX(0);
-            transition: transform .25s cubic-bezier(.4,0,.2,1);
-        }
+        .nav-item::before { display: none; } /* ancien indicateur (ligne flottante en haut) retiré */
         .nav-item.active { color: var(--cyan); }
-        .nav-item.active::before { transform: scaleX(1); }
+        .nav-item:active .nav-icon { transform: scale(.88); }
         .nav-icon {
-            font-size: 19px;
-            transition: transform .25s cubic-bezier(.4,0,.2,1);
+            font-size: 18px;
+            width: 46px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 15px;
+            transition: transform .25s cubic-bezier(.4,0,.2,1), background .25s ease;
         }
-        .nav-item.active .nav-icon { transform: translateY(-2px); }
+        .nav-item.active .nav-icon { transform: translateY(-1px); background: rgba(14,124,140,0.12); }
 
         /* ─── center scan button ─── */
         .nav-item.nav-scan-btn {
             position: relative; overflow: visible;
         }
         .nav-scan-bubble {
-            width: 50px; height: 50px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--violet), #16B8C4);
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: #06050d;
-            box-shadow: 0 4px 20px var(--cyan-glow);
+            font-size: 20px; color: #fff;
+            border: 3px solid rgba(255,255,255,.9);
+            box-shadow: 0 6px 20px -4px rgba(91,58,160,.45);
             transition: transform .25s, box-shadow .25s;
-            margin-bottom: 2px;
+            margin-top: -14px; margin-bottom: 2px;
         }
         .nav-item.nav-scan-btn.active .nav-scan-bubble,
         .nav-item.nav-scan-btn:hover .nav-scan-bubble {
@@ -688,16 +702,17 @@
            TOAST
         ═══════════════════════════════════════ */
         #toast-root {
-            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 50%; transform: translateX(-50%);
             z-index: 9999; width: calc(100% - 36px); max-width: 460px;
             display: flex; flex-direction: column; gap: 8px; pointer-events: none;
         }
         .toast {
-            background: rgba(16,13,26,.97);
-            border: 1px solid var(--border-2);
+            background: rgba(18,15,30,.96);
+            border: 1px solid rgba(255,255,255,.12);
             border-radius: 16px; padding: 12px 16px;
             display: flex; align-items: center; gap: 11px;
-            box-shadow: 0 12px 40px rgba(0,0,0,.5);
+            color: #fff;
+            box-shadow: 0 12px 40px rgba(20,20,27,.35);
             animation: toastIn .35s cubic-bezier(.4,0,.2,1);
             pointer-events: all; backdrop-filter: blur(20px);
         }
@@ -710,8 +725,8 @@
         .toast.info i { color:var(--cyan); }
         .toast.warning i { color:var(--gold); }
         .toast-content { flex:1; }
-        .toast-title { font-size:13px; font-weight:700; font-family:'Syne',sans-serif; }
-        .toast-msg { font-size:11px; color:var(--muted); margin-top:2px; }
+        .toast-title { font-size:13px; font-weight:700; font-family:'Bricolage Grotesque',sans-serif; }
+        .toast-msg { font-size:11px; color:rgba(255,255,255,.6); margin-top:2px; }
 
         /* ═══════════════════════════════════════
            REWARDS SECTION (inside profile/wallet)
@@ -720,7 +735,7 @@
             font-size:10px; font-weight:700; color:var(--muted);
             text-transform:uppercase; letter-spacing:.8px;
             margin-bottom:12px;
-            font-family:'Plus Jakarta Sans',sans-serif;
+            font-family:'Instrument Sans',sans-serif;
         }
 
         /* ═══════════════════════════════════════
@@ -732,7 +747,7 @@
             padding: 6px 13px; font-size: 11px; font-weight: 700;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 5px;
-            font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap;
+            font-family: 'Instrument Sans', sans-serif; white-space: nowrap;
         }
         .btn-see-rewards:hover { background: rgba(255,195,77,.1); border-color: rgba(255,195,77,.5); }
 
@@ -740,20 +755,21 @@
             display: flex; align-items: center; gap: 12px;
             padding: 13px 14px; border-radius: var(--r-sm);
             margin-bottom: 9px; border: 1px solid var(--border);
-            background: var(--glass); transition: border-color .2s;
+            background: var(--card-bg); box-shadow: 0 1px 2px rgba(20,20,27,.04);
+            transition: border-color .2s;
         }
-        .reward-row.unlocked { border-color: rgba(0,232,204,.25); background: rgba(0,232,204,.04); }
+        .reward-row.unlocked { border-color: rgba(14,124,140,.25); background: rgba(14,124,140,.04); }
         .reward-row-icon { font-size: 20px; flex-shrink: 0; }
         .reward-row-info { flex: 1; min-width: 0; }
         .reward-row-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .reward-row-pts { font-size: 11px; color: var(--muted); }
 
         .reward-claim-btn {
-            background: var(--cyan); color: #06050d;
+            background: var(--cyan); color: #fff;
             border: none; border-radius: 50px; padding: 7px 14px;
             font-size: 11px; font-weight: 700; cursor: pointer;
             transition: all .2s; white-space: nowrap; flex-shrink: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Instrument Sans', sans-serif;
         }
         .reward-claim-btn:hover { box-shadow: 0 4px 14px var(--cyan-glow); transform: translateY(-1px); }
 
@@ -764,7 +780,7 @@
 
         .rewards-pts-chip {
             display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(0,232,204,.08); border: 1px solid rgba(0,232,204,.18);
+            background: rgba(14,124,140,.08); border: 1px solid rgba(14,124,140,.18);
             border-radius: 50px; padding: 4px 12px;
             font-size: 11px; font-weight: 700; color: var(--cyan);
             margin-bottom: 16px;
@@ -773,7 +789,53 @@
         /* scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(20,20,27,.18); border-radius: 4px; }
+
+        /* ─── skeleton de chargement (portefeuille) ─── */
+        .skeleton {
+            position: relative; overflow: hidden;
+            background: linear-gradient(140deg, #ECECF2, #E4E4EC);
+            border: 1px solid var(--border);
+        }
+        .skeleton::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.75) 50%, transparent 70%);
+            transform: translateX(-100%);
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        @keyframes shimmer { to { transform: translateX(100%); } }
+
+        /* ─── bannière d'installation PWA (après scan du QR commerçant) ─── */
+        #install-banner {
+            position: fixed; left: 50%; transform: translateX(-50%);
+            bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 14px);
+            width: calc(100% - 28px); max-width: 464px; z-index: 950;
+            background: linear-gradient(170deg, #171430, #100E1E);
+            border: 1px solid rgba(255,255,255,.14); border-radius: 20px;
+            padding: 14px 16px; color: #fff;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 18px 50px -12px rgba(20,20,27,.45);
+            animation: ibUp .45s cubic-bezier(.22,1,.36,1);
+        }
+        #install-banner.out { animation: ibDown .3s ease forwards; }
+        @keyframes ibUp { from { opacity:0; transform: translate(-50%, 24px); } to { opacity:1; transform: translate(-50%, 0); } }
+        @keyframes ibDown { to { opacity:0; transform: translate(-50%, 18px); } }
+        .ib-icon { width:42px; height:42px; border-radius:13px; flex-shrink:0; background:linear-gradient(135deg,#5B3AA0,#16B8C4); display:flex; align-items:center; justify-content:center; font-size:18px; }
+        .ib-txt { flex:1; min-width:0; }
+        .ib-txt b { display:block; font-family:'Bricolage Grotesque',sans-serif; font-size:13.5px; }
+        .ib-txt span { font-size:11.5px; color:rgba(255,255,255,.6); line-height:1.45; display:block; margin-top:2px; }
+        .ib-btns { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+        .ib-yes { background:linear-gradient(135deg,#5B3AA0,#16B8C4); color:#fff; border:none; border-radius:50px; padding:9px 16px; font-weight:800; font-size:12px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
+        .ib-yes:active { transform: scale(.96); }
+        .ib-no { background:none; border:none; color:rgba(255,255,255,.5); font-size:11px; cursor:pointer; font-family:'Instrument Sans',sans-serif; padding:2px; }
+
+        /* ─── confort & accessibilité ─── */
+        button { -webkit-tap-highlight-color: transparent; }
+        button:focus-visible { outline: 2px solid rgba(14,124,140,.55); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
 
         /* ═══════════════════════════════════════
            SPLASH SCREEN
@@ -794,8 +856,8 @@
             content: '';
             position: absolute; inset: 0; pointer-events: none;
             background:
-                radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,124,248,.12) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(0,232,204,.07) 0%, transparent 55%);
+                radial-gradient(ellipse 70% 60% at 50% 30%, rgba(91,58,160,.12) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(14,124,140,.07) 0%, transparent 55%);
         }
 
         .splash-logo-wrap {
@@ -809,7 +871,7 @@
             border-radius: 50%;
             border: 2.5px solid transparent;
             border-top-color: var(--cyan);
-            border-right-color: rgba(0,232,204,.3);
+            border-right-color: rgba(14,124,140,.3);
             animation: spin 1s linear infinite;
         }
         .splash-ring-2 {
@@ -817,7 +879,7 @@
             border-radius: 50%;
             border: 2px solid transparent;
             border-bottom-color: var(--violet);
-            border-left-color: rgba(139,124,248,.25);
+            border-left-color: rgba(91,58,160,.25);
             animation: spin 1.6s linear infinite reverse;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -826,7 +888,7 @@
         .splash-k {
             position: absolute; inset: 0;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 36px; font-weight: 800;
             background: linear-gradient(135deg, var(--cyan), var(--violet));
             -webkit-background-clip: text; background-clip: text;
@@ -834,16 +896,16 @@
             animation: kPulse 2s ease-in-out infinite;
         }
         @keyframes kPulse {
-            0%,100% { filter: drop-shadow(0 0 8px rgba(0,232,204,.4)); }
-            50%      { filter: drop-shadow(0 0 20px rgba(0,232,204,.7)); }
+            0%,100% { filter: drop-shadow(0 0 8px rgba(14,124,140,.4)); }
+            50%      { filter: drop-shadow(0 0 20px rgba(14,124,140,.7)); }
         }
 
         .splash-title {
-            font-family: 'Syne', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 28px; font-weight: 800;
             letter-spacing: -.5px;
             margin-bottom: 6px;
-            background: linear-gradient(120deg, #f2efff, var(--cyan));
+            background: linear-gradient(120deg, var(--violet), var(--cyan));
             -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -859,7 +921,7 @@
         /* barre de progression */
         .splash-progress-track {
             width: 180px; height: 3px;
-            background: rgba(255,255,255,.07);
+            background: rgba(17,24,39,.08);
             border-radius: 99px; overflow: hidden;
             margin-bottom: 16px;
         }
@@ -885,9 +947,9 @@
     <div class="splash-logo-wrap">
         <div class="splash-ring"></div>
         <div class="splash-ring-2"></div>
-        <div class="splash-k">K</div>
+        <div class="splash-k"><img src="img/icon-192.png" alt="KEEPO" style="width:58px;height:58px;border-radius:16px;display:block;"></div>
     </div>
-    <div class="splash-title">Keepo</div>
+    <img src="img/logo.png" alt="KEEPO" style="height:42px;width:auto;margin-bottom:6px;">
     <div class="splash-greeting" id="splash-greeting">Connexion en cours…</div>
     <div class="splash-progress-track">
         <div class="splash-progress-bar" id="splash-bar"></div>
@@ -901,7 +963,7 @@
 
     <!-- ═══════════ HEADER ═══════════ -->
     <header>
-        <div class="user-badge">
+        <div class="user-badge" onclick="switchView('view-profile')" title="Voir mon profil">
             <div class="user-avatar" id="avatar-letter">U</div>
             <span id="user-display-name">Utilisateur</span>
         </div>
@@ -918,7 +980,7 @@
                 <h2 class="view-title">Mes Cartes</h2>
                 <p class="view-sub">Appuyez sur une carte pour présenter votre QR Code.</p>
             </div>
-            <button onclick="openDiscoverNearby()" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);border:none;color:#0d0c18;font-weight:700;padding:10px 16px;border-radius:50px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 4px 14px rgba(124,106,247,0.25);">
+            <button onclick="openDiscoverNearby()" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);border:none;color:#0d0c18;font-weight:700;padding:10px 16px;border-radius:50px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 4px 14px rgba(91,58,160,0.25);">
                 <i class="fa-solid fa-location-dot"></i>&nbsp;Découvrir
             </button>
         </div>
@@ -940,11 +1002,8 @@
         </div>
 
         <div id="cards-container" class="cards-grid">
-            <div class="empty-wallet">
-                <div class="empty-wallet-icon"><i class="fa-solid fa-wallet"></i></div>
-                <h3>Chargement...</h3>
-                <p>Récupération de votre portefeuille en cours.</p>
-            </div>
+            <div class="skeleton" style="height:158px;border-radius:20px;"></div>
+            <div class="skeleton" style="height:158px;border-radius:20px;"></div>
         </div>
     </div>
 
@@ -955,7 +1014,7 @@
 
         <div class="scanner-status">
             <div class="scanner-status-dot"></div>
-            Caméra active — Pointez vers un QR Keepo
+            Caméra active — Pointez vers un QR KEEPO
         </div>
 
         <div class="scanner-frame-wrap" style="position:relative;">
@@ -1017,7 +1076,7 @@
                 <h2 class="view-title">Récompenses</h2>
                 <p class="view-sub">Tous vos paliers en un coup d'œil</p>
             </div>
-            <div id="rewards-unlocked-chip" style="display:none;background:rgba(0,232,204,0.1);border:1px solid rgba(0,232,204,0.25);border-radius:50px;padding:6px 14px;font-size:11px;font-weight:700;color:var(--cyan);white-space:nowrap;align-self:center;">
+            <div id="rewards-unlocked-chip" style="display:none;background:rgba(14,124,140,0.1);border:1px solid rgba(14,124,140,0.25);border-radius:50px;padding:6px 14px;font-size:11px;font-weight:700;color:var(--cyan);white-space:nowrap;align-self:center;">
                 <i class="fa-solid fa-gift"></i> <span id="rewards-unlocked-count">0</span> dispo
             </div>
         </div>
@@ -1040,11 +1099,11 @@
             <div class="profile-name" id="profile-name-big">Utilisateur</div>
             <div class="profile-status-badge">
                 <i class="fa-solid fa-circle-check" style="font-size:10px;"></i>
-                Membre Privilège Keepo
+                Membre Privilège KEEPO
             </div>
             <button id="client-avatar-remove" onclick="removeClientAvatar()"
                 style="display:none;margin-top:10px;background:none;border:none;color:var(--muted);
-                       font-size:12px;cursor:pointer;text-decoration:underline;font-family:'Plus Jakarta Sans',sans-serif;">
+                       font-size:12px;cursor:pointer;text-decoration:underline;font-family:'Instrument Sans',sans-serif;">
                 <i class="fa-solid fa-trash" style="font-size:10px;"></i> Retirer la photo
             </button>
         </div>
@@ -1078,11 +1137,11 @@
 
         <div class="referral-box">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                <i class="fa-solid fa-users" style="font-size:16px;color:#c5b8ff;"></i>
-                <span style="font-weight:700;font-size:14px;color:#fff;">Mon code de parrainage</span>
+                <i class="fa-solid fa-users" style="font-size:16px;color:#5B3AA0;"></i>
+                <span style="font-weight:700;font-size:14px;color:#14141B;">Mon code de parrainage</span>
             </div>
             <p style="font-size:11px;color:var(--muted);margin:0;line-height:1.5;">
-                Partagez ce code avec vos proches. Quand ils l'utilisent dans une enseigne où vous êtes déjà inscrit, <strong style="color:#c5b8ff;">vous recevez tous les deux des points bonus</strong>.
+                Partagez ce code avec vos proches. Quand ils l'utilisent dans une enseigne où vous êtes déjà inscrit, <strong style="color:#5B3AA0;">vous recevez tous les deux des points bonus</strong>.
             </p>
             <div class="referral-code" id="my-referral-code">------</div>
             <div style="display:flex;gap:8px;">
@@ -1095,16 +1154,29 @@
             </div>
         </div>
 
+        <div class="referral-box" style="background:linear-gradient(135deg,rgba(62,227,108,0.07),rgba(22,184,196,0.06));border-color:rgba(62,227,108,0.3);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <i class="fa-solid fa-gift" style="font-size:16px;color:#15A34A;"></i>
+                <span style="font-weight:700;font-size:14px;color:#14141B;">J'ai reçu une carte cadeau</span>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin:0 0 10px;line-height:1.5;">
+                On vous a offert des points ? Entrez le code reçu : <strong style="color:#15A34A;">les points sont crédités immédiatement</strong> — même si vous n'avez pas encore la carte de ce commerce, elle sera créée automatiquement.
+            </p>
+            <button onclick="openRedeemGiftCard()" class="profile-action-btn" style="justify-content:center;padding:11px;background:linear-gradient(135deg,#15A34A,#16B8C4);color:#fff;border:none;font-weight:700;">
+                <i class="fa-solid fa-gift"></i> <span>Utiliser ma carte cadeau</span>
+            </button>
+        </div>
+
         <div class="referral-box" style="background:linear-gradient(135deg,rgba(255,138,92,0.08),rgba(255,195,77,0.06));border-color:rgba(255,138,92,0.25);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
                 <i class="fa-solid fa-cake-candles" style="font-size:16px;color:#ffc34d;"></i>
-                <span style="font-weight:700;font-size:14px;color:#fff;">Date d'anniversaire</span>
+                <span style="font-weight:700;font-size:14px;color:#14141B;">Date d'anniversaire</span>
             </div>
             <p style="font-size:11px;color:var(--muted);margin:0 0 10px;line-height:1.5;">
                 Renseignez votre date pour recevoir un cadeau automatique chaque année.
             </p>
             <div style="display:flex;gap:8px;align-items:center;">
-                <input type="date" id="my-birthday-input" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,138,92,0.3);color:#fff;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px;">
+                <input type="date" id="my-birthday-input" style="flex:1;background:#F4F4F7;border:1px solid rgba(255,138,92,0.3);color:#14141B;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px;">
                 <button onclick="saveMyBirthday()" class="profile-action-btn" style="padding:10px 16px;background:linear-gradient(135deg,#ff8a5c,#ffc34d);color:#0d0c18;font-weight:700;border:none;">
                     <i class="fa-solid fa-check"></i> <span>Enregistrer</span>
                 </button>
@@ -1114,8 +1186,8 @@
         <div class="section-label" style="margin-top:20px;">Actions du compte</div>
         <div class="profile-actions">
             <button class="profile-action-btn" onclick="openClientAiChat()">
-                <i class="fa-solid fa-wand-magic-sparkles" style="color:#c5b8ff;"></i>
-                <span>Assistant IA <span style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:6px;">IA</span></span>
+                <i class="fa-solid fa-wand-magic-sparkles" style="color:#5B3AA0;"></i>
+                <span>Assistant IA <span style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:6px;">IA</span></span>
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
             <button class="profile-action-btn" onclick="openThemeChooser()">
@@ -1143,17 +1215,45 @@
                 <span>Se déconnecter</span>
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
+            <button class="profile-action-btn danger" onclick="openDeleteAccount()" style="opacity:.85;">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Supprimer mon compte</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
         </div>
     </div>
 
 </div><!-- /.app-container -->
+
+<!-- ═══════════ SUPPRESSION DE COMPTE (Bottom Sheet) ═══════════ -->
+<div class="popup-overlay" id="deleteAccountSheet" onclick="closeDeleteAccount()">
+    <div class="popup-card" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div style="width:56px;height:56px;border-radius:18px;margin:4px auto 14px;background:rgba(224,36,94,0.12);border:1px solid rgba(224,36,94,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;color:#ff7a9c;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;">Supprimer votre compte ?</h3>
+        <p style="color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;margin-bottom:16px;">
+            Cette action est <strong style="color:#fff;">définitive</strong>. Toutes vos cartes de fidélité, vos points et votre historique seront <strong style="color:#fff;">supprimés immédiatement</strong> et ne pourront pas être récupérés.
+        </p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">Pour confirmer, écrivez <strong style="color:#ff7a9c;letter-spacing:1px;">SUPPRIMER</strong> ci-dessous :</p>
+        <input type="text" id="delete-confirm-input" placeholder="SUPPRIMER" autocomplete="off" autocapitalize="characters"
+            oninput="document.getElementById('delete-confirm-btn').disabled = this.value.trim().toUpperCase() !== 'SUPPRIMER';"
+            style="width:100%;text-align:center;letter-spacing:3px;font-weight:700;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);color:#fff;padding:13px;border-radius:12px;font-family:inherit;font-size:15px;margin-bottom:16px;">
+        <button id="delete-confirm-btn" onclick="doDeleteAccount()" disabled
+            style="width:100%;background:linear-gradient(135deg,#E0245E,#b3194a);color:#fff;border:none;border-radius:14px;padding:14px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;opacity:1;transition:opacity .2s;">
+            <i class="fa-solid fa-trash-can"></i> Supprimer définitivement mon compte
+        </button>
+        <button class="modal-close-btn" onclick="closeDeleteAccount()" style="margin-top:8px;">Annuler, garder mon compte</button>
+    </div>
+</div>
 
 <!-- ═══════════ REWARDS SHEET (Bottom Sheet) ═══════════ -->
 <div class="popup-overlay" id="rewardsSheet" onclick="closeRewardsSheet()">
     <div class="popup-card" onclick="event.stopPropagation()" style="max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Programme de fidélité</div>
-        <h3 id="rewards-sheet-title" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;text-align:left;"></h3>
+        <h3 id="rewards-sheet-title" style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;text-align:left;"></h3>
         <div class="rewards-pts-chip">
             <i class="fa-solid fa-star"></i>
             <span id="rewards-pts-val">0</span> points disponibles
@@ -1177,7 +1277,7 @@
         <div class="qr-countdown" id="qr-countdown"></div>
 
         <!-- Multi-boutique info (visible si le commerce a plusieurs boutiques) -->
-        <div id="modal-boutiques-info" style="display:none;margin:-4px 0 12px;padding:10px 14px;background:rgba(0,232,204,0.06);border:1px solid rgba(0,232,204,0.18);border-radius:12px;">
+        <div id="modal-boutiques-info" style="display:none;margin:-4px 0 12px;padding:10px 14px;background:rgba(14,124,140,0.06);border:1px solid rgba(14,124,140,0.18);border-radius:12px;">
             <div style="font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.4px;margin-bottom:6px;text-transform:uppercase;"><i class="fa-solid fa-store"></i> Carte multi-boutiques</div>
             <div id="modal-boutiques-list" style="display:flex;flex-direction:column;gap:4px;"></div>
         </div>
@@ -1196,7 +1296,7 @@
         <!-- Actions Phase 3 -->
         <div style="display:flex;flex-direction:column;gap:8px;margin:14px 0;">
             <button id="qrModalWheelBtn" onclick="openWheelSheet()" class="card-detail-action" style="display:none;">
-                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#7c6af7,#c5b8ff);"><i class="fa-solid fa-dice" style="color:#fff;font-size:18px;"></i></div>
+                <div class="card-detail-action-icon" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);"><i class="fa-solid fa-dice" style="color:#fff;font-size:18px;"></i></div>
                 <div class="card-detail-action-text">
                     <span id="qrModalWheelLabel">Roue de la fortune</span>
                     <small id="qrModalWheelSub">Bientôt débloquée…</small>
@@ -1224,7 +1324,7 @@
     <div class="popup-card" onclick="event.stopPropagation()" style="max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-location-dot" style="font-size:11px;"></i> Près de vous</div>
-        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Commerces partenaires</h3>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Commerces partenaires</h3>
         <p id="discover-status" style="font-size:12px;color:var(--muted);margin-bottom:14px;">Activez votre position pour découvrir les enseignes près de vous.</p>
         <div id="discover-results" style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:14px;"></div>
         <button onclick="closeDiscoverNearby()" class="modal-close-btn">Fermer</button>
@@ -1239,22 +1339,32 @@
     text-align: left;
 }
 .discover-merchant-row.joined {
-    background: linear-gradient(135deg, rgba(0,232,204,0.07), rgba(124,106,247,0.05));
-    border-color: rgba(0,232,204,0.25);
+    background: linear-gradient(135deg, rgba(14,124,140,0.07), rgba(91,58,160,0.05));
+    border-color: rgba(14,124,140,0.25);
 }
 .discover-merchant-avatar {
     width: 44px; height: 44px; border-radius: 12px;
-    background: linear-gradient(135deg, #7c6af7, #00e8cc);
+    background: linear-gradient(135deg, #5B3AA0, #16B8C4);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif; font-weight: 900; color: #0d0c18; font-size: 18px;
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900; color: #fff; font-size: 18px;
     flex-shrink: 0;
 }
 .discover-merchant-info { flex: 1; min-width: 0; }
-.discover-merchant-name { font-weight: 700; font-size: 14px; color: #fff; }
-.discover-merchant-addr { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.discover-merchant-name { font-weight: 700; font-size: 14px; color: var(--text); }
+.discover-merchant-addr { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+.addr-copy-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(14,124,140,0.08); border: 1px solid rgba(14,124,140,0.22);
+    color: var(--cyan); border-radius: 50px; padding: 2px 9px;
+    font-size: 10px; font-weight: 700; cursor: pointer; margin-left: 4px;
+    font-family: 'Instrument Sans', sans-serif; white-space: nowrap; vertical-align: middle;
+    transition: background .15s;
+}
+.addr-copy-btn:hover { background: rgba(14,124,140,0.16); }
+.addr-copy-btn:active { transform: scale(.95); }
 .discover-distance-chip {
-    background: rgba(0,232,204,0.12); border: 1px solid rgba(0,232,204,0.25);
-    color: #00e8cc; padding: 4px 10px; border-radius: 50px;
+    background: rgba(14,124,140,0.12); border: 1px solid rgba(14,124,140,0.25);
+    color: #0E7C8C; padding: 4px 10px; border-radius: 50px;
     font-weight: 700; font-size: 11px; white-space: nowrap;
 }
 </style>
@@ -1264,15 +1374,14 @@
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-circle-dot" style="font-size:11px;"></i> Roue de la fortune</div>
-        <h3 id="wheel-merchant-name" style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;"></h3>
+        <h3 id="wheel-merchant-name" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;"></h3>
         <p id="wheel-status-text" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></p>
         <div class="wheel-container">
             <div class="wheel-arrow"></div>
-            <div class="wheel-disc" id="wheel-disc"></div>
-            <div class="wheel-center"><i class="fa-solid fa-bullseye" style="font-size:16px;"></i></div>
+            <canvas id="wheel-canvas" width="440" height="440"></canvas>
         </div>
         <div id="wheel-result" class="wheel-result"></div>
-        <button id="wheel-spin-btn" onclick="doSpinWheel()" class="modal-close-btn" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;border:none;font-weight:800;font-family:'Syne',sans-serif;">
+        <button id="wheel-spin-btn" onclick="doSpinWheel()" class="modal-close-btn" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);color:#fff;border:none;font-weight:800;font-family:'Bricolage Grotesque',sans-serif;">
             <i class="fa-solid fa-rotate"></i> Tourner la roue
         </button>
         <button onclick="closeWheelSheet()" class="modal-close-btn" style="margin-top:8px;">Fermer</button>
@@ -1283,17 +1392,17 @@
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Cartes cadeaux</div>
-        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;">Offrir des points</h3>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;">Offrir des points</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Convertissez vos points en code cadeau à partager.</p>
-        <div id="gift-merchant-info" style="background:rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:13px;color:#fff;text-align:left;"></div>
+        <div id="gift-merchant-info" style="background:var(--glass);padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:13px;color:var(--text);text-align:left;"></div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <span style="font-size:13px;color:var(--muted);">Offrir</span>
-            <input type="number" id="gift-amount" min="10" step="10" placeholder="100" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(124,106,247,0.3);color:#fff;padding:10px;border-radius:10px;font-weight:700;text-align:center;font-family:inherit;">
+            <input type="number" id="gift-amount" min="10" step="10" placeholder="100" style="flex:1;background:#F4F4F7;border:1px solid rgba(91,58,160,0.3);color:#14141B;padding:10px;border-radius:10px;font-weight:700;text-align:center;font-family:inherit;">
             <span style="font-size:13px;color:var(--muted);">points</span>
         </div>
-        <input type="text" id="gift-message" placeholder="Petit mot pour le destinataire (optionnel)" style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(124,106,247,0.2);color:#fff;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px;margin-bottom:14px;box-sizing:border-box;">
-        <div id="gift-result" style="display:none;background:linear-gradient(135deg,rgba(0,232,204,0.1),rgba(124,106,247,0.08));border:1px solid rgba(0,232,204,0.3);border-radius:12px;padding:14px;margin-bottom:12px;"></div>
-        <button id="gift-create-btn" onclick="doCreateGiftCard()" class="modal-close-btn" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;border:none;font-weight:800;">
+        <input type="text" id="gift-message" placeholder="Petit mot pour le destinataire (optionnel)" style="width:100%;background:#F4F4F7;border:1px solid rgba(91,58,160,0.2);color:#14141B;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px;margin-bottom:14px;box-sizing:border-box;">
+        <div id="gift-result" style="display:none;background:linear-gradient(135deg,rgba(14,124,140,0.1),rgba(91,58,160,0.08));border:1px solid rgba(14,124,140,0.3);border-radius:12px;padding:14px;margin-bottom:12px;"></div>
+        <button id="gift-create-btn" onclick="doCreateGiftCard()" class="modal-close-btn" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);color:#fff;border:none;font-weight:800;">
             <i class="fa-solid fa-paper-plane"></i> Générer le code
         </button>
         <div style="font-size:11px;color:var(--muted);text-align:center;margin:14px 0 8px;">— ou —</div>
@@ -1308,11 +1417,11 @@
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-ticket" style="font-size:11px;"></i> Code de parrainage</div>
-        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Utiliser un code</h3>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Utiliser un code</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Choisissez l'enseigne dans laquelle utiliser ce code, puis entrez-le.</p>
-        <select id="referral-merchant-select" style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(124,106,247,0.3);color:#fff;padding:12px;border-radius:12px;font-family:inherit;font-size:13px;margin-bottom:10px;"></select>
-        <input type="text" id="referral-code-input" placeholder="ABC123" maxlength="10" style="width:100%;background:rgba(0,0,0,0.4);border:2px dashed rgba(124,106,247,0.4);color:#fff;padding:14px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
-        <button onclick="doRedeemReferral()" class="modal-close-btn" style="background:linear-gradient(135deg,#7c6af7,#00e8cc);color:#0d0c18;border:none;font-weight:800;">
+        <select id="referral-merchant-select" style="width:100%;background:#F4F4F7;border:1px solid rgba(91,58,160,0.3);color:#14141B;padding:12px;border-radius:12px;font-family:inherit;font-size:13px;margin-bottom:10px;"></select>
+        <input type="text" id="referral-code-input" placeholder="ABC123" maxlength="10" style="width:100%;background:#F4F4F7;border:2px dashed rgba(91,58,160,0.4);color:#14141B;padding:14px;border-radius:12px;font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
+        <button onclick="doRedeemReferral()" class="modal-close-btn" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);color:#fff;border:none;font-weight:800;">
             <i class="fa-solid fa-check"></i> Valider le parrainage
         </button>
         <button onclick="closeReferralRedeem()" class="modal-close-btn" style="margin-top:8px;">Annuler</button>
@@ -1323,10 +1432,10 @@
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Réclamer une carte</div>
-        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Code cadeau reçu</h3>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Code cadeau reçu</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Entrez le code à 8 caractères reçu par message.</p>
-        <input type="text" id="redeem-gift-input" placeholder="ABC12345" maxlength="10" style="width:100%;background:rgba(0,0,0,0.4);border:2px dashed rgba(0,232,204,0.4);color:#fff;padding:14px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
-        <button onclick="doRedeemGift()" class="modal-close-btn" style="background:linear-gradient(135deg,#3ee36c,#00e8cc);color:#0d0c18;border:none;font-weight:800;">
+        <input type="text" id="redeem-gift-input" placeholder="ABC12345" maxlength="10" style="width:100%;background:#F4F4F7;border:2px dashed rgba(14,124,140,0.4);color:#14141B;padding:14px;border-radius:12px;font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
+        <button onclick="doRedeemGift()" class="modal-close-btn" style="background:linear-gradient(135deg,#3ee36c,#16B8C4);color:#fff;border:none;font-weight:800;">
             <i class="fa-solid fa-check"></i> Récupérer les points
         </button>
         <button onclick="closeRedeemGift()" class="modal-close-btn" style="margin-top:8px;">Annuler</button>
@@ -1339,9 +1448,9 @@
         <div style="padding:18px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.06);">
             <div class="sheet-handle" style="margin-bottom:14px;"></div>
             <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#7c6af7,#00e8cc);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-robot" style="color:#fff;font-size:18px;"></i></div>
+                <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-robot" style="color:#fff;font-size:18px;"></i></div>
                 <div style="flex:1;text-align:left;">
-                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;">Assistant Keepo</div>
+                    <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:16px;">Assistant KEEPO</div>
                     <div style="font-size:11px;color:var(--muted);"><span style="color:#3ee36c;">●</span> En ligne · Posez n'importe quelle question</div>
                 </div>
                 <button onclick="closeClientAiChat()" style="background:rgba(255,255,255,0.06);border:none;width:34px;height:34px;border-radius:50%;color:var(--muted);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
@@ -1356,10 +1465,10 @@
             </div>
             <div style="display:flex;gap:8px;">
                 <input type="text" id="aiClientInput" placeholder="Posez votre question..."
-                    style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 14px;color:#fff;font-family:inherit;font-size:14px;outline:none;"
+                    style="flex:1;background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:14px;outline:none;"
                     onkeydown="if(event.key==='Enter')sendClientAiMessage()">
                 <button onclick="sendClientAiMessage()" id="aiClientSendBtn"
-                    style="background:linear-gradient(135deg,#7c6af7,#00e8cc);border:none;width:46px;height:46px;border-radius:14px;color:#0d0c18;font-size:16px;cursor:pointer;">
+                    style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);border:none;width:46px;height:46px;border-radius:14px;color:#0d0c18;font-size:16px;cursor:pointer;">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
@@ -1373,7 +1482,7 @@
     font-size: 11px; cursor: pointer; transition: all .15s;
     font-family: inherit;
 }
-.ai-client-chip:hover { background: rgba(124,106,247,0.15); color: #c5b8ff; border-color: rgba(124,106,247,0.3); }
+.ai-client-chip:hover { background: rgba(91,58,160,0.15); color: #5B3AA0; border-color: rgba(91,58,160,0.3); }
 .ai-client-msg { display: flex; gap: 9px; max-width: 88%; }
 .ai-client-msg.user { align-self: flex-end; flex-direction: row-reverse; }
 .ai-client-msg-bubble {
@@ -1381,13 +1490,13 @@
     padding: 11px 14px; font-size: 13.5px; line-height: 1.55; color: #e8e9f0;
 }
 .ai-client-msg.user .ai-client-msg-bubble {
-    background: linear-gradient(135deg, #7c6af7, #00e8cc); color: #0d0c18; font-weight: 600;
+    background: linear-gradient(135deg, #5B3AA0, #16B8C4); color: #0d0c18; font-weight: 600;
 }
 .ai-client-msg-avatar {
     width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 13px;
 }
-.ai-client-msg.bot .ai-client-msg-avatar { background: linear-gradient(135deg,#7c6af7,#00e8cc); }
+.ai-client-msg.bot .ai-client-msg-avatar { background: linear-gradient(135deg,#5B3AA0,#16B8C4); }
 .ai-client-msg.user .ai-client-msg-avatar { background: rgba(255,255,255,0.08); color: var(--muted); }
 .ai-client-typing-dots { display: flex; gap: 3px; padding: 4px 0; }
 .ai-client-typing-dots span {
@@ -1423,22 +1532,47 @@
     </button>
 </nav>
 
+<!-- ═══════════ OVERLAY INSTALLATION iOS ═══════════ -->
+<div id="ios-install-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:flex-end;padding:0 20px 36px;">
+    <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid rgba(14,124,140,0.3);border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;">
+        <div style="font-size:38px;margin-bottom:10px;">📲</div>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;margin-bottom:6px;color:#fff;">Ajouter à l'écran d'accueil</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:20px;line-height:1.6;">Installez Keepo en 3 secondes :</p>
+        <div style="display:flex;flex-direction:column;gap:13px;margin-bottom:22px;text-align:left;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">1</div>
+                <span style="font-size:13px;color:rgba(255,255,255,0.88);">Appuyez sur <strong style="color:#fff;">Partager</strong> <span style="background:rgba(255,255,255,0.1);border-radius:5px;padding:1px 6px;font-size:15px;">⬆</span> en bas de Safari</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">2</div>
+                <span style="font-size:13px;color:rgba(255,255,255,0.88);">Faites défiler → <strong style="color:#fff;">« Ajouter à l'écran d'accueil »</strong></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">3</div>
+                <span style="font-size:13px;color:rgba(255,255,255,0.88);">Appuyez sur <strong style="color:#fff;">« Ajouter »</strong> en haut à droite</span>
+            </div>
+        </div>
+        <button onclick="document.getElementById('ios-install-overlay').style.display='none'" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);border:none;color:#0d0c18;font-weight:800;font-size:14px;font-family:'Bricolage Grotesque',sans-serif;padding:14px;border-radius:50px;cursor:pointer;width:100%;">Compris !</button>
+    </div>
+    <div style="margin-top:18px;color:rgba(255,255,255,0.45);font-size:12px;text-align:center;">↓ Le bouton Partager est en bas de Safari</div>
+</div>
+
 <!-- ═══════════ MODAL CLAIM ANTI-TRICHE ═══════════ -->
 <div id="claimConfirmModal" onclick="event.target===this && closeClaimConfirmModal()"
     style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);
            align-items:center;justify-content:center;padding:20px;">
-    <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid rgba(0,232,204,0.3);
+    <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid rgba(14,124,140,0.3);
                 border-radius:28px;padding:30px 24px;max-width:360px;width:100%;text-align:center;
                 box-shadow:0 20px 60px rgba(0,0,0,0.6);">
         <div style="margin-bottom:12px;"><i class="fa-solid fa-gift" style="font-size:48px;color:var(--cyan);"></i></div>
-        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:4px;">Récompense réclamée !</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:4px;">Récompense réclamée !</div>
         <div id="claim-modal-name" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;"></div>
 
         <!-- Code de validation -->
-        <div style="background:rgba(0,232,204,0.06);border:2px dashed rgba(0,232,204,0.3);
+        <div style="background:rgba(14,124,140,0.06);border:2px dashed rgba(14,124,140,0.3);
                     border-radius:16px;padding:18px;margin-bottom:16px;">
             <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Code de validation (usage unique)</div>
-            <div id="claim-modal-code" style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;
+            <div id="claim-modal-code" style="font-family:'Bricolage Grotesque',sans-serif;font-size:34px;font-weight:800;
                  color:var(--cyan);letter-spacing:6px;"></div>
         </div>
 
@@ -1457,7 +1591,7 @@
 
         <button onclick="closeClaimConfirmModal()"
             style="width:100%;padding:14px;background:var(--cyan);color:#06050d;border:none;border-radius:14px;
-                   font-weight:800;font-size:15px;cursor:pointer;font-family:'Syne',sans-serif;">
+                   font-weight:800;font-size:15px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;">
             Compris — Valider avec le commerçant
         </button>
     </div>
@@ -1471,7 +1605,7 @@
                 border-radius:24px;padding:28px 22px;max-width:400px;width:100%;
                 box-shadow:0 20px 60px rgba(0,0,0,0.5);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-            <div id="client-modal-title" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);"></div>
+            <div id="client-modal-title" style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;color:var(--text);"></div>
             <button onclick="closeClientModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -1510,9 +1644,9 @@
 
     // ─── PALETTE for cards (cycles) ───
     const CARD_PALETTES = [
-        { c1: '#8b7cf8', c2: '#00e8cc', accent: '#00e8cc', accent2: '#8b7cf8', glow: 'rgba(139,124,248,.22)' },
+        { c1: '#8b7cf8', c2: '#16B8C4', accent: '#16B8C4', accent2: '#8b7cf8', glow: 'rgba(91,58,160,.22)' },
         { c1: '#ff4d82', c2: '#ff9f4d', accent: '#ff9f4d', accent2: '#ff4d82', glow: 'rgba(255,77,130,.22)' },
-        { c1: '#00e8cc', c2: '#4d8bff', accent: '#4dbbff', accent2: '#00e8cc', glow: 'rgba(0,232,204,.22)' },
+        { c1: '#16B8C4', c2: '#4d8bff', accent: '#4dbbff', accent2: '#16B8C4', glow: 'rgba(14,124,140,.22)' },
         { c1: '#ffc34d', c2: '#ff6b4d', accent: '#ffc34d', accent2: '#ff6b4d', glow: 'rgba(255,195,77,.22)' },
         { c1: '#22d47a', c2: '#00b4d8', accent: '#22d47a', accent2: '#00b4d8', glow: 'rgba(34,212,122,.22)' },
     ];
@@ -1563,6 +1697,85 @@
         setTimeout(() => { window.location.href = href; }, 400);
     }
 
+    // ─── Gestion de l'installation PWA depuis QR code ───
+    let _deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        _deferredInstallPrompt = e;
+        const p = new URLSearchParams(window.location.search).get('install');
+        if (p === 'android') { e.prompt(); }
+    });
+
+    // ─── Invitation à installer l'app sur l'écran d'accueil ───
+    // Déclenchée systématiquement après un scan du QR commerçant (le moment
+    // idéal : la carte vient d'être ajoutée), sinon au plus 1 fois / 7 jours.
+    function isAppStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+    function maybeProposeInstall(force) {
+        if (isAppStandalone()) return;                                  // déjà sur l'écran d'accueil
+        if (document.getElementById('install-banner')) return;          // déjà affichée
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!_deferredInstallPrompt && !isIOS) return;                  // navigateur sans installation
+        if (!force) {
+            const snooze = +(localStorage.getItem('KEEPO_install_snooze') || 0);
+            if (Date.now() - snooze < 7 * 24 * 3600 * 1000) return;     // « Plus tard » respecté 7 jours
+        }
+        const b = document.createElement('div');
+        b.id = 'install-banner';
+        b.innerHTML = `
+            <div class="ib-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+            <div class="ib-txt">
+                <b>Gardez vos cartes sur vous</b>
+                <span>Ajoutez KEEPO à votre écran d'accueil — gratuit, sans App Store.</span>
+            </div>
+            <div class="ib-btns">
+                <button class="ib-yes" onclick="acceptInstallBanner()">Installer</button>
+                <button class="ib-no" onclick="dismissInstallBanner(true)">Plus tard</button>
+            </div>`;
+        document.body.appendChild(b);
+    }
+    function dismissInstallBanner(snooze) {
+        const b = document.getElementById('install-banner');
+        if (b) { b.classList.add('out'); setTimeout(() => b.remove(), 320); }
+        if (snooze) localStorage.setItem('KEEPO_install_snooze', String(Date.now()));
+    }
+    async function acceptInstallBanner() {
+        dismissInstallBanner(false);
+        if (_deferredInstallPrompt) {
+            // Android / Chrome : invite native
+            _deferredInstallPrompt.prompt();
+            const choice = await _deferredInstallPrompt.userChoice.catch(() => null);
+            _deferredInstallPrompt = null;
+            if (choice && choice.outcome === 'accepted') {
+                showToast('success', 'Installée ! 📲', "KEEPO est maintenant sur votre écran d'accueil.");
+            } else {
+                localStorage.setItem('KEEPO_install_snooze', String(Date.now()));
+            }
+        } else {
+            // iOS : pas d'API native → guide Safari (Partager → Ajouter à l'écran d'accueil)
+            const overlay = document.getElementById('ios-install-overlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const p = new URLSearchParams(window.location.search).get('install');
+        if (p === 'ios') {
+            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const inSafari = /Safari/i.test(navigator.userAgent) && !/CriOS|FxiOS|OPiOS|mercury/i.test(navigator.userAgent);
+            const overlay = document.getElementById('ios-install-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                if (!isIOS) {
+                    overlay.querySelector('p').textContent = 'Ce QR est destiné aux iPhones. Sur Android, scannez le QR vert.';
+                } else if (!inSafari) {
+                    overlay.querySelector('p').textContent = 'Ouvrez ce lien dans Safari (pas Chrome) pour l\'ajouter à l\'écran d\'accueil.';
+                }
+            }
+        }
+    });
+
     // ─── INIT ───
     window.addEventListener('DOMContentLoaded', async () => {
         splashProgress(15, 'Vérification du compte');
@@ -1576,6 +1789,9 @@
         splashProgress(40, 'Authentification…');
 
         if (error || !session) {
+            // Preserve pending join so it survives the login redirect
+            const pendingJoin = new URLSearchParams(window.location.search).get('join');
+            if (pendingJoin) sessionStorage.setItem('KEEPO_pending_join', pendingJoin);
             splashRedirect('/connexion');
             return;
         }
@@ -1615,6 +1831,28 @@
 
         splashHide(displayName);
 
+        // ── Auto-join depuis lien public /c/[slug] ──
+        const joinId = new URLSearchParams(window.location.search).get('join')
+            || sessionStorage.getItem('KEEPO_pending_join');
+        if (joinId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(joinId)) {
+            sessionStorage.removeItem('KEEPO_pending_join');
+            history.replaceState({}, '', '/dashboard-client');
+            const alreadyJoined = (walletCache || []).some(c => c.merchant_id === joinId);
+            if (!alreadyJoined) {
+                await _joinMerchantLoyalty(joinId);
+            } else {
+                showToast('info', 'Déjà membre', 'Vous faites déjà partie de ce programme de fidélité.');
+            }
+        }
+
+        // L'URL ne doit pas garder ?join= (évite de rejouer l'ajout au refresh)
+        if (new URLSearchParams(window.location.search).get('join')) {
+            history.replaceState(null, '', window.location.pathname);
+        }
+        // Invitation à installer l'app : forcée après une arrivée par QR
+        // commerçant, discrète (max 1×/semaine) sinon.
+        setTimeout(() => maybeProposeInstall(!!joinId), 2200);
+
         // Notifications push (demande après splashHide pour ne pas perturber le chargement)
         requestNotifPermission();
 
@@ -1629,6 +1867,20 @@
         }, { once: false });
     });
 
+    // ─── CONFETTI : célébration récompense débloquée ───
+    function triggerRewardConfetti() {
+        if (typeof confetti === 'undefined') return;
+        // Salve centrale
+        confetti({ particleCount: 130, spread: 80, origin: { y: 0.55 },
+            colors: ['#16B8C4', '#5B3AA0', '#ffd700', '#ff4d82', '#ffffff'] });
+        // Salve gauche
+        setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 55,
+            origin: { x: 0, y: 0.6 }, colors: ['#16B8C4', '#5B3AA0', '#ffd700'] }), 200);
+        // Salve droite
+        setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 55,
+            origin: { x: 1, y: 0.6 }, colors: ['#16B8C4', '#ff4d82', '#ffd700'] }), 380);
+    }
+
     // ─── HELPER : hex → glow rgba ───
     function hexToGlow(hex, alpha = 0.28) {
         try {
@@ -1637,7 +1889,7 @@
             const g = parseInt(h.substring(2,4), 16);
             const b = parseInt(h.substring(4,6), 16);
             return `rgba(${r},${g},${b},${alpha})`;
-        } catch(e) { return 'rgba(0,232,204,0.22)'; }
+        } catch(e) { return 'rgba(14,124,140,0.22)'; }
     }
 
     // ─── LOAD WALLET ───
@@ -1664,7 +1916,8 @@
         if (walletCache.length > 0) {
             const merchantIds = walletCache.map(c => c.merchant_id);
 
-            const [rewardsRes, cardsRes, plansRes, boutiquesRes] = await Promise.all([
+            // Lecture du plan via RPC SECURITY DEFINER (contourne le RLS de profiles)
+            const [rewardsRes, cardsRes, boutiquesRes, plansRes] = await Promise.all([
                 supabaseClient
                     .from('rewards')
                     .select('merchant_id, points_required')
@@ -1672,18 +1925,16 @@
                     .order('points_required', { ascending: true }),
                 supabaseClient
                     .from('merchant_cards')
-                    .select('merchant_id, title, color, studio_json, tier_silver_threshold, tier_gold_threshold, wheel_enabled, wheel_visits_required')
+                    .select('*')
                     .in('merchant_id', merchantIds),
-                supabaseClient
-                    .from('profiles')
-                    .select('id, plan')
-                    .in('id', merchantIds),
                 supabaseClient
                     .from('boutiques')
                     .select('id, merchant_id, name, address')
                     .in('merchant_id', merchantIds)
                     .eq('is_active', true)
-                    .order('created_at', { ascending: true })
+                    .order('created_at', { ascending: true }),
+                supabaseClient
+                    .rpc('get_merchant_plans', { p_merchant_ids: merchantIds })
             ]);
 
             if (rewardsRes.data) {
@@ -1698,7 +1949,7 @@
                 });
             }
             if (plansRes.data) {
-                plansRes.data.forEach(p => { merchantPlans[p.id] = p.plan; });
+                plansRes.data.forEach(p => { merchantPlans[p.merchant_id] = p.plan || 'essential'; });
             }
             // Boutiques : grouper par merchant_id
             merchantBoutiquesMap = {};
@@ -1776,7 +2027,7 @@
             const shopSafe  = shopName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
             // ── Couleurs depuis le studio du commerçant ──
-            let cardColor = '#00e8cc'; // fallback
+            let cardColor = '#16B8C4'; // fallback
             let cardBgImg = null;
             let cardOverlayOpacity = 0.5;
 
@@ -1824,6 +2075,46 @@
                 ? `<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;margin-bottom:4px;"><i class="fa-solid fa-store" style="font-size:9px;"></i> Valable dans ${boutiquesCount} boutiques</div>`
                 : '';
 
+            // ── Mode tampons ? (sinon points classiques) ──
+            const isStampMode = (design.loyalty_mode === 'stamps');
+            const stampGoal   = isStampMode ? (design.stamps_required || 10) : goal;
+            const stampReward = (design.stamp_reward || '').trim();
+            const rewardReady = isStampMode ? (points >= stampGoal) : hasReward;
+
+            let middleBlock, footerStatus;
+            if (isStampMode) {
+                const filled = Math.min(points, stampGoal);
+                let cells = '';
+                for (let s = 0; s < stampGoal; s++) {
+                    const on = s < filled;
+                    cells += `<span style="width:21px;height:21px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;background:${on?cardColor:'rgba(255,255,255,0.07)'};color:${on?'#06050d':'rgba(255,255,255,0.3)'};border:1px solid ${on?cardColor:'rgba(255,255,255,0.14)'};">${on?'★':''}</span>`;
+                }
+                middleBlock = `
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 6px;">${cells}</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.7);">
+                            ${rewardReady
+                                ? `🎉 Carte pleine — ${stampReward || 'récompense'} à retirer !`
+                                : (stampReward ? `Récompense : <strong style="color:${cardColor}">${stampReward}</strong>` : `${stampGoal} tampons = 1 récompense`)}
+                        </div>`;
+                footerStatus = rewardReady
+                    ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> À retirer en caisse !</div>`
+                    : `<div style="font-size:10px;color:rgba(255,255,255,0.5);">encore ${Math.max(stampGoal-points,0)} tampon${(stampGoal-points)>1?'s':''}</div>`;
+            } else {
+                middleBlock = `
+                        <div class="card-progress-wrap">
+                            <div class="card-progress-labels">
+                                <span>${points} pts</span>
+                                <span>Objectif : ${goal} pts</span>
+                            </div>
+                            <div class="card-progress-track">
+                                <div class="card-progress-fill" data-width="${pct}%" style="width:0%;background:${cardColor}"></div>
+                            </div>
+                        </div>`;
+                footerStatus = hasReward
+                    ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> Récompense dispo !</div>`
+                    : `<div style="font-size:10px;color:rgba(255,255,255,0.5);">encore ${remaining} pt${remaining > 1 ? 's' : ''}</div>`;
+            }
+
             const cardHtml = `
                 <div class="loyalty-card"
                     style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
@@ -1833,35 +2124,31 @@
                         <div class="card-top">
                             <div class="card-logo-chip">${initial}</div>
                             <div class="card-points-block">
-                                <div class="card-points-num" style="color:${cardColor}">${points}</div>
-                                <div class="card-points-lbl">Points</div>
+                                <div class="card-points-num" style="color:${cardColor}">${isStampMode ? `${Math.min(points,stampGoal)}/${stampGoal}` : points}</div>
+                                <div class="card-points-lbl">${isStampMode ? 'Tampons' : 'Points'}</div>
                             </div>
                         </div>
                         ${tierBadge}
                         <div class="merchant-name">${shopName}</div>
                         ${boutiquesBadge}
-                        <div class="card-progress-wrap">
-                            <div class="card-progress-labels">
-                                <span>${points} pts</span>
-                                <span>Objectif : ${goal} pts</span>
-                            </div>
-                            <div class="card-progress-track">
-                                <div class="card-progress-fill" data-width="${pct}%" style="width:0%;background:${cardColor}"></div>
-                            </div>
-                        </div>
+                        ${middleBlock}
                         <div class="card-footer" style="gap:8px;flex-wrap:wrap;">
-                            <button class="btn-see-rewards" onclick="event.stopPropagation(); openRewardsSheet('${card.merchant_id}', '${shopSafe}', ${points})"
-                                style="border-color:${hexToGlow(cardColor, 0.4)};color:${cardColor};">
-                                <i class="fa-solid fa-gift"></i> Voir les récompenses
-                            </button>
-                            ${hasReward
-                                ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> Récompense dispo !</div>`
-                                : `<div style="font-size:10px;color:rgba(255,255,255,0.5);">encore ${remaining} pt${remaining > 1 ? 's' : ''}</div>`
-                            }
+                            ${isStampMode ? '' : `<button class="btn-see-rewards" onclick="event.stopPropagation(); openRewardsSheet('${card.merchant_id}', '${shopSafe}', ${points})" style="border-color:${hexToGlow(cardColor, 0.4)};color:${cardColor};"><i class="fa-solid fa-gift"></i> Voir les récompenses</button>`}
+                            ${footerStatus}
                         </div>
                     </div>
                 </div>`;
             container.insertAdjacentHTML('beforeend', cardHtml);
+
+            // ── Confetti : 1 fois par session si récompense débloquée ──
+            if (rewardReady) {
+                const denom = isStampMode ? stampGoal : goal;
+                const confettiKey = `KEEPO_confetti_${currentClientId}_${card.merchant_id}_${Math.floor(points / denom)}`;
+                if (!sessionStorage.getItem(confettiKey)) {
+                    sessionStorage.setItem(confettiKey, '1');
+                    setTimeout(() => triggerRewardConfetti(), 700);
+                }
+            }
         });
 
         // Animate progress bars
@@ -1913,7 +2200,7 @@
             document.getElementById('client-qr-rendering-zone').innerHTML = "";
             new QRCodeStyling({
                 width: 200, height: 200, type: "svg",
-                data: `keepo:card:${currentClientId}:${merchantId}:${bucket}`,
+                data: `KEEPO:card:${currentClientId}:${merchantId}:${bucket}`,
                 dotsOptions: { color: "#0a0911", type: "rounded" },
                 backgroundOptions: { color: "#ffffff" },
                 cornersSquareOptions: { type: "extra-rounded", color: "#0a0911" }
@@ -1971,7 +2258,7 @@
                         const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
                         const progress = visits - lastSpin;
                         if (progress >= required) {
-                            wheelSub.innerHTML = `<span style="color:#00e8cc;font-weight:700;"><i class="fa-solid fa-circle-check"></i> Tour gratuit disponible !</span>`;
+                            wheelSub.innerHTML = `<span style="color:#16B8C4;font-weight:700;"><i class="fa-solid fa-circle-check"></i> Tour gratuit disponible !</span>`;
                         } else {
                             wheelSub.innerText = `Encore ${required - progress} visite${required - progress > 1 ? 's' : ''} pour débloquer (${progress}/${required})`;
                         }
@@ -1995,13 +2282,22 @@
 
     // ─── SCAN LOGIC ───
     async function handleStoreQrCodeScanned(qrData) {
-        // QR de fidélité principal : keepo:merchant:{merchant_id}
-        if (qrData.startsWith("keepo:merchant:")) {
+        // QR « URL universelle » (nouveau format de comptoir) :
+        // https://keepo.eu/dashboard-client?join={merchant_id}
+        // — le même QR fonctionne à l'appareil photo ET dans ce scanner.
+        if (/^https?:\/\//i.test(qrData) && qrData.includes('join=')) {
+            let joinId = null;
+            try { joinId = new URL(qrData).searchParams.get('join'); } catch {}
+            if (joinId) { await _joinMerchantLoyalty(joinId); return; }
+        }
+
+        // QR de fidélité principal : KEEPO:merchant:{merchant_id}
+        if (qrData.startsWith("KEEPO:merchant:")) {
             const merchantId = qrData.split(":")[2];
             await _joinMerchantLoyalty(merchantId);
 
-        // QR de boutique physique : keepo:boutique:{boutique_id}
-        } else if (qrData.startsWith("keepo:boutique:")) {
+        // QR de boutique physique : KEEPO:boutique:{boutique_id}
+        } else if (qrData.startsWith("KEEPO:boutique:")) {
             const boutiqueId = qrData.split(":")[2];
             if (!boutiqueId) { showToast('error', 'QR invalide', 'Boutique introuvable.'); return; }
 
@@ -2013,7 +2309,7 @@
                 .maybeSingle();
 
             if (bErr || !boutique) {
-                showToast('error', 'Boutique introuvable', 'Ce QR ne correspond à aucune boutique Keepo.');
+                showToast('error', 'Boutique introuvable', 'Ce QR ne correspond à aucune boutique KEEPO.');
                 return;
             }
             if (!boutique.is_active) {
@@ -2023,7 +2319,7 @@
             await _joinMerchantLoyalty(boutique.merchant_id, boutique.name);
 
         } else {
-            showToast('error', 'QR invalide', 'Ce QR Code n\'est pas un code de comptoir Keepo valide.');
+            showToast('error', 'QR invalide', 'Ce QR Code n\'est pas un code de comptoir KEEPO valide.');
         }
     }
 
@@ -2039,11 +2335,13 @@
             const label = boutiqueName ? `"${boutiqueName}"` : 'ce commerce';
             showToast('warning', 'Carte déjà obtenue', `Vous possédez déjà la carte de fidélité de ${label} !`);
             switchView('view-wallet');
+            setTimeout(() => maybeProposeInstall(true), 1600);
         } else {
             const label = boutiqueName ? `Boutique "${boutiqueName}"` : 'Nouveau commerce';
             showToast('success', 'Nouvelle carte ajoutée ! 🎉', `${label} — bienvenue dans ce programme de fidélité.`);
             loadClientWallet();
             switchView('view-wallet');
+            setTimeout(() => maybeProposeInstall(true), 1600);
         }
     }
 
@@ -2098,7 +2396,7 @@
         // Charge toutes les récompenses de tous les commerçants
         const { data: allRewards, error } = await supabaseClient
             .from('rewards')
-            .select('id, merchant_id, name, points_required')
+            .select('*')
             .in('merchant_id', merchantIds)
             .order('points_required', { ascending: true });
 
@@ -2139,7 +2437,7 @@
             const design   = designMap[mid] || {};
             const balance  = balanceMap[mid] || 0;
             const shopName = design.title || walletCache.find(c => c.merchant_id === mid)?.merchant_profile?.name || 'Commerce';
-            const color    = design.color || '#00e8cc';
+            const color    = design.color || '#16B8C4';
             const initial  = shopName.charAt(0).toUpperCase();
             const shopSafe = shopName.replace(/'/g, "\\'");
 
@@ -2150,7 +2448,7 @@
             <div style="margin-bottom:20px;">
                 <!-- En-tête commerce -->
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:${hexToGlow(color,0.2)};border:1px solid ${hexToGlow(color,0.35)};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:${color};flex-shrink:0;">${initial}</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:${hexToGlow(color,0.2)};border:1px solid ${hexToGlow(color,0.35)};display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:14px;color:${color};flex-shrink:0;">${initial}</div>
                     <div style="flex:1;min-width:0;">
                         <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${shopName}</div>
                         <div style="font-size:11px;color:var(--muted);">${balance} pts disponibles${unlocked.length ? ` · <span style="color:var(--cyan);font-weight:700;">${unlocked.length} dispo${unlocked.length > 1 ? 's' : ''} 🎉</span>` : ''}</div>
@@ -2162,9 +2460,12 @@
                     const isUnlocked = balance >= r.points_required;
                     const remaining  = Math.max(r.points_required - balance, 0);
                     const nameSafe   = r.name.replace(/'/g, "\\'");
+                    const iconHtml = r.image
+                        ? `<div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;background-image:url('${r.image}');background-size:cover;background-position:center;${isUnlocked ? '' : 'opacity:.5;filter:grayscale(.4);'}"></div>`
+                        : `<div class="reward-row-icon">${isUnlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>`;
                     return `
                     <div class="reward-row${isUnlocked ? ' unlocked' : ''}" style="${isUnlocked ? `border-color:${hexToGlow(color,0.35)};background:${hexToGlow(color,0.05)};` : ''}">
-                        <div class="reward-row-icon">${isUnlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>
+                        ${iconHtml}
                         <div class="reward-row-info">
                             <div class="reward-row-name">${r.name}</div>
                             <div class="reward-row-pts">${r.points_required} pts requis${isUnlocked
@@ -2273,7 +2574,7 @@
             container.innerHTML = `
                 <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
                     <i class="fa-solid fa-clock-rotate-left" style="font-size:36px;margin-bottom:12px;display:block;color:var(--muted);"></i>
-                    <h3 style="font-family:'Syne',sans-serif;margin-bottom:8px;font-size:17px;">Aucune transaction</h3>
+                    <h3 style="font-family:'Bricolage Grotesque',sans-serif;margin-bottom:8px;font-size:17px;">Aucune transaction</h3>
                     <p style="color:var(--muted);font-size:13px;">Scannez un QR code pour commencer à cumuler des points.</p>
                 </div>`;
             return;
@@ -2389,7 +2690,7 @@
 
         const { data: rewards, error } = await supabaseClient
             .from('rewards')
-            .select('id, name, points_required')
+            .select('*')
             .eq('merchant_id', merchantId)
             .order('points_required', { ascending: true });
 
@@ -2408,10 +2709,13 @@
             const pct = Math.min((currentPoints / r.points_required) * 100, 100);
             const remaining = Math.max(r.points_required - currentPoints, 0);
             const nameSafe = r.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            const iconHtml = r.image
+                ? `<div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;background-image:url('${r.image}');background-size:cover;background-position:center;${unlocked ? '' : 'opacity:.5;filter:grayscale(.4);'}"></div>`
+                : `<div class="reward-row-icon">${unlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>`;
 
             return `
                 <div class="reward-row${unlocked ? ' unlocked' : ''}">
-                    <div class="reward-row-icon">${unlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>
+                    ${iconHtml}
                     <div class="reward-row-info">
                         <div class="reward-row-name">${r.name}</div>
                         <div class="reward-row-pts">${r.points_required} pts requis${unlocked
@@ -2458,7 +2762,7 @@
         };
 
         // Persistance anti-perte (10 derniers claims)
-        const key = `keepo_claim_${currentClientId}`;
+        const key = `KEEPO_claim_${currentClientId}`;
         const existing = JSON.parse(localStorage.getItem(key) || '[]');
         existing.unshift(claimData);
         localStorage.setItem(key, JSON.stringify(existing.slice(0, 10)));
@@ -2512,7 +2816,7 @@
     async function saveClientAvatarToDb(base64) {
         if (!currentClientId) return;
         applyClientAvatarEverywhere(base64);
-        localStorage.setItem(`keepo_avatar_${currentClientId}`, base64);
+        localStorage.setItem(`KEEPO_avatar_${currentClientId}`, base64);
         const { error } = await supabaseClient.from('profiles')
             .update({ avatar_url: base64 }).eq('id', currentClientId);
         if (error) {
@@ -2529,7 +2833,7 @@
     async function removeClientAvatar() {
         if (!currentClientId) return;
         if (!confirm('Retirer votre photo de profil ?')) return;
-        localStorage.removeItem(`keepo_avatar_${currentClientId}`);
+        localStorage.removeItem(`KEEPO_avatar_${currentClientId}`);
         applyClientAvatarEverywhere(null);
         const { error } = await supabaseClient.from('profiles')
             .update({ avatar_url: null }).eq('id', currentClientId);
@@ -2558,19 +2862,19 @@
 
     function loadClientAvatarFromCache() {
         if (!currentClientId) return;
-        const cached = localStorage.getItem(`keepo_avatar_${currentClientId}`);
+        const cached = localStorage.getItem(`KEEPO_avatar_${currentClientId}`);
         if (cached) applyClientAvatarEverywhere(cached);
     }
 
     function applyClientAvatarFromProfile(avatarUrl) {
         if (!avatarUrl) { applyClientAvatarEverywhere(null); return; }
         applyClientAvatarEverywhere(avatarUrl);
-        if (currentClientId) localStorage.setItem(`keepo_avatar_${currentClientId}`, avatarUrl);
+        if (currentClientId) localStorage.setItem(`KEEPO_avatar_${currentClientId}`, avatarUrl);
     }
 
     // ─── PARAMÈTRES CLIENT ───
     async function openNotifPrefs() {
-        const key = `keepo_notif_${currentClientId}`;
+        const key = `KEEPO_notif_${currentClientId}`;
         const prefs = JSON.parse(localStorage.getItem(key) || '{"push":true,"email":true}');
         const pushOn  = prefs.push  ? 'on' : '';
         const emailOn = prefs.email ? 'on' : '';
@@ -2591,7 +2895,7 @@
                              <div style="font-size:12px;color:var(--muted);">Résumé hebdomadaire de vos cartes</div></div>
                     </label>
                 </div>
-                <button onclick="saveNotifPrefs()" style="margin-top:20px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;">
+                <button onclick="saveNotifPrefs()" style="margin-top:20px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;">
                     Enregistrer
                 </button>
             </div>`;
@@ -2599,13 +2903,25 @@
     }
 
     function saveNotifPrefs() {
-        const key = `keepo_notif_${currentClientId}`;
+        const key = `KEEPO_notif_${currentClientId}`;
         const prefs = {
             push:  document.getElementById('notif-push')?.checked  ?? true,
             email: document.getElementById('notif-email')?.checked ?? true
         };
         localStorage.setItem(key, JSON.stringify(prefs));
         closeClientModal();
+
+        // Applique réellement le choix push : (dé)souscription navigateur + base.
+        if (prefs.push) {
+            if ('Notification' in window && Notification.permission !== 'granted') {
+                Notification.requestPermission().then(res => { if (res === 'granted') subscribeToPush(); });
+            } else {
+                subscribeToPush();
+            }
+        } else {
+            unsubscribeFromPush();
+        }
+
         showToast('success', 'Préférences sauvegardées', prefs.push && prefs.email ? 'Toutes les notifications activées.' : 'Préférences mises à jour.');
     }
 
@@ -2617,9 +2933,9 @@
                     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Nom d'affichage</label>
                     <input type="text" id="sec-name-input" placeholder="Votre prénom ou pseudonyme"
                         style="width:100%;padding:11px 14px;background:var(--bg-3);border:1px solid var(--border-2);
-                               color:var(--text);border-radius:12px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;">
+                               color:var(--text);border-radius:12px;font-size:14px;font-family:'Instrument Sans',sans-serif;">
                 </div>
-                <button onclick="saveClientName()" style="width:100%;padding:11px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;margin-bottom:10px;">
+                <button onclick="saveClientName()" style="width:100%;padding:11px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;margin-bottom:10px;">
                     Mettre à jour le nom
                 </button>
                 <button onclick="sendPasswordReset()" style="width:100%;padding:11px;background:transparent;color:var(--text);border:1px solid var(--border-2);border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;">
@@ -2677,7 +2993,7 @@
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
         a.href     = url;
-        a.download = `keepo-export-${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `KEEPO-export-${new Date().toISOString().slice(0,10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
         showToast('success', 'Export téléchargé !', `${(transactionsRes.data||[]).length} transactions exportées.`);
@@ -2701,7 +3017,7 @@
             '--card-bg': 'rgba(18,15,32,0.82)', '--glass': 'rgba(255,255,255,0.055)',
             '--border': 'rgba(255,255,255,0.07)', '--border-2': 'rgba(255,255,255,0.13)',
             '--text': '#f2efff', '--muted': '#635f84', '--sub': '#9490b8',
-            '--cyan': '#00e8cc', '--pink': '#ff4d82', '--violet': '#8b7cf8',
+            '--cyan': '#16B8C4', '--pink': '#ff4d82', '--violet': '#8b7cf8',
             '--gold': '#ffc34d', '--green': '#22d47a'
         },
         light: {
@@ -2750,12 +3066,12 @@
         const vars = CLIENT_THEMES[themeKey] || CLIENT_THEMES.dark;
         const root = document.documentElement;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-        const key = currentClientId ? `keepo_client_theme_${currentClientId}` : 'keepo_client_theme_default';
+        const key = currentClientId ? `KEEPO_client_theme_${currentClientId}` : 'KEEPO_client_theme_default';
         localStorage.setItem(key, themeKey);
     }
 
     function loadClientTheme() {
-        const key = currentClientId ? `keepo_client_theme_${currentClientId}` : 'keepo_client_theme_default';
+        const key = currentClientId ? `KEEPO_client_theme_${currentClientId}` : 'KEEPO_client_theme_default';
         const saved = localStorage.getItem(key) || 'dark';
         const vars = CLIENT_THEMES[saved] || CLIENT_THEMES.dark;
         const root = document.documentElement;
@@ -2763,7 +3079,7 @@
     }
 
     function openThemeChooser() {
-        const key = currentClientId ? `keepo_client_theme_${currentClientId}` : 'keepo_client_theme_default';
+        const key = currentClientId ? `KEEPO_client_theme_${currentClientId}` : 'KEEPO_client_theme_default';
         const current = localStorage.getItem(key) || 'dark';
         const html = `
             <div style="padding:4px 0 12px;">
@@ -2774,16 +3090,16 @@
                         id="theme-btn-${k}"
                         style="display:flex;align-items:center;justify-content:space-between;width:100%;
                                padding:13px 16px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;
-                               background:${k === current ? 'rgba(0,232,204,0.08)' : 'var(--card-bg)'};
-                               border:1px solid ${k === current ? 'rgba(0,232,204,0.35)' : 'var(--border)'};
-                               color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;">
+                               background:${k === current ? 'rgba(14,124,140,0.08)' : 'var(--card-bg)'};
+                               border:1px solid ${k === current ? 'rgba(14,124,140,0.35)' : 'var(--border)'};
+                               color:var(--text);font-family:'Instrument Sans',sans-serif;transition:all .2s;">
                         <span>${label}</span>
                         <i class="fa-solid fa-check" style="color:var(--cyan);opacity:${k === current ? '1' : '0'};transition:.15s;" id="theme-check-${k}"></i>
                     </button>`).join('')}
                 </div>
                 <button onclick="closeClientModal()"
                     style="margin-top:18px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;
-                           border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Syne',sans-serif;">
+                           border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;">
                     Fermer
                 </button>
             </div>`;
@@ -2796,8 +3112,8 @@
             const chk = document.getElementById('theme-check-' + k);
             if (btn) {
                 const active = k === selectedKey;
-                btn.style.background = active ? 'rgba(0,232,204,0.08)' : 'var(--card-bg)';
-                btn.style.borderColor = active ? 'rgba(0,232,204,0.35)' : 'var(--border)';
+                btn.style.background = active ? 'rgba(14,124,140,0.08)' : 'var(--card-bg)';
+                btn.style.borderColor = active ? 'rgba(14,124,140,0.35)' : 'var(--border)';
             }
             if (chk) chk.style.opacity = k === selectedKey ? '1' : '0';
         });
@@ -2819,23 +3135,89 @@
         // Browser notification
         if ('Notification' in window && Notification.permission === 'granted') {
             try {
-                new Notification('Keepo 🎉', {
+                new Notification('KEEPO 🎉', {
                     body : `+${pts} points chez ${merchantName} !`,
                     icon : '/img/icon-192.png',
-                    tag  : 'keepo-pts',
+                    tag  : 'KEEPO-pts',
                     badge: '/img/icon-192.png'
                 });
             } catch {}
         }
     }
 
+    // ─── WEB PUSH — souscription & stockage côté serveur ───
+    // Convertit la clé publique VAPID (base64url) en Uint8Array pour pushManager.
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const raw = atob(base64);
+        const arr = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        return arr;
+    }
+
+    // S'abonne au push et enregistre l'abonnement en base (un par appareil).
+    async function subscribeToPush() {
+        try {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+            if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+            const vapid = window.KEEPO_VAPID_PUBLIC_KEY;
+            if (!vapid || !currentClientId) return false;
+
+            const reg = await navigator.serviceWorker.ready;
+            let sub = await reg.pushManager.getSubscription();
+            if (!sub) {
+                sub = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapid)
+                });
+            }
+            const json = sub.toJSON();
+            if (!json.keys || !json.keys.p256dh || !json.keys.auth) return false;
+
+            await supabaseClient.from('push_subscriptions').upsert({
+                client_id:  currentClientId,
+                endpoint:   sub.endpoint,
+                p256dh:     json.keys.p256dh,
+                auth:       json.keys.auth,
+                user_agent: navigator.userAgent.slice(0, 300)
+            }, { onConflict: 'endpoint' });
+            return true;
+        } catch (e) {
+            console.warn('Push subscribe failed', e);
+            return false;
+        }
+    }
+
+    // Se désabonne et supprime l'abonnement en base.
+    async function unsubscribeFromPush() {
+        try {
+            if (!('serviceWorker' in navigator)) return;
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            if (!sub) return;
+            await supabaseClient.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+            await sub.unsubscribe();
+        } catch (e) {
+            console.warn('Push unsubscribe failed', e);
+        }
+    }
+
     async function requestNotifPermission() {
         if (!('Notification' in window)) return;
-        if (Notification.permission === 'granted') return;
+        // Respecte le choix de l'utilisateur (préférences notifications).
+        const prefs = JSON.parse(localStorage.getItem(`KEEPO_notif_${currentClientId}`) || '{"push":true,"email":true}');
+        if (!prefs.push) return;
+
+        if (Notification.permission === 'granted') {
+            subscribeToPush();
+            return;
+        }
         if (Notification.permission !== 'denied') {
             // Demande non-intrusive après 4s
             setTimeout(async () => {
-                await Notification.requestPermission();
+                const res = await Notification.requestPermission();
+                if (res === 'granted') subscribeToPush();
             }, 4000);
         }
     }
@@ -2845,6 +3227,36 @@
         await stopCameraScanner();
         await supabaseClient.auth.signOut();
         window.location.href = '/connexion';
+    }
+
+    // ─── Suppression de compte (RGPD) ───
+    function openDeleteAccount() {
+        const inp = document.getElementById('delete-confirm-input');
+        if (inp) inp.value = '';
+        const btn = document.getElementById('delete-confirm-btn');
+        if (btn) btn.disabled = true;
+        document.getElementById('deleteAccountSheet').style.display = 'flex';
+    }
+    function closeDeleteAccount() {
+        document.getElementById('deleteAccountSheet').style.display = 'none';
+    }
+    async function doDeleteAccount() {
+        const btn = document.getElementById('delete-confirm-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Suppression…';
+        try {
+            const res = await fetch('/api/delete-account', { method: 'POST' });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.deleted) throw new Error(data.error || 'Échec de la suppression');
+            // Compte effacé côté serveur → on purge la session locale et on sort.
+            await supabaseClient.auth.signOut().catch(() => {});
+            showToast('success', 'Compte supprimé', 'Votre compte et vos données ont été effacés. Au revoir 👋');
+            setTimeout(() => { window.location.href = '/'; }, 1600);
+        } catch (e) {
+            showToast('error', 'Erreur', e.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Supprimer définitivement mon compte';
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -2874,6 +3286,31 @@
     }
     function closeDiscoverNearby() {
         document.getElementById('discoverSheet').style.display = 'none';
+    }
+
+    // ─── Copier l'adresse d'un commerce (depuis Découvrir) ───
+    function copyDiscoverAddr(btn) {
+        const addr = btn.getAttribute('data-addr') || '';
+        if (!addr) return;
+        const done = () => {
+            const old = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copié';
+            setTimeout(() => { btn.innerHTML = old; }, 1500);
+            showSnack('📋 Adresse copiée');
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(addr).then(done, () => _fallbackCopyText(addr, done));
+        } else {
+            _fallbackCopyText(addr, done);
+        }
+    }
+    function _fallbackCopyText(text, cb) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); if (cb) cb(); }
+        catch (e) { showSnack('Copie impossible'); }
+        finally { ta.remove(); }
     }
     async function loadNearbyMerchants(userLat, userLng) {
         const { data: merchants } = await supabaseClient
@@ -2911,11 +3348,16 @@
                 ? `${Math.round(m.distance * 1000)} m`
                 : `${m.distance.toFixed(1)} km`;
             const initial = (m.title || '?').charAt(0).toUpperCase();
+            const addrLine = m.address
+                ? `<div class="discover-merchant-addr"><i class="fa-solid fa-location-dot" style="opacity:.65;margin-right:3px;"></i>${escape(m.address)}
+                       <button class="addr-copy-btn" data-addr="${escape(m.address)}" onclick="event.stopPropagation(); copyDiscoverAddr(this)" title="Copier l'adresse"><i class="fa-solid fa-copy"></i> Copier</button>
+                   </div>`
+                : `<div class="discover-merchant-addr" style="opacity:.5;">Adresse non renseignée</div>`;
             return `<div class="discover-merchant-row ${joined ? 'joined' : ''}">
                 <div class="discover-merchant-avatar">${initial}</div>
                 <div class="discover-merchant-info">
-                    <div class="discover-merchant-name">${escape(m.title || 'Commerce partenaire')} ${joined ? '<span style="font-size:10px;color:#00e8cc;margin-left:4px;">✓ Carte active</span>' : ''}</div>
-                    <div class="discover-merchant-addr">${escape(m.address || '')}</div>
+                    <div class="discover-merchant-name">${escape(m.title || 'Commerce partenaire')} ${joined ? '<span style="font-size:10px;color:#16B8C4;margin-left:4px;">✓ Carte active</span>' : ''}</div>
+                    ${addrLine}
                 </div>
                 <div class="discover-distance-chip">${distLabel}</div>
             </div>`;
@@ -3017,20 +3459,85 @@
     }
 
     // ─── Roue de la fortune ───
+    let currentWheelPrizes = [];
+    const WHEEL_FALLBACK_PRIZES = [
+        { label: 'Jackpot 500 pts', points: 500, probability: 5,  color: '#ffc34d' },
+        { label: '150 pts bonus',   points: 150, probability: 15, color: '#5B3AA0' },
+        { label: '50 pts bonus',    points: 50,  probability: 25, color: '#16B8C4' },
+        { label: '20 pts bonus',    points: 20,  probability: 30, color: '#ff8a5c' },
+        { label: 'Pas de chance',   points: 0,   probability: 25, color: '#3a3556' }
+    ];
+
+    function drawWheelCanvas(prizes) {
+        const canvas = document.getElementById('wheel-canvas');
+        if (!canvas) return;
+        const dpr  = Math.min(window.devicePixelRatio || 1, 2);
+        const size = 220;
+        canvas.width  = size * dpr;
+        canvas.height = size * dpr;
+        canvas.style.width  = size + 'px';
+        canvas.style.height = size + 'px';
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        const cx = size / 2, cy = size / 2, r = cx - 3;
+        const total = prizes.reduce((s, p) => s + (p.probability || 0), 0) || 100;
+        let angle = -Math.PI / 2;
+        prizes.forEach(prize => {
+            const sweep = (prize.probability / total) * 2 * Math.PI;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, angle, angle + sweep);
+            ctx.closePath();
+            ctx.fillStyle = prize.color || '#5B3AA0';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            if (sweep > 0.12) {
+                const mid = angle + sweep / 2;
+                ctx.save();
+                ctx.translate(cx + Math.cos(mid) * r * 0.63, cy + Math.sin(mid) * r * 0.63);
+                ctx.rotate(mid + Math.PI / 2);
+                ctx.textAlign    = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle    = '#fff';
+                ctx.shadowColor  = 'rgba(0,0,0,0.7)';
+                ctx.shadowBlur   = 4;
+                const fSize = Math.max(8, Math.min(11, 55 / prizes.length));
+                ctx.font = `700 ${fSize}px 'Instrument Sans',sans-serif`;
+                const maxCh = Math.max(5, Math.floor(sweep / 0.08));
+                const txt = prize.label.length > maxCh ? prize.label.slice(0, maxCh) + '…' : prize.label;
+                ctx.fillText(txt, 0, 0);
+                ctx.restore();
+            }
+            angle += sweep;
+        });
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+        ctx.fillStyle = '#0d0c18'; ctx.fill();
+        ctx.strokeStyle = '#16B8C4'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.font = '16px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'transparent'; ctx.fillStyle = '#fff';
+        ctx.fillText('🎯', cx, cy);
+    }
+
     async function openWheelSheet() {
         if (!currentQrMerchantId) return;
         document.getElementById('wheel-merchant-name').innerText = currentQrMerchantName;
         document.getElementById('wheel-result').classList.remove('show');
         document.getElementById('wheel-result').innerHTML = '';
-        document.getElementById('wheel-disc').classList.remove('spinning');
-        document.getElementById('wheel-disc').style.removeProperty('--target-rotation');
+        const canvas = document.getElementById('wheel-canvas');
+        if (canvas) { canvas.style.transition = 'none'; canvas.style.transform = 'rotate(0deg)'; }
 
-        // Vérifie l'éligibilité
+        // Vérifie l'éligibilité + charge les lots
         const { data: card } = await supabaseClient
             .from('merchant_cards')
-            .select('wheel_enabled, wheel_visits_required')
+            .select('wheel_enabled, wheel_visits_required, wheel_prizes')
             .eq('merchant_id', currentQrMerchantId)
             .maybeSingle();
+        currentWheelPrizes = card?.wheel_prizes || WHEEL_FALLBACK_PRIZES;
+        drawWheelCanvas(currentWheelPrizes);
 
         const required = card?.wheel_visits_required ?? 10;
         const enabled  = card?.wheel_enabled !== false;
@@ -3053,11 +3560,11 @@
             const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
             const progress = visits - lastSpin;
             if (progress >= required) {
-                document.getElementById('wheel-status-text').innerHTML = `<strong style="color:#00e8cc;">Vous êtes éligible !</strong> Tournez la roue 🎉`;
+                document.getElementById('wheel-status-text').innerHTML = `<strong style="color:#16B8C4;">Vous êtes éligible !</strong> Tournez la roue 🎉`;
                 document.getElementById('wheel-spin-btn').disabled = false;
                 document.getElementById('wheel-spin-btn').style.opacity = 1;
             } else {
-                document.getElementById('wheel-status-text').innerHTML = `Encore <strong style="color:#c5b8ff;">${required - progress}</strong> visite${required - progress > 1 ? 's' : ''} pour débloquer un tour gratuit (${progress}/${required})`;
+                document.getElementById('wheel-status-text').innerHTML = `Encore <strong style="color:#5B3AA0;">${required - progress}</strong> visite${required - progress > 1 ? 's' : ''} pour débloquer un tour gratuit (${progress}/${required})`;
                 document.getElementById('wheel-spin-btn').disabled = true;
                 document.getElementById('wheel-spin-btn').style.opacity = 0.5;
             }
@@ -3081,18 +3588,29 @@
             return;
         }
 
-        // Animation : rotation visuelle
-        const disc = document.getElementById('wheel-disc');
-        const targetDeg = 360 * 5 + (data?.roll || 0) * 3.6;
-        disc.style.setProperty('--target-rotation', targetDeg + 'deg');
-        disc.classList.add('spinning');
+        // Animation : calcule l'angle du segment gagnant et tourne la roue dessus
+        const prizes = currentWheelPrizes.length ? currentWheelPrizes : WHEEL_FALLBACK_PRIZES;
+        const total  = prizes.reduce((s, p) => s + (p.probability || 0), 0) || 100;
+        let cumul = 0, winAngleDeg = 0, segStart = 0;
+        for (const p of prizes) {
+            const sweep = (p.probability / total) * 360;
+            cumul += p.probability;
+            if ((data?.roll ?? 0) < cumul) { winAngleDeg = segStart + sweep / 2; break; }
+            segStart += sweep;
+        }
+        const canvas = document.getElementById('wheel-canvas');
+        canvas.style.transition = 'none';
+        canvas.style.transform  = 'rotate(0deg)';
+        canvas.getBoundingClientRect();
+        canvas.style.transition = 'transform 4s cubic-bezier(.17,.67,.3,1)';
+        canvas.style.transform  = `rotate(${360 * 5 + (360 - winAngleDeg)}deg)`;
 
         setTimeout(() => {
             const res = document.getElementById('wheel-result');
             res.innerHTML = `
                 <div style="font-size:32px;margin-bottom:6px;">${data?.prize_value > 0 ? '🎉' : '🍀'}</div>
-                <div style="font-weight:800;font-family:'Syne',sans-serif;font-size:16px;color:#fff;margin-bottom:4px;">${data?.prize_label || 'Résultat'}</div>
-                ${data?.prize_value > 0 ? `<div style="font-size:12px;color:#00e8cc;">Points crédités automatiquement sur votre carte</div>` : `<div style="font-size:12px;color:var(--muted);">Bonne chance pour la prochaine fois !</div>`}
+                <div style="font-weight:800;font-family:'Bricolage Grotesque',sans-serif;font-size:16px;color:#fff;margin-bottom:4px;">${data?.prize_label || 'Résultat'}</div>
+                ${data?.prize_value > 0 ? `<div style="font-size:12px;color:#16B8C4;">Points crédités automatiquement sur votre carte</div>` : `<div style="font-size:12px;color:var(--muted);">Bonne chance pour la prochaine fois !</div>`}
             `;
             res.classList.add('show');
             btn.innerHTML = '<i class="fa-solid fa-check"></i> Tour terminé';
@@ -3104,7 +3622,7 @@
     // ─── Cartes cadeaux ───
     function openGiftSheet() {
         if (!currentQrMerchantId) return;
-        document.getElementById('gift-merchant-info').innerHTML = `Solde actuel chez <strong>${currentQrMerchantName.replace(/</g,'&lt;')}</strong> : <strong style="color:#00e8cc;">${currentQrPoints} pts</strong>`;
+        document.getElementById('gift-merchant-info').innerHTML = `Solde actuel chez <strong>${currentQrMerchantName.replace(/</g,'&lt;')}</strong> : <strong style="color:#16B8C4;">${currentQrPoints} pts</strong>`;
         document.getElementById('gift-amount').value = '';
         document.getElementById('gift-message').value = '';
         document.getElementById('gift-result').style.display = 'none';
@@ -3134,8 +3652,8 @@
 
         document.getElementById('gift-result').innerHTML = `
             <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Code à partager</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:24px;letter-spacing:4px;color:#00e8cc;text-align:center;margin-bottom:10px;cursor:pointer;" onclick="navigator.clipboard.writeText('${data.code}');showSnack('✓ Code copié');">${data.code}</div>
-            <div style="font-size:12px;color:var(--muted);">Partagez ce code avec la personne de votre choix. Elle pourra l'utiliser dans son app Keepo pour recevoir <strong style="color:#fff;">${data.points} points</strong>.</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:24px;letter-spacing:4px;color:#16B8C4;text-align:center;margin-bottom:10px;cursor:pointer;" onclick="navigator.clipboard.writeText('${data.code}');showSnack('✓ Code copié');">${data.code}</div>
+            <div style="font-size:12px;color:var(--muted);">Partagez ce code avec la personne de votre choix. Elle pourra l'utiliser dans son app KEEPO pour recevoir <strong style="color:#fff;">${data.points} points</strong>.</div>
         `;
         document.getElementById('gift-result').style.display = 'block';
         loadClientWallet();
@@ -3161,11 +3679,11 @@
 
     function showSnack(msg) {
         // Petit toast simple si pas de système existant
-        let s = document.getElementById('keepoSnack');
+        let s = document.getElementById('KEEPOSnack');
         if (!s) {
             s = document.createElement('div');
-            s.id = 'keepoSnack';
-            s.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0d0c18;border:1px solid rgba(124,106,247,0.4);color:#fff;padding:12px 20px;border-radius:50px;font-weight:600;font-size:13px;z-index:9999;box-shadow:0 8px 28px rgba(0,0,0,0.5);max-width:90vw;text-align:center;';
+            s.id = 'KEEPOSnack';
+            s.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(18,15,30,.96);border:1px solid rgba(255,255,255,0.14);color:#fff;padding:12px 20px;border-radius:50px;font-weight:600;font-size:13px;z-index:9999;box-shadow:0 8px 28px rgba(20,20,27,0.35);max-width:90vw;text-align:center;';
             document.body.appendChild(s);
         }
         s.innerText = msg;
@@ -3177,7 +3695,7 @@
     //  ASSISTANT IA — Chatbot côté client
     // ═══════════════════════════════════════════════════════════
     let aiClientHistory = [];
-    const AI_CLIENT_WELCOME = "👋 Bonjour ! Je suis l'assistant Keepo. Posez-moi vos questions sur les points, récompenses, scan QR ou tout ce qui concerne votre carte de fidélité.";
+    const AI_CLIENT_WELCOME = "👋 Bonjour ! Je suis l'assistant KEEPO. Posez-moi vos questions sur les points, récompenses, scan QR ou tout ce qui concerne votre carte de fidélité.";
 
     function openClientAiChat() {
         const sheet = document.getElementById('aiChatSheet');

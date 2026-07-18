@@ -1,4 +1,4 @@
-/** Authentification et garde de routes Keepo */
+﻿/** Authentification et garde de routes KEEPO */
 window.KEEPO = window.KEEPO || {};
 
 KEEPO.getSession = async function () {

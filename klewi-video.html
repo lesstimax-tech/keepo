@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Klewi — Le Son</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0010;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* ── Canvas starfield ── */
+    canvas#bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Ambient blobs ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.12;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .blob-1 { width: 500px; height: 500px; background: #ff3a6e; top: -150px; left: -150px;
+               animation: blobDrift 6s ease-in-out infinite alternate; }
+    .blob-2 { width: 400px; height: 400px; background: #6c3aff; bottom: -100px; right: -100px;
+               animation: blobDrift 8s ease-in-out infinite alternate-reverse; }
+    .blob-3 { width: 300px; height: 300px; background: #ffaa00; bottom: 20%; left: 10%;
+               animation: blobDrift 5s ease-in-out infinite alternate 1s; }
+    @keyframes blobDrift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(40px,30px) scale(1.15); }
+    }
+
+    /* ── Scene ── */
+    .scene {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Title ── */
+    .title {
+      font-size: 3.5rem;
+      letter-spacing: 6px;
+      color: #ff3a6e;
+      text-shadow: 0 0 30px #ff3a6e, 0 0 60px #ff3a6e55, 3px 3px 0 #000;
+      margin-bottom: 10px;
+      animation: titlePulse 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes titlePulse {
+      from { transform: scale(1);    text-shadow: 0 0 20px #ff3a6e, 3px 3px 0 #000; }
+      to   { transform: scale(1.04); text-shadow: 0 0 50px #ff3a6e, 0 0 100px #ff006655, 3px 3px 0 #000; }
+    }
+
+    /* ── Klewi bounce wrapper ── */
+    #klewi-bounce {
+      animation: bounceBody 0.45s cubic-bezier(.36,.07,.19,.97) infinite alternate;
+      transform-origin: bottom center;
+    }
+    @keyframes bounceBody {
+      from { transform: translateY(0)   scaleX(1)    scaleY(1); }
+      to   { transform: translateY(-45px) scaleX(0.93) scaleY(1.07); }
+    }
+
+    /* SVG part animations */
+    .arm-l { transform-origin: 90% 50%; animation: armL .45s ease-in-out infinite alternate; }
+    .arm-r { transform-origin: 10% 50%; animation: armR .45s ease-in-out infinite alternate; }
+    @keyframes armL { from { transform: rotate(-25deg); } to { transform: rotate(25deg); } }
+    @keyframes armR { from { transform: rotate(25deg);  } to { transform: rotate(-25deg); } }
+
+    .leg-l { transform-origin: 50% 0%; animation: legL .45s ease-in-out infinite alternate; }
+    .leg-r { transform-origin: 50% 0%; animation: legR .45s ease-in-out infinite alternate; }
+    @keyframes legL { from { transform: rotate(-10deg); } to { transform: rotate(15deg); } }
+    @keyframes legR { from { transform: rotate(10deg);  } to { transform: rotate(-15deg); } }
+
+    .brow-l { animation: browL 1.8s ease-in-out infinite; }
+    .brow-r { animation: browR 1.8s ease-in-out infinite; }
+    @keyframes browL { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px) rotate(-5deg)} }
+    @keyframes browR { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px) rotate(5deg)} }
+
+    .tongue { animation: tongueWag .45s ease-in-out infinite alternate; transform-origin: 50% 0%; }
+    @keyframes tongueWag { from { transform: scaleX(1); } to { transform: scaleX(1.3); } }
+
+    .eye-l, .eye-r { animation: eyeRoll 2s ease-in-out infinite; }
+    @keyframes eyeRoll {
+      0%,100% { transform: translate(0,0); }
+      30%     { transform: translate(3px,-3px); }
+      70%     { transform: translate(-3px,2px); }
+    }
+
+    /* ── Ground ── */
+    .ground {
+      width: 280px; height: 16px;
+      background: linear-gradient(90deg, #6c3aff, #ff3a6e);
+      border-radius: 8px;
+      margin-top: -8px;
+      box-shadow: 0 0 30px #ff3a6e88, 0 0 60px #6c3aff55;
+    }
+
+    /* ── Subtitles ── */
+    #sub-wrap {
+      position: fixed;
+      bottom: 7%;
+      left: 0; right: 0;
+      text-align: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    #sub {
+      display: inline-block;
+      padding: 10px 28px;
+      border-radius: 10px;
+      font-size: 2.1rem;
+      text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+      background: rgba(0,0,0,0.72);
+      border: 2px solid rgba(255,255,255,0.15);
+      max-width: 90vw;
+      line-height: 1.2;
+      backdrop-filter: blur(4px);
+      transition: color .1s, border-color .1s;
+    }
+
+    /* Sub animations */
+    .s-pop    { animation: sPop   .35s cubic-bezier(.34,1.56,.64,1) both; }
+    .s-shake  { animation: sPop   .35s cubic-bezier(.34,1.56,.64,1) both, sShake .5s ease-in-out .1s both; }
+    .s-bounce { animation: sBounce .5s cubic-bezier(.34,1.56,.64,1) both; }
+    .s-spin   { animation: sSpin  .4s cubic-bezier(.34,1.56,.64,1) both; }
+    .s-zoom   { animation: sZoom  .4s cubic-bezier(.34,1.56,.64,1) both; }
+    .s-drop   { animation: sDrop  .4s cubic-bezier(.34,1.56,.64,1) both; }
+    .s-wipe   { animation: sWipe  .35s ease-out both; }
+
+    @keyframes sPop    { from{transform:scale(.2);opacity:0} to{transform:scale(1);opacity:1} }
+    @keyframes sBounce { 0%{transform:translateY(-60px);opacity:0} 60%{transform:translateY(8px);opacity:1} 80%{transform:translateY(-4px)} 100%{transform:translateY(0)} }
+    @keyframes sSpin   { from{transform:rotateX(90deg) scale(.5);opacity:0} to{transform:rotateX(0) scale(1);opacity:1} }
+    @keyframes sZoom   { from{transform:scale(3);opacity:0} to{transform:scale(1);opacity:1} }
+    @keyframes sDrop   { from{transform:translateY(-120px) rotate(-10deg);opacity:0} to{transform:translateY(0) rotate(0);opacity:1} }
+    @keyframes sWipe   { from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 0% 0 0)} }
+    @keyframes sShake  {
+      0%,100%{transform:translateX(0) rotate(0)}
+      20%{transform:translateX(-12px) rotate(-3deg)}
+      40%{transform:translateX(12px) rotate(3deg)}
+      60%{transform:translateX(-6px) rotate(-1deg)}
+      80%{transform:translateX(6px) rotate(1deg)}
+    }
+
+    /* ── Beat flash ── */
+    #flash {
+      position: fixed; inset: 0; z-index: 5;
+      pointer-events: none;
+      background: white;
+      opacity: 0;
+      transition: opacity .05s;
+    }
+    #flash.on { opacity: 0.07; }
+
+    /* ── Floating emoji ── */
+    .floaty {
+      position: fixed;
+      font-size: 2rem;
+      pointer-events: none;
+      z-index: 30;
+      animation: floaty 2s ease-out forwards;
+    }
+    @keyframes floaty {
+      0%   { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-220px) scale(1.8) rotate(20deg); opacity: 0; }
+    }
+
+    /* ── Start overlay ── */
+    #overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: radial-gradient(ellipse at center, #1a0025 0%, #000 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px;
+    }
+    #overlay .ov-title {
+      font-size: 4rem; color: #ff3a6e;
+      text-shadow: 0 0 40px #ff3a6e, 3px 3px 0 #000;
+      animation: titlePulse .8s ease-in-out infinite alternate;
+    }
+    #overlay .ov-sub {
+      font-size: 1rem; color: #aaa;
+      font-family: sans-serif; letter-spacing: 2px;
+    }
+    #overlay .ov-btn {
+      margin-top: 10px;
+      font-size: 1.5rem; font-family: 'Impact', sans-serif;
+      letter-spacing: 3px; color: #fff;
+      padding: 14px 40px;
+      border: 3px solid #ff3a6e;
+      border-radius: 50px;
+      background: rgba(255,58,110,.15);
+      cursor: pointer;
+      animation: btnPulse 1s ease-in-out infinite alternate;
+      box-shadow: 0 0 30px #ff3a6e55;
+    }
+    @keyframes btnPulse {
+      from { transform: scale(1);    box-shadow: 0 0 20px #ff3a6e44; }
+      to   { transform: scale(1.05); box-shadow: 0 0 50px #ff3a6e99; }
+    }
+
+    /* ── Progress bar ── */
+    #progress-wrap {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 4px; background: rgba(255,255,255,.1); z-index: 50;
+    }
+    #progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #6c3aff, #ff3a6e);
+      width: 0%;
+      transition: width .1s linear;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<div id="flash"></div>
+
+<!-- ── START OVERLAY ── -->
+<div id="overlay">
+  <div class="ov-title">KLEWI</div>
+  <div class="ov-sub">🔊 ACTIVE LE SON</div>
+  <div class="ov-btn" onclick="startVideo()">▶ LANCER</div>
+</div>
+
+<!-- ── SCENE ── -->
+<div class="scene">
+  <div class="title">KLEWI</div>
+
+  <div id="klewi-bounce">
+    <svg width="180" height="240" viewBox="0 0 180 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="body" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stop-color="#fce4d0"/>
+          <stop offset="45%"  stop-color="#e8a882"/>
+          <stop offset="100%" stop-color="#b86030"/>
+        </radialGradient>
+        <radialGradient id="bodyEdge" cx="50%" cy="50%" r="50%">
+          <stop offset="70%" stop-color="transparent"/>
+          <stop offset="100%" stop-color="rgba(0,0,0,0.18)"/>
+        </radialGradient>
+        <filter id="glow">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+      </defs>
+
+      <!-- Shadow under feet -->
+      <ellipse cx="90" cy="232" rx="62" ry="9" fill="rgba(0,0,0,0.35)"/>
+
+      <!-- ── LEFT ARM ── -->
+      <g class="arm-l">
+        <path d="M 26 108 Q 2 95 8 78" stroke="#e8a882" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <ellipse cx="8" cy="72" rx="9" ry="9" fill="#e8a882" stroke="#b86030" stroke-width="1.5"/>
+        <ellipse cx="1"  cy="63" rx="6" ry="6" fill="#e8a882" stroke="#b86030" stroke-width="1.2"/>
+        <ellipse cx="11" cy="61" rx="6" ry="6" fill="#e8a882" stroke="#b86030" stroke-width="1.2"/>
+        <ellipse cx="-4" cy="70" rx="5" ry="5" fill="#e8a882" stroke="#b86030" stroke-width="1.2"/>
+      </g>
+
+      <!-- ── RIGHT ARM ── -->
+      <g class="arm-r">
+        <path d="M 154 108 Q 178 95 172 78" stroke="#e8a882" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <ellipse cx="172" cy="72" rx="9"  ry="9"  fill="#e8a882" stroke="#b86030" stroke-width="1.5"/>
+        <ellipse cx="179" cy="63" rx="6"  ry="6"  fill="#e8a882" stroke="#b86030" stroke-width="1.2"/>
+        <ellipse cx="169" cy="61" rx="6"  ry="6"  fill="#e8a882" stroke="#b86030" stroke-width="1.2"/>
+        <ellipse cx="184" cy="70" rx="5"  ry="5"  fill="#e8a882" stroke="#b86030" stroke-width="1.2"/>
+      </g>
+
+      <!-- ── BODY ── -->
+      <path d="M 90 8
+               C 32 8, 14 52, 14 96
+               C 14 158, 34 210, 90 215
+               C 146 210, 166 158, 166 96
+               C 166 52, 148 8, 90 8 Z"
+            fill="url(#body)" stroke="#b86030" stroke-width="2"/>
+      <!-- Edge shade -->
+      <path d="M 90 8
+               C 32 8, 14 52, 14 96
+               C 14 158, 34 210, 90 215
+               C 146 210, 166 158, 166 96
+               C 166 52, 148 8, 90 8 Z"
+            fill="url(#bodyEdge)"/>
+      <!-- Highlight -->
+      <ellipse cx="60" cy="52" rx="22" ry="34" fill="rgba(255,255,255,.28)"
+               transform="rotate(-18,60,52)"/>
+
+      <!-- Wrinkles at base -->
+      <path d="M 64 172 Q 90 184 116 172" stroke="#b86030" stroke-width="2"   fill="none" opacity=".5"/>
+      <path d="M 70 186 Q 90 195 110 186" stroke="#b86030" stroke-width="1.5" fill="none" opacity=".35"/>
+
+      <!-- ── EYEBROWS ── -->
+      <g class="brow-l">
+        <path d="M 44 76 Q 62 68 80 74" stroke="#7a3e1e" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="brow-r">
+        <path d="M 100 74 Q 118 68 136 76" stroke="#7a3e1e" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <!-- ── LEFT EYE ── -->
+      <ellipse cx="62"  cy="100" rx="22" ry="24" fill="white" stroke="#ddd" stroke-width="1"/>
+      <g class="eye-l">
+        <ellipse cx="62"  cy="102" rx="13" ry="14" fill="#2a1a0a"/>
+        <ellipse cx="66"  cy="104" rx="5"  ry="5"  fill="#3a4aaa"/>
+        <circle  cx="57"  cy="96"  r="5"  fill="white" opacity=".9"/>
+        <circle  cx="68"  cy="108" r="2.5" fill="white" opacity=".5"/>
+      </g>
+
+      <!-- ── RIGHT EYE ── -->
+      <ellipse cx="118" cy="100" rx="22" ry="24" fill="white" stroke="#ddd" stroke-width="1"/>
+      <g class="eye-r">
+        <ellipse cx="118" cy="102" rx="13" ry="14" fill="#2a1a0a"/>
+        <ellipse cx="122" cy="104" rx="5"  ry="5"  fill="#3a4aaa"/>
+        <circle  cx="113" cy="96"  r="5"  fill="white" opacity=".9"/>
+        <circle  cx="124" cy="108" r="2.5" fill="white" opacity=".5"/>
+      </g>
+
+      <!-- ── MOUTH ── -->
+      <path d="M 64 140 Q 90 162 116 140" stroke="#7a1a1a" stroke-width="3"
+            fill="#e84040" stroke-linecap="round"/>
+      <!-- Teeth -->
+      <rect x="72" y="141" width="13" height="10" fill="white" rx="3"/>
+      <rect x="88" y="141" width="13" height="10" fill="white" rx="3"/>
+      <!-- Tongue -->
+      <g class="tongue">
+        <ellipse cx="90" cy="156" rx="16" ry="10" fill="#e82060"/>
+        <path d="M 80 156 Q 90 163 100 156" stroke="#c01040" stroke-width="1.5" fill="none"/>
+      </g>
+
+      <!-- Blush -->
+      <ellipse cx="38"  cy="118" rx="14" ry="9" fill="#ff8888" opacity=".35"/>
+      <ellipse cx="142" cy="118" rx="14" ry="9" fill="#ff8888" opacity=".35"/>
+
+      <!-- ── LEFT LEG ── -->
+      <g class="leg-l">
+        <path d="M 68 213 Q 60 228 52 230" stroke="#e8a882" stroke-width="13" fill="none" stroke-linecap="round"/>
+        <ellipse cx="48" cy="231" rx="14" ry="8" fill="#e8a882" stroke="#b86030" stroke-width="1.5"/>
+      </g>
+      <!-- ── RIGHT LEG ── -->
+      <g class="leg-r">
+        <path d="M 112 213 Q 120 228 128 230" stroke="#e8a882" stroke-width="13" fill="none" stroke-linecap="round"/>
+        <ellipse cx="132" cy="231" rx="14" ry="8" fill="#e8a882" stroke="#b86030" stroke-width="1.5"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="ground"></div>
+</div>
+
+<!-- ── SUBTITLES ── -->
+<div id="sub-wrap">
+  <span id="sub"></span>
+</div>
+
+<!-- ── PROGRESS ── -->
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<!-- ══════════════════════════════════════════
+     AUDIO — remplace "klewi.mp3" par ton fichier
+     ══════════════════════════════════════════ -->
+<audio id="audio" src="klewi.mp3" preload="auto"></audio>
+
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║  PAROLES — édite ICI les textes + timings               ║
+// ║                                                          ║
+// ║  time  → seconde où le sous-titre apparaît              ║
+// ║  text  → texte affiché (émojis OK ✅)                   ║
+// ║  color → couleur du texte (optionnel)                   ║
+// ║  anim  → pop | shake | bounce | spin | zoom | drop | wipe║
+// ╚══════════════════════════════════════════════════════════╝
+const LYRICS = [
+  { time:  0.3,  text: "🎵 LE KLEWI 🎵",                     color: "#ff3a6e", anim: "drop"   },
+  { time:  2.0,  text: "Il est arrivé dans l'quartier",       color: "#fff",    anim: "wipe"   },
+  { time:  4.5,  text: "Tout le monde a pris peur",           color: "#ffdd57", anim: "bounce" },
+  { time:  7.0,  text: "LE KLEWI !!!",                        color: "#ff3a6e", anim: "shake"  },
+  { time:  9.5,  text: "C'est quoi ce truc ???",              color: "#a78bfa", anim: "zoom"   },
+  { time: 12.0,  text: "Une créature... unique 👁️",          color: "#34d399", anim: "spin"   },
+  { time: 14.5,  text: "REGARDEZ-LE DANSER",                  color: "#fb923c", anim: "shake"  },
+  { time: 17.0,  text: "😭 Pourquoi il danse 😭",            color: "#fff",    anim: "bounce" },
+  { time: 19.5,  text: "KLEWI FOREVER 🏆",                   color: "#facc15", anim: "drop"   },
+  { time: 22.0,  text: "🎵 fin 🎵",                          color: "#aaa",    anim: "pop"    },
+  // ► Ajoute tes vraies paroles en dessous ◄
+];
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  BEATS — secondes où un flash + émoji apparaît          ║
+// ║  (ex: chaque gros kick de ta musique)                   ║
+// ╚══════════════════════════════════════════════════════════╝
+const BEATS = [0.3, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22];
+
+// ─────────────────────────────────────────
+const audio   = document.getElementById('audio');
+const subEl   = document.getElementById('sub');
+const flashEl = document.getElementById('flash');
+const progBar = document.getElementById('progress-bar');
+
+let lyricIdx = -1;
+let beatIdx  = 0;
+
+// ── STARFIELD ──
+const cv  = document.getElementById('bg');
+const ctx = cv.getContext('2d');
+let stars = [];
+
+function initStars() {
+  cv.width  = window.innerWidth;
+  cv.height = window.innerHeight;
+  stars = Array.from({ length: 120 }, () => ({
+    x: Math.random() * cv.width,
+    y: Math.random() * cv.height,
+    r: Math.random() * 1.5 + 0.3,
+    sp: Math.random() * 0.4 + 0.1,
+    o: Math.random()
+  }));
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  stars.forEach(s => {
+    s.o += (Math.random() - 0.5) * 0.05;
+    s.o = Math.max(0.1, Math.min(1, s.o));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${s.o})`;
+    ctx.fill();
+    s.y += s.sp;
+    if (s.y > cv.height) { s.y = 0; s.x = Math.random() * cv.width; }
+  });
+  requestAnimationFrame(drawStars);
+}
+initStars();
+drawStars();
+window.addEventListener('resize', initStars);
+
+// ── SUBTITLE ENGINE ──
+function setLyric(l) {
+  subEl.textContent    = l.text;
+  subEl.style.color    = l.color  || '#fff';
+  subEl.style.borderColor = (l.color || '#fff') + '44';
+  subEl.className = '';
+  void subEl.offsetWidth;
+  subEl.className = 's-' + (l.anim || 'pop');
+}
+
+// ── BEAT FLASH ──
+function doFlash() {
+  flashEl.classList.add('on');
+  setTimeout(() => flashEl.classList.remove('on'), 80);
+}
+
+// ── FLOATING EMOJI ──
+const EMOJIS = ['😂','💀','🤣','👀','💥','🔥','😭','🤡','🫀','😱'];
+function spawnEmoji() {
+  const el = document.createElement('div');
+  el.className   = 'floaty';
+  el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+  el.style.left  = (10 + Math.random() * 80) + '%';
+  el.style.bottom = (15 + Math.random() * 20) + '%';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2000);
+}
+
+// ── MAIN LOOP ──
+function tick() {
+  const t = audio.currentTime;
+
+  // Progress bar
+  if (audio.duration) progBar.style.width = (t / audio.duration * 100) + '%';
+
+  // Subtitles
+  for (let i = LYRICS.length - 1; i >= 0; i--) {
+    if (t >= LYRICS[i].time) {
+      if (i !== lyricIdx) { lyricIdx = i; setLyric(LYRICS[i]); }
+      break;
+    }
+  }
+
+  // Beats
+  if (beatIdx < BEATS.length && t >= BEATS[beatIdx]) {
+    beatIdx++;
+    doFlash();
+    spawnEmoji();
+  }
+}
+
+setInterval(tick, 50);
+
+// ── START ──
+function startVideo() {
+  document.getElementById('overlay').style.display = 'none';
+  audio.play().catch(() => {});
+}
+
+// ── KLEWI click easter egg ──
+document.getElementById('klewi-bounce').addEventListener('click', e => {
+  e.stopPropagation();
+  const kl = document.getElementById('klewi-bounce');
+  kl.style.animation = 'none';
+  kl.style.transform = 'rotate(360deg)';
+  kl.style.transition = 'transform .3s ease-out';
+  setTimeout(() => { kl.style.transform = ''; kl.style.transition = ''; kl.style.animation = ''; }, 350);
+  spawnEmoji(); spawnEmoji();
+});
+</script>
+</body>
+</html>

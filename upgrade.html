@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keepo Pro Scale — Le programme de fidélité ultime pour votre commerce</title>
-    <meta name="description" content="Débloquez tout le potentiel de Keepo : analytics, IA, multi-caissiers, mode caisse tablette, marketing automatisé. 99€/mois sans engagement.">
+    <title>KEEPO Pro Scale — Le programme de fidélité ultime pour votre commerce</title>
+    <meta name="description" content="Débloquez tout le potentiel de KEEPO : analytics, IA, multi-caissiers, mode caisse tablette, marketing automatisé. 99€/mois sans engagement.">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
 
@@ -25,8 +25,8 @@
         --txt: #e8e9f0;
         --txt-sub: #b8b6cf;
         --txt-muted: #7f7d97;
-        --cyan: #00e8cc;
-        --violet: #7c6af7;
+        --cyan: #16B8C4;
+        --violet: #5B3AA0;
         --gold: #ffc34d;
         --rose: #ff4d82;
         --green: #3ee36c;
@@ -41,7 +41,7 @@
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
     }
-    ::selection { background: rgba(0,232,204,0.3); color: #fff; }
+    ::selection { background: rgba(14,124,140,0.3); color: #fff; }
     img { max-width: 100%; }
 
     /* ─── HEADER ─── */
@@ -56,7 +56,7 @@
     }
     .nav-logo {
         display: flex; align-items: center; gap: 10px;
-        font-family: 'Syne', sans-serif; font-weight: 800;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
         font-size: 22px; color: #fff; text-decoration: none;
     }
     .nav-logo-icon {
@@ -76,7 +76,7 @@
         background: linear-gradient(135deg, var(--rose), var(--gold));
         color: var(--bg-deep); text-decoration: none;
         padding: 10px 18px; border-radius: 50px;
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 12px;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 12px;
         transition: all .15s;
         box-shadow: 0 6px 20px rgba(255,77,130,0.3);
     }
@@ -133,7 +133,7 @@
         border: 1px solid rgba(255,77,130,0.3);
         padding: 7px 16px; border-radius: 50px;
         font-size: 12px; font-weight: 700; color: #ff8aaa;
-        font-family: 'Cabinet Grotesk', sans-serif; letter-spacing: 0.5px;
+        font-family: 'Bricolage Grotesque', sans-serif; letter-spacing: 0.5px;
         margin-bottom: 28px;
     }
     .hero-chip-dot {
@@ -159,13 +159,13 @@
     }
 
     .hero-title {
-        font-family: 'Cabinet Grotesk', sans-serif;
+        font-family: 'Bricolage Grotesque', sans-serif;
         font-weight: 900; font-size: clamp(40px, 6vw, 76px);
         line-height: 1.02; letter-spacing: -0.02em;
         margin-bottom: 20px;
     }
     .hero-title .grad {
-        background: linear-gradient(135deg, #fff 0%, #ffc34d 30%, #ff4d82 60%, #7c6af7 90%);
+        background: linear-gradient(135deg, #fff 0%, #ffc34d 30%, #ff4d82 60%, #5B3AA0 90%);
         -webkit-background-clip: text; background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -185,7 +185,7 @@
         background-size: 200% 200%;
         color: var(--bg-deep); border: none; cursor: pointer; text-decoration: none;
         padding: 17px 38px; border-radius: 50px;
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 16px;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 16px;
         transition: all .25s;
         box-shadow: 0 12px 36px rgba(255,77,130,0.4);
         display: inline-flex; align-items: center; gap: 10px;
@@ -205,7 +205,7 @@
         border: 1px solid var(--border-2);
         color: #fff; text-decoration: none;
         padding: 17px 32px; border-radius: 50px;
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 15px;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 15px;
         cursor: pointer; transition: all .15s;
     }
     .cta-secondary:hover { background: rgba(255,255,255,0.08); border-color: var(--border-2); }
@@ -230,7 +230,7 @@
         .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 24px 20px; }
     }
     .stat-num {
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
         font-size: clamp(28px, 4vw, 42px);
         background: linear-gradient(135deg, var(--cyan), var(--violet));
         -webkit-background-clip: text; background-clip: text;
@@ -245,13 +245,13 @@
     .section-head { text-align: center; margin-bottom: 56px; }
     .section-eyebrow {
         display: inline-block; padding: 5px 14px; border-radius: 50px;
-        background: rgba(0,232,204,0.08); border: 1px solid rgba(0,232,204,0.25);
+        background: rgba(14,124,140,0.08); border: 1px solid rgba(14,124,140,0.25);
         color: var(--cyan); font-size: 11px; font-weight: 800;
-        font-family: 'Cabinet Grotesk', sans-serif;
+        font-family: 'Bricolage Grotesque', sans-serif;
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
     }
     .section-title {
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
         font-size: clamp(28px, 4vw, 46px); line-height: 1.1;
         margin-bottom: 14px; letter-spacing: -0.01em;
     }
@@ -278,13 +278,13 @@
         font-size: 14px;
     }
     .compare-table th {
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 13px;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 13px;
         text-transform: uppercase; letter-spacing: 0.8px;
         background: rgba(0,0,0,0.2);
     }
     .compare-table th:first-child, .compare-table td:first-child {
         text-align: left; padding-left: 28px;
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
         color: var(--txt-sub);
     }
     .compare-table th.essential { color: var(--txt-muted); }
@@ -339,10 +339,10 @@
         display: flex; align-items: center; justify-content: center;
         font-size: 26px; margin-bottom: 18px;
         border: 1px solid var(--accent, var(--cyan));
-        box-shadow: 0 8px 24px rgba(0,232,204,0.15);
+        box-shadow: 0 8px 24px rgba(14,124,140,0.15);
     }
     .feat-title {
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
         font-size: 22px; margin-bottom: 8px; letter-spacing: -0.01em;
     }
     .feat-desc { color: var(--txt-sub); font-size: 14px; line-height: 1.6; margin-bottom: 14px; }
@@ -372,7 +372,7 @@
     .testi-author { display: flex; align-items: center; gap: 12px; }
     .testi-avatar {
         width: 40px; height: 40px; border-radius: 50%;
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
         display: flex; align-items: center; justify-content: center;
         color: var(--bg-deep); font-size: 16px;
     }
@@ -399,18 +399,18 @@
         display: inline-block;
         background: linear-gradient(135deg, var(--rose), var(--gold));
         color: var(--bg-deep); font-weight: 900;
-        font-family: 'Cabinet Grotesk', sans-serif;
+        font-family: 'Bricolage Grotesque', sans-serif;
         font-size: 11px; letter-spacing: 1.2px;
         padding: 6px 14px; border-radius: 50px;
         margin-bottom: 18px;
     }
     .pricing-title {
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
         font-size: 28px; margin-bottom: 6px;
     }
     .pricing-sub { color: var(--txt-sub); font-size: 14px; margin-bottom: 22px; }
     .pricing-amount {
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
         font-size: 84px; line-height: 1; margin-bottom: 6px;
         background: linear-gradient(135deg, #fff, var(--gold));
         -webkit-background-clip: text; background-clip: text;
@@ -427,7 +427,7 @@
     .pricing-includes-title {
         font-size: 11px; color: var(--cyan); font-weight: 800;
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
-        font-family: 'Cabinet Grotesk', sans-serif;
+        font-family: 'Bricolage Grotesque', sans-serif;
     }
     .pricing-includes-row {
         display: flex; align-items: center; gap: 10px;
@@ -443,11 +443,11 @@
         border-radius: 16px; padding: 0;
         margin-bottom: 10px; transition: all .25s;
     }
-    .faq-item.open { border-color: rgba(0,232,204,0.3); }
+    .faq-item.open { border-color: rgba(14,124,140,0.3); }
     .faq-q {
         padding: 18px 22px; cursor: pointer;
         display: flex; justify-content: space-between; align-items: center; gap: 18px;
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
         font-size: 15px; color: #fff;
         user-select: none;
     }
@@ -480,7 +480,7 @@
     }
     .final-cta-inner { position: relative; z-index: 2; max-width: 720px; margin: 0 auto; }
     .final-cta-title {
-        font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900;
+        font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
         font-size: clamp(34px, 5vw, 60px); line-height: 1.05;
         margin-bottom: 18px; letter-spacing: -0.02em;
     }
@@ -505,6 +505,17 @@
     /* ─── REVEAL ON SCROLL ─── */
     .reveal { opacity: 0; transform: translateY(30px); transition: all .8s cubic-bezier(.2,1,.3,1); }
     .reveal.in { opacity: 1; transform: translateY(0); }
+
+    /* ─── Couche PRO : accessibilité & micro-interactions ─── */
+    :focus-visible { outline: 2px solid #16B8C4; outline-offset: 2px; border-radius: 6px; }
+    a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
+    ::selection { background: rgba(14,124,140, 0.28); color: #fff; }
+    a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
+    button:active, .btn:active { transform: translateY(1px) scale(0.99); }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+        .reveal { opacity: 1 !important; transform: none !important; }
+    }
 </style>
 </head>
 <body>
@@ -513,7 +524,7 @@
     <div class="nav-inner">
         <a href="/" class="nav-logo">
             <div class="nav-logo-icon">K</div>
-            <span>Keepo</span>
+            <span>KEEPO</span>
         </a>
         <div class="nav-actions">
             <a href="/dashboard-commercant" class="nav-back">← Retour au dashboard</a>
@@ -538,7 +549,7 @@
             <span class="grad">qui transforme vos clients en ambassadeurs</span>
         </h1>
         <p class="hero-sub">
-            Débloquez <strong>toutes les fonctionnalités</strong> de Keepo et propulsez votre commerce avec
+            Débloquez <strong>toutes les fonctionnalités</strong> de KEEPO et propulsez votre commerce avec
             l'analytique avancée, l'IA marketing, le mode caisse tablette et bien plus encore.
         </p>
         <div class="hero-cta-row">
@@ -616,7 +627,7 @@
 </section>
 
 <!-- ═══════════ FEATURES ═══════════ -->
-<section class="section" id="features" style="background:linear-gradient(180deg, transparent, rgba(124,106,247,0.04));">
+<section class="section" id="features" style="background:linear-gradient(180deg, transparent, rgba(91,58,160,0.04));">
     <div class="section-inner">
         <div class="section-head reveal">
             <span class="section-eyebrow">Fonctionnalités exclusives</span>
@@ -625,7 +636,7 @@
         </div>
 
         <div class="features-grid">
-            <div class="feat-card reveal" style="--accent:#00e8cc;">
+            <div class="feat-card reveal" style="--accent:#16B8C4;">
                 <div class="feat-icon">📊</div>
                 <h3 class="feat-title">Analytics Premium</h3>
                 <p class="feat-desc">Comprenez votre clientèle comme jamais auparavant grâce à des tableaux de bord en temps réel.</p>
@@ -685,7 +696,7 @@
                 </ul>
             </div>
 
-            <div class="feat-card reveal" style="--accent:#7c6af7;">
+            <div class="feat-card reveal" style="--accent:#5B3AA0;">
                 <div class="feat-icon">🎰</div>
                 <h3 class="feat-title">Gamification Avancée</h3>
                 <p class="feat-desc">Transformez la fidélité en jeu. Vos clients reviennent juste pour le plaisir de gagner.</p>
@@ -712,7 +723,7 @@
             <div class="feat-card reveal" style="--accent:#00b4d8;">
                 <div class="feat-icon">📍</div>
                 <h3 class="feat-title">Géolocalisation & Découverte</h3>
-                <p class="feat-desc">Apparaissez dans l'app Keepo des clients à proximité. Plus de visibilité, plus de trafic.</p>
+                <p class="feat-desc">Apparaissez dans l'app KEEPO des clients à proximité. Plus de visibilité, plus de trafic.</p>
                 <ul class="feat-bullets">
                     <li><i class="fa-solid fa-check"></i> Carte "près de moi" côté client</li>
                     <li><i class="fa-solid fa-check"></i> Tri par distance automatique</li>
@@ -735,7 +746,7 @@
         <div class="testi-grid">
             <div class="testi-card reveal">
                 <div class="testi-stars">⭐⭐⭐⭐⭐</div>
-                <p class="testi-quote">"Avant Keepo Pro, je gérais ma fidélité avec un tableau Excel et des cartes papier. Maintenant je gagne 6h/semaine et mes clients reviennent 2× plus souvent. L'IA pour les emails est juste incroyable."</p>
+                <p class="testi-quote">"Avant KEEPO Pro, je gérais ma fidélité avec un tableau Excel et des cartes papier. Maintenant je gagne 6h/semaine et mes clients reviennent 2× plus souvent. L'IA pour les emails est juste incroyable."</p>
                 <div class="testi-author">
                     <div class="testi-avatar" style="background:linear-gradient(135deg,#ff4d82,#ffc34d);">M</div>
                     <div>
@@ -749,7 +760,7 @@
                 <div class="testi-stars">⭐⭐⭐⭐⭐</div>
                 <p class="testi-quote">"Le mode caisse tablette a transformé mon comptoir. Mes 4 employés ont chacun leur PIN, je vois qui fait quoi. Et la heatmap m'a permis d'optimiser mes horaires d'ouverture."</p>
                 <div class="testi-author">
-                    <div class="testi-avatar" style="background:linear-gradient(135deg,#00e8cc,#7c6af7);">T</div>
+                    <div class="testi-avatar" style="background:linear-gradient(135deg,#16B8C4,#5B3AA0);">T</div>
                     <div>
                         <div class="testi-name">Thomas R.</div>
                         <div class="testi-role">Restaurant · Paris</div>
@@ -761,7 +772,7 @@
                 <div class="testi-stars">⭐⭐⭐⭐⭐</div>
                 <p class="testi-quote">"Le système de parrainage a explosé. En 3 mois j'ai eu +40% de nouveaux clients sans dépenser un euro en pub. La roue de la fortune fait fureur, surtout chez les ados."</p>
                 <div class="testi-author">
-                    <div class="testi-avatar" style="background:linear-gradient(135deg,#7c6af7,#00b4d8);">S</div>
+                    <div class="testi-avatar" style="background:linear-gradient(135deg,#5B3AA0,#00b4d8);">S</div>
                     <div>
                         <div class="testi-name">Sophie M.</div>
                         <div class="testi-role">Institut beauté · Marseille</div>
@@ -804,12 +815,21 @@
                 <div class="pricing-includes-row"><i class="fa-solid fa-check"></i> Mises à jour à vie incluses</div>
             </div>
 
-            <button onclick="goToCheckout()" class="cta-primary" id="pricingCta" style="width:100%;justify-content:center;">
+            <div style="display:inline-flex;border:1px solid var(--border);border-radius:100px;padding:4px;gap:4px;margin-bottom:16px;">
+                <button id="bill-month" onclick="setBilling('month')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--violet),var(--cyan));color:#fff;">Mensuel — 99€/mois</button>
+                <button id="bill-year" onclick="setBilling('year')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:none;color:var(--txt-muted);">Annuel — 890€/an (-25%)</button>
+            </div>
+
+            <button onclick="goToCheckout('pro')" class="cta-primary" id="pricingCta" style="width:100%;justify-content:center;">
                 <i class="fa-solid fa-crown"></i> Activer Pro Scale maintenant
             </button>
 
+            <button onclick="goToCheckout('essentiel')" id="essCta" style="width:100%;margin-top:10px;background:none;border:1px solid var(--border);border-radius:14px;padding:13px;color:var(--txt-muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">
+                Ou démarrer avec Essentiel — 49&nbsp;€/mois <span style="opacity:.75;">(150 clients max, sans le marketing)</span>
+            </button>
+
             <div style="margin-top:18px;font-size:11px;color:var(--txt-muted);">
-                🔒 Paiement sécurisé via Stripe · Vos coordonnées bancaires ne transitent jamais par Keepo
+                🔒 Paiement sécurisé via Stripe · Vos coordonnées bancaires ne transitent jamais par KEEPO
             </div>
         </div>
     </div>
@@ -842,14 +862,14 @@
             </div>
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-q">Le paiement est-il sécurisé ?<i class="fa-solid fa-chevron-down"></i></div>
-                <div class="faq-a">100% sécurisé via Stripe (la même plateforme utilisée par Apple, Amazon, Shopify). Vos coordonnées bancaires ne transitent jamais par les serveurs de Keepo. Chiffrement bout en bout et conformité PCI DSS.</div>
+                <div class="faq-a">100% sécurisé via Stripe (la même plateforme utilisée par Apple, Amazon, Shopify). Vos coordonnées bancaires ne transitent jamais par les serveurs de KEEPO. Chiffrement bout en bout et conformité PCI DSS.</div>
             </div>
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-q">Combien d'employés peuvent utiliser le mode caisse ?<i class="fa-solid fa-chevron-down"></i></div>
                 <div class="faq-a">En Pro Scale, c'est illimité. Vous créez autant de comptes caissier que nécessaire, chacun avec son PIN personnel. Idéal pour les commerces avec rotation d'équipe.</div>
             </div>
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q">Puis-je utiliser Keepo sur plusieurs commerces ?<i class="fa-solid fa-chevron-down"></i></div>
+                <div class="faq-q">Puis-je utiliser KEEPO sur plusieurs commerces ?<i class="fa-solid fa-chevron-down"></i></div>
                 <div class="faq-a">Pour le moment, un compte = un commerce. La fonctionnalité multi-établissements (chaînes, franchises) est en cours de développement et sera incluse dans Pro Scale dès sa sortie, sans surcoût.</div>
             </div>
             <div class="faq-item" onclick="toggleFaq(this)">
@@ -887,9 +907,9 @@
         <a href="/">Accueil</a> ·
         <a href="/dashboard-commercant">Dashboard</a> ·
         <a href="/connexion">Connexion</a> ·
-        <a href="mailto:contact@keepo.app">Contact</a>
+        <a href="mailto:contact@keepo.eu">Contact</a>
     </div>
-    <div>© 2026 Keepo · Programme de fidélité digital · 99€/mois HT, sans engagement</div>
+    <div>© 2026 KEEPO · Programme de fidélité digital · 99€/mois HT, sans engagement</div>
 </footer>
 
 <script>
@@ -902,8 +922,23 @@
     // ─── FAQ toggle ───
     function toggleFaq(el) { el.classList.toggle('open'); }
 
+    // ─── Périodicité de facturation (mensuel / annuel) ───
+    let selBilling = 'month';
+    function setBilling(b) {
+        selBilling = (b === 'year') ? 'year' : 'month';
+        const on  = 'border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--violet),var(--cyan));color:#fff;';
+        const off = 'border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:none;color:var(--txt-muted);';
+        const mBtn = document.getElementById('bill-month'), yBtn = document.getElementById('bill-year');
+        if (mBtn) mBtn.style.cssText = selBilling === 'month' ? on : off;
+        if (yBtn) yBtn.style.cssText = selBilling === 'year'  ? on : off;
+        const ess = document.getElementById('essCta');
+        if (ess) ess.innerHTML = selBilling === 'year'
+            ? 'Ou démarrer avec Essentiel — 499&nbsp;€/an <span style="opacity:.75;">(-15% · 150 clients max, sans le marketing)</span>'
+            : 'Ou démarrer avec Essentiel — 49&nbsp;€/mois <span style="opacity:.75;">(150 clients max, sans le marketing)</span>';
+    }
+
     // ─── Checkout Stripe ───
-    async function goToCheckout() {
+    async function goToCheckout(plan) {
         const btns = [
             document.getElementById('heroCta'),
             document.getElementById('pricingCta'),
@@ -922,10 +957,15 @@
         try {
             const res = await fetch('/api/stripe-checkout', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + session.access_token
+                },
                 body: JSON.stringify({
                     merchantId: session.user.id,
                     merchantEmail: session.user.email,
+                    plan: plan === 'essentiel' ? 'essentiel' : 'pro',
+                    billing: selBilling === 'year' ? 'year' : 'month',
                     returnUrl: window.location.origin + '/dashboard-commercant'
                 })
             });

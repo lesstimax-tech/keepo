@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "keepo",
   "main": "_worker.js",
@@ -12,9 +12,7 @@
     "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
-  },
-  "vars": {
-  "RESEND_API_KEY": "re_b8rif7Zu_JzbdviwiMfRSo9dvByqZSKZP"
-}
-  
+  }
+  // Aucune clé secrète ici : RESEND_API_KEY, STRIPE_*, SUPABASE_SERVICE_ROLE et
+  // GEMINI_API_KEY sont gérés via `npx wrangler secret put <NOM>` (jamais en clair).
 }

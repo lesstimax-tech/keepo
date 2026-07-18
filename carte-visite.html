@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>KEEPO — Carte de visite (à imprimer)</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+<style>
+  :root{ --violet:#5B3AA0; --teal:#16B8C4; --teal-deep:#0E7C8C; --ink:#14141B; --muted:#5F5E6E; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{ background:#E9E9EF; font-family:'Instrument Sans',sans-serif; display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px 16px; }
+  .toolbar{ font-size:13px; color:#46455A; background:#fff; border:1px solid rgba(20,20,27,.1); border-radius:12px; padding:14px 18px; max-width:480px; text-align:center; line-height:1.6; }
+  .toolbar b{ color:var(--ink); }
+  .toolbar button{ margin-top:10px; background:linear-gradient(125deg,var(--violet),var(--teal)); color:#fff; border:none; border-radius:50px; padding:10px 22px; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .pair{ display:flex; gap:22px; flex-wrap:wrap; justify-content:center; }
+  .label{ font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#8a8998; text-align:center; margin-bottom:6px; }
+
+  /* Carte standard : 85 × 55 mm */
+  .card{
+    width:85mm; height:55mm; background:#fff; position:relative; overflow:hidden;
+    box-shadow:0 14px 40px rgba(20,20,27,.22); color:var(--ink); border-radius:3mm;
+  }
+
+  /* ── RECTO : marque ── */
+  .recto{
+    background:linear-gradient(135deg,#1C1733,#131125 55%,#0E1F26);
+    color:#fff; padding:7mm 8mm; display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .recto::before{ content:""; position:absolute; inset:0;
+    background:radial-gradient(60mm 40mm at 12% 0%,rgba(91,58,160,.55),transparent 60%),
+               radial-gradient(60mm 45mm at 100% 100%,rgba(22,184,196,.35),transparent 60%); }
+  .recto>*{ position:relative; }
+  .recto .logo{ height:8mm; filter:brightness(0) invert(1); }
+  .recto .tag{ font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:13pt; line-height:1.15; letter-spacing:-.3px; }
+  .recto .tag span{ background:linear-gradient(125deg,#a98bdb,#4ED3DE); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .recto .site{ font-size:9.5pt; color:#C9C8D6; font-weight:600; }
+
+  /* ── VERSO : contact ── */
+  .verso{ padding:7mm 8mm; display:flex; gap:5mm; align-items:center; }
+  .verso .info{ flex:1; display:flex; flex-direction:column; height:100%; justify-content:center; }
+  .verso .name{ font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14pt; line-height:1.1; }
+  .verso .role{ font-size:9pt; color:var(--teal-deep); font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-top:1mm; }
+  .verso .rule{ height:2px; width:18mm; background:linear-gradient(125deg,var(--violet),var(--teal)); border-radius:2px; margin:3.5mm 0; }
+  .verso .line{ font-size:9.5pt; color:var(--ink); margin-bottom:1.6mm; display:flex; align-items:center; gap:2mm; }
+  .verso .line .k{ color:var(--violet); font-weight:800; width:4mm; text-align:center; }
+  .verso .line .muted{ color:var(--muted); }
+  #cv-qr{ width:24mm; height:24mm; flex-shrink:0; align-self:center; }
+  #cv-qr canvas, #cv-qr svg{ width:24mm !important; height:24mm !important; }
+  .verso .qrwrap{ display:flex; flex-direction:column; align-items:center; gap:1.5mm; }
+  .verso .qrwrap small{ font-size:6.5pt; color:#9a99a8; letter-spacing:.3px; }
+
+  @media print{
+    @page{ size:85mm 55mm; margin:0; }
+    body{ background:#fff; padding:0; gap:0; }
+    .toolbar,.label{ display:none; }
+    .pair{ gap:0; display:block; }
+    .card{ box-shadow:none; border-radius:0; page-break-after:always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <b>Carte de visite prête à imprimer (85 × 55 mm, recto-verso).</b><br>
+  Remplace le <b>nom</b>, le <b>rôle</b> et le <b>téléphone</b> ci-dessous (ou demande-moi de le faire),
+  puis « Imprimer / PDF » → 1 page = le recto, 2ᵉ page = le verso.<br>
+  <button onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+</div>
+
+<div class="pair">
+  <div>
+    <div class="label">Recto</div>
+    <div class="card recto">
+      <img class="logo" src="img/logo.png" alt="KEEPO">
+      <div class="tag">Le programme de<br><span>fidélité de votre<br>commerce.</span></div>
+      <div class="site">keepo.eu</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="label">Verso</div>
+    <div class="card verso">
+      <div class="info">
+        <div class="name">[VOTRE PRÉNOM NOM]</div>
+        <div class="role">Fondateur · KEEPO</div>
+        <div class="rule"></div>
+        <div class="line"><span class="k">✆</span> <span>[06 XX XX XX XX]</span></div>
+        <div class="line"><span class="k">@</span> <span>contact@keepo.eu</span></div>
+        <div class="line"><span class="k">⦿</span> <span class="muted">keepo.eu</span></div>
+      </div>
+      <div class="qrwrap">
+        <div id="cv-qr"></div>
+        <small>Découvrir KEEPO</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  new QRCodeStyling({
+    width: 240, height: 240, type: 'svg',
+    data: 'https://keepo.eu/?utm_source=carte',
+    dotsOptions: { color: '#15131D', type: 'rounded' },
+    cornersSquareOptions: { type: 'extra-rounded', color: '#5B3AA0' },
+    cornersDotOptions: { color: '#16B8C4' },
+    backgroundOptions: { color: '#ffffff' }
+  }).append(document.getElementById('cv-qr'));
+</script>
+</body>
+</html>

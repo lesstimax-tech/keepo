@@ -1,15 +1,15 @@
-// ════════════════════════════════════════════════════════════════
-//  Keepo — Edge Function : Envoi d'e-mails via Resend
+﻿// ════════════════════════════════════════════════════════════════
+//  KEEPO — Edge Function : Envoi d'e-mails via Resend
 // ════════════════════════════════════════════════════════════════
 //
 //  Déploiement :
 //    1. Obtenez une clé API Resend : https://resend.com
-//    2. Vérifiez votre domaine keepo.app dans Resend (ou utilisez
+//    2. Vérifiez votre domaine KEEPO.app dans Resend (ou utilisez
 //       onboarding@resend.dev pour les tests sans vérification)
 //    3. Stockez les secrets :
 //         supabase secrets set RESEND_API_KEY=re_...
 //    4. Déployez :
-//         supabase functions deploy keepo-send-email --no-verify-jwt
+//         supabase functions deploy KEEPO-send-email --no-verify-jwt
 //
 //  Corps de la requête POST :
 //    {
@@ -34,7 +34,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const RESEND_API_KEY   = Deno.env.get('RESEND_API_KEY') ?? '';
 const SUPABASE_URL     = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const FROM_EMAIL       = 'Keepo <notifications@keepo.app>';
+// Expéditeur configurable : définissez le secret RESEND_FROM une fois votre
+// domaine vérifié dans Resend. Sans domaine vérifié, on retombe sur l'adresse
+// de test Resend (onboarding@resend.dev) — utile pour valider le pipeline.
+const FROM_EMAIL       = Deno.env.get('RESEND_FROM') ?? 'KEEPO <onboarding@resend.dev>';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
@@ -71,7 +74,7 @@ function buildEmailHtml(bodyText: string, merchantName: string): string {
         <tr>
           <td style="background:linear-gradient(135deg,#7c3aed 0%,#00e8cc 100%);padding:28px 32px;text-align:center;">
             <div style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;font-family:Arial,sans-serif;">
-              Keepo
+              KEEPO
             </div>
             <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:4px;letter-spacing:0.5px;">
               PROGRAMME DE FIDÉLITÉ DIGITAL
@@ -88,8 +91,8 @@ function buildEmailHtml(bodyText: string, merchantName: string): string {
         <tr>
           <td style="padding:16px 36px 24px;background:#f8f8fb;font-size:11px;color:#aaaaaa;text-align:center;border-top:1px solid #eeeeee;">
             Vous recevez cet e-mail car vous êtes membre du programme de fidélité
-            <strong style="color:#888888;">${merchantName}</strong> via Keepo.<br>
-            <span style="color:#cccccc;">Keepo — Plateforme de fidélité digitale française</span>
+            <strong style="color:#888888;">${merchantName}</strong> via KEEPO.<br>
+            <span style="color:#cccccc;">KEEPO — Plateforme de fidélité digitale française</span>
           </td>
         </tr>
       </table>
@@ -191,7 +194,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (err) {
-    console.error('keepo-send-email error:', err);
+    console.error('KEEPO-send-email error:', err);
     return new Response(JSON.stringify({ error: 'Erreur serveur', details: String(err) }), {
       status: 500,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },

@@ -1,9 +1,9 @@
-// ════════════════════════════════════════════════════════
-//  Keepo — Service Worker
+﻿// ════════════════════════════════════════════════════════
+//  KEEPO — Service Worker
 //  Gère : installation PWA, push notifications, offline fallback
 // ════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'keepo-cache-v1';
+const CACHE_NAME = 'KEEPO-cache-v3';
 const OFFLINE_ASSETS = ['/dashboard-client', '/css/style.css', '/img/icon-192.png'];
 
 // ── Installation ──
@@ -34,12 +34,12 @@ self.addEventListener('push', e => {
     let data = {};
     try { data = e.data?.json?.() || {}; } catch {}
 
-    const title   = data.title || 'Keepo 🎉';
+    const title   = data.title || 'KEEPO 🎉';
     const options = {
         body   : data.body  || 'Vous avez une mise à jour sur votre carte de fidélité.',
         icon   : '/img/icon-192.png',
         badge  : '/img/icon-192.png',
-        tag    : data.tag   || 'keepo-notif',
+        tag    : data.tag   || 'KEEPO-notif',
         data   : { url: data.url || '/dashboard-client' },
         vibrate: [100, 50, 100],
         actions: [{ action: 'open', title: 'Voir mes points' }]

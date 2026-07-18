@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>KEEPO — Antisèche de visite (à imprimer)</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --violet:#5B3AA0; --teal:#16B8C4; --teal-deep:#0E7C8C; --ink:#14141B; --muted:#5F5E6E; --rose:#E0245E; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{ background:#E9E9EF; font-family:'Instrument Sans',sans-serif; display:flex; flex-direction:column; align-items:center; gap:16px; padding:24px 14px; color:var(--ink); }
+  .bar{ font-size:13px; color:#46455A; background:#fff; border:1px solid rgba(20,20,27,.1); border-radius:12px; padding:11px 16px; max-width:440px; text-align:center; line-height:1.5; }
+  .bar button{ margin-top:7px; background:linear-gradient(125deg,var(--violet),var(--teal)); color:#fff; border:none; border-radius:50px; padding:9px 20px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; }
+
+  /* A5 portrait : 148 × 210 mm */
+  .a5{ width:148mm; height:210mm; background:#fff; box-shadow:0 16px 44px rgba(20,20,27,.2); display:flex; flex-direction:column; overflow:hidden; }
+
+  .hd{ background:linear-gradient(135deg,#1C1733,#131125 60%,#0E1F26); color:#fff; padding:5mm 9mm 4mm; position:relative; overflow:hidden; }
+  .hd::before{ content:""; position:absolute; inset:0; background:radial-gradient(80mm 50mm at 10% 0%,rgba(91,58,160,.5),transparent 60%),radial-gradient(80mm 50mm at 100% 100%,rgba(22,184,196,.32),transparent 60%); }
+  .hd>*{ position:relative; }
+  .hd .logo{ font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:14pt; letter-spacing:.5px; }
+  .hd .logo span{ background:linear-gradient(125deg,#a98bdb,#4ED3DE); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hd .t{ font-size:9pt; color:#C9C8D6; margin-top:1mm; }
+
+  .body{ padding:4.5mm 8mm 3mm; flex:1; }
+  .sec-h{ font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:8.8pt; letter-spacing:.7px; text-transform:uppercase; color:var(--teal-deep); margin:3mm 0 1.8mm; display:flex; align-items:center; gap:2mm; }
+  .sec-h::after{ content:""; flex:1; height:1px; background:rgba(20,20,27,.1); }
+  .sec-h:first-child{ margin-top:0; }
+
+  .step{ display:flex; gap:2.6mm; margin-bottom:1.7mm; align-items:flex-start; }
+  .step .n{ flex-shrink:0; width:5.4mm; height:5.4mm; border-radius:50%; background:linear-gradient(135deg,var(--violet),var(--teal)); color:#fff; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:8pt; display:flex; align-items:center; justify-content:center; margin-top:.3mm; }
+  .step .c b{ font-size:8.6pt; font-family:'Bricolage Grotesque',sans-serif; display:block; }
+  .step .c .q{ display:block; font-size:8.4pt; color:#34333F; font-style:italic; margin-top:.2mm; line-height:1.24; }
+  .step .c .do{ display:block; font-size:8pt; color:var(--muted); margin-top:.2mm; line-height:1.2; }
+
+  .obj{ margin-bottom:1.5mm; padding-left:2.6mm; border-left:2px solid rgba(224,36,94,.3); }
+  .obj .o{ font-size:8.3pt; font-weight:700; color:var(--rose); }
+  .obj .r{ font-size:8.3pt; color:#34333F; line-height:1.26; }
+  .obj .r::before{ content:"→ "; color:var(--teal-deep); font-weight:700; }
+
+  .gold{ background:linear-gradient(135deg,rgba(91,58,160,.06),rgba(22,184,196,.07)); border:1px solid rgba(14,124,140,.2); border-radius:3mm; padding:2.6mm 3.5mm; margin-top:1mm; }
+  .gold .g{ font-size:8.3pt; color:#34333F; line-height:1.38; display:flex; gap:2mm; margin-bottom:.6mm; }
+  .gold .g:last-child{ margin-bottom:0; }
+  .gold .g b{ color:var(--ink); }
+  .gold .g .i{ color:var(--teal-deep); font-weight:800; }
+
+  .ft{ background:#15131D; color:#fff; padding:3mm 9mm; text-align:center; font-size:7.6pt; }
+  .ft b{ font-family:'Bricolage Grotesque',sans-serif; }
+  .ft span{ color:#9BE8EE; }
+
+  @media print{
+    @page{ size:A5 portrait; margin:0; }
+    body{ background:#fff; padding:0; gap:0; }
+    .bar{ display:none; }
+    .a5{ box-shadow:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>Antisèche prête (A5).</b> Imprime-la, plie-la en deux, garde-la dans ta poche.<br>
+  <button onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+</div>
+
+<div class="a5">
+  <div class="hd">
+    <div class="logo"><span>KEEPO</span> · Antisèche de visite</div>
+    <div class="t">Ton aide-mémoire pour aller voir un commerçant. Tu lis, tu suis, tu respires.</div>
+  </div>
+
+  <div class="body">
+
+    <div class="sec-h">Le déroulé — 5 étapes</div>
+
+    <div class="step"><div class="n">1</div><div class="c"><b>Ouvrir (sans pression)</b>
+      <span class="q">« Bonjour, je suis Arezki, du coin. J'ai créé un outil pour les commerces comme le vôtre, j'aimerais votre avis. Vous avez 2 minutes ? »</span></div></div>
+
+    <div class="step"><div class="n">2</div><div class="c"><b>Le faire parler</b>
+      <span class="q">« Vos clients reviennent souvent ? Vous avez une carte de fidélité ? »</span>
+      <span class="do">→ Tu te tais et tu écoutes. Sa réponse = ton ouverture.</span></div></div>
+
+    <div class="step"><div class="n">3</div><div class="c"><b>Montrer (sors ton téléphone)</b>
+      <span class="do">Crée sa carte EN DIRECT (son nom, sa couleur).</span>
+      <span class="q">« Vos clients scannent ce code → carte dans leur téléphone. Et vous récupérez leur nom + e-mail dès la 1ʳᵉ visite. »</span></div></div>
+
+    <div class="step"><div class="n">4</div><div class="c"><b>La valeur (dans SA langue)</b>
+      <span class="q">« Aujourd'hui un client vient une fois et vous le perdez. Là, il revient pour sa récompense — et vous savez qui sont vos meilleurs clients. »</span></div></div>
+
+    <div class="step"><div class="n">5</div><div class="c"><b>Conclure (zéro risque)</b>
+      <span class="q">« 14 jours gratuits, 0 € aujourd'hui, résiliable en 1 clic. Je vous installe tout maintenant, 5 minutes. On y va ? »</span></div></div>
+
+    <div class="sec-h">Si ça bloque</div>
+
+    <div class="obj"><span class="o">« J'ai déjà des cartes papier »</span><div class="r">Combien la sortent vraiment ? Là c'est dans leur téléphone — et VOUS récupérez leur contact.</div></div>
+    <div class="obj"><span class="o">« J'ai pas le temps »</span><div class="r">2 min pour créer, 1 sec par scan. Je vous installe tout, là, maintenant.</div></div>
+    <div class="obj"><span class="o">« Ça coûte combien ? »</span><div class="r">49 ou 99 €/mois, 14 j gratuits. ~8 clients qui reviennent = déjà rentabilisé.</div></div>
+    <div class="obj"><span class="o">« Mes clients sont âgés »</span><div class="r">Pas d'appli, juste l'appareil photo. Gardez le carton en parallèle, zéro risque.</div></div>
+    <div class="obj"><span class="o">« Je vais réfléchir »</span><div class="r">Testez gratuit 14 j sur vos vrais clients. 0 € aujourd'hui. Je vous lance maintenant ?</div></div>
+
+    <div class="sec-h">Règles d'or</div>
+    <div class="gold">
+      <div class="g"><span class="i">1.</span><span><b>1 « oui » pour ~8-10 visites.</b> Les « non » sont normaux — chacun te rapproche du oui.</span></div>
+      <div class="g"><span class="i">2.</span><span>Le « non » <b>n'est jamais contre toi</b> — contre le changement ou le timing. Tu repasseras.</span></div>
+      <div class="g"><span class="i">3.</span><span>Commence par les commerces où tu es <b>déjà client</b>. 10× plus facile.</span></div>
+    </div>
+
+  </div>
+
+  <div class="ft"><b>Tes 3 atouts :</b> tu es <span>du coin</span> · tu as <span>construit le produit</span> · l'essai est <span>sans risque</span>. Tu pars gagnant.</div>
+</div>
+
+</body>
+</html>

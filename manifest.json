@@ -1,14 +1,19 @@
 {
-  "name": "Keepo — Fidélité digitale",
-  "short_name": "Keepo",
+  "id": "/dashboard-client",
+  "name": "KEEPO — Fidélité digitale",
+  "short_name": "KEEPO",
   "description": "Cartes de fidélité digitales pour commerces et clients",
   "start_url": "/dashboard-client",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#06050d",
-  "theme_color": "#00e8cc",
+  "background_color": "#FBFBFD",
+  "theme_color": "#16B8C4",
   "lang": "fr",
+  "dir": "ltr",
+  "categories": ["shopping", "lifestyle"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/img/icon-192.png",
