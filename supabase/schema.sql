@@ -452,8 +452,11 @@ drop policy if exists "notif_sends_insert" on public.notification_sends;
 create policy "notif_sends_select" on public.notification_sends
   for select using (auth.uid() = merchant_id);
 
+-- SÉCURITÉ : les logs d'envoi sont écrits par les Edge Functions (service_role,
+-- qui contourne la RLS). Aucun client n'a besoin d'insérer → on interdit l'insert
+-- direct pour empêcher la pollution/usurpation de logs.
 create policy "notif_sends_insert" on public.notification_sends
-  for insert with check (true);
+  for insert with check (false);
 
 -- ════════════════════════════════════════════════════════
 --  PHASE 3 — Marketing & Engagement
@@ -502,8 +505,11 @@ drop policy if exists "referrals_insert_any" on public.referrals;
 create policy "referrals_select_own" on public.referrals
   for select using (auth.uid() = referrer_id or auth.uid() = referred_id or auth.uid() = merchant_id);
 
+-- SÉCURITÉ : durci. Les parrainages sont créés par claim_referral_code()
+-- (SECURITY DEFINER). On restreint l'insert direct au filleul/parrain concerné
+-- pour empêcher la forge de parrainages arbitraires.
 create policy "referrals_insert_any" on public.referrals
-  for insert with check (true);
+  for insert with check (auth.uid() = referred_id or auth.uid() = referrer_id);
 
 -- ── ROUE DE LA FORTUNE — historique des tirages ──
 create table if not exists public.wheel_spins (
@@ -552,8 +558,11 @@ create policy "gift_cards_select_involved" on public.gift_cards
 create policy "gift_cards_insert_sender" on public.gift_cards
   for insert with check (auth.uid() = sender_id);
 
-create policy "gift_cards_update_redeem" on public.gift_cards
-  for update using (true);  -- toute personne authentifiée peut tenter de redeem; RPC contrôle
+-- SÉCURITÉ : aucune policy UPDATE côté client. La redemption passe EXCLUSIVEMENT
+-- par la fonction redeem_gift_card() (SECURITY DEFINER, qui contourne la RLS).
+-- Une policy `for update using (true)` laissait tout utilisateur PATCHer n'importe
+-- quelle carte via l'API REST (réécrire le code, remettre redeemed_by=null pour
+-- re-créditer, gonfler points_amount) → vol de points. On la supprime.
 
 -- ════════════════════════════════════════════════════════
 --  RPC — Réclamer un code de parrainage
@@ -996,8 +1005,11 @@ drop policy if exists "audit_insert_any" on public.cashier_audit;
 create policy "audit_select_own" on public.cashier_audit
   for select using (auth.uid() = merchant_id);
 
+-- SÉCURITÉ : la caisse insère les logs sous la session du commerçant
+-- (auth.uid() = merchant_id). On restreint pour empêcher un utilisateur
+-- d'écrire des logs au nom d'un AUTRE commerçant.
 create policy "audit_insert_any" on public.cashier_audit
-  for insert with check (true);
+  for insert with check (auth.uid() = merchant_id);
 
 -- ── #14 STRIPE : références client + abonnement ──
 alter table public.profiles add column if not exists stripe_customer_id     text;

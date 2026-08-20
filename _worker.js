@@ -547,17 +547,18 @@ async function handleStripeWebhook(request, env) {
   const rawBody = await request.text();
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
-  // Quand le secret est configuré, la signature est obligatoire ; sinon on
-  // n'échoue pas (compat), mais on journalise l'avertissement.
-  if (webhookSecret) {
-    const sigHeader = request.headers.get('stripe-signature');
-    const valid = await verifyStripeSignature(rawBody, sigHeader, webhookSecret);
-    if (!valid) {
-      console.error('Signature Stripe invalide — webhook rejeté');
-      return json({ error: 'Signature invalide' }, 400);
-    }
-  } else {
-    console.warn('STRIPE_WEBHOOK_SECRET non configuré — vérification de signature ignorée');
+  // SÉCURITÉ (fail-closed) : la signature est OBLIGATOIRE. Sans secret configuré,
+  // on REFUSE le webhook — sinon n'importe qui pourrait POSTer un faux événement
+  // « checkout.session.completed » et s'octroyer un plan payant (fraude).
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET non configuré — webhook refusé');
+    return json({ error: 'Webhook non configuré côté serveur' }, 503);
+  }
+  const sigHeader = request.headers.get('stripe-signature');
+  const valid = await verifyStripeSignature(rawBody, sigHeader, webhookSecret);
+  if (!valid) {
+    console.error('Signature Stripe invalide — webhook rejeté');
+    return json({ error: 'Signature invalide' }, 400);
   }
 
   let event;
