@@ -36,7 +36,7 @@ create policy "profiles_merchant_read_members" on public.profiles
   for select using (
     exists (
       select 1 from public.loyalty_balances lb
-      where lb.client_id = id
+      where lb.client_id = profiles.id   -- qualifie : loyalty_balances a AUSSI une colonne `id`
         and lb.merchant_id = auth.uid()
     )
   );
