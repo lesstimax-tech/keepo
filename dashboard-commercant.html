@@ -3210,7 +3210,9 @@
         const container = document.getElementById('toast-container');
         const t = document.createElement('div');
         t.className = `toast ${type}`;
-        t.innerHTML = `<div class="toast-icon"><i class="fa-solid ${icons[type]||icons.info}"></i></div><div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+        // Sécurité : title/msg peuvent contenir des données d'un autre utilisateur
+        // (ex. nom d'un client) → on échappe pour empêcher tout XSS stocké.
+        t.innerHTML = `<div class="toast-icon"><i class="fa-solid ${icons[type]||icons.info}"></i></div><div class="toast-body"><div class="toast-title">${escapeHtml(title)}</div><div class="toast-msg">${escapeHtml(msg)}</div></div>`;
         container.appendChild(t);
         setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 300); }, 3500);
     }
@@ -6139,7 +6141,8 @@
 
         feed.innerHTML = txList.map(tx => {
             const isCredit = tx.type === 'credit';
-            const name = tx.client?.name || `Client ${tx.client_id?.substring(0,6)}…`;
+            // Sécurité : nom d'un client (cross-user) rendu en HTML → échappé à la source.
+            const name = escapeHtml(tx.client?.name || `Client ${tx.client_id?.substring(0,6)}…`);
             const dotClass = isCredit ? 'green' : 'orange';
             const icon = isCredit ? 'coins' : 'gift';
             const title = isCredit ? 'Points crédités' : (tx.validated_at ? 'Récompense validée' : 'Récompense réclamée');

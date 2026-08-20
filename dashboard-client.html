@@ -1657,7 +1657,9 @@
         const root = document.getElementById('toast-root');
         const el = document.createElement('div');
         el.className = `toast ${type}`;
-        el.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+        // Sécurité : title/msg peuvent contenir des données d'un autre utilisateur
+        // (ex. nom d'un commerçant) → on échappe pour empêcher tout XSS stocké.
+        el.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i><div class="toast-content"><div class="toast-title">${escapeHtml(title)}</div><div class="toast-msg">${escapeHtml(msg)}</div></div>`;
         root.appendChild(el);
         setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 3600);
     }
@@ -2129,7 +2131,7 @@
                             </div>
                         </div>
                         ${tierBadge}
-                        <div class="merchant-name">${shopName}</div>
+                        <div class="merchant-name">${escapeHtml(shopName)}</div>
                         ${boutiquesBadge}
                         ${middleBlock}
                         <div class="card-footer" style="gap:8px;flex-wrap:wrap;">
@@ -2450,7 +2452,7 @@
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                     <div style="width:36px;height:36px;border-radius:10px;background:${hexToGlow(color,0.2)};border:1px solid ${hexToGlow(color,0.35)};display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:14px;color:${color};flex-shrink:0;">${initial}</div>
                     <div style="flex:1;min-width:0;">
-                        <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${shopName}</div>
+                        <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(shopName)}</div>
                         <div style="font-size:11px;color:var(--muted);">${balance} pts disponibles${unlocked.length ? ` · <span style="color:var(--cyan);font-weight:700;">${unlocked.length} dispo${unlocked.length > 1 ? 's' : ''} 🎉</span>` : ''}</div>
                     </div>
                 </div>
@@ -2461,13 +2463,13 @@
                     const remaining  = Math.max(r.points_required - balance, 0);
                     const nameSafe   = r.name.replace(/'/g, "\\'");
                     const iconHtml = r.image
-                        ? `<div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;background-image:url('${r.image}');background-size:cover;background-position:center;${isUnlocked ? '' : 'opacity:.5;filter:grayscale(.4);'}"></div>`
+                        ? `<div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;background-image:url('${escapeHtml(r.image)}');background-size:cover;background-position:center;${isUnlocked ? '' : 'opacity:.5;filter:grayscale(.4);'}"></div>`
                         : `<div class="reward-row-icon">${isUnlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>`;
                     return `
                     <div class="reward-row${isUnlocked ? ' unlocked' : ''}" style="${isUnlocked ? `border-color:${hexToGlow(color,0.35)};background:${hexToGlow(color,0.05)};` : ''}">
                         ${iconHtml}
                         <div class="reward-row-info">
-                            <div class="reward-row-name">${r.name}</div>
+                            <div class="reward-row-name">${escapeHtml(r.name)}</div>
                             <div class="reward-row-pts">${r.points_required} pts requis${isUnlocked
                                 ? ` · <span style="color:${color};font-weight:700;">Débloquée !</span>`
                                 : ` · encore ${remaining} pt${remaining > 1 ? 's' : ''}`}</div>
@@ -2710,14 +2712,14 @@
             const remaining = Math.max(r.points_required - currentPoints, 0);
             const nameSafe = r.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
             const iconHtml = r.image
-                ? `<div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;background-image:url('${r.image}');background-size:cover;background-position:center;${unlocked ? '' : 'opacity:.5;filter:grayscale(.4);'}"></div>`
+                ? `<div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;background-image:url('${escapeHtml(r.image)}');background-size:cover;background-position:center;${unlocked ? '' : 'opacity:.5;filter:grayscale(.4);'}"></div>`
                 : `<div class="reward-row-icon">${unlocked ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-lock"></i>'}</div>`;
 
             return `
                 <div class="reward-row${unlocked ? ' unlocked' : ''}">
                     ${iconHtml}
                     <div class="reward-row-info">
-                        <div class="reward-row-name">${r.name}</div>
+                        <div class="reward-row-name">${escapeHtml(r.name)}</div>
                         <div class="reward-row-pts">${r.points_required} pts requis${unlocked
                             ? ' &middot; <span style="color:var(--cyan);font-weight:700;">Débloquée !</span>'
                             : ' &middot; encore ' + remaining + ' pt' + (remaining > 1 ? 's' : '')}</div>

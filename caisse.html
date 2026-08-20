@@ -849,9 +849,11 @@ function openCreditModal(name, avatarUrl) {
     // Avatar : photo réelle ou initiale
     const avatarEl = document.getElementById('cm-avatar');
     if (avatarUrl) {
-        avatarEl.innerHTML = `<img src="${avatarUrl}" alt="${name}">`;
+        // Sécurité : avatarUrl et name sont contrôlés par le client → on échappe
+        // (sinon `x" onerror=...` dans avatar_url = XSS dans la caisse du commerçant).
+        avatarEl.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(name)}">`;
     } else {
-        avatarEl.innerHTML = name.charAt(0).toUpperCase();
+        avatarEl.innerHTML = escapeHtml(name.charAt(0).toUpperCase());
         avatarEl.style.background = 'linear-gradient(135deg, var(--violet), var(--cyan))';
     }
     document.getElementById('cm-client-name').innerText = name;
