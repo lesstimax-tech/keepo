@@ -134,6 +134,19 @@ async function requireMerchant(request, env, merchantId) {
   return { user };
 }
 
+// Rate-limiting via le binding natif Cloudflare Workers (déclaré dans wrangler.jsonc).
+// Fail-open : si le binding n'est pas (encore) provisionné, on ne bloque pas — le
+// déploiement du code reste donc sûr même avant d'avoir créé le binding.
+async function rateLimit(env, name, key) {
+  const limiter = env[name];
+  if (!limiter || !key) return null;
+  try {
+    const { success } = await limiter.limit({ key: String(key) });
+    if (!success) return json({ error: 'Trop de requêtes. Réessayez dans un instant.' }, 429);
+  } catch (_) { /* fail-open si le limiteur échoue */ }
+  return null;
+}
+
 async function callGemini(env, { systemPrompt, contents, generationConfig = {}, jsonMode = false }) {
   const GEMINI_API_KEY = env.GEMINI_API_KEY || '';
   if (!GEMINI_API_KEY) {
@@ -207,6 +220,8 @@ async function handleAiChat(request, env) {
 
   const auth = await requireMerchant(request, env);
   if (auth.error) return auth.error;
+  const rl = await rateLimit(env, 'AI_LIMITER', auth.user.id);
+  if (rl) return rl;
 
   let body;
   try { body = await request.json(); }
@@ -241,6 +256,8 @@ async function handleClientChat(request, env) {
 
   const auth = await requireMerchant(request, env);
   if (auth.error) return auth.error;
+  const rl = await rateLimit(env, 'AI_LIMITER', auth.user.id);
+  if (rl) return rl;
 
   let body;
   try { body = await request.json(); }
@@ -278,6 +295,8 @@ async function handleEmailWriter(request, env) {
 
   const auth = await requireMerchant(request, env);
   if (auth.error) return auth.error;
+  const rl = await rateLimit(env, 'AI_LIMITER', auth.user.id);
+  if (rl) return rl;
 
   let body;
   try { body = await request.json(); }
@@ -315,6 +334,8 @@ async function handleRewardSuggestions(request, env) {
 
   const auth = await requireMerchant(request, env);
   if (auth.error) return auth.error;
+  const rl = await rateLimit(env, 'AI_LIMITER', auth.user.id);
+  if (rl) return rl;
 
   let body;
   try { body = await request.json(); }
@@ -356,6 +377,8 @@ async function handleDesignStudio(request, env) {
 
   const auth = await requireMerchant(request, env);
   if (auth.error) return auth.error;
+  const rl = await rateLimit(env, 'AI_LIMITER', auth.user.id);
+  if (rl) return rl;
 
   let body;
   try { body = await request.json(); }
@@ -790,6 +813,9 @@ async function handleSendCampaign(request, env) {
   // Sécurité : seul le commerçant authentifié peut adresser un message à SA base clients.
   const auth = await requireMerchant(request, env, merchantId);
   if (auth.error) return auth.error;
+  // Anti-spam / anti-abus : limite les envois de campagne par commerçant.
+  const rlC = await rateLimit(env, 'CAMPAIGN_LIMITER', merchantId);
+  if (rlC) return rlC;
 
   const RESEND_KEY = env.RESEND_API_KEY;
   if (!RESEND_KEY) return json({ error: 'RESEND_API_KEY non configuré dans wrangler' }, 500);

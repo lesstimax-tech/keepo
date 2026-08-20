@@ -7,6 +7,12 @@
   "observability": {
     "enabled": true
   },
+  // Rate-limiting natif Cloudflare Workers (anti-abus / anti-coût).
+  // period = 60 s (seules 10 ou 60 sont acceptées). Clé = id du commerçant.
+  "ratelimits": [
+    { "name": "AI_LIMITER",       "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } },
+    { "name": "CAMPAIGN_LIMITER", "namespace_id": "1002", "simple": { "limit": 3,  "period": 60 } }
+  ],
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
