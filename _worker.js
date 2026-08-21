@@ -976,10 +976,12 @@ function b64urlStr(str) {
   return b64urlBytes(new TextEncoder().encode(str));
 }
 function pemToPkcs8(pem) {
+  // Robuste : \n littéraux (clé copiée depuis un JSON), en-têtes BEGIN/END, et
+  // tout caractère non-base64 sont retirés → il ne reste que le corps base64.
   const body = String(pem || '')
-    .replace(/-----BEGIN PRIVATE KEY-----/, '')
-    .replace(/-----END PRIVATE KEY-----/, '')
-    .replace(/\s+/g, '');
+    .replace(/\\n/g, '')
+    .replace(/-----[^-]+-----/g, '')
+    .replace(/[^A-Za-z0-9+/=]/g, '');
   const bin = atob(body);
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
@@ -1011,19 +1013,25 @@ async function handleGoogleWalletSave(request, env) {
 
   const saRaw = env.GOOGLE_WALLET_SA_KEY;
   if (!saRaw) return json({ error: 'Google Wallet non configuré' }, 503);
-  let sa;
-  try {
-    // Robustesse : retire un éventuel BOM et les espaces autour (artefacts de copier-coller).
-    const cleaned = String(saRaw).trim();
-    sa = JSON.parse(cleaned);
-  } catch (e) {
-    // Diagnostic inline (visible dans le toast) : longueur, code du 1er caractère
-    // (123 = '{' attendu), et l'erreur exacte de parsing (tronqué ? mauvais début ?).
-    const s = String(saRaw);
-    const msg = String((e && e.message) || e).slice(0, 90);
-    return json({ error: `SA_KEY invalide — len=${s.length}, first=${s.trim().charCodeAt(0) || 0} — ${msg}` }, 500);
+  // Accepte SOIT le JSON complet du compte de service, SOIT uniquement la clé
+  // privée PEM (dans ce cas l'e-mail vient de GOOGLE_WALLET_SA_EMAIL, avec défaut).
+  const cleaned = String(saRaw).trim();
+  let clientEmail, privateKeyPem;
+  if (cleaned.startsWith('{')) {
+    let sa;
+    try { sa = JSON.parse(cleaned); }
+    catch (e) {
+      return json({ error: `SA_KEY JSON invalide — len=${cleaned.length}, first=${cleaned.charCodeAt(0)} — ${String((e && e.message) || e).slice(0, 90)}` }, 500);
+    }
+    clientEmail   = sa.client_email;
+    privateKeyPem = sa.private_key;
+  } else if (/BEGIN (RSA )?PRIVATE KEY/.test(cleaned)) {
+    privateKeyPem = cleaned;
+    clientEmail   = env.GOOGLE_WALLET_SA_EMAIL || 'keepo-wallet-sa@keepo-wallet.iam.gserviceaccount.com';
+  } else {
+    return json({ error: `SA_KEY invalide — attendu JSON ({…}) ou clé privée PEM. len=${cleaned.length}, first=${cleaned.charCodeAt(0)}` }, 500);
   }
-  if (!sa.client_email || !sa.private_key) return json({ error: 'Clé de service incomplète' }, 500);
+  if (!clientEmail || !privateKeyPem) return json({ error: 'Clé de service incomplète' }, 500);
   const issuerId = env.GOOGLE_WALLET_ISSUER_ID || '3388000000023175669';
   const origin = new URL(request.url).origin;
 
@@ -1072,7 +1080,7 @@ async function handleGoogleWalletSave(request, env) {
   };
 
   const claims = {
-    iss: sa.client_email,
+    iss: clientEmail,
     aud: 'google',
     typ: 'savetowallet',
     iat: Math.floor(Date.now() / 1000),
@@ -1081,7 +1089,7 @@ async function handleGoogleWalletSave(request, env) {
   };
 
   try {
-    const jwt = await signRS256Jwt(claims, sa.private_key);
+    const jwt = await signRS256Jwt(claims, privateKeyPem);
     return json({ saveUrl: `https://pay.google.com/gp/v/save/${jwt}` });
   } catch (e) {
     console.error('Google Wallet sign failed', e);
