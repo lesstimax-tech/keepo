@@ -1318,6 +1318,11 @@
             <i class="fa-solid fa-wallet" style="font-size:17px;"></i> Ajouter à Google Wallet
         </button>
 
+        <button id="appleWalletBtn" onclick="addToAppleWallet()" class="modal-close-btn"
+            style="background:#000;color:#fff;border:none;display:flex;align-items:center;justify-content:center;gap:9px;font-weight:700;margin-bottom:8px;">
+            <i class="fa-brands fa-apple" style="font-size:18px;"></i> Ajouter à Apple Wallet
+        </button>
+
         <button class="modal-close-btn" onclick="closeQrModal()">
             <i class="fa-solid fa-xmark"></i> Fermer
         </button>
@@ -2305,6 +2310,37 @@
             window.location.href = data.saveUrl;
         } catch (e) {
             showToast('error', 'Google Wallet', e.message);
+            btn.disabled = false;
+            btn.innerHTML = old;
+        }
+    }
+
+    // ─── AJOUTER À APPLE WALLET ───
+    async function addToAppleWallet() {
+        const btn = document.getElementById('appleWalletBtn');
+        if (!currentQrMerchantId || !btn) return;
+        const old = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…';
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const token = session?.access_token;
+            const res = await fetch(`${window.SUPABASE_URL}/functions/v1/keepo-apple-pass`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ merchantId: currentQrMerchantId })
+            });
+            if (!res.ok) {
+                const e = await res.json().catch(() => ({}));
+                throw new Error(e.error || 'Génération impossible');
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            window.location.href = url; // iOS Safari ouvre Wallet ; ailleurs, télécharge le .pkpass
+            setTimeout(() => URL.revokeObjectURL(url), 15000);
+        } catch (e) {
+            showToast('error', 'Apple Wallet', e.message);
+        } finally {
             btn.disabled = false;
             btn.innerHTML = old;
         }
