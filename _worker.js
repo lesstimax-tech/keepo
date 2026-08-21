@@ -1016,10 +1016,12 @@ async function handleGoogleWalletSave(request, env) {
     // Robustesse : retire un éventuel BOM et les espaces autour (artefacts de copier-coller).
     const cleaned = String(saRaw).trim();
     sa = JSON.parse(cleaned);
-  } catch {
-    // Diagnostic non sensible : longueur + code du 1er caractère (123 = '{' attendu).
+  } catch (e) {
+    // Diagnostic inline (visible dans le toast) : longueur, code du 1er caractère
+    // (123 = '{' attendu), et l'erreur exacte de parsing (tronqué ? mauvais début ?).
     const s = String(saRaw);
-    return json({ error: 'GOOGLE_WALLET_SA_KEY invalide (JSON attendu)', len: s.length, firstCharCode: s.trim().charCodeAt(0) || 0 }, 500);
+    const msg = String((e && e.message) || e).slice(0, 90);
+    return json({ error: `SA_KEY invalide — len=${s.length}, first=${s.trim().charCodeAt(0) || 0} — ${msg}` }, 500);
   }
   if (!sa.client_email || !sa.private_key) return json({ error: 'Clé de service incomplète' }, 500);
   const issuerId = env.GOOGLE_WALLET_ISSUER_ID || '3388000000023175669';
