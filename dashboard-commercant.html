@@ -4566,6 +4566,12 @@
             p_points:      points
         });
         if (error) { showToast('error', 'Erreur', error.message); return; }
+        // Met à jour le solde sur le pass Google Wallet du client (non bloquant).
+        fetch('/api/wallet-sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ merchantId: currentMerchantId, clientId: currentActiveClientSession.id })
+        }).catch(() => {});
         closeLookupModal();
         if (isStamps) {
             const req = currentStampsRequired || 10;

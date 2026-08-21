@@ -2181,6 +2181,14 @@
         currentQrMerchantName = merchantName;
         currentQrPoints       = currentPoints;
 
+        // Filet de sécurité : resynchronise le pass Google Wallet (no-op si le
+        // client ne l'a pas ajouté, ou si la synchro caisse a déjà eu lieu).
+        fetch('/api/wallet-sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ merchantId })
+        }).catch(() => {});
+
         const goal = 10;
         const remaining = Math.max(goal - currentPoints, 0);
         document.getElementById('modal-next-reward').innerHTML = remaining > 0 ? `${remaining} pts` : '<i class="fa-solid fa-gift"></i> Dispo !';

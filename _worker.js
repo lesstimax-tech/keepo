@@ -998,6 +998,119 @@ async function signRS256Jwt(claims, privateKeyPem) {
   return `${signingInput}.${b64urlBytes(new Uint8Array(sig))}`;
 }
 
+// Lit la clé du compte de service : accepte SOIT le JSON complet, SOIT la seule
+// clé privée PEM (l'e-mail vient alors de GOOGLE_WALLET_SA_EMAIL, avec défaut).
+function readServiceAccount(env) {
+  const saRaw = env.GOOGLE_WALLET_SA_KEY;
+  if (!saRaw) return { error: 'Google Wallet non configuré', status: 503 };
+  const cleaned = String(saRaw).trim();
+  if (cleaned.startsWith('{')) {
+    let sa;
+    try { sa = JSON.parse(cleaned); }
+    catch (e) {
+      return { error: `SA_KEY JSON invalide — len=${cleaned.length}, first=${cleaned.charCodeAt(0)} — ${String((e && e.message) || e).slice(0, 90)}`, status: 500 };
+    }
+    if (!sa.client_email || !sa.private_key) return { error: 'Clé de service incomplète', status: 500 };
+    return { clientEmail: sa.client_email, privateKeyPem: sa.private_key };
+  }
+  if (/BEGIN (RSA )?PRIVATE KEY/.test(cleaned)) {
+    return {
+      clientEmail: env.GOOGLE_WALLET_SA_EMAIL || 'keepo-wallet-sa@keepo-wallet.iam.gserviceaccount.com',
+      privateKeyPem: cleaned,
+    };
+  }
+  return { error: `SA_KEY invalide — attendu JSON ({…}) ou clé privée PEM. len=${cleaned.length}, first=${cleaned.charCodeAt(0)}`, status: 500 };
+}
+
+// Jeton OAuth2 Google (JWT bearer grant), mis en cache en mémoire ~50 min.
+let _gwToken = null; // { token, exp }
+async function getGoogleAccessToken(env) {
+  if (_gwToken && _gwToken.exp > Date.now() + 60000) return _gwToken.token;
+  const acct = readServiceAccount(env);
+  if (acct.error) return null;
+
+  const now = Math.floor(Date.now() / 1000);
+  const assertion = await signRS256Jwt({
+    iss: acct.clientEmail,
+    scope: 'https://www.googleapis.com/auth/wallet_object.issuer',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  }, acct.privateKeyPem);
+
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=${encodeURIComponent('urn:ietf:params:oauth:grant-type:jwt-bearer')}&assertion=${encodeURIComponent(assertion)}`,
+  });
+  if (!res.ok) {
+    console.error('Google OAuth failed', await res.text().catch(() => ''));
+    return null;
+  }
+  const data = await res.json();
+  if (!data.access_token) return null;
+  _gwToken = { token: data.access_token, exp: Date.now() + (data.expires_in || 3600) * 1000 };
+  return _gwToken.token;
+}
+
+// Pousse le solde de points sur l'objet Wallet du client (no-op s'il n'a pas ajouté le pass).
+async function syncGoogleWalletPoints(env, clientId, merchantId, points) {
+  const token = await getGoogleAccessToken(env);
+  if (!token) return { ok: false, reason: 'oauth' };
+
+  const issuerId = env.GOOGLE_WALLET_ISSUER_ID || '3388000000023175669';
+  const objectId = `${issuerId}.c${clientId.replace(/-/g, '')}m${merchantId.replace(/-/g, '')}`;
+
+  const res = await fetch(
+    `https://walletobjects.googleapis.com/walletobjects/v1/loyaltyObject/${encodeURIComponent(objectId)}`,
+    {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ loyaltyPoints: { label: 'Points', balance: { int: points } } }),
+    }
+  );
+  // 404 = le client n'a jamais ajouté la carte à son Wallet → normal, on ignore.
+  if (res.status === 404) return { ok: true, skipped: 'no-pass' };
+  if (!res.ok) {
+    console.error('Wallet sync failed', res.status, await res.text().catch(() => ''));
+    return { ok: false, reason: `http_${res.status}` };
+  }
+  return { ok: true, updated: true };
+}
+
+// POST /api/wallet-sync { merchantId, clientId? } — met à jour les points du pass.
+// Appelable par le CLIENT (pour sa propre carte) ou par le COMMERÇANT après un
+// crédit en caisse (il doit alors préciser le clientId de SON membre).
+async function handleWalletSync(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+  const user = await getAuthUser(request, env);
+  if (!user) return json({ error: 'Authentification requise' }, 401);
+
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'Corps invalide' }, 400); }
+  const merchantId = body?.merchantId;
+  const clientId   = body?.clientId || user.id;
+  if (!isUuid(merchantId) || !isUuid(clientId)) return json({ error: 'Paramètres invalides' }, 400);
+
+  // Autorisation : soit le client synchronise SA carte, soit le commerçant celle
+  // d'un de ses membres. Rien d'autre.
+  if (user.id !== clientId && user.id !== merchantId) return json({ error: 'Accès refusé' }, 403);
+
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+  if (!SUPA_KEY) return json({ error: 'Service indisponible' }, 500);
+
+  const balRes = await fetch(
+    `${SUPA_URL}/rest/v1/loyalty_balances?client_id=eq.${clientId}&merchant_id=eq.${merchantId}&select=points_balance`,
+    { headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` } }
+  );
+  const bal = balRes.ok ? (await balRes.json())[0] : null;
+  if (!bal) return json({ error: 'Carte introuvable' }, 404);
+
+  const r = await syncGoogleWalletPoints(env, clientId, merchantId, bal.points_balance || 0);
+  return json({ synced: !!r.ok, ...r, points: bal.points_balance || 0 });
+}
+
 // POST /api/google-wallet-save { merchantId } — renvoie { saveUrl } pour le client connecté.
 async function handleGoogleWalletSave(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
@@ -1011,27 +1124,9 @@ async function handleGoogleWalletSave(request, env) {
   const merchantId = body?.merchantId;
   if (!isUuid(merchantId)) return json({ error: 'merchantId invalide' }, 400);
 
-  const saRaw = env.GOOGLE_WALLET_SA_KEY;
-  if (!saRaw) return json({ error: 'Google Wallet non configuré' }, 503);
-  // Accepte SOIT le JSON complet du compte de service, SOIT uniquement la clé
-  // privée PEM (dans ce cas l'e-mail vient de GOOGLE_WALLET_SA_EMAIL, avec défaut).
-  const cleaned = String(saRaw).trim();
-  let clientEmail, privateKeyPem;
-  if (cleaned.startsWith('{')) {
-    let sa;
-    try { sa = JSON.parse(cleaned); }
-    catch (e) {
-      return json({ error: `SA_KEY JSON invalide — len=${cleaned.length}, first=${cleaned.charCodeAt(0)} — ${String((e && e.message) || e).slice(0, 90)}` }, 500);
-    }
-    clientEmail   = sa.client_email;
-    privateKeyPem = sa.private_key;
-  } else if (/BEGIN (RSA )?PRIVATE KEY/.test(cleaned)) {
-    privateKeyPem = cleaned;
-    clientEmail   = env.GOOGLE_WALLET_SA_EMAIL || 'keepo-wallet-sa@keepo-wallet.iam.gserviceaccount.com';
-  } else {
-    return json({ error: `SA_KEY invalide — attendu JSON ({…}) ou clé privée PEM. len=${cleaned.length}, first=${cleaned.charCodeAt(0)}` }, 500);
-  }
-  if (!clientEmail || !privateKeyPem) return json({ error: 'Clé de service incomplète' }, 500);
+  const acct = readServiceAccount(env);
+  if (acct.error) return json({ error: acct.error }, acct.status);
+  const { clientEmail, privateKeyPem } = acct;
   const issuerId = env.GOOGLE_WALLET_ISSUER_ID || '3388000000023175669';
   const origin = new URL(request.url).origin;
 
@@ -1489,6 +1584,7 @@ export default {
       case '/api/delete-account':          return handleDeleteAccount(request, env);
       case '/api/geocode':                 return handleGeocode(request, env);
       case '/api/google-wallet-save':      return handleGoogleWalletSave(request, env);
+      case '/api/wallet-sync':             return handleWalletSync(request, env);
     }
 
     // Tout le reste → assets statiques

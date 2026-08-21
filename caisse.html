@@ -930,6 +930,13 @@ async function confirmCredit() {
         client_id: creditClientId,
         meta: { amount: creditAmount, points, mode: loyaltyModeCaisse, boutique_id: selectedBoutiqueId || null, boutique_name: selectedBoutiqueName || null }
     });
+    // Met à jour le solde affiché sur le pass Google Wallet du client.
+    // Sans attente ni blocage : la caisse ne doit jamais ralentir pour ça.
+    fetch('/api/wallet-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantId, clientId: creditClientId })
+    }).catch(() => {});
     loadDailyStats();
 
     if (isStamps) {
