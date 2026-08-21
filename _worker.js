@@ -1023,11 +1023,12 @@ function readServiceAccount(env) {
 }
 
 // Jeton OAuth2 Google (JWT bearer grant), mis en cache en mémoire ~50 min.
-let _gwToken = null; // { token, exp }
+let _gwToken = null;      // { token, exp }
+let _gwOauthErr = null;   // dernier échec OAuth (diagnostic)
 async function getGoogleAccessToken(env) {
   if (_gwToken && _gwToken.exp > Date.now() + 60000) return _gwToken.token;
   const acct = readServiceAccount(env);
-  if (acct.error) return null;
+  if (acct.error) { _gwOauthErr = acct.error; return null; }
 
   const now = Math.floor(Date.now() / 1000);
   const assertion = await signRS256Jwt({
@@ -1044,11 +1045,14 @@ async function getGoogleAccessToken(env) {
     body: `grant_type=${encodeURIComponent('urn:ietf:params:oauth:grant-type:jwt-bearer')}&assertion=${encodeURIComponent(assertion)}`,
   });
   if (!res.ok) {
-    console.error('Google OAuth failed', await res.text().catch(() => ''));
+    const t = await res.text().catch(() => '');
+    console.error('Google OAuth failed', t);
+    _gwOauthErr = `oauth_${res.status}: ${t.slice(0, 160)}`;
     return null;
   }
   const data = await res.json();
-  if (!data.access_token) return null;
+  if (!data.access_token) { _gwOauthErr = 'reponse OAuth sans access_token'; return null; }
+  _gwOauthErr = null;
   _gwToken = { token: data.access_token, exp: Date.now() + (data.expires_in || 3600) * 1000 };
   return _gwToken.token;
 }
@@ -1056,7 +1060,7 @@ async function getGoogleAccessToken(env) {
 // Pousse le solde de points sur l'objet Wallet du client (no-op s'il n'a pas ajouté le pass).
 async function syncGoogleWalletPoints(env, clientId, merchantId, points) {
   const token = await getGoogleAccessToken(env);
-  if (!token) return { ok: false, reason: 'oauth' };
+  if (!token) return { ok: false, reason: 'oauth', detail: _gwOauthErr || 'jeton OAuth indisponible' };
 
   const issuerId = env.GOOGLE_WALLET_ISSUER_ID || '3388000000023175669';
   const objectId = `${issuerId}.c${clientId.replace(/-/g, '')}m${merchantId.replace(/-/g, '')}`;
@@ -1070,12 +1074,13 @@ async function syncGoogleWalletPoints(env, clientId, merchantId, points) {
     }
   );
   // 404 = le client n'a jamais ajouté la carte à son Wallet → normal, on ignore.
-  if (res.status === 404) return { ok: true, skipped: 'no-pass' };
+  if (res.status === 404) return { ok: true, skipped: 'no-pass', objectId };
   if (!res.ok) {
-    console.error('Wallet sync failed', res.status, await res.text().catch(() => ''));
-    return { ok: false, reason: `http_${res.status}` };
+    const body = await res.text().catch(() => '');
+    console.error('Wallet sync failed', res.status, body);
+    return { ok: false, reason: `http_${res.status}`, detail: body.slice(0, 200), objectId };
   }
-  return { ok: true, updated: true };
+  return { ok: true, updated: true, objectId };
 }
 
 // POST /api/wallet-sync { merchantId, clientId? } — met à jour les points du pass.

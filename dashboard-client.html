@@ -2183,11 +2183,21 @@
 
         // Filet de sécurité : resynchronise le pass Google Wallet (no-op si le
         // client ne l'a pas ajouté, ou si la synchro caisse a déjà eu lieu).
+        // Diagnostic temporaire : on remonte l'échec éventuel dans un toast.
         fetch('/api/wallet-sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ merchantId })
-        }).catch(() => {});
+        })
+            .then(r => r.json().catch(() => ({})))
+            .then(d => {
+                if (d && d.synced === false) {
+                    showToast('error', 'Sync Wallet', `${d.reason || d.error || '?'} — ${(d.detail || '').slice(0, 120)}`);
+                } else if (d && d.skipped === 'no-pass') {
+                    showToast('info', 'Sync Wallet', 'Pass non trouvé chez Google (id : ' + String(d.objectId || '').slice(-24) + ')');
+                }
+            })
+            .catch(() => {});
 
         const goal = 10;
         const remaining = Math.max(goal - currentPoints, 0);
