@@ -2292,6 +2292,18 @@
         if (cd) cd.innerText = '';
     }
 
+    // Jeton d'accès garanti frais (rafraîchi s'il expire dans moins d'une minute).
+    async function getFreshAccessToken() {
+        let { data: { session } } = await supabaseClient.auth.getSession();
+        const expSoon = !session || ((session.expires_at || 0) * 1000 - Date.now() < 60000);
+        if (expSoon) {
+            const r = await supabaseClient.auth.refreshSession();
+            session = r.data?.session || session;
+        }
+        if (!session?.access_token) throw new Error('Session expirée — reconnectez-vous.');
+        return session.access_token;
+    }
+
     // ─── AJOUTER À GOOGLE WALLET ───
     async function addToGoogleWallet() {
         const btn = document.getElementById('googleWalletBtn');
@@ -2300,9 +2312,15 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…';
         try {
+            // Jeton explicite : au retour de Google Wallet la page peut être restaurée
+            // depuis le cache avec un jeton périmé → on rafraîchit avant d'appeler.
+            const token = await getFreshAccessToken();
             const res = await fetch('/api/google-wallet-save', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ merchantId: currentQrMerchantId })
             });
             const data = await res.json().catch(() => ({}));
@@ -2323,8 +2341,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…';
         try {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const token = session?.access_token;
+            const token = await getFreshAccessToken();
             const res = await fetch(`${window.SUPABASE_URL}/functions/v1/keepo-apple-pass`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
