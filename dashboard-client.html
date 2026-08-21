@@ -1313,6 +1313,11 @@
             </button>
         </div>
 
+        <button id="googleWalletBtn" onclick="addToGoogleWallet()" class="modal-close-btn"
+            style="background:#000;color:#fff;border:none;display:flex;align-items:center;justify-content:center;gap:9px;font-weight:700;margin-bottom:8px;">
+            <i class="fa-solid fa-wallet" style="font-size:17px;"></i> Ajouter à Google Wallet
+        </button>
+
         <button class="modal-close-btn" onclick="closeQrModal()">
             <i class="fa-solid fa-xmark"></i> Fermer
         </button>
@@ -2280,6 +2285,29 @@
         if (qrCountdownTimer)  { clearInterval(qrCountdownTimer);  qrCountdownTimer  = null; }
         const cd = document.getElementById('qr-countdown');
         if (cd) cd.innerText = '';
+    }
+
+    // ─── AJOUTER À GOOGLE WALLET ───
+    async function addToGoogleWallet() {
+        const btn = document.getElementById('googleWalletBtn');
+        if (!currentQrMerchantId || !btn) return;
+        const old = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…';
+        try {
+            const res = await fetch('/api/google-wallet-save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ merchantId: currentQrMerchantId })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.saveUrl) throw new Error(data.error || 'Génération impossible');
+            window.location.href = data.saveUrl;
+        } catch (e) {
+            showToast('error', 'Google Wallet', e.message);
+            btn.disabled = false;
+            btn.innerHTML = old;
+        }
     }
 
     // ─── SCAN LOGIC ───

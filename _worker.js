@@ -961,6 +961,124 @@ async function handleMerchantLogo(request, env, url) {
 }
 
 // ── Décompte destinataires ──
+// ════════════════════════════════════════════════════════════════
+//  GOOGLE WALLET — « Ajouter à Google Wallet »
+// ════════════════════════════════════════════════════════════════
+// Signe un JWT RS256 (avec la clé du compte de service) contenant la classe
+// de fidélité du commerçant + l'objet du client. Le client clique → Google
+// crée/ajoute la carte. Aucun appel REST : tout tient dans le JWT signé.
+function b64urlBytes(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlStr(str) {
+  return b64urlBytes(new TextEncoder().encode(str));
+}
+function pemToPkcs8(pem) {
+  const body = String(pem || '')
+    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+    .replace(/-----END PRIVATE KEY-----/, '')
+    .replace(/\s+/g, '');
+  const bin = atob(body);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+async function signRS256Jwt(claims, privateKeyPem) {
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const signingInput = `${b64urlStr(JSON.stringify(header))}.${b64urlStr(JSON.stringify(claims))}`;
+  const key = await crypto.subtle.importKey(
+    'pkcs8', pemToPkcs8(privateKeyPem),
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(signingInput));
+  return `${signingInput}.${b64urlBytes(new Uint8Array(sig))}`;
+}
+
+// POST /api/google-wallet-save { merchantId } — renvoie { saveUrl } pour le client connecté.
+async function handleGoogleWalletSave(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+
+  const user = await getAuthUser(request, env);
+  if (!user) return json({ error: 'Authentification requise' }, 401);
+  const clientId = user.id;
+
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'Corps invalide' }, 400); }
+  const merchantId = body?.merchantId;
+  if (!isUuid(merchantId)) return json({ error: 'merchantId invalide' }, 400);
+
+  const saRaw = env.GOOGLE_WALLET_SA_KEY;
+  if (!saRaw) return json({ error: 'Google Wallet non configuré' }, 503);
+  let sa;
+  try { sa = JSON.parse(saRaw); } catch { return json({ error: 'GOOGLE_WALLET_SA_KEY invalide (JSON attendu)' }, 500); }
+  if (!sa.client_email || !sa.private_key) return json({ error: 'Clé de service incomplète' }, 500);
+  const issuerId = env.GOOGLE_WALLET_ISSUER_ID || '3388000000023175669';
+  const origin = new URL(request.url).origin;
+
+  // Données KEEPO via service_role (le client ne peut pas lire le profil du commerçant en RLS).
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+  if (!SUPA_KEY) return json({ error: 'Service indisponible' }, 500);
+  const h = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` };
+
+  const [balR, cardR, profR] = await Promise.all([
+    fetch(`${SUPA_URL}/rest/v1/loyalty_balances?client_id=eq.${clientId}&merchant_id=eq.${merchantId}&select=points_balance`, { headers: h }),
+    fetch(`${SUPA_URL}/rest/v1/merchant_cards?merchant_id=eq.${merchantId}&select=title,color`, { headers: h }),
+    fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${clientId}&select=name`, { headers: h }),
+  ]);
+  const bal  = balR.ok  ? (await balR.json())[0]  : null;
+  const card = cardR.ok ? (await cardR.json())[0] : null;
+  const prof = profR.ok ? (await profR.json())[0] : null;
+  if (!bal) return json({ error: "Vous n'avez pas de carte chez ce commerçant" }, 404);
+
+  const points   = bal.points_balance || 0;
+  const title    = String(card?.title || 'Commerce').slice(0, 60);
+  const hexColor = /^#[0-9a-f]{6}$/i.test(card?.color || '') ? card.color : '#00e8cc';
+  const logoUrl  = `${origin}/logo/${merchantId}`;
+
+  const cleanM   = merchantId.replace(/-/g, '');
+  const cleanC   = clientId.replace(/-/g, '');
+  const classId  = `${issuerId}.m${cleanM}`;
+  const objectId = `${issuerId}.c${cleanC}m${cleanM}`;
+
+  const loyaltyClass = {
+    id: classId,
+    issuerName: 'KEEPO',
+    programName: title,
+    reviewStatus: 'UNDER_REVIEW',
+    hexBackgroundColor: hexColor,
+    programLogo: { sourceUri: { uri: logoUrl } },
+  };
+  const loyaltyObject = {
+    id: objectId,
+    classId,
+    state: 'ACTIVE',
+    accountId: clientId,
+    accountName: String(prof?.name || 'Membre').slice(0, 60),
+    loyaltyPoints: { label: 'Points', balance: { int: points } },
+    barcode: { type: 'QR_CODE', value: `KEEPO:card:${clientId}:${merchantId}` },
+  };
+
+  const claims = {
+    iss: sa.client_email,
+    aud: 'google',
+    typ: 'savetowallet',
+    iat: Math.floor(Date.now() / 1000),
+    origins: [origin],
+    payload: { loyaltyClasses: [loyaltyClass], loyaltyObjects: [loyaltyObject] },
+  };
+
+  try {
+    const jwt = await signRS256Jwt(claims, sa.private_key);
+    return json({ saveUrl: `https://pay.google.com/gp/v/save/${jwt}` });
+  } catch (e) {
+    console.error('Google Wallet sign failed', e);
+    return json({ error: 'Échec de génération du pass' }, 500);
+  }
+}
+
 // ── Géocodage d'adresse (OpenStreetMap / Nominatim, gratuit, sans clé) ──
 // Le commerçant saisit son adresse → on récupère lat/lng pour l'afficher dans
 // « Découvrir » côté client. Proxifié côté serveur (User-Agent conforme à la
@@ -1352,6 +1470,7 @@ export default {
       case '/api/campaign-count':          return handleCampaignCount(request, env);
       case '/api/delete-account':          return handleDeleteAccount(request, env);
       case '/api/geocode':                 return handleGeocode(request, env);
+      case '/api/google-wallet-save':      return handleGoogleWalletSave(request, env);
     }
 
     // Tout le reste → assets statiques
