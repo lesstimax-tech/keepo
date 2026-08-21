@@ -1,4 +1,4 @@
-﻿// ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 //  KEEPO — Cloudflare Worker (Advanced mode)
 //  Endpoints IA :
 //    POST /api/ai-chat                  → support commerçant
@@ -1012,7 +1012,15 @@ async function handleGoogleWalletSave(request, env) {
   const saRaw = env.GOOGLE_WALLET_SA_KEY;
   if (!saRaw) return json({ error: 'Google Wallet non configuré' }, 503);
   let sa;
-  try { sa = JSON.parse(saRaw); } catch { return json({ error: 'GOOGLE_WALLET_SA_KEY invalide (JSON attendu)' }, 500); }
+  try {
+    // Robustesse : retire un éventuel BOM et les espaces autour (artefacts de copier-coller).
+    const cleaned = String(saRaw).trim();
+    sa = JSON.parse(cleaned);
+  } catch {
+    // Diagnostic non sensible : longueur + code du 1er caractère (123 = '{' attendu).
+    const s = String(saRaw);
+    return json({ error: 'GOOGLE_WALLET_SA_KEY invalide (JSON attendu)', len: s.length, firstCharCode: s.trim().charCodeAt(0) || 0 }, 500);
+  }
   if (!sa.client_email || !sa.private_key) return json({ error: 'Clé de service incomplète' }, 500);
   const issuerId = env.GOOGLE_WALLET_ISSUER_ID || '3388000000023175669';
   const origin = new URL(request.url).origin;
