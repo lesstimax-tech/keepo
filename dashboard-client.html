@@ -84,6 +84,7 @@
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+        html { background: var(--bg); }
         body {
             background: var(--bg);
             color: var(--text);
@@ -105,6 +106,29 @@
         :focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 6px; }
         button, input, select, textarea { font-family: inherit; }
         a { text-decoration: none; color: inherit; }
+
+
+        /* ─── Écran de démarrage : couvre l app le temps du chargement ─── */
+        #splash {
+            position: fixed; inset: 0; z-index: 300; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 24px; text-align: center;
+            transition: opacity .5s var(--ease), visibility .5s var(--ease);
+        }
+        #splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        #toast-root {
+            position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 16px);
+            z-index: 250; display: flex; flex-direction: column; gap: 8px; width: min(420px, calc(100vw - 32px));
+            pointer-events: none;
+        }
+        #toast-root > * { pointer-events: auto; }
+
+        /* ─── En-tête de l application ─────────────────────────── */
+        header {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 16px 0 4px;
+        }
 
         /* ─── Écran de démarrage ─────────────────────────────── */
         .splash-logo-wrap { position: relative; display: grid; place-items: center; margin-bottom: 26px; }
@@ -154,13 +178,15 @@
         .user-avatar:active { transform: scale(.94); }
         .user-avatar.has-photo { color: transparent; }
         .user-badge {
-            font-size: 11.5px; font-weight: 600; color: var(--acc); background: var(--acc-soft);
-            border: 1px solid var(--acc-line); padding: 4px 10px; border-radius: 999px;
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            font-size: 14.5px; font-weight: 600; letter-spacing: -.02em; color: var(--text);
+            background: none; border: none; padding: 0;
         }
         .btn-logout {
+            display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px;
             background: var(--bg-3); border: 1px solid var(--border); color: var(--muted);
-            width: 40px; height: 40px; border-radius: 13px; cursor: pointer; display: grid;
-            place-items: center; font-size: 15px; transition: all .25s var(--ease);
+            border-radius: 12px; cursor: pointer; font-size: 13.5px; font-weight: 550;
+            transition: all .25s var(--ease); white-space: nowrap;
         }
         .btn-logout:hover { color: var(--pink); border-color: var(--pink-glow); background: #fff; }
 
@@ -294,7 +320,7 @@
             font-size: 13px; font-weight: 550; padding: 8px 15px; border-radius: 999px; cursor: pointer;
             transition: all .25s var(--ease); white-space: nowrap;
         }
-        .hist-filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+        .hist-filter-btn.active { background: var(--acc); color: #fff; border-color: var(--acc); }
         .tx-item {
             display: flex; align-items: center; gap: 13px; background: var(--bg-3);
             border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px;
@@ -405,7 +431,7 @@
         .bottom-nav {
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: var(--nav-h);
             padding-bottom: env(safe-area-inset-bottom);
-            background: rgba(255,255,255,.86);
+            background: color-mix(in srgb, var(--bg-3) 86%, transparent);
             backdrop-filter: saturate(180%) blur(18px); -webkit-backdrop-filter: saturate(180%) blur(18px);
             border-top: 1px solid var(--border);
             display: grid; grid-template-columns: repeat(5,1fr); align-items: center;
@@ -1277,7 +1303,11 @@
         greet.classList.add('ready');
         splashProgress(100, 'Prêt !');
         setTimeout(() => {
-            document.getElementById('splash').classList.add('hidden');
+            const s = document.getElementById('splash');
+            s.classList.add('hidden');
+            // Filet : on le sort réellement du flux une fois le fondu passé, même si
+            // les transitions n'ont pas tourné (onglet en arrière-plan au démarrage).
+            setTimeout(() => { s.style.display = 'none'; }, 600);
         }, 650);
     }
     function splashRedirect(href) {
@@ -1416,8 +1446,25 @@
         splashProgress(80, 'Récupération des cartes');
         loadClientTheme(); // thème personnalisé avec ID connu
         initPwa();
-        await loadClientWallet();
-        await loadMyPhase3Profile();
+        // Un échec de chargement ne doit JAMAIS laisser l'écran de démarrage bloqué :
+        // l'app s'ouvre quand même et l'erreur est rendue visible.
+        try {
+            await loadClientWallet();
+        } catch (e) {
+            console.error('[KEEPO] Chargement des cartes :', e);
+            const c = document.getElementById('cards-container');
+            if (c) c.innerHTML = `<div class="empty-wallet">
+                <div class="empty-wallet-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <h3>Cartes indisponibles</h3>
+                <p>${(e && e.message ? e.message : 'Erreur inattendue')}</p>
+                <button class="empty-wallet-btn" onclick="location.reload()">
+                    <i class="fa-solid fa-rotate"></i> Réessayer</button></div>`;
+        }
+        try {
+            await loadMyPhase3Profile();
+        } catch (e) {
+            console.error('[KEEPO] Profil (parrainage/anniversaire) :', e);
+        }
 
         splashHide(displayName);
 
