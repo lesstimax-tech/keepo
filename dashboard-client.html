@@ -19,7 +19,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -29,38 +29,56 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* ═══════════════════════════════════════
-           TOKENS & RESET
-        ═══════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════════════
+           KEEPO — Portefeuille client
+           Thème « Clarté » : blanc travaillé, dégradé du logo
+           (violet-indigo → turquoise), géométrie douce, mouvement net.
+           ══════════════════════════════════════════════════════════ */
         :root {
-            --bg: #FBFBFD;
-            --bg-2: #F3F3F7;
+            --bg: #F7F7FA;
+            --bg-2: #F1F1F6;
             --bg-3: #FFFFFF;
             --card-bg: #FFFFFF;
-            --glass: rgba(17,24,39,0.04);
-            --glass-2: rgba(17,24,39,0.07);
-            --border: rgba(17,24,39,0.09);
-            --border-2: rgba(17,24,39,0.14);
+            --glass: rgba(17,20,40,0.035);
+            --glass-2: rgba(17,20,40,0.06);
+            --border: #EBEBF1;
+            --border-2: #DEDEE7;
 
-            --text: #14141B;
-            --muted: #6B6A78;
-            --sub: #46455A;
+            --text: #101018;
+            --sub: #3A3A48;
+            --muted: #6B6B7B;
+            --faint: #9494A4;
 
-            --cyan: #0E7C8C;
-            --cyan-glow: rgba(14,124,140,0.18);
-            --cyan-soft: rgba(14,124,140,0.07);
-            --pink: #E0245E;
-            --pink-glow: rgba(224,36,94,0.18);
-            --violet: #5B3AA0;
-            --violet-glow: rgba(91,58,160,0.18);
-            --gold: #B8860B;
-            --gold-glow: rgba(184,134,11,0.18);
-            --green: #15A34A;
+            /* Accents repris du logo */
+            --g1: #5A32A0;
+            --g2: #1FA5A8;
+            --grad: linear-gradient(135deg, #5A32A0 0%, #3F63A4 52%, #1FA5A8 100%);
+            --grad-soft: linear-gradient(135deg, rgba(90,50,160,.10), rgba(31,165,168,.10));
+            --acc: #4B45A6;
+            --acc-soft: #F0EFFA;
+            --acc-line: rgba(75,69,166,.20);
 
-            --nav-h: 76px;
-            --r: 22px;
-            --r-sm: 14px;
+            --cyan: #1B8E97;
+            --cyan-soft: rgba(31,165,168,.08);
+            --cyan-glow: rgba(31,165,168,.20);
+            --violet: #5A32A0;
+            --violet-glow: rgba(90,50,160,.20);
+            --pink: #D6336C;
+            --pink-glow: rgba(214,51,108,.18);
+            --gold: #B07A12;
+            --gold-glow: rgba(176,122,18,.18);
+            --green: #12925A;
 
+            --shadow-xs: 0 1px 2px rgba(16,16,24,.05);
+            --shadow-sm: 0 2px 6px rgba(16,16,24,.06);
+            --shadow-md: 0 12px 28px -14px rgba(16,16,24,.26), 0 2px 6px rgba(16,16,24,.04);
+            --shadow-lg: 0 28px 60px -28px rgba(16,16,24,.40);
+
+            --nav-h: 74px;
+            --r: 18px;
+            --r-sm: 12px;
+            --r-xs: 9px;
+            --ease: cubic-bezier(.16,1,.3,1);
             font-size: 16px;
         }
 
@@ -69,875 +87,504 @@
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Instrument Sans', sans-serif;
-            min-height: 100vh;
-            min-height: 100dvh;
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+            font-feature-settings: 'cv02','cv03','cv04','cv11';
+            min-height: 100vh; min-height: 100dvh;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
         }
-
-        /* ─── ambient background ─── */
+        /* Halos diffus — le fond respire sans motif */
         body::before {
-            content: '';
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background:
-                radial-gradient(ellipse 70% 50% at 15% 5%, rgba(91,58,160,.1) 0%, transparent 55%),
-                radial-gradient(ellipse 55% 40% at 85% 85%, rgba(14,124,140,.07) 0%, transparent 55%),
-                radial-gradient(ellipse 45% 35% at 50% 50%, rgba(255,77,130,.04) 0%, transparent 65%);
+              radial-gradient(560px 300px at 88% -6%, rgba(31,165,168,.10), transparent 62%),
+              radial-gradient(520px 320px at 4% 4%, rgba(90,50,160,.09), transparent 62%);
         }
+        ::selection { background: var(--acc); color: #fff; }
+        :focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 6px; }
+        button, input, select, textarea { font-family: inherit; }
+        a { text-decoration: none; color: inherit; }
 
-        /* ═══════════════════════════════════════
-           LAYOUT
-        ═══════════════════════════════════════ */
-        .app-container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 0 18px calc(var(--nav-h) + 24px);
-            position: relative; z-index: 1;
+        /* ─── Écran de démarrage ─────────────────────────────── */
+        .splash-logo-wrap { position: relative; display: grid; place-items: center; margin-bottom: 26px; }
+        .splash-k {
+            width: 76px; height: 76px; border-radius: 22px; background: var(--grad);
+            display: grid; place-items: center; color: #fff; font-size: 30px; font-weight: 800;
+            letter-spacing: -.04em; box-shadow: 0 18px 40px -16px rgba(75,69,166,.7);
+            animation: kIn .9s var(--ease) both;
         }
+        @keyframes kIn { from { opacity: 0; transform: scale(.82) translateY(10px); } }
+        .splash-ring, .splash-ring-2 {
+            position: absolute; border-radius: 50%; border: 1.5px solid var(--acc-line);
+            animation: ringOut 2.6s ease-out infinite;
+        }
+        .splash-ring { width: 104px; height: 104px; }
+        .splash-ring-2 { width: 104px; height: 104px; animation-delay: 1.1s; }
+        @keyframes ringOut { 0% { transform: scale(.72); opacity: .75 } 100% { transform: scale(1.5); opacity: 0 } }
+        .splash-greeting { font-size: 21px; font-weight: 650; letter-spacing: -.03em; }
+        .splash-status { font-size: 13.5px; color: var(--muted); margin-top: 7px; }
+        .splash-progress-track {
+            width: 190px; height: 3px; border-radius: 99px; background: var(--border);
+            overflow: hidden; margin-top: 22px;
+        }
+        .splash-progress-bar { height: 100%; width: 0; border-radius: 99px; background: var(--grad);
+            transition: width .5s var(--ease); }
 
-        /* ═══════════════════════════════════════
-           HEADER
-        ═══════════════════════════════════════ */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            /* Respecte la barre d'état iOS (notch/encoche) : le header ne passe
-               plus sous l'heure / la batterie. */
-            padding: calc(16px + env(safe-area-inset-top, 0px)) 0 16px;
-            position: sticky; top: 0; z-index: 50;
-        }
-        header::before {
-            content: '';
-            position: absolute; left: -18px; right: -18px; bottom: 0;
-            top: calc(-1 * env(safe-area-inset-top, 0px) - 4px);
-            background: linear-gradient(to bottom, var(--bg) 72%, transparent);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .user-badge {
-            display: flex; align-items: center; gap: 10px;
-            background: var(--card-bg);
-            padding: 6px 14px 6px 6px;
-            border-radius: 50px;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(12px);
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(20,20,27,.04);
-            transition: border-color .2s, transform .2s, box-shadow .2s;
-        }
-        .user-badge:hover { border-color: rgba(14,124,140,.35); transform: translateY(-1px); box-shadow: 0 6px 16px -6px rgba(20,20,27,.12); }
-        .user-badge:active { transform: scale(.97); }
-
-        .user-avatar {
-            width: 32px; height: 32px;
-            background: linear-gradient(135deg, var(--violet), var(--pink));
-            background-size: cover; background-position: center;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 13px; font-weight: 800;
-            flex-shrink: 0; overflow: hidden;
-            box-shadow: 0 0 12px var(--violet-glow);
-        }
-        .user-avatar.has-photo { color: transparent; }
-        #user-display-name { font-weight: 700; font-size: 13px; }
-
-        .btn-logout {
-            background: none; border: none;
-            color: var(--muted); cursor: pointer;
-            font-size: 12px; font-weight: 600;
-            display: flex; align-items: center; gap: 6px;
-            padding: 8px 12px;
-            border-radius: 50px;
-            border: 1px solid transparent;
-            transition: all .2s;
-            font-family: 'Instrument Sans', sans-serif;
-        }
-        .btn-logout:hover { color: var(--pink); border-color: rgba(255,77,130,.2); background: rgba(255,77,130,.05); }
-
-        /* ═══════════════════════════════════════
-           VIEWS
-        ═══════════════════════════════════════ */
-        .app-view { display: none; animation: viewIn .38s cubic-bezier(.4,0,.2,1); }
+        /* ─── Ossature ───────────────────────────────────────── */
+        .app-container { position: relative; z-index: 1; max-width: 620px; margin: 0 auto;
+            padding: 0 18px; }
+        .app-view { display: none; padding-top: 18px; animation: viewIn .5s var(--ease); }
         .app-view.active { display: block; }
-        @keyframes viewIn {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0); }
+        @keyframes viewIn { from { opacity: 0; transform: translateY(12px); } }
+        .view-title { font-size: 25px; font-weight: 700; letter-spacing: -.035em; }
+        .view-sub { color: var(--muted); font-size: 14.5px; margin-top: 5px; line-height: 1.55; }
+        .section-label {
+            font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+            color: var(--faint); margin-bottom: 12px;
         }
 
-        .view-title {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 26px; font-weight: 800;
-            letter-spacing: -.5px;
-            margin-bottom: 4px;
+        /* En-tête */
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 13px; background: var(--grad); color: #fff;
+            display: grid; place-items: center; font-weight: 700; font-size: 16px; cursor: pointer;
+            background-size: cover; background-position: center; flex-shrink: 0;
+            box-shadow: var(--shadow-sm); transition: transform .3s var(--ease);
         }
-        .view-sub { color: var(--muted); font-size: 13px; margin-bottom: 22px; line-height: 1.5; }
+        .user-avatar:active { transform: scale(.94); }
+        .user-avatar.has-photo { color: transparent; }
+        .user-badge {
+            font-size: 11.5px; font-weight: 600; color: var(--acc); background: var(--acc-soft);
+            border: 1px solid var(--acc-line); padding: 4px 10px; border-radius: 999px;
+        }
+        .btn-logout {
+            background: var(--bg-3); border: 1px solid var(--border); color: var(--muted);
+            width: 40px; height: 40px; border-radius: 13px; cursor: pointer; display: grid;
+            place-items: center; font-size: 15px; transition: all .25s var(--ease);
+        }
+        .btn-logout:hover { color: var(--pink); border-color: var(--pink-glow); background: #fff; }
 
-        /* ═══════════════════════════════════════
-           STATS BAR (wallet top)
-        ═══════════════════════════════════════ */
-        .stats-bar {
-            display: grid; grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px; margin-bottom: 22px;
-        }
+        /* ─── Statistiques ───────────────────────────────────── */
+        .stats-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 18px 0 22px; }
         .stat-pill {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--r-sm);
-            padding: 12px 14px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 1px 2px rgba(20,20,27,.04);
-            transition: border-color .2s, transform .25s cubic-bezier(.4,0,.2,1);
+            background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--r-sm);
+            padding: 14px 12px; text-align: center; box-shadow: var(--shadow-xs);
+            transition: transform .35s var(--ease), box-shadow .35s var(--ease);
         }
-        .stat-pill:hover { border-color: rgba(14,124,140,.30); transform: translateY(-2px); }
-        .stat-pill-val {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 20px; font-weight: 800;
-            color: var(--cyan);
-            line-height: 1;
-        }
-        .stat-pill-lbl { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+        .stat-pill:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .stat-pill-val { font-size: 22px; font-weight: 700; letter-spacing: -.04em;
+            font-variant-numeric: tabular-nums; }
+        .stat-pill-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 500; }
 
-        /* ═══════════════════════════════════════
-           LOYALTY CARDS
-        ═══════════════════════════════════════ */
+        /* ─── Cartes de fidélité ─────────────────────────────── */
         .cards-grid { display: flex; flex-direction: column; gap: 14px; }
-
         .loyalty-card {
-            border-radius: var(--r);
-            padding: 22px;
-            position: relative; overflow: hidden;
-            cursor: pointer;
-            color: #fff;
-            transition: transform .28s cubic-bezier(.4,0,.2,1), box-shadow .28s;
-            border: 1px solid rgba(255,255,255,.09);
-            background: linear-gradient(140deg, #1C1733 0%, #131125 46%, #0E1F26 100%);
-            box-shadow: 0 2px 4px rgba(20,20,27,.10), 0 18px 40px -18px rgba(20,20,27,.40);
+            position: relative; border-radius: var(--r); padding: 20px; cursor: pointer;
+            background: var(--card-bg); border: 1px solid var(--border); overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: transform .4s var(--ease), box-shadow .4s var(--ease);
+            animation: cardIn .6s var(--ease) both;
         }
-        .loyalty-card::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg,
-                rgba(91,58,160,.16) 0%,
-                transparent 45%,
-                rgba(22,184,196,.08) 100%);
-            pointer-events: none;
+        @keyframes cardIn { from { opacity: 0; transform: translateY(16px); } }
+        .loyalty-card::before {              /* liseré coloré du commerce */
+            content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--card-accent, var(--grad));
         }
-        .loyalty-card::after {
-            content: '';
-            position: absolute; top: -60px; right: -60px;
-            width: 180px; height: 180px;
-            background: radial-gradient(circle, var(--card-glow, var(--cyan-glow)) 0%, transparent 70%);
-            border-radius: 50%; pointer-events: none;
-            transition: opacity .3s;
-        }
-        .loyalty-card:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 4px 8px rgba(20,20,27,.12), 0 28px 60px -20px rgba(20,20,27,.5); border-color: rgba(255,255,255,.16); }
-        .loyalty-card:active { transform: translateY(-1px) scale(.985); }
-
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+        .loyalty-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .loyalty-card:active { transform: scale(.988); }
+        .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
         .card-logo-chip {
-            width: 40px; height: 40px; border-radius: 12px;
-            background: linear-gradient(135deg, var(--card-color1, var(--violet)), var(--card-color2, var(--cyan)));
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Bricolage Grotesque', sans-serif; font-size: 16px; font-weight: 800;
-            color: white; flex-shrink: 0;
-            box-shadow: 0 4px 14px var(--card-glow, var(--violet-glow));
-        }
-        .card-points-block { text-align: right; }
-        .card-points-num {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 28px; font-weight: 800;
-            color: var(--card-accent, var(--cyan));
-            line-height: 1;
-        }
-        .card-points-lbl { font-size: 10px; color: rgba(255,255,255,.5); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-top: 2px; }
-
-        .merchant-name {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            width: 44px; height: 44px; border-radius: var(--r-xs); overflow: hidden; flex-shrink: 0;
+            background: var(--card-accent, var(--grad)); color: #fff; display: grid; place-items: center;
             font-size: 17px; font-weight: 700;
-            letter-spacing: -.3px;
-            margin-bottom: 12px;
         }
-
-        /* progress bar inside card */
-        .card-progress-wrap { margin-bottom: 14px; }
-        .card-progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,.55); margin-bottom: 6px; }
-        .card-progress-track { height: 5px; background: rgba(255,255,255,.10); border-radius: 6px; overflow: hidden; }
-        .card-progress-fill {
-            height: 100%; border-radius: 6px;
-            background: linear-gradient(90deg, var(--card-accent, var(--cyan)), var(--card-accent2, var(--violet)));
-            transition: width 1.2s cubic-bezier(.4,0,.2,1);
-            width: 0;
-        }
-
-        .card-footer { display: flex; align-items: center; justify-content: space-between; }
-        .card-tap-hint {
-            font-size: 11px; color: var(--card-accent, var(--cyan));
-            font-weight: 600; display: flex; align-items: center; gap: 5px;
-            opacity: .8;
-        }
-        .card-tap-hint i { font-size: 13px; animation: tapPulse 2s ease-in-out infinite; }
-        @keyframes tapPulse { 0%,100%{transform:scale(1);opacity:.8} 50%{transform:scale(1.2);opacity:1} }
-
+        .card-logo-chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .card-points-block { text-align: right; }
+        .card-points-num { font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -.045em;
+            color: var(--card-accent, var(--acc)); font-variant-numeric: tabular-nums; }
+        .card-points-lbl { font-size: 10.5px; color: var(--muted); font-weight: 500;
+            text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+        .merchant-name { font-size: 17px; font-weight: 650; letter-spacing: -.025em; margin-top: 12px; }
+        .card-progress-wrap { margin-top: 14px; }
+        .card-progress-labels { display: flex; justify-content: space-between; font-size: 11.5px;
+            color: var(--muted); margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+        .card-progress-track { height: 6px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
+        .card-progress-fill { height: 100%; border-radius: 99px; background: var(--card-accent, var(--grad));
+            transition: width 1.1s var(--ease); }
+        .card-footer { display: flex; align-items: center; justify-content: space-between;
+            margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--border); }
         .card-reward-badge {
-            font-size: 10px; font-weight: 700;
-            background: rgba(255,195,77,.1); color: var(--gold);
-            border: 1px solid rgba(255,195,77,.2);
-            padding: 3px 9px; border-radius: 20px;
-            display: flex; align-items: center; gap: 4px;
+            display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600;
+            padding: 5px 11px; border-radius: 999px; border: 1px solid var(--acc-line);
+            background: var(--acc-soft); color: var(--acc);
         }
-
-        /* ─── PHASE 3 — Tier badges, Wheel, Gift cards ─── */
+        .btn-see-rewards {
+            background: none; border: 1px solid var(--border-2); color: var(--sub); font-size: 12.5px;
+            font-weight: 550; padding: 7px 13px; border-radius: 999px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px; transition: all .25s var(--ease);
+        }
+        .btn-see-rewards:hover { border-color: var(--acc); color: var(--acc); background: var(--acc-soft); }
         .tier-badge {
-            display: inline-block; padding: 4px 10px; border-radius: 50px;
-            font-size: 9px; font-weight: 900; letter-spacing: 0.8px;
-            font-family: 'Bricolage Grotesque', sans-serif; margin-bottom: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
+            padding: 3px 9px; border-radius: 999px; margin-top: 10px; letter-spacing: .04em;
         }
-        .tier-bronze { background: linear-gradient(135deg, #cd8158, #a05f3c); color: #fff; }
-        .tier-silver { background: linear-gradient(135deg, #d8dce5, #8d92a4); color: #1a1828; }
-        .tier-gold   { background: linear-gradient(135deg, #ffd34d, #ff9a3c); color: #1a1828; }
+        .tier-gold { background: rgba(176,122,18,.10); color: var(--gold); border: 1px solid var(--gold-glow); }
+        .tier-silver { background: rgba(120,120,140,.10); color: #6E6E82; border: 1px solid rgba(120,120,140,.22); }
+        .tier-bronze { background: rgba(160,100,60,.10); color: #93613C; border: 1px solid rgba(160,100,60,.20); }
 
-        /* Wheel CSS */
-        .wheel-container {
-            width: 220px; height: 220px; margin: 18px auto; position: relative;
-        }
-        #wheel-canvas {
-            width: 220px; height: 220px; border-radius: 50%; display: block;
-            box-shadow: 0 0 40px rgba(91,58,160,0.4);
-            transition: transform 4s cubic-bezier(.17,.67,.3,1);
-        }
-        .wheel-arrow {
-            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
-            border-top: 24px solid #fff; z-index: 5;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
-        }
-        .wheel-result {
-            text-align: center; padding: 16px; margin-top: 12px;
-            background: linear-gradient(135deg, rgba(91,58,160,0.1), rgba(14,124,140,0.08));
-            border: 1px solid rgba(14,124,140,0.3); border-radius: 16px;
-            display: none;
-        }
-        .wheel-result.show { display: block; animation: wheelResultIn .4s; }
-        @keyframes wheelResultIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Card-detail action buttons */
-        .card-detail-action {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
-            cursor: pointer; transition: all .15s; width: 100%;
-            color: #fff; font-family: inherit; font-size: 13px; text-align: left;
-        }
-        .card-detail-action:hover { background: rgba(91,58,160,0.1); border-color: rgba(91,58,160,0.3); }
-        .card-detail-action.disabled { opacity: 0.5; cursor: not-allowed; }
-        .card-detail-action-icon { font-size: 18px; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .card-detail-action-text { flex: 1; }
-        .card-detail-action-text small { color: var(--muted); font-size: 11px; display: block; margin-top: 2px; }
-
-        /* Referral box on profile */
-        .referral-box {
-            background: linear-gradient(135deg, rgba(91,58,160,0.08), rgba(14,124,140,0.06));
-            border: 1px solid rgba(91,58,160,0.25); border-radius: 16px;
-            padding: 16px; margin-bottom: 14px;
-        }
-        .referral-code {
-            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900; font-size: 24px;
-            letter-spacing: 4px; color: #5B3AA0; text-align: center;
-            background: rgba(91,58,160,0.07); padding: 12px;
-            border-radius: 12px; margin: 10px 0;
-            border: 2px dashed rgba(91,58,160,0.4);
-        }
-
-        /* ─── empty wallet ─── */
-        .empty-wallet {
-            text-align: center; padding: 52px 24px;
-            border: 1px dashed var(--border);
-            border-radius: var(--r);
-        }
+        /* Portefeuille vide */
+        .empty-wallet { text-align: center; padding: 52px 24px; background: var(--bg-3);
+            border: 1px dashed var(--border-2); border-radius: var(--r); }
         .empty-wallet-icon {
-            width: 72px; height: 72px; border-radius: 22px;
-            background: linear-gradient(135deg, rgba(91,58,160,.10), rgba(22,184,196,.12));
-            border: 1px solid rgba(91,58,160,.15);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; margin: 0 auto 18px;
-            color: var(--cyan);
+            width: 62px; height: 62px; border-radius: 20px; margin: 0 auto 16px;
+            background: var(--grad-soft); color: var(--acc); display: grid; place-items: center; font-size: 25px;
         }
-        .empty-wallet h3 { font-family:'Bricolage Grotesque',sans-serif; font-size:17px; font-weight:800; margin-bottom:8px; }
-        .empty-wallet p { color:var(--muted); font-size:13px; line-height:1.6; max-width:240px; margin:0 auto 20px; }
+        .empty-wallet h3 { font-size: 18px; font-weight: 650; letter-spacing: -.025em; }
+        .empty-wallet p { color: var(--muted); font-size: 14px; margin-top: 7px; line-height: 1.55; }
         .empty-wallet-btn {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: var(--cyan); color: #fff;
-            border: none; border-radius: 50px;
-            padding: 11px 22px; font-weight: 700; font-size: 13px;
-            cursor: pointer; transition: all .2s;
-            font-family: 'Instrument Sans', sans-serif;
+            margin-top: 18px; background: var(--grad); color: #fff; border: none; padding: 12px 22px;
+            border-radius: var(--r-sm); font-weight: 600; font-size: 14.5px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+            box-shadow: 0 10px 24px -12px rgba(75,69,166,.7); transition: transform .3s var(--ease);
         }
-        .empty-wallet-btn:hover { box-shadow: 0 8px 24px var(--cyan-glow); transform: translateY(-2px); }
+        .empty-wallet-btn:active { transform: scale(.96); }
 
-        /* ═══════════════════════════════════════
-           SCANNER VIEW
-        ═══════════════════════════════════════ */
+        /* ─── Scanner ────────────────────────────────────────── */
         .scanner-frame-wrap {
-            position: relative; margin-bottom: 18px;
-            border-radius: var(--r); overflow: hidden;
+            position: relative; border-radius: var(--r); overflow: hidden; background: #0E0E14;
+            aspect-ratio: 1; margin: 16px 0; box-shadow: var(--shadow-md);
         }
-        #scanner-container {
-            width: 100%; border-radius: var(--r);
-            overflow: hidden; background: #000;
-            border: 1px solid var(--border);
+        .scanner-frame-wrap video, .scanner-frame-wrap canvas { width: 100%; height: 100%; object-fit: cover; }
+        .scanner-corners { position: absolute; inset: 12%; pointer-events: none; }
+        .scanner-corners span {
+            position: absolute; width: 30px; height: 30px; border: 2.5px solid #fff; border-radius: 4px;
         }
-        .scanner-corners { position: absolute; inset: 0; pointer-events: none; }
-        .sc { position: absolute; width: 26px; height: 26px; border-color: var(--cyan); border-style: solid; }
-        .sc.tl { top: 8px; left: 8px; border-width: 3px 0 0 3px; border-radius: 5px 0 0 0; }
-        .sc.tr { top: 8px; right: 8px; border-width: 3px 3px 0 0; border-radius: 0 5px 0 0; }
-        .sc.bl { bottom: 8px; left: 8px; border-width: 0 0 3px 3px; border-radius: 0 0 0 5px; }
-        .sc.br { bottom: 8px; right: 8px; border-width: 0 3px 3px 0; border-radius: 0 0 5px 0; }
+        .scanner-corners .tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .scanner-corners .tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+        .scanner-corners .bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+        .scanner-corners .br { bottom: 0; right: 0; border-left: none; border-top: none; }
         .scan-beam {
-            position: absolute; left: 10%; right: 10%; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-            animation: beam 2.2s ease-in-out infinite; top: 10%;
-            pointer-events: none; border-radius: 2px;
+            position: absolute; left: 12%; right: 12%; height: 2px; border-radius: 2px;
+            background: linear-gradient(90deg, transparent, var(--g2), transparent);
+            box-shadow: 0 0 14px var(--cyan-glow); animation: beam 2.6s ease-in-out infinite;
         }
-        @keyframes beam { 0%,100%{top:10%} 50%{top:87%} }
-
+        @keyframes beam { 0%,100% { top: 14%; opacity: .2 } 50% { top: 84%; opacity: 1 } }
         .scanner-status {
-            display: flex; align-items: center; gap: 9px;
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 50px; padding: 9px 16px; margin-bottom: 16px;
-            backdrop-filter: blur(10px);
-            font-size: 12px; font-weight: 600; color: var(--sub);
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            background: var(--bg-3); border: 1px solid var(--border); border-radius: 999px;
+            padding: 10px 16px; font-size: 13.5px; font-weight: 500; color: var(--sub);
         }
-        .scanner-status-dot { width: 7px; height: 7px; background: var(--cyan); border-radius: 50%; animation: pulse-dot 1.8s ease-in-out infinite; box-shadow: 0 0 6px var(--cyan); }
-        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
-
+        .scanner-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+            box-shadow: 0 0 0 3px rgba(18,146,90,.15); animation: blink 2s ease-in-out infinite; }
+        @keyframes blink { 50% { opacity: .35 } }
         .scan-hint-card {
-            margin-top: 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 18px 20px;
-            display: flex; align-items: flex-start; gap: 14px;
+            display: flex; gap: 13px; background: var(--bg-3); border: 1px solid var(--border);
+            border-radius: var(--r-sm); padding: 16px; margin-top: 14px;
         }
         .scan-hint-icon {
-            flex-shrink: 0;
-            width: 38px; height: 38px;
-            background: rgba(14,124,140,0.1);
-            border: 1px solid rgba(14,124,140,0.2);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--cyan); font-size: 15px;
+            width: 38px; height: 38px; border-radius: var(--r-xs); background: var(--grad-soft);
+            color: var(--acc); display: grid; place-items: center; font-size: 16px; flex-shrink: 0;
         }
-        .scan-hint-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-        .scan-hint-body { font-size: 12px; color: var(--muted); line-height: 1.5; }
-        .scan-hint-body strong { color: var(--sub); }
+        .scan-hint-title { font-size: 14.5px; font-weight: 650; letter-spacing: -.02em; }
+        .scan-hint-body { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.55; }
 
-        /* ═══════════════════════════════════════
-           PROFILE VIEW
-        ═══════════════════════════════════════ */
+        /* ─── Historique ─────────────────────────────────────── */
+        .hist-filter-btn {
+            background: var(--bg-3); border: 1px solid var(--border); color: var(--muted);
+            font-size: 13px; font-weight: 550; padding: 8px 15px; border-radius: 999px; cursor: pointer;
+            transition: all .25s var(--ease); white-space: nowrap;
+        }
+        .hist-filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+        .tx-item {
+            display: flex; align-items: center; gap: 13px; background: var(--bg-3);
+            border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px;
+            transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+        }
+        .tx-item:hover { transform: translateX(3px); box-shadow: var(--shadow-sm); }
+        .tx-icon {
+            width: 40px; height: 40px; border-radius: var(--r-xs); display: grid; place-items: center;
+            font-size: 15px; flex-shrink: 0; background: var(--grad-soft); color: var(--acc);
+        }
+        .tx-info { flex: 1; min-width: 0; }
+        .tx-merchant { font-size: 14.5px; font-weight: 600; letter-spacing: -.02em;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-date { font-size: 12px; color: var(--faint); margin-top: 2px; }
+        .tx-pts { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+        /* ─── Récompenses ────────────────────────────────────── */
+        .rewards-pts-chip {
+            display: inline-flex; align-items: center; gap: 7px; background: var(--grad);
+            color: #fff; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+            box-shadow: 0 8px 20px -10px rgba(75,69,166,.6);
+        }
+        .reward-row {
+            display: flex; align-items: center; gap: 13px; background: var(--bg-3);
+            border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px; margin-bottom: 10px;
+            transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
+        }
+        .reward-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .reward-row.unlocked { border-color: var(--acc-line); background: linear-gradient(180deg, var(--acc-soft), var(--bg-3)); }
+        .reward-row-icon {
+            width: 44px; height: 44px; border-radius: var(--r-xs); background: var(--grad-soft);
+            color: var(--acc); display: grid; place-items: center; font-size: 17px; flex-shrink: 0;
+        }
+        .reward-row-info { flex: 1; min-width: 0; }
+        .reward-row-name { font-size: 14.5px; font-weight: 600; letter-spacing: -.02em; }
+        .reward-row-pts { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+        .reward-claim-btn {
+            background: var(--grad); color: #fff; border: none; padding: 9px 16px; border-radius: 999px;
+            font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+            box-shadow: 0 8px 18px -9px rgba(75,69,166,.65); transition: transform .25s var(--ease);
+        }
+        .reward-claim-btn:active { transform: scale(.95); }
+        .reward-prog-wrap { margin-top: 10px; }
+        .reward-prog-track { height: 6px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
+        .reward-prog-fill { height: 100%; border-radius: 99px; background: var(--grad);
+            transition: width 1s var(--ease); }
+        .reward-prog-pct { font-size: 11.5px; color: var(--muted); margin-top: 5px;
+            font-variant-numeric: tabular-nums; }
+
+        /* ─── Profil ─────────────────────────────────────────── */
         .profile-hero {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 28px 22px;
-            text-align: center;
-            margin-bottom: 14px;
-            backdrop-filter: blur(12px);
-            position: relative; overflow: hidden;
+            text-align: center; background: var(--bg-3); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 30px 22px; margin-bottom: 20px; position: relative;
+            overflow: hidden;
         }
         .profile-hero::before {
-            content: '';
-            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, var(--violet-glow) 0%, transparent 65%);
-            pointer-events: none;
+            content: ""; position: absolute; inset: 0 0 auto 0; height: 92px; background: var(--grad-soft);
         }
         .profile-avatar-big {
-            width: 84px; height: 84px;
-            background: linear-gradient(135deg, var(--violet), var(--pink));
-            background-size: cover; background-position: center;
-            border-radius: 50%; margin: 0 auto 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800;
-            box-shadow: 0 0 28px var(--violet-glow);
-            position: relative; overflow: hidden; cursor: pointer;
-            transition: transform .2s;
+            position: relative; width: 84px; height: 84px; border-radius: 26px; margin: 0 auto 14px;
+            background: var(--grad); color: #fff; display: grid; place-items: center;
+            font-size: 32px; font-weight: 700; cursor: pointer; background-size: cover;
+            background-position: center; box-shadow: 0 16px 34px -16px rgba(75,69,166,.65);
+            border: 3px solid #fff; transition: transform .35s var(--ease);
         }
-        .profile-avatar-big:hover { transform: scale(1.05); }
+        .profile-avatar-big:hover { transform: scale(1.04); }
         .profile-avatar-big.has-photo { color: transparent; }
-        .profile-avatar-big::after {
-            content: '\f030'; /* fa-camera */
-            font-family: 'Font Awesome 6 Free'; font-weight: 900;
-            position: absolute; bottom: 2px; right: 2px;
-            width: 26px; height: 26px;
-            background: var(--cyan); color: #fff;
-            border-radius: 50%;
-            border: 2px solid var(--bg-2);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px;
-            transition: transform .2s;
-        }
-        .profile-avatar-big:hover::after { transform: scale(1.1); }
-        @keyframes avatar-ring { 0%,100%{transform:scale(1);opacity:.3} 50%{transform:scale(1.08);opacity:.15} }
-        .profile-name { font-family:'Bricolage Grotesque',sans-serif; font-size:20px; font-weight:800; margin-bottom:4px; }
+        .profile-name { position: relative; font-size: 20px; font-weight: 700; letter-spacing: -.03em; }
         .profile-status-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(14,124,140,.08); color: var(--cyan);
-            border: 1px solid rgba(14,124,140,.18);
-            padding: 4px 12px; border-radius: 50px;
-            font-size: 11px; font-weight: 700;
+            position: relative; display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+            font-size: 12px; font-weight: 600; color: var(--acc); background: var(--acc-soft);
+            border: 1px solid var(--acc-line); padding: 5px 12px; border-radius: 999px;
         }
-
-        .profile-info-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+        .profile-info-grid { display: flex; flex-direction: column; gap: 10px; }
         .profile-info-row {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: var(--r-sm); padding: 14px 16px;
-            display: flex; align-items: center; gap: 12px;
-            backdrop-filter: blur(8px);
+            display: flex; align-items: center; gap: 13px; background: var(--bg-3);
+            border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px;
         }
-        .profile-info-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--glass); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-        .profile-info-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
-        .profile-info-val { font-size: 13px; font-weight: 600; }
-
-        .profile-actions { display: flex; flex-direction: column; gap: 10px; }
+        .profile-info-icon {
+            width: 38px; height: 38px; border-radius: var(--r-xs); background: var(--bg-2);
+            display: grid; place-items: center; font-size: 15px; flex-shrink: 0;
+        }
+        .profile-info-label { font-size: 11.5px; color: var(--faint); font-weight: 500; }
+        .profile-info-val { font-size: 14.5px; font-weight: 600; margin-top: 2px; letter-spacing: -.02em; }
+        .profile-actions { display: flex; flex-direction: column; gap: 9px; }
         .profile-action-btn {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: var(--r-sm); padding: 14px 16px;
-            display: flex; align-items: center; gap: 12px;
-            cursor: pointer; transition: all .2s;
-            width: 100%; text-align: left;
-            font-family: 'Instrument Sans', sans-serif; color: var(--text);
+            display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
+            background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--r-sm);
+            padding: 14px 16px; font-size: 14.5px; font-weight: 550; color: var(--text); cursor: pointer;
+            transition: all .25s var(--ease);
         }
-        .profile-action-btn:hover { background: var(--glass); border-color: var(--border-2); }
-        .profile-action-btn i:first-child { font-size: 14px; color: var(--sub); width: 18px; text-align: center; }
-        .profile-action-btn span { flex: 1; font-size: 13px; font-weight: 600; }
-        .profile-action-btn i:last-child { color: var(--muted); font-size: 11px; }
+        .profile-action-btn:hover { border-color: var(--border-2); transform: translateX(3px); }
+        .profile-action-btn > span { flex: 1; }
+        .profile-action-btn .fa-chevron-right { color: var(--faint); font-size: 12px; }
         .profile-action-btn.danger { color: var(--pink); }
-        .profile-action-btn.danger i { color: var(--pink); }
-
-        /* ═══════════════════════════════════════
-           QR MODAL
-        ═══════════════════════════════════════ */
-        .popup-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,.82);
-            backdrop-filter: blur(14px);
-            z-index: 999; display: none;
-            align-items: flex-end; justify-content: center;
-            padding: 0;
+        .profile-action-btn.danger:hover { border-color: var(--pink-glow); background: rgba(214,51,108,.03); }
+        .referral-box {
+            background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--r);
+            padding: 18px; margin-bottom: 12px;
         }
-        .popup-card {
-            background: linear-gradient(170deg, #171430, #100E1E 55%);
-            border: 1px solid rgba(255,255,255,.10);
-            border-radius: 32px 32px 0 0;
-            width: 100%; max-width: 500px;
-            padding: 10px 28px calc(40px + env(safe-area-inset-bottom, 0px));
-            text-align: center;
-            color: #fff;
-            box-shadow: 0 -20px 60px rgba(0,0,0,.5);
-            animation: sheetUp .38s cubic-bezier(.4,0,.2,1);
-            position: relative;
-        }
-        /* Le sheet est volontairement sombre (le QR ressort) : on force des
-           encres claires pour tout ce qui hérite du thème clair de la page. */
-        .popup-card .sheet-handle { background: rgba(255,255,255,.22); }
-        .popup-card .modal-merchant-chip { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.75); }
-        .popup-card .modal-sub { color: rgba(255,255,255,.55); }
-        .popup-card .modal-stat-box { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.10); }
-        .popup-card .modal-stat-label { color: rgba(255,255,255,.45); }
-        .popup-card .modal-close-btn { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.75); }
-        .popup-card .modal-close-btn:hover { background: rgba(255,255,255,.10); color: #fff; }
-        .popup-card .reward-row { background: rgba(255,255,255,.045); border-color: rgba(255,255,255,.10); }
-        .popup-card .reward-row.unlocked { border-color: rgba(22,184,196,.40); background: rgba(22,184,196,.08); }
-        .popup-card .reward-row-pts { color: rgba(255,255,255,.5); }
-        .popup-card .modal-stat-val,
-        .popup-card .rewards-pts-chip { color: #4ED3DE; }
-        .popup-card .rewards-pts-chip { background: rgba(22,184,196,.10); border-color: rgba(22,184,196,.28); }
-        @keyframes sheetUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
-        }
-        .sheet-handle {
-            width: 40px; height: 4px;
-            background: var(--border-2); border-radius: 4px;
-            margin: 10px auto 22px;
-        }
-        .modal-merchant-chip {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: var(--glass); border: 1px solid var(--border);
-            border-radius: 50px; padding: 5px 14px;
-            font-size: 12px; color: var(--sub); margin-bottom: 4px;
-        }
-        #modal-merchant-name {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 22px; font-weight: 800;
-            margin-bottom: 4px;
-        }
-        .modal-sub { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
-
-        .qr-zone {
-            background: white; padding: 16px;
-            border-radius: 22px; display: inline-block;
-            margin-bottom: 18px;
-            box-shadow: 0 0 40px var(--cyan-glow);
+        .referral-code {
+            font-size: 24px; font-weight: 700; letter-spacing: .16em; text-align: center;
+            background: var(--grad); -webkit-background-clip: text; background-clip: text;
+            color: transparent; margin: 12px 0; font-variant-numeric: tabular-nums;
         }
 
-        .modal-points-row {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 10px; margin-bottom: 20px;
-        }
-        .modal-stat-box {
-            background: var(--glass); border: 1px solid var(--border);
-            border-radius: var(--r-sm); padding: 12px;
-        }
-        .modal-stat-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-        .modal-stat-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; font-weight: 800; color: var(--cyan); }
-
-        .modal-close-btn {
-            width: 100%; background: var(--glass); border: 1px solid var(--border);
-            color: var(--sub); border-radius: var(--r-sm); padding: 13px;
-            font-size: 13px; font-weight: 700; cursor: pointer;
-            transition: all .2s; font-family: 'Instrument Sans', sans-serif;
-        }
-        .modal-close-btn:hover { background: var(--glass-2); color: var(--text); }
-
-        /* ═══════════════════════════════════════
-           BOTTOM NAV
-        ═══════════════════════════════════════ */
+        /* ─── Barre de navigation ────────────────────────────── */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 500px;
-            background: rgba(255, 255, 255, 0.86);
-            backdrop-filter: blur(24px) saturate(1.6);
-            -webkit-backdrop-filter: blur(24px) saturate(1.6);
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: var(--nav-h);
+            padding-bottom: env(safe-area-inset-bottom);
+            background: rgba(255,255,255,.86);
+            backdrop-filter: saturate(180%) blur(18px); -webkit-backdrop-filter: saturate(180%) blur(18px);
             border-top: 1px solid var(--border);
-            box-shadow: 0 -8px 30px -12px rgba(20,20,27,.10);
-            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-            height: var(--nav-h);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-            z-index: 900;
+            display: grid; grid-template-columns: repeat(5,1fr); align-items: center;
         }
-
-        /* ═══════════════════════════════════════
-           HISTORIQUE TRANSACTIONS
-        ═══════════════════════════════════════ */
-        .hist-filter-btn {
-            background: var(--glass); border: 1px solid var(--border);
-            color: var(--muted); padding: 7px 14px; border-radius: 50px;
-            font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;
-            font-family: 'Instrument Sans', sans-serif; transition: all .2s;
-        }
-        .hist-filter-btn.active { background: rgba(14,124,140,0.1); border-color: rgba(14,124,140,0.35); color: var(--cyan); }
-        .hist-filter-btn:hover:not(.active) { background: var(--glass-2); color: var(--text); }
-
-        .tx-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; border-radius: var(--r-sm);
-            border: 1px solid var(--border); background: var(--card-bg);
-            box-shadow: 0 1px 2px rgba(20,20,27,.04);
-            margin-bottom: 8px; transition: border-color .2s, transform .2s;
-        }
-        .tx-item:hover { border-color: rgba(14,124,140,.28); transform: translateX(2px); }
-        .tx-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-        .tx-info { flex: 1; min-width: 0; }
-        .tx-merchant { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .tx-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
-        .tx-pts { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 16px; white-space: nowrap; flex-shrink: 0; }
-
-        /* ─── QR countdown ─── */
-        .qr-countdown { font-size:10px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-top:-10px; margin-bottom:10px; text-align:center; }
         .nav-item {
-            background: none; border: none;
-            color: var(--muted);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 5px; font-size: 10px; font-weight: 700;
-            cursor: pointer;
-            transition: color .25s;
-            text-transform: uppercase; letter-spacing: .5px;
-            font-family: 'Instrument Sans', sans-serif;
-            position: relative;
+            background: none; border: none; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 600;
+            color: var(--faint); letter-spacing: .02em; transition: color .25s var(--ease);
+            padding: 0; height: 100%;   /* toute la hauteur de la barre = cible confortable */
         }
-        .nav-item::before { display: none; } /* ancien indicateur (ligne flottante en haut) retiré */
-        .nav-item.active { color: var(--cyan); }
+        .nav-icon { font-size: 18px; transition: transform .3s var(--ease); }
+        .nav-item.active { color: var(--acc); }
+        .nav-item.active .nav-icon { transform: translateY(-2px); }
         .nav-item:active .nav-icon { transform: scale(.88); }
-        .nav-icon {
-            font-size: 18px;
-            width: 46px; height: 30px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 15px;
-            transition: transform .25s cubic-bezier(.4,0,.2,1), background .25s ease;
-        }
-        .nav-item.active .nav-icon { transform: translateY(-1px); background: rgba(14,124,140,0.12); }
-
-        /* ─── center scan button ─── */
-        .nav-item.nav-scan-btn {
-            position: relative; overflow: visible;
-        }
+        .nav-scan-btn { position: relative; }
         .nav-scan-bubble {
-            width: 52px; height: 52px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--violet), #16B8C4);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: #fff;
-            border: 3px solid rgba(255,255,255,.9);
-            box-shadow: 0 6px 20px -4px rgba(91,58,160,.45);
-            transition: transform .25s, box-shadow .25s;
-            margin-top: -14px; margin-bottom: 2px;
+            width: 54px; height: 54px; border-radius: 18px; background: var(--grad); color: #fff;
+            display: grid; place-items: center; font-size: 21px; margin-top: -22px;
+            box-shadow: 0 12px 26px -10px rgba(75,69,166,.75); border: 3px solid #fff;
+            transition: transform .35s var(--ease);
         }
-        .nav-item.nav-scan-btn.active .nav-scan-bubble,
-        .nav-item.nav-scan-btn:hover .nav-scan-bubble {
-            transform: scale(1.08);
-            box-shadow: 0 8px 30px var(--cyan-glow);
+        .nav-scan-btn:active .nav-scan-bubble { transform: scale(.92); }
+        .nav-item.nav-scan-btn.active .nav-scan-bubble { transform: translateY(-2px); }
+
+        /* ─── Feuilles / modales ─────────────────────────────── */
+        .popup-overlay {
+            display: none; position: fixed; inset: 0; z-index: 100; background: rgba(16,16,24,.45);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            align-items: flex-end; justify-content: center; animation: fadeIn .3s var(--ease);
         }
-        .nav-item.nav-scan-btn::before { display: none; }
-        .nav-item.nav-scan-btn.active { color: var(--cyan); }
-        .nav-item.nav-scan-btn.active .nav-scan-bubble { background: linear-gradient(135deg, var(--violet), var(--cyan)); }
-
-        /* ═══════════════════════════════════════
-           TOAST
-        ═══════════════════════════════════════ */
-        #toast-root {
-            position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 50%; transform: translateX(-50%);
-            z-index: 9999; width: calc(100% - 36px); max-width: 460px;
-            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        @keyframes fadeIn { from { opacity: 0 } }
+        .popup-card {
+            width: 100%; max-width: 560px; max-height: 92dvh; overflow-y: auto;
+            background: var(--bg-3); border-radius: 24px 24px 0 0; padding: 12px 20px 30px;
+            text-align: center; animation: sheetUp .45s var(--ease);
+            box-shadow: 0 -18px 50px -20px rgba(16,16,24,.35);
         }
-        .toast {
-            background: rgba(18,15,30,.96);
-            border: 1px solid rgba(255,255,255,.12);
-            border-radius: 16px; padding: 12px 16px;
-            display: flex; align-items: center; gap: 11px;
-            color: #fff;
-            box-shadow: 0 12px 40px rgba(20,20,27,.35);
-            animation: toastIn .35s cubic-bezier(.4,0,.2,1);
-            pointer-events: all; backdrop-filter: blur(20px);
+        @keyframes sheetUp { from { transform: translateY(100%) } }
+        .sheet-handle { width: 38px; height: 4px; border-radius: 99px; background: var(--border-2);
+            margin: 0 auto 16px; }
+        .modal-merchant-chip {
+            display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600;
+            color: var(--acc); background: var(--acc-soft); border: 1px solid var(--acc-line);
+            padding: 5px 12px; border-radius: 999px; margin-bottom: 10px;
         }
-        .toast.out { animation: toastOut .3s ease forwards; }
-        @keyframes toastIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes toastOut { to{opacity:0;transform:translateY(-10px)} }
-        .toast i { font-size:17px; flex-shrink:0; }
-        .toast.success i { color:var(--green); }
-        .toast.error i { color:var(--pink); }
-        .toast.info i { color:var(--cyan); }
-        .toast.warning i { color:var(--gold); }
-        .toast-content { flex:1; }
-        .toast-title { font-size:13px; font-weight:700; font-family:'Bricolage Grotesque',sans-serif; }
-        .toast-msg { font-size:11px; color:rgba(255,255,255,.6); margin-top:2px; }
-
-        /* ═══════════════════════════════════════
-           REWARDS SECTION (inside profile/wallet)
-        ═══════════════════════════════════════ */
-        .section-label {
-            font-size:10px; font-weight:700; color:var(--muted);
-            text-transform:uppercase; letter-spacing:.8px;
-            margin-bottom:12px;
-            font-family:'Instrument Sans',sans-serif;
+        #modal-merchant-name { font-size: 21px; font-weight: 700; letter-spacing: -.03em; }
+        .modal-sub { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+        .qr-zone {
+            background: #fff; border: 1px solid var(--border); border-radius: var(--r);
+            padding: 16px; margin: 18px auto; width: fit-content; box-shadow: var(--shadow-sm);
+            animation: qrIn .5s var(--ease);
         }
-
-        /* ═══════════════════════════════════════
-           RÉCOMPENSES SHEET
-        ═══════════════════════════════════════ */
-        .btn-see-rewards {
-            background: none; border: 1px solid rgba(255,195,77,.25);
-            color: var(--gold); border-radius: 50px;
-            padding: 6px 13px; font-size: 11px; font-weight: 700;
-            cursor: pointer; transition: all .2s;
-            display: inline-flex; align-items: center; gap: 5px;
-            font-family: 'Instrument Sans', sans-serif; white-space: nowrap;
+        @keyframes qrIn { from { opacity: 0; transform: scale(.94) } }
+        .qr-zone canvas, .qr-zone img, .qr-zone svg { display: block; border-radius: 6px; }
+        .qr-countdown { font-size: 11.5px; color: var(--faint); font-variant-numeric: tabular-nums;
+            letter-spacing: .04em; }
+        .modal-points-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+        .modal-stat-box { background: var(--bg-2); border-radius: var(--r-sm); padding: 14px; }
+        .modal-stat-label { font-size: 11px; color: var(--muted); font-weight: 500;
+            text-transform: uppercase; letter-spacing: .05em; }
+        .modal-stat-val { font-size: 20px; font-weight: 700; margin-top: 4px; letter-spacing: -.03em;
+            font-variant-numeric: tabular-nums; }
+        .modal-close-btn {
+            width: 100%; background: var(--bg-2); border: 1px solid var(--border); color: var(--sub);
+            padding: 13px; border-radius: var(--r-sm); font-size: 14.5px; font-weight: 600;
+            cursor: pointer; transition: all .25s var(--ease);
         }
-        .btn-see-rewards:hover { background: rgba(255,195,77,.1); border-color: rgba(255,195,77,.5); }
-
-        .reward-row {
-            display: flex; align-items: center; gap: 12px;
-            padding: 13px 14px; border-radius: var(--r-sm);
-            margin-bottom: 9px; border: 1px solid var(--border);
-            background: var(--card-bg); box-shadow: 0 1px 2px rgba(20,20,27,.04);
-            transition: border-color .2s;
+        .modal-close-btn:hover { background: var(--bg); border-color: var(--border-2); }
+        .card-detail-action {
+            display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+            background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--r-sm);
+            padding: 13px; cursor: pointer; transition: all .25s var(--ease);
         }
-        .reward-row.unlocked { border-color: rgba(14,124,140,.25); background: rgba(14,124,140,.04); }
-        .reward-row-icon { font-size: 20px; flex-shrink: 0; }
-        .reward-row-info { flex: 1; min-width: 0; }
-        .reward-row-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .reward-row-pts { font-size: 11px; color: var(--muted); }
+        .card-detail-action:hover { border-color: var(--acc-line); transform: translateY(-2px); }
+        .card-detail-action-icon { width: 40px; height: 40px; border-radius: var(--r-xs);
+            display: grid; place-items: center; flex-shrink: 0; }
+        .card-detail-action-text { flex: 1; display: flex; flex-direction: column; text-align: left; }
+        .card-detail-action-text span { font-size: 14px; font-weight: 600; letter-spacing: -.02em; }
+        .card-detail-action-text small { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
-        .reward-claim-btn {
-            background: var(--cyan); color: #fff;
-            border: none; border-radius: 50px; padding: 7px 14px;
-            font-size: 11px; font-weight: 700; cursor: pointer;
-            transition: all .2s; white-space: nowrap; flex-shrink: 0;
-            font-family: 'Instrument Sans', sans-serif;
+        /* ─── Assistant IA ───────────────────────────────────── */
+        .ai-client-msg-avatar {
+            width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center;
+            font-size: 13px; flex-shrink: 0; background: var(--grad); color: #fff;
         }
-        .reward-claim-btn:hover { box-shadow: 0 4px 14px var(--cyan-glow); transform: translateY(-1px); }
-
-        .reward-prog-wrap { flex-shrink: 0; min-width: 56px; text-align: right; }
-        .reward-prog-track { height: 4px; background: rgba(255,255,255,.06); border-radius: 4px; overflow: hidden; margin-bottom: 3px; }
-        .reward-prog-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--violet), var(--cyan)); }
-        .reward-prog-pct { font-size: 9px; color: var(--muted); font-weight: 700; }
-
-        .rewards-pts-chip {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(14,124,140,.08); border: 1px solid rgba(14,124,140,.18);
-            border-radius: 50px; padding: 4px 12px;
-            font-size: 11px; font-weight: 700; color: var(--cyan);
-            margin-bottom: 16px;
+        .ai-client-msg.user .ai-client-msg-avatar { background: var(--bg-2); color: var(--muted); }
+        .ai-client-msg-bubble {
+            background: var(--bg-2); border-radius: 14px; padding: 11px 14px; font-size: 14px;
+            line-height: 1.55; text-align: left; max-width: 82%;
         }
+        .ai-client-msg.user .ai-client-msg-bubble { background: var(--grad); color: #fff; }
+        .ai-client-typing-dots { display: inline-flex; gap: 4px; }
+        .ai-client-typing-dots span {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--faint);
+            animation: dot 1.3s ease-in-out infinite;
+        }
+        .ai-client-typing-dots span:nth-child(2) { animation-delay: .18s }
+        .ai-client-typing-dots span:nth-child(3) { animation-delay: .36s }
+        @keyframes dot { 0%,60%,100% { opacity: .3; transform: translateY(0) } 30% { opacity: 1; transform: translateY(-3px) } }
+        .ai-client-chip {
+            background: var(--bg-3); border: 1px solid var(--border); color: var(--sub);
+            font-size: 12.5px; padding: 8px 13px; border-radius: 999px; cursor: pointer;
+            white-space: nowrap; transition: all .25s var(--ease);
+        }
+        .ai-client-chip:hover { border-color: var(--acc); color: var(--acc); background: var(--acc-soft); }
 
-        /* scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(20,20,27,.18); border-radius: 4px; }
+        /* ─── Notifications ──────────────────────────────────── */
+        .toast-content { flex: 1; text-align: left; }
+        .toast-title { font-size: 14px; font-weight: 650; letter-spacing: -.02em; }
+        .toast-msg { font-size: 12.5px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
 
-        /* ─── skeleton de chargement (portefeuille) ─── */
+        /* ─── Divers ─────────────────────────────────────────── */
         .skeleton {
-            position: relative; overflow: hidden;
-            background: linear-gradient(140deg, #ECECF2, #E4E4EC);
-            border: 1px solid var(--border);
+            background: linear-gradient(90deg, var(--bg-2) 25%, var(--bg) 50%, var(--bg-2) 75%);
+            background-size: 200% 100%; animation: shimmer 1.5s linear infinite; border-radius: var(--r-sm);
         }
-        .skeleton::after {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.75) 50%, transparent 70%);
-            transform: translateX(-100%);
-            animation: shimmer 1.5s ease-in-out infinite;
+        @keyframes shimmer { to { background-position: -200% 0 } }
+        .discover-merchant-row {
+            display: flex; align-items: center; gap: 12px; padding: 13px; background: var(--bg-3);
+            border: 1px solid var(--border); border-radius: var(--r-sm); text-align: left;
         }
-        @keyframes shimmer { to { transform: translateX(100%); } }
+        .discover-merchant-row.joined { border-color: var(--acc-line); background: var(--acc-soft); }
+        .discover-merchant-avatar {
+            width: 44px; height: 44px; border-radius: var(--r-xs); background: var(--grad);
+            display: grid; place-items: center; font-weight: 700; color: #fff; font-size: 17px; flex-shrink: 0;
+        }
+        .discover-merchant-info { flex: 1; min-width: 0; }
+        .discover-merchant-name { font-weight: 600; font-size: 14px; letter-spacing: -.02em; }
+        .discover-merchant-addr { font-size: 11.5px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+        .addr-copy-btn {
+            display: inline-flex; align-items: center; gap: 4px; background: var(--acc-soft);
+            border: 1px solid var(--acc-line); color: var(--acc); border-radius: 999px; padding: 2px 9px;
+            font-size: 10px; font-weight: 600; cursor: pointer; margin-left: 4px; white-space: nowrap;
+        }
+        .addr-copy-btn:active { transform: scale(.95); }
+        .discover-distance-chip {
+            background: var(--bg-2); border: 1px solid var(--border); color: var(--sub);
+            padding: 4px 10px; border-radius: 999px; font-weight: 600; font-size: 11px; white-space: nowrap;
+        }
+        .wheel-container { position: relative; display: grid; place-items: center; margin: 16px 0; }
+        .wheel-arrow {
+            position: absolute; top: -6px; width: 0; height: 0; z-index: 2;
+            border-left: 9px solid transparent; border-right: 9px solid transparent;
+            border-top: 15px solid var(--acc);
+        }
+        .wheel-result { font-size: 15px; font-weight: 650; margin: 12px 0; letter-spacing: -.02em; }
+        .ib-icon { width: 42px; height: 42px; border-radius: var(--r-xs); background: var(--grad);
+            color: #fff; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+        .ib-txt { flex: 1; text-align: left; }
+        .ib-btns { display: flex; gap: 8px; }
+        .ib-yes { background: var(--grad); color: #fff; border: none; padding: 9px 16px;
+            border-radius: var(--r-xs); font-weight: 600; font-size: 13px; cursor: pointer; }
+        .ib-no { background: none; border: 1px solid var(--border); color: var(--muted);
+            padding: 9px 14px; border-radius: var(--r-xs); font-size: 13px; cursor: pointer; }
 
-        /* ─── bannière d'installation PWA (après scan du QR commerçant) ─── */
-        #install-banner {
-            position: fixed; left: 50%; transform: translateX(-50%);
-            bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 14px);
-            width: calc(100% - 28px); max-width: 464px; z-index: 950;
-            background: linear-gradient(170deg, #171430, #100E1E);
-            border: 1px solid rgba(255,255,255,.14); border-radius: 20px;
-            padding: 14px 16px; color: #fff;
-            display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 18px 50px -12px rgba(20,20,27,.45);
-            animation: ibUp .45s cubic-bezier(.22,1,.36,1);
-        }
-        #install-banner.out { animation: ibDown .3s ease forwards; }
-        @keyframes ibUp { from { opacity:0; transform: translate(-50%, 24px); } to { opacity:1; transform: translate(-50%, 0); } }
-        @keyframes ibDown { to { opacity:0; transform: translate(-50%, 18px); } }
-        .ib-icon { width:42px; height:42px; border-radius:13px; flex-shrink:0; background:linear-gradient(135deg,#5B3AA0,#16B8C4); display:flex; align-items:center; justify-content:center; font-size:18px; }
-        .ib-txt { flex:1; min-width:0; }
-        .ib-txt b { display:block; font-family:'Bricolage Grotesque',sans-serif; font-size:13.5px; }
-        .ib-txt span { font-size:11.5px; color:rgba(255,255,255,.6); line-height:1.45; display:block; margin-top:2px; }
-        .ib-btns { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
-        .ib-yes { background:linear-gradient(135deg,#5B3AA0,#16B8C4); color:#fff; border:none; border-radius:50px; padding:9px 16px; font-weight:800; font-size:12px; cursor:pointer; font-family:'Instrument Sans',sans-serif; }
-        .ib-yes:active { transform: scale(.96); }
-        .ib-no { background:none; border:none; color:rgba(255,255,255,.5); font-size:11px; cursor:pointer; font-family:'Instrument Sans',sans-serif; padding:2px; }
 
-        /* ─── confort & accessibilité ─── */
-        button { -webkit-tap-highlight-color: transparent; }
-        button:focus-visible { outline: 2px solid rgba(14,124,140,.55); outline-offset: 2px; }
+        /* Chat IA — disposition des messages */
+        .ai-client-msg { display: flex; gap: 9px; max-width: 88%; }
+        .ai-client-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation: none !important; transition: none !important; }
+            * { animation: none !important; transition-duration: .01ms !important; }
         }
 
-        /* ═══════════════════════════════════════
-           SPLASH SCREEN
-        ═══════════════════════════════════════ */
-        #splash {
-            position: fixed; inset: 0; z-index: 9999;
-            background: var(--bg);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 0;
-            /* s'efface une fois la classe "hidden" ajoutée */
-            transition: opacity .55s cubic-bezier(.4,0,.2,1), visibility .55s;
-        }
-        #splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        /* Carte avec image de fond (studio du commerçant) : le contenu passe en
+           clair pour rester lisible par-dessus la photo et son voile sombre. */
+        .loyalty-card.has-bg { border-color: rgba(255,255,255,.16); }
+        .loyalty-card.has-bg .merchant-name,
+        .loyalty-card.has-bg .card-points-num,
+        .loyalty-card.has-bg .card-progress-labels { color: #fff; }
+        .loyalty-card.has-bg .card-points-lbl,
+        .loyalty-card.has-bg .card-progress-labels span { color: rgba(255,255,255,.78); }
+        .loyalty-card.has-bg .card-footer { border-top-color: rgba(255,255,255,.20); }
+        .loyalty-card.has-bg .card-progress-track { background: rgba(255,255,255,.22); }
+        .loyalty-card.has-bg .btn-see-rewards { border-color: rgba(255,255,255,.34); color: #fff; }
+        .loyalty-card.has-bg .btn-see-rewards:hover { background: rgba(255,255,255,.14); border-color: #fff; color: #fff; }
+        .loyalty-card.has-bg .card-reward-badge { background: rgba(255,255,255,.16);
+            border-color:var(--faint); color: #fff; }
 
-        /* fond dégradé ambiant */
-        #splash::before {
-            content: '';
-            position: absolute; inset: 0; pointer-events: none;
-            background:
-                radial-gradient(ellipse 70% 60% at 50% 30%, rgba(91,58,160,.12) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(14,124,140,.07) 0%, transparent 55%);
-        }
-
-        .splash-logo-wrap {
-            position: relative;
-            width: 96px; height: 96px;
-            margin-bottom: 32px;
-        }
-        /* anneau animé */
-        .splash-ring {
-            position: absolute; inset: 0;
-            border-radius: 50%;
-            border: 2.5px solid transparent;
-            border-top-color: var(--cyan);
-            border-right-color: rgba(14,124,140,.3);
-            animation: spin 1s linear infinite;
-        }
-        .splash-ring-2 {
-            position: absolute; inset: 8px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-bottom-color: var(--violet);
-            border-left-color: rgba(91,58,160,.25);
-            animation: spin 1.6s linear infinite reverse;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* logo K central */
-        .splash-k {
-            position: absolute; inset: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 36px; font-weight: 800;
-            background: linear-gradient(135deg, var(--cyan), var(--violet));
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: kPulse 2s ease-in-out infinite;
-        }
-        @keyframes kPulse {
-            0%,100% { filter: drop-shadow(0 0 8px rgba(14,124,140,.4)); }
-            50%      { filter: drop-shadow(0 0 20px rgba(14,124,140,.7)); }
-        }
-
-        .splash-title {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 28px; font-weight: 800;
-            letter-spacing: -.5px;
-            margin-bottom: 6px;
-            background: linear-gradient(120deg, var(--violet), var(--cyan));
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .splash-greeting {
-            font-size: 14px; color: var(--muted); font-weight: 500;
-            min-height: 20px;
-            margin-bottom: 40px;
-            transition: color .4s;
-        }
-        .splash-greeting.ready { color: var(--cyan); font-weight: 700; }
-
-        /* barre de progression */
-        .splash-progress-track {
-            width: 180px; height: 3px;
-            background: rgba(17,24,39,.08);
-            border-radius: 99px; overflow: hidden;
-            margin-bottom: 16px;
-        }
-        .splash-progress-bar {
-            height: 100%; border-radius: 99px;
-            background: linear-gradient(90deg, var(--violet), var(--cyan));
-            width: 0%;
-            transition: width .4s cubic-bezier(.4,0,.2,1);
-            box-shadow: 0 0 10px var(--cyan-glow);
-        }
-
-        .splash-status {
-            font-size: 11px; color: var(--muted);
-            letter-spacing: .5px; text-transform: uppercase;
-            font-weight: 600; min-height: 16px;
-        }
     </style>
 </head>
 <body>
@@ -1032,7 +679,7 @@
             <button id="client-flip-btn" onclick="clientFlipCamera()" title="Retourner la caméra"
                 style="display:none;position:absolute;bottom:12px;right:12px;z-index:10;
                        width:40px;height:40px;border-radius:50%;
-                       background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.25);
+                       background:rgba(0,0,0,0.65);border:1px solid var(--border);
                        color:white;font-size:18px;cursor:pointer;
                        align-items:center;justify-content:center;transition:all .2s;">
                 <i class="fa-solid fa-rotate"></i>
@@ -1103,7 +750,7 @@
             </div>
             <button id="client-avatar-remove" onclick="removeClientAvatar()"
                 style="display:none;margin-top:10px;background:none;border:none;color:var(--muted);
-                       font-size:12px;cursor:pointer;text-decoration:underline;font-family:'Instrument Sans',sans-serif;">
+                       font-size:12px;cursor:pointer;text-decoration:underline;font-family:Inter, sans-serif;">
                 <i class="fa-solid fa-trash" style="font-size:10px;"></i> Retirer la photo
             </button>
         </div>
@@ -1232,14 +879,14 @@
         <div style="width:56px;height:56px;border-radius:18px;margin:4px auto 14px;background:rgba(224,36,94,0.12);border:1px solid rgba(224,36,94,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;color:#ff7a9c;">
             <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
-        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;">Supprimer votre compte ?</h3>
-        <p style="color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;margin-bottom:16px;">
+        <h3 style="font-family:Inter, sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;">Supprimer votre compte ?</h3>
+        <p style="color:var(--sub);font-size:13px;line-height:1.6;margin-bottom:16px;">
             Cette action est <strong style="color:#fff;">définitive</strong>. Toutes vos cartes de fidélité, vos points et votre historique seront <strong style="color:#fff;">supprimés immédiatement</strong> et ne pourront pas être récupérés.
         </p>
-        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">Pour confirmer, écrivez <strong style="color:#ff7a9c;letter-spacing:1px;">SUPPRIMER</strong> ci-dessous :</p>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Pour confirmer, écrivez <strong style="color:#ff7a9c;letter-spacing:1px;">SUPPRIMER</strong> ci-dessous :</p>
         <input type="text" id="delete-confirm-input" placeholder="SUPPRIMER" autocomplete="off" autocapitalize="characters"
             oninput="document.getElementById('delete-confirm-btn').disabled = this.value.trim().toUpperCase() !== 'SUPPRIMER';"
-            style="width:100%;text-align:center;letter-spacing:3px;font-weight:700;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);color:#fff;padding:13px;border-radius:12px;font-family:inherit;font-size:15px;margin-bottom:16px;">
+            style="width:100%;text-align:center;letter-spacing:3px;font-weight:700;background:var(--bg-2);border:1px solid var(--border);color:#fff;padding:13px;border-radius:12px;font-family:inherit;font-size:15px;margin-bottom:16px;">
         <button id="delete-confirm-btn" onclick="doDeleteAccount()" disabled
             style="width:100%;background:linear-gradient(135deg,#E0245E,#b3194a);color:#fff;border:none;border-radius:14px;padding:14px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;opacity:1;transition:opacity .2s;">
             <i class="fa-solid fa-trash-can"></i> Supprimer définitivement mon compte
@@ -1253,7 +900,7 @@
     <div class="popup-card" onclick="event.stopPropagation()" style="max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Programme de fidélité</div>
-        <h3 id="rewards-sheet-title" style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;text-align:left;"></h3>
+        <h3 id="rewards-sheet-title" style="font-family:Inter, sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;text-align:left;"></h3>
         <div class="rewards-pts-chip">
             <i class="fa-solid fa-star"></i>
             <span id="rewards-pts-val">0</span> points disponibles
@@ -1334,64 +981,27 @@
     <div class="popup-card" onclick="event.stopPropagation()" style="max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-location-dot" style="font-size:11px;"></i> Près de vous</div>
-        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Commerces partenaires</h3>
+        <h3 style="font-family:Inter, sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Commerces partenaires</h3>
         <p id="discover-status" style="font-size:12px;color:var(--muted);margin-bottom:14px;">Activez votre position pour découvrir les enseignes près de vous.</p>
         <div id="discover-results" style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:14px;"></div>
         <button onclick="closeDiscoverNearby()" class="modal-close-btn">Fermer</button>
     </div>
 </div>
 
-<style>
-.discover-merchant-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px; background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
-    text-align: left;
-}
-.discover-merchant-row.joined {
-    background: linear-gradient(135deg, rgba(14,124,140,0.07), rgba(91,58,160,0.05));
-    border-color: rgba(14,124,140,0.25);
-}
-.discover-merchant-avatar {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: linear-gradient(135deg, #5B3AA0, #16B8C4);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900; color: #fff; font-size: 18px;
-    flex-shrink: 0;
-}
-.discover-merchant-info { flex: 1; min-width: 0; }
-.discover-merchant-name { font-weight: 700; font-size: 14px; color: var(--text); }
-.discover-merchant-addr { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
-.addr-copy-btn {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(14,124,140,0.08); border: 1px solid rgba(14,124,140,0.22);
-    color: var(--cyan); border-radius: 50px; padding: 2px 9px;
-    font-size: 10px; font-weight: 700; cursor: pointer; margin-left: 4px;
-    font-family: 'Instrument Sans', sans-serif; white-space: nowrap; vertical-align: middle;
-    transition: background .15s;
-}
-.addr-copy-btn:hover { background: rgba(14,124,140,0.16); }
-.addr-copy-btn:active { transform: scale(.95); }
-.discover-distance-chip {
-    background: rgba(14,124,140,0.12); border: 1px solid rgba(14,124,140,0.25);
-    color: #0E7C8C; padding: 4px 10px; border-radius: 50px;
-    font-weight: 700; font-size: 11px; white-space: nowrap;
-}
-</style>
 
 <!-- ═══════════ PHASE 3 — Sheets : Wheel / Gift / Referral ═══════════ -->
 <div class="popup-overlay" id="wheelSheet" onclick="closeWheelSheet()">
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-circle-dot" style="font-size:11px;"></i> Roue de la fortune</div>
-        <h3 id="wheel-merchant-name" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;"></h3>
+        <h3 id="wheel-merchant-name" style="font-family:Inter, sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;"></h3>
         <p id="wheel-status-text" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></p>
         <div class="wheel-container">
             <div class="wheel-arrow"></div>
             <canvas id="wheel-canvas" width="440" height="440"></canvas>
         </div>
         <div id="wheel-result" class="wheel-result"></div>
-        <button id="wheel-spin-btn" onclick="doSpinWheel()" class="modal-close-btn" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);color:#fff;border:none;font-weight:800;font-family:'Bricolage Grotesque',sans-serif;">
+        <button id="wheel-spin-btn" onclick="doSpinWheel()" class="modal-close-btn" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);color:#fff;border:none;font-weight:800;font-family:Inter, sans-serif;">
             <i class="fa-solid fa-rotate"></i> Tourner la roue
         </button>
         <button onclick="closeWheelSheet()" class="modal-close-btn" style="margin-top:8px;">Fermer</button>
@@ -1402,7 +1012,7 @@
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Cartes cadeaux</div>
-        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;">Offrir des points</h3>
+        <h3 style="font-family:Inter, sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;">Offrir des points</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Convertissez vos points en code cadeau à partager.</p>
         <div id="gift-merchant-info" style="background:var(--glass);padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:13px;color:var(--text);text-align:left;"></div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -1427,10 +1037,10 @@
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-ticket" style="font-size:11px;"></i> Code de parrainage</div>
-        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Utiliser un code</h3>
+        <h3 style="font-family:Inter, sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Utiliser un code</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Choisissez l'enseigne dans laquelle utiliser ce code, puis entrez-le.</p>
         <select id="referral-merchant-select" style="width:100%;background:#F4F4F7;border:1px solid rgba(91,58,160,0.3);color:#14141B;padding:12px;border-radius:12px;font-family:inherit;font-size:13px;margin-bottom:10px;"></select>
-        <input type="text" id="referral-code-input" placeholder="ABC123" maxlength="10" style="width:100%;background:#F4F4F7;border:2px dashed rgba(91,58,160,0.4);color:#14141B;padding:14px;border-radius:12px;font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
+        <input type="text" id="referral-code-input" placeholder="ABC123" maxlength="10" style="width:100%;background:#F4F4F7;border:2px dashed rgba(91,58,160,0.4);color:#14141B;padding:14px;border-radius:12px;font-family:Inter, sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
         <button onclick="doRedeemReferral()" class="modal-close-btn" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);color:#fff;border:none;font-weight:800;">
             <i class="fa-solid fa-check"></i> Valider le parrainage
         </button>
@@ -1442,9 +1052,9 @@
     <div class="popup-card" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-gift" style="font-size:11px;"></i> Réclamer une carte</div>
-        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Code cadeau reçu</h3>
+        <h3 style="font-family:Inter, sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;">Code cadeau reçu</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Entrez le code à 8 caractères reçu par message.</p>
-        <input type="text" id="redeem-gift-input" placeholder="ABC12345" maxlength="10" style="width:100%;background:#F4F4F7;border:2px dashed rgba(14,124,140,0.4);color:#14141B;padding:14px;border-radius:12px;font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
+        <input type="text" id="redeem-gift-input" placeholder="ABC12345" maxlength="10" style="width:100%;background:#F4F4F7;border:2px dashed rgba(14,124,140,0.4);color:#14141B;padding:14px;border-radius:12px;font-family:Inter, sans-serif;font-weight:900;font-size:20px;letter-spacing:4px;text-align:center;text-transform:uppercase;margin-bottom:14px;box-sizing:border-box;">
         <button onclick="doRedeemGift()" class="modal-close-btn" style="background:linear-gradient(135deg,#3ee36c,#16B8C4);color:#fff;border:none;font-weight:800;">
             <i class="fa-solid fa-check"></i> Récupérer les points
         </button>
@@ -1455,19 +1065,19 @@
 <!-- ═══════════ AI CHAT MODAL ═══════════ -->
 <div class="popup-overlay" id="aiChatSheet" onclick="closeClientAiChat()">
     <div class="popup-card" onclick="event.stopPropagation()" style="max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
-        <div style="padding:18px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="padding:18px 20px 12px;border-bottom:1px solid var(--border);">
             <div class="sheet-handle" style="margin-bottom:14px;"></div>
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-robot" style="color:#fff;font-size:18px;"></i></div>
                 <div style="flex:1;text-align:left;">
-                    <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:16px;">Assistant KEEPO</div>
+                    <div style="font-family:Inter, sans-serif;font-weight:800;font-size:16px;">Assistant KEEPO</div>
                     <div style="font-size:11px;color:var(--muted);"><span style="color:#3ee36c;">●</span> En ligne · Posez n'importe quelle question</div>
                 </div>
-                <button onclick="closeClientAiChat()" style="background:rgba(255,255,255,0.06);border:none;width:34px;height:34px;border-radius:50%;color:var(--muted);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeClientAiChat()" style="background:var(--bg-2);border:none;width:34px;height:34px;border-radius:50%;color:var(--muted);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
         <div id="aiClientChatBody" style="flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-height:280px;"></div>
-        <div style="padding:12px 16px 16px;border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="padding:12px 16px 16px;border-top:1px solid var(--border);">
             <div id="aiClientSuggestions" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
                 <button class="ai-client-chip" onclick="sendClientAiSuggestion('Comment je gagne des points ?')">Comment gagner des points ?</button>
                 <button class="ai-client-chip" onclick="sendClientAiSuggestion('Comment utiliser une récompense ?')">Utiliser une récompense</button>
@@ -1485,38 +1095,6 @@
         </div>
     </div>
 </div>
-<style>
-.ai-client-chip {
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-    color: var(--muted); padding: 6px 12px; border-radius: 50px;
-    font-size: 11px; cursor: pointer; transition: all .15s;
-    font-family: inherit;
-}
-.ai-client-chip:hover { background: rgba(91,58,160,0.15); color: #5B3AA0; border-color: rgba(91,58,160,0.3); }
-.ai-client-msg { display: flex; gap: 9px; max-width: 88%; }
-.ai-client-msg.user { align-self: flex-end; flex-direction: row-reverse; }
-.ai-client-msg-bubble {
-    background: rgba(255,255,255,0.05); border-radius: 16px;
-    padding: 11px 14px; font-size: 13.5px; line-height: 1.55; color: #e8e9f0;
-}
-.ai-client-msg.user .ai-client-msg-bubble {
-    background: linear-gradient(135deg, #5B3AA0, #16B8C4); color: #0d0c18; font-weight: 600;
-}
-.ai-client-msg-avatar {
-    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 13px;
-}
-.ai-client-msg.bot .ai-client-msg-avatar { background: linear-gradient(135deg,#5B3AA0,#16B8C4); }
-.ai-client-msg.user .ai-client-msg-avatar { background: rgba(255,255,255,0.08); color: var(--muted); }
-.ai-client-typing-dots { display: flex; gap: 3px; padding: 4px 0; }
-.ai-client-typing-dots span {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
-    animation: aiClientPulse 1.4s ease-in-out infinite;
-}
-.ai-client-typing-dots span:nth-child(2) { animation-delay: .2s; }
-.ai-client-typing-dots span:nth-child(3) { animation-delay: .4s; }
-@keyframes aiClientPulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
-</style>
 
 <!-- ═══════════ BOTTOM NAV ═══════════ -->
 <nav class="bottom-nav">
@@ -1546,25 +1124,25 @@
 <div id="ios-install-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:flex-end;padding:0 20px 36px;">
     <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid rgba(14,124,140,0.3);border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;">
         <div style="font-size:38px;margin-bottom:10px;">📲</div>
-        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;margin-bottom:6px;color:#fff;">Ajouter à l'écran d'accueil</h3>
-        <p style="font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:20px;line-height:1.6;">Installez Keepo en 3 secondes :</p>
+        <h3 style="font-family:Inter, sans-serif;font-weight:800;font-size:19px;margin-bottom:6px;color:#fff;">Ajouter à l'écran d'accueil</h3>
+        <p style="font-size:13px;color:var(--sub);margin-bottom:20px;line-height:1.6;">Installez Keepo en 3 secondes :</p>
         <div style="display:flex;flex-direction:column;gap:13px;margin-bottom:22px;text-align:left;">
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">1</div>
-                <span style="font-size:13px;color:rgba(255,255,255,0.88);">Appuyez sur <strong style="color:#fff;">Partager</strong> <span style="background:rgba(255,255,255,0.1);border-radius:5px;padding:1px 6px;font-size:15px;">⬆</span> en bas de Safari</span>
+                <span style="font-size:13px;color:var(--text);">Appuyez sur <strong style="color:#fff;">Partager</strong> <span style="background:var(--bg-2);border-radius:5px;padding:1px 6px;font-size:15px;">⬆</span> en bas de Safari</span>
             </div>
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">2</div>
-                <span style="font-size:13px;color:rgba(255,255,255,0.88);">Faites défiler → <strong style="color:#fff;">« Ajouter à l'écran d'accueil »</strong></span>
+                <span style="font-size:13px;color:var(--text);">Faites défiler → <strong style="color:#fff;">« Ajouter à l'écran d'accueil »</strong></span>
             </div>
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">3</div>
-                <span style="font-size:13px;color:rgba(255,255,255,0.88);">Appuyez sur <strong style="color:#fff;">« Ajouter »</strong> en haut à droite</span>
+                <span style="font-size:13px;color:var(--text);">Appuyez sur <strong style="color:#fff;">« Ajouter »</strong> en haut à droite</span>
             </div>
         </div>
-        <button onclick="document.getElementById('ios-install-overlay').style.display='none'" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);border:none;color:#0d0c18;font-weight:800;font-size:14px;font-family:'Bricolage Grotesque',sans-serif;padding:14px;border-radius:50px;cursor:pointer;width:100%;">Compris !</button>
+        <button onclick="document.getElementById('ios-install-overlay').style.display='none'" style="background:linear-gradient(135deg,#5B3AA0,#16B8C4);border:none;color:#0d0c18;font-weight:800;font-size:14px;font-family:Inter, sans-serif;padding:14px;border-radius:50px;cursor:pointer;width:100%;">Compris !</button>
     </div>
-    <div style="margin-top:18px;color:rgba(255,255,255,0.45);font-size:12px;text-align:center;">↓ Le bouton Partager est en bas de Safari</div>
+    <div style="margin-top:18px;color:var(--muted);font-size:12px;text-align:center;">↓ Le bouton Partager est en bas de Safari</div>
 </div>
 
 <!-- ═══════════ MODAL CLAIM ANTI-TRICHE ═══════════ -->
@@ -1575,14 +1153,14 @@
                 border-radius:28px;padding:30px 24px;max-width:360px;width:100%;text-align:center;
                 box-shadow:0 20px 60px rgba(0,0,0,0.6);">
         <div style="margin-bottom:12px;"><i class="fa-solid fa-gift" style="font-size:48px;color:var(--cyan);"></i></div>
-        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:4px;">Récompense réclamée !</div>
+        <div style="font-family:Inter, sans-serif;font-size:20px;font-weight:800;color:var(--cyan);margin-bottom:4px;">Récompense réclamée !</div>
         <div id="claim-modal-name" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;"></div>
 
         <!-- Code de validation -->
         <div style="background:rgba(14,124,140,0.06);border:2px dashed rgba(14,124,140,0.3);
                     border-radius:16px;padding:18px;margin-bottom:16px;">
             <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Code de validation (usage unique)</div>
-            <div id="claim-modal-code" style="font-family:'Bricolage Grotesque',sans-serif;font-size:34px;font-weight:800;
+            <div id="claim-modal-code" style="font-family:Inter, sans-serif;font-size:34px;font-weight:800;
                  color:var(--cyan);letter-spacing:6px;"></div>
         </div>
 
@@ -1601,7 +1179,7 @@
 
         <button onclick="closeClaimConfirmModal()"
             style="width:100%;padding:14px;background:var(--cyan);color:#06050d;border:none;border-radius:14px;
-                   font-weight:800;font-size:15px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;">
+                   font-weight:800;font-size:15px;cursor:pointer;font-family:Inter, sans-serif;">
             Compris — Valider avec le commerçant
         </button>
     </div>
@@ -1615,7 +1193,7 @@
                 border-radius:24px;padding:28px 22px;max-width:400px;width:100%;
                 box-shadow:0 20px 60px rgba(0,0,0,0.5);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-            <div id="client-modal-title" style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;color:var(--text);"></div>
+            <div id="client-modal-title" style="font-family:Inter, sans-serif;font-size:18px;font-weight:800;color:var(--text);"></div>
             <button onclick="closeClientModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -2084,7 +1662,7 @@
             const boutiques = merchantBoutiquesMap[card.merchant_id] || [];
             const boutiquesCount = boutiques.length;
             const boutiquesBadge = boutiquesCount > 1
-                ? `<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;margin-bottom:4px;"><i class="fa-solid fa-store" style="font-size:9px;"></i> Valable dans ${boutiquesCount} boutiques</div>`
+                ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;margin-bottom:4px;"><i class="fa-solid fa-store" style="font-size:9px;"></i> Valable dans ${boutiquesCount} boutiques</div>`
                 : '';
 
             // ── Mode tampons ? (sinon points classiques) ──
@@ -2099,18 +1677,18 @@
                 let cells = '';
                 for (let s = 0; s < stampGoal; s++) {
                     const on = s < filled;
-                    cells += `<span style="width:21px;height:21px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;background:${on?cardColor:'rgba(255,255,255,0.07)'};color:${on?'#06050d':'rgba(255,255,255,0.3)'};border:1px solid ${on?cardColor:'rgba(255,255,255,0.14)'};">${on?'★':''}</span>`;
+                    cells += `<span style="width:21px;height:21px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;background:${on?cardColor:'var(--bg-2)'};color:${on?'#fff':'var(--faint)'};border:1px solid ${on?cardColor:'var(--border-2)'};">${on?'★':''}</span>`;
                 }
                 middleBlock = `
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 6px;">${cells}</div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.7);">
+                        <div style="font-size:11px;color:var(--sub);">
                             ${rewardReady
                                 ? `🎉 Carte pleine — ${stampReward || 'récompense'} à retirer !`
                                 : (stampReward ? `Récompense : <strong style="color:${cardColor}">${stampReward}</strong>` : `${stampGoal} tampons = 1 récompense`)}
                         </div>`;
                 footerStatus = rewardReady
                     ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> À retirer en caisse !</div>`
-                    : `<div style="font-size:10px;color:rgba(255,255,255,0.5);">encore ${Math.max(stampGoal-points,0)} tampon${(stampGoal-points)>1?'s':''}</div>`;
+                    : `<div style="font-size:10px;color:var(--muted);">encore ${Math.max(stampGoal-points,0)} tampon${(stampGoal-points)>1?'s':''}</div>`;
             } else {
                 middleBlock = `
                         <div class="card-progress-wrap">
@@ -2124,11 +1702,11 @@
                         </div>`;
                 footerStatus = hasReward
                     ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> Récompense dispo !</div>`
-                    : `<div style="font-size:10px;color:rgba(255,255,255,0.5);">encore ${remaining} pt${remaining > 1 ? 's' : ''}</div>`;
+                    : `<div style="font-size:10px;color:var(--muted);">encore ${remaining} pt${remaining > 1 ? 's' : ''}</div>`;
             }
 
             const cardHtml = `
-                <div class="loyalty-card"
+                <div class="loyalty-card${cardBgImg ? ' has-bg' : ''}"
                     style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
                     onclick="openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}', '${merchantPlan}')">
                     ${overlayEl}
@@ -2201,7 +1779,7 @@
         if (boutiqueInfoBox && boutiqueListEl) {
             if (boutiquesForMerchant.length > 1) {
                 boutiqueListEl.innerHTML = boutiquesForMerchant.map(b =>
-                    `<div style="font-size:12px;color:rgba(255,255,255,0.75);display:flex;align-items:center;gap:6px;">
+                    `<div style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:6px;">
                         <i class="fa-solid fa-location-dot" style="color:var(--cyan);font-size:10px;flex-shrink:0;"></i>
                         <span><strong>${escapeHtml(b.name)}</strong>${b.address ? ' — ' + escapeHtml(b.address) : ''}</span>
                     </div>`
@@ -2540,7 +2118,7 @@
             <div style="margin-bottom:20px;">
                 <!-- En-tête commerce -->
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:${hexToGlow(color,0.2)};border:1px solid ${hexToGlow(color,0.35)};display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:14px;color:${color};flex-shrink:0;">${initial}</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:${hexToGlow(color,0.2)};border:1px solid ${hexToGlow(color,0.35)};display:flex;align-items:center;justify-content:center;font-family:Inter, sans-serif;font-weight:800;font-size:14px;color:${color};flex-shrink:0;">${initial}</div>
                     <div style="flex:1;min-width:0;">
                         <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(shopName)}</div>
                         <div style="font-size:11px;color:var(--muted);">${balance} pts disponibles${unlocked.length ? ` · <span style="color:var(--cyan);font-weight:700;">${unlocked.length} dispo${unlocked.length > 1 ? 's' : ''} 🎉</span>` : ''}</div>
@@ -2666,7 +2244,7 @@
             container.innerHTML = `
                 <div style="text-align:center;padding:52px 24px;border:1px dashed var(--border);border-radius:var(--r);">
                     <i class="fa-solid fa-clock-rotate-left" style="font-size:36px;margin-bottom:12px;display:block;color:var(--muted);"></i>
-                    <h3 style="font-family:'Bricolage Grotesque',sans-serif;margin-bottom:8px;font-size:17px;">Aucune transaction</h3>
+                    <h3 style="font-family:Inter, sans-serif;margin-bottom:8px;font-size:17px;">Aucune transaction</h3>
                     <p style="color:var(--muted);font-size:13px;">Scannez un QR code pour commencer à cumuler des points.</p>
                 </div>`;
             return;
@@ -2987,7 +2565,7 @@
                              <div style="font-size:12px;color:var(--muted);">Résumé hebdomadaire de vos cartes</div></div>
                     </label>
                 </div>
-                <button onclick="saveNotifPrefs()" style="margin-top:20px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;">
+                <button onclick="saveNotifPrefs()" style="margin-top:20px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter, sans-serif;">
                     Enregistrer
                 </button>
             </div>`;
@@ -3025,9 +2603,9 @@
                     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Nom d'affichage</label>
                     <input type="text" id="sec-name-input" placeholder="Votre prénom ou pseudonyme"
                         style="width:100%;padding:11px 14px;background:var(--bg-3);border:1px solid var(--border-2);
-                               color:var(--text);border-radius:12px;font-size:14px;font-family:'Instrument Sans',sans-serif;">
+                               color:var(--text);border-radius:12px;font-size:14px;font-family:Inter, sans-serif;">
                 </div>
-                <button onclick="saveClientName()" style="width:100%;padding:11px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;margin-bottom:10px;">
+                <button onclick="saveClientName()" style="width:100%;padding:11px;background:var(--cyan);color:#06050d;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter, sans-serif;margin-bottom:10px;">
                     Mettre à jour le nom
                 </button>
                 <button onclick="sendPasswordReset()" style="width:100%;padding:11px;background:transparent;color:var(--text);border:1px solid var(--border-2);border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;">
@@ -3147,7 +2725,8 @@
     };
 
     const CLIENT_THEME_NAMES = {
-        dark:  '🌙 Sombre (Défaut)',
+        keepo: '✨ KEEPO (Défaut)',
+        dark:  '🌙 Sombre',
         light: '☀️ Clair',
         neon:  '⚡ Néon Violet',
         ocean: '🌊 Océan',
@@ -3155,7 +2734,7 @@
     };
 
     function applyClientTheme(themeKey) {
-        const vars = CLIENT_THEMES[themeKey] || CLIENT_THEMES.dark;
+        const vars = CLIENT_THEMES[themeKey] || CLIENT_THEMES.keepo;
         const root = document.documentElement;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
         const key = currentClientId ? `KEEPO_client_theme_${currentClientId}` : 'KEEPO_client_theme_default';
@@ -3164,15 +2743,15 @@
 
     function loadClientTheme() {
         const key = currentClientId ? `KEEPO_client_theme_${currentClientId}` : 'KEEPO_client_theme_default';
-        const saved = localStorage.getItem(key) || 'dark';
-        const vars = CLIENT_THEMES[saved] || CLIENT_THEMES.dark;
+        const saved = localStorage.getItem(key) || 'keepo';
+        const vars = CLIENT_THEMES[saved] || CLIENT_THEMES.keepo;
         const root = document.documentElement;
         Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
     }
 
     function openThemeChooser() {
         const key = currentClientId ? `KEEPO_client_theme_${currentClientId}` : 'KEEPO_client_theme_default';
-        const current = localStorage.getItem(key) || 'dark';
+        const current = localStorage.getItem(key) || 'keepo';
         const html = `
             <div style="padding:4px 0 12px;">
                 <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Choisissez l'habillage visuel de votre application :</div>
@@ -3184,14 +2763,14 @@
                                padding:13px 16px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;
                                background:${k === current ? 'rgba(14,124,140,0.08)' : 'var(--card-bg)'};
                                border:1px solid ${k === current ? 'rgba(14,124,140,0.35)' : 'var(--border)'};
-                               color:var(--text);font-family:'Instrument Sans',sans-serif;transition:all .2s;">
+                               color:var(--text);font-family:Inter, sans-serif;transition:all .2s;">
                         <span>${label}</span>
                         <i class="fa-solid fa-check" style="color:var(--cyan);opacity:${k === current ? '1' : '0'};transition:.15s;" id="theme-check-${k}"></i>
                     </button>`).join('')}
                 </div>
                 <button onclick="closeClientModal()"
                     style="margin-top:18px;width:100%;padding:12px;background:var(--cyan);color:#06050d;border:none;
-                           border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;">
+                           border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:Inter, sans-serif;">
                     Fermer
                 </button>
             </div>`;
@@ -3596,7 +3175,7 @@
                 ctx.shadowColor  = 'rgba(0,0,0,0.7)';
                 ctx.shadowBlur   = 4;
                 const fSize = Math.max(8, Math.min(11, 55 / prizes.length));
-                ctx.font = `700 ${fSize}px 'Instrument Sans',sans-serif`;
+                ctx.font = `700 ${fSize}px Inter, sans-serif`;
                 const maxCh = Math.max(5, Math.floor(sweep / 0.08));
                 const txt = prize.label.length > maxCh ? prize.label.slice(0, maxCh) + '…' : prize.label;
                 ctx.fillText(txt, 0, 0);
@@ -3701,7 +3280,7 @@
             const res = document.getElementById('wheel-result');
             res.innerHTML = `
                 <div style="font-size:32px;margin-bottom:6px;">${data?.prize_value > 0 ? '🎉' : '🍀'}</div>
-                <div style="font-weight:800;font-family:'Bricolage Grotesque',sans-serif;font-size:16px;color:#fff;margin-bottom:4px;">${data?.prize_label || 'Résultat'}</div>
+                <div style="font-weight:800;font-family:Inter, sans-serif;font-size:16px;color:#fff;margin-bottom:4px;">${data?.prize_label || 'Résultat'}</div>
                 ${data?.prize_value > 0 ? `<div style="font-size:12px;color:#16B8C4;">Points crédités automatiquement sur votre carte</div>` : `<div style="font-size:12px;color:var(--muted);">Bonne chance pour la prochaine fois !</div>`}
             `;
             res.classList.add('show');
@@ -3744,7 +3323,7 @@
 
         document.getElementById('gift-result').innerHTML = `
             <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Code à partager</div>
-            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:24px;letter-spacing:4px;color:#16B8C4;text-align:center;margin-bottom:10px;cursor:pointer;" onclick="navigator.clipboard.writeText('${data.code}');showSnack('✓ Code copié');">${data.code}</div>
+            <div style="font-family:Inter, sans-serif;font-weight:900;font-size:24px;letter-spacing:4px;color:#16B8C4;text-align:center;margin-bottom:10px;cursor:pointer;" onclick="navigator.clipboard.writeText('${data.code}');showSnack('✓ Code copié');">${data.code}</div>
             <div style="font-size:12px;color:var(--muted);">Partagez ce code avec la personne de votre choix. Elle pourra l'utiliser dans son app KEEPO pour recevoir <strong style="color:#fff;">${data.points} points</strong>.</div>
         `;
         document.getElementById('gift-result').style.display = 'block';
@@ -3775,7 +3354,7 @@
         if (!s) {
             s = document.createElement('div');
             s.id = 'KEEPOSnack';
-            s.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(18,15,30,.96);border:1px solid rgba(255,255,255,0.14);color:#fff;padding:12px 20px;border-radius:50px;font-weight:600;font-size:13px;z-index:9999;box-shadow:0 8px 28px rgba(20,20,27,0.35);max-width:90vw;text-align:center;';
+            s.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(18,15,30,.96);border:1px solid var(--border);color:#fff;padding:12px 20px;border-radius:50px;font-weight:600;font-size:13px;z-index:9999;box-shadow:0 8px 28px rgba(20,20,27,0.35);max-width:90vw;text-align:center;';
             document.body.appendChild(s);
         }
         s.innerText = msg;
