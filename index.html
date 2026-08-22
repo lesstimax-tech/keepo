@@ -145,14 +145,16 @@ p{margin:0}
 .btn-sm{padding:8px 15px;font-size:13.5px;border-radius:var(--r-sm)}
 
 /* ── Navigation ─────────────────────────────────────────────── */
-.nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.72);
+/* Le header est #hd ; la barre elle-même porte les DEUX classes .wrap.nav */
+#hd{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.78);
   backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
   border-bottom:1px solid var(--line)}
-.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:22px;height:64px}
+.wrap.nav{display:flex;align-items:center;justify-content:space-between;gap:22px;height:64px}
 .logo{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;
   letter-spacing:-.04em}
 .logo img{height:26px;width:auto}
-.nav-links{display:flex;align-items:center;gap:26px}
+.nav-links{display:flex;align-items:center;gap:26px;list-style:none;margin:0;padding:0}
+.nav-links li{display:flex;align-items:center}
 .nav-links a{color:var(--muted);font-size:14px;font-weight:450;position:relative;
   transition:color .2s var(--ease)}
 .nav-links a:not(.btn):hover{color:var(--ink)}
@@ -160,8 +162,28 @@ p{margin:0}
   background:var(--acc);transform:scaleX(0);transform-origin:center;
   transition:transform .32s var(--ease)}
 .nav-links a:not(.btn):hover::after{transform:scaleX(1)}
-.burger{display:none;background:rgba(255,255,255,.8);border:1px solid var(--line-2);
-  border-radius:var(--r-sm);width:40px;height:36px;cursor:pointer;color:var(--ink)}
+/* Bouton burger : deux barres qui se croisent à l'ouverture */
+.burger{display:none;position:relative;background:rgba(255,255,255,.8);
+  border:1px solid var(--line-2);border-radius:var(--r-sm);width:40px;height:36px;
+  cursor:pointer;padding:0;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.burger span{display:block;width:16px;height:1.6px;background:var(--ink);border-radius:2px;
+  transition:transform .3s var(--ease),opacity .2s var(--ease)}
+.burger.x span:first-child{transform:translateY(3.3px) rotate(45deg)}
+.burger.x span:last-child{transform:translateY(-3.3px) rotate(-45deg)}
+
+/* Menu mobile : masqué par défaut, déplié par la classe .open (posée par le JS) */
+#mobileNav{display:none;position:fixed;top:65px;left:0;right:0;z-index:59;
+  background:rgba(255,255,255,.97);backdrop-filter:saturate(180%) blur(16px);
+  -webkit-backdrop-filter:saturate(180%) blur(16px);
+  border-bottom:1px solid var(--line);box-shadow:var(--shadow-md);
+  padding:14px 24px 22px;max-height:calc(100dvh - 64px);overflow-y:auto;
+  flex-direction:column;gap:2px}
+#mobileNav.open{display:flex;animation:mnav .28s var(--ease)}
+@keyframes mnav{from{opacity:0;transform:translateY(-10px)}}
+#mobileNav a{display:flex;align-items:center;gap:8px;padding:13px 4px;font-size:16px;
+  font-weight:500;color:var(--ink);border-bottom:1px solid var(--line)}
+#mobileNav a:last-of-type{border-bottom:none}
+#mobileNav .btn{justify-content:center;padding:14px 20px;font-size:15px;border-bottom:none}
 
 /* ── Héro ───────────────────────────────────────────────────── */
 .hero{padding-top:70px;padding-bottom:92px}
@@ -415,7 +437,7 @@ html.motion .rv.in{opacity:1;transform:none}
   .feat-grid,.mkt-grid,.steps,.res-grid,.tst-grid,.price-grid{grid-template-columns:1fr}
   .foot-grid{grid-template-columns:1fr 1fr;gap:30px}
   .nav-links{display:none}
-  .burger{display:grid;place-items:center}
+  .burger{display:flex}
   section{padding:76px 0}
   .chip-a{left:0;top:2%}
   .chip-b{right:0;bottom:3%}
@@ -427,6 +449,14 @@ html.motion .rv.in{opacity:1;transform:none}
   .final-card{padding:50px 22px}
   .foot-grid{grid-template-columns:1fr}
   .phone{width:262px}
+  /* Confort tactile : au doigt, une cible fait au moins 44 px */
+  .burger{width:44px;height:44px}
+  .bill-toggle button{padding:12px 20px}
+  .btn{padding:13px 20px}
+  .btn-sm{padding:11px 16px}
+  .hero-ctas .btn,.final-ctas .btn{flex:1 1 auto;justify-content:center}
+  .faq summary{padding:18px}
+  .wrap{padding:0 20px}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition-duration:.01ms!important}
