@@ -93,7 +93,7 @@ section{padding:104px 0;position:relative}
 /* ── FONDS ──────────────────────────────────────────────────────
    Trois couches empilées : courbes topographiques (canvas, généré),
    grille pointillée, halos colorés. Jamais de blanc plat. */
-#topo{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.5}
+#topo{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.9}
 body::before{ /* grille fine */
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background-image:radial-gradient(circle,rgba(13,13,17,.055) 1px,transparent 1px);
@@ -109,11 +109,11 @@ body::after{ /* halos */
 }
 .nav,section,footer,.trust{position:relative;z-index:1}
 /* Sections « posées » sur le fond : voile translucide, jamais opaque */
-#features,#how,.final{background:rgba(255,255,255,.72);backdrop-filter:blur(3px);
+#features,#how,.final{background:rgba(255,255,255,.58);backdrop-filter:blur(2px);
   -webkit-backdrop-filter:blur(3px)}
-.mkt,#avis,#faq{background:rgba(244,245,248,.78);backdrop-filter:blur(3px);
+.mkt,#avis,#faq{background:rgba(244,245,248,.66);backdrop-filter:blur(2px);
   -webkit-backdrop-filter:blur(3px);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-#pricing{background:rgba(255,255,255,.80);backdrop-filter:blur(3px);
+#pricing{background:rgba(255,255,255,.62);backdrop-filter:blur(2px);
   -webkit-backdrop-filter:blur(3px)}
 
 /* ── Typographie ────────────────────────────────────────────── */
@@ -417,7 +417,7 @@ p{margin:0}
 .final-note{color:rgba(255,255,255,.42);font-size:12.5px;margin-top:20px}
 
 /* ── Pied de page ───────────────────────────────────────────── */
-footer{background:rgba(250,250,251,.9);backdrop-filter:blur(3px);
+footer{background:rgba(250,250,251,.72);backdrop-filter:blur(2px);
   -webkit-backdrop-filter:blur(3px);border-top:1px solid var(--line);padding:60px 0 28px}
 .foot-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:42px}
 .foot-brand p{color:var(--muted);font-size:14px;margin-top:13px;max-width:34ch}
@@ -442,9 +442,13 @@ html.motion .rv.in{opacity:1;transform:none}
    Chaque section arrive comme un bloc : léger recul + montée, puis
    ses éléments s'égrènent en cascade (délai calculé en JS). */
 html.motion section,html.motion footer{
-  transition:opacity .9s var(--ease),transform .9s var(--ease)}
-html.motion section:not(.hero):not(.sec-in),
-html.motion footer:not(.sec-in){opacity:0;transform:translateY(38px) scale(.992)}
+  transition:opacity 1s var(--ease),transform 1.05s var(--ease)}
+/* Les sections arrivent alternativement par la gauche et par la droite.
+   Les classes .from-l / .from-r sont posées par le JS (ordre d'apparition). */
+html.motion section.from-l:not(.sec-in),html.motion footer.from-l:not(.sec-in){
+  opacity:0;transform:translateX(-88px)}
+html.motion section.from-r:not(.sec-in),html.motion footer.from-r:not(.sec-in){
+  opacity:0;transform:translateX(88px)}
 html.motion section.sec-in,html.motion footer.sec-in{opacity:1;transform:none}
 
 /* Cascade des enfants : --i est posé par le JS */
@@ -1129,38 +1133,47 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     };
   }
 
+  var noise = makeNoise(20260822);
+  var W = 0, H = 0, phase = 0, mobile = false;
+
   function draw() {
     var w = document.documentElement.clientWidth || window.innerWidth || 0;
     var h = document.documentElement.clientHeight || window.innerHeight || 0;
     // La fenêtre peut ne pas être encore dimensionnée : on réessaie plutôt que
     // de dessiner dans le vide (sinon le fond resterait vide pour toujours).
     if (w < 2 || h < 2) { requestAnimationFrame(draw); return; }
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = w * dpr; cv.height = h * dpr;
-    cv.style.width = w + 'px'; cv.style.height = h + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
+    mobile = w < 760;
+    if (w !== W || h !== H) {
+      W = w; H = h;
+      // Le relief est un décor : on le rend à résolution réduite (moitié sur
+      // mobile) et on l'étire — invisible à l'œil, 4× moins de calcul.
+      var q = mobile ? 0.5 : 0.7;
+      cv.width = Math.round(w * q); cv.height = Math.round(h * q);
+      cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    }
+    var sw = cv.width, sh = cv.height;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, sw, sh);
 
-    var noise = makeNoise(20260822);
-    var step = 13;                       // finesse de la grille d'échantillonnage
-    var cols = Math.ceil(w / step) + 1, rows = Math.ceil(h / step) + 1;
-    var scale = 0.020;                   // taille des reliefs
+    var step = mobile ? 11 : 12;         // finesse de la grille d'échantillonnage
+    var cols = Math.ceil(sw / step) + 1, rows = Math.ceil(sh / step) + 1;
+    var scale = 0.026;                   // taille des reliefs
 
-    // Champ de hauteurs
+    // Champ de hauteurs — `phase` fait lentement onduler le relief
     var f = new Float32Array(cols * rows);
     for (var y = 0; y < rows; y++)
       for (var x = 0; x < cols; x++)
-        f[y * cols + x] = noise(x * step * scale, y * step * scale);
+        f[y * cols + x] = noise(x * step * scale + phase, y * step * scale + phase * 0.35);
 
     // Marching squares : une polyligne par niveau
-    var levels = 15;
+    var levels = mobile ? 10 : 13;
     for (var L = 1; L < levels; L++) {
       var t = L / levels;
-      // les courbes centrales sont un peu plus marquées (comme sur une carte)
-      var strong = (L % 5 === 0);
+      // les courbes maîtresses sont plus marquées (comme sur une carte)
+      var strong = (L % 4 === 0);
       ctx.beginPath();
-      ctx.lineWidth = strong ? 1.15 : 0.75;
-      ctx.strokeStyle = strong ? 'rgba(13,13,17,.105)' : 'rgba(13,13,17,.062)';
+      ctx.lineWidth = strong ? 1.5 : 1;
+      ctx.strokeStyle = strong ? 'rgba(75,69,166,.30)' : 'rgba(13,13,17,.155)';
 
       for (var yy = 0; yy < rows - 1; yy++) {
         for (var xx = 0; xx < cols - 1; xx++) {
@@ -1197,10 +1210,23 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   var rt;
   window.addEventListener('resize', function () {
     clearTimeout(rt);
-    rt = setTimeout(draw, 220);
+    rt = setTimeout(function () { W = 0; draw(); }, 220);
   });
 
-  if (reduce) return;   // le fond reste, le mouvement s'arrête ici
+  if (reduce) return;   // le fond reste figé, le mouvement s'arrête ici
+
+  // Ondulation lente du relief. Cadence volontairement basse (≈14 im/s) : à cette
+  // vitesse le mouvement reste fluide à l'œil pour une fraction du coût, et on
+  // met tout en pause dès que l'onglet passe en arrière-plan.
+  var last = 0, awake = true;
+  document.addEventListener('visibilitychange', function () { awake = !document.hidden; });
+  (function animate(now) {
+    requestAnimationFrame(animate);
+    if (!awake || now - last < 70) return;
+    last = now;
+    phase += 0.0016;
+    draw();
+  })(0);
 
   /* ─────────────── 2. MOUVEMENT ─────────────── */
   document.documentElement.classList.add('motion');
@@ -1248,7 +1274,10 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   }, { threshold: 0.08, rootMargin: '0px 0px -10% 0px' });
 
   var sections = document.querySelectorAll('section:not(.hero), footer');
-  sections.forEach(function (s) { ioSec.observe(s); });
+  sections.forEach(function (s, i) {
+    s.classList.add(i % 2 === 0 ? 'from-l' : 'from-r');   // alterne gauche / droite
+    ioSec.observe(s);
+  });
   // Pas de révélation « préventive » ici : l'observateur s'en charge dès qu'une
   // section entre à l'écran. (Un test trop permissif révélait tout d'un coup et
   // l'effet au défilement disparaissait.) Le filet ci-dessous reste la sécurité.
