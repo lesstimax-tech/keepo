@@ -20,9 +20,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,700&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600;800;900&family=Poppins:wght@400;600;800&family=Lobster&family=Pacifico&family=Dancing+Script:wght@500;700&family=Caveat:wght@500;700&family=Abril+Fatface&family=Righteous&family=Cormorant+Garamond:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&family=Archivo+Black&family=DM+Serif+Display&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/keepo-card.css?v=1">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/keepo-card.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -803,26 +805,26 @@
         .studio-phone-title { font-size: 17px; font-weight: 750; color: #101018; letter-spacing: -.03em; margin-bottom: 12px; }
         .studio-phone-ghost { height: 52px; border-radius: 16px; background: #EDEDF3; margin-top: 12px; }
 
-        .studio-card { position: relative; overflow: hidden; background: #181628; min-height: 170px;
-            background-size: cover; background-position: center;
-            transition: min-height .3s var(--ease), border-radius .3s var(--ease), box-shadow .3s var(--ease); }
-        .studio-pattern-layer, .studio-card-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-        .studio-card-inner { position: relative; z-index: 2; padding: 16px; pointer-events: none;
-            display: flex; flex-direction: column; height: 100%; }
-        .studio-card-top { display: flex; align-items: flex-start; justify-content: space-between; }
-        .studio-card-chip { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
-            font-weight: 800; font-size: 15px; color: #fff; overflow: hidden; flex-shrink: 0; }
-        .studio-card-pts { font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #fff; }
-        .studio-card-pts-lbl { font-size: 8.5px; letter-spacing: .1em; margin-top: 3px; font-weight: 600; }
-        .studio-card-title { font-size: 16px; font-weight: 700; color: #fff; margin-top: 14px; letter-spacing: -.02em; }
-        .studio-card-bar { height: 5px; border-radius: 99px; margin-top: 12px; overflow: hidden; }
-        .studio-card-bar i { display: block; height: 100%; width: 72%; border-radius: inherit;
-            transition: background .3s var(--ease); }
-        .studio-card-foot { display: flex; align-items: center; justify-content: space-between;
-            margin-top: 12px; font-size: 10px; }
-        .studio-card-badge { padding: 3px 9px; font-weight: 700; font-size: 9.5px; }
+        /* Aperçu : la carte est rendue par js/keepo-card.js à sa taille réelle
+           (354 px, soit la largeur utile d'un téléphone de 390 px) puis mise à
+           l'échelle pour tenir dans la maquette. Homothétie pure : aucune
+           déformation, c'est exactement ce que verra le client. */
+        .kc-fit { position: relative; }
+        .kc-stage { width: 354px; transform-origin: top left; }
 
-        .studio-layer-host { position: absolute; inset: 0; z-index: 3; }
+        .sx-hint2 { font-size: 11.5px; line-height: 1.55; color: var(--text-muted); margin-top: 10px; }
+        .sx-logo-state { display: flex; align-items: center; gap: 10px; margin-top: 10px;
+            padding: 10px 12px; border: 1px dashed var(--glass-border); border-radius: 12px;
+            font-size: 11.5px; color: var(--text-muted); }
+        .sx-logo-state img { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+        .sx-logo-state.none img { display: none; }
+        .sx-logo-state span { flex: 1; min-width: 0; }
+        .sx-logo-state button { background: none; border: 1px solid var(--glass-border);
+            color: var(--text-muted); border-radius: 999px; padding: 5px 10px; font-size: 11px;
+            cursor: pointer; font-family: inherit; white-space: nowrap; }
+        .sx-logo-state button:hover { color: #E5484D; border-color: rgba(229,72,77,.4); }
+
+        .studio-layer-host { position: absolute; inset: 0; z-index: 5; }
         .sl { position: absolute; cursor: grab; user-select: none; -webkit-user-select: none;
             touch-action: none; line-height: 1.2; max-width: 92%; }
         .sl:active { cursor: grabbing; }
@@ -2283,28 +2285,19 @@
                         </div></div>
                     </section>
 
-                    <!-- 03 · FORME -->
+                    <!-- 03 · ACCENT -->
                     <section class="sx" data-c="amber">
                         <button type="button" class="sx-h" onclick="studioToggleSec(this)">
                             <span class="sx-n">03</span>
-                            <span class="sx-tt">Forme de la carte<em>Taille, arrondi, bordure, ombre</em></span>
+                            <span class="sx-tt">Couleur d'accent<em>Liseré, chiffre, barre et badges</em></span>
                             <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
                         <div class="sx-b"><div class="sx-in">
-                            <div class="sx-f"><label>Hauteur <b id="st-h-v">170px</b></label>
-                                <input type="range" id="studio-card-h" min="130" max="300" value="170" oninput="refreshStudioOutput()"></div>
-                            <div class="sx-f"><label>Marge intérieure <b id="st-pad-v">16px</b></label>
-                                <input type="range" id="studio-card-pad" min="8" max="34" value="16" oninput="refreshStudioOutput()"></div>
-                            <div class="sx-f"><label>Arrondi <b id="st-r-v">18px</b></label>
-                                <input type="range" id="studio-card-r" min="0" max="46" value="18" oninput="refreshStudioOutput()"></div>
-                            <div class="sx-2">
-                                <div class="sx-f"><label>Bordure <b id="st-bw-v">0px</b></label>
-                                    <input type="range" id="studio-border-w" min="0" max="8" value="0" oninput="refreshStudioOutput()"></div>
-                                <div class="sx-f"><label>Couleur</label>
-                                    <input type="color" id="studio-border-color" value="#1B8E97" oninput="refreshStudioOutput()"></div>
-                            </div>
-                            <div class="sx-f"><label>Ombre portée <b id="st-sh-v">Moyenne</b></label>
-                                <input type="range" id="studio-shadow" min="0" max="3" value="1" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-f"><label>Couleur d'accent</label>
+                                <input type="color" id="studio-border-color" value="#1B8E97" oninput="refreshStudioOutput()"></div>
+                            <p class="sx-hint2">Elle habille le liseré à gauche de la carte, le compteur, la barre de progression et les badges.</p>
+                            <div class="sx-sep">Format de la carte</div>
+                            <p class="sx-hint2"><i class="fa-solid fa-lock"></i> La largeur, l'arrondi et les marges sont fixés par l'application client. C'est ce qui permet à l'aperçu ci-contre d'être le rendu exact, au pixel près, de ce que verront vos clients.</p>
                         </div></div>
                     </section>
 
@@ -2323,8 +2316,8 @@
                             <div class="sx-f"><label>Police</label>
                                 <select id="studio-title-font" onchange="refreshStudioOutput()"></select></div>
                             <div class="sx-2">
-                                <div class="sx-f"><label>Taille <b id="st-ts-v">16px</b></label>
-                                    <input type="range" id="studio-title-size" min="10" max="42" value="16" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Taille <b id="st-ts-v">17px</b></label>
+                                    <input type="range" id="studio-title-size" min="10" max="42" value="17" oninput="refreshStudioOutput()"></div>
                                 <div class="sx-f"><label>Couleur</label>
                                     <input type="color" id="studio-txt-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
                             </div>
@@ -2362,16 +2355,16 @@
                                 <div class="sx-f"><label>Police du chiffre</label>
                                     <select id="studio-pts-font" onchange="refreshStudioOutput()"></select></div>
                                 <div class="sx-2">
-                                    <div class="sx-f"><label>Taille <b id="st-ps-v">25px</b></label>
-                                        <input type="range" id="studio-pts-size" min="14" max="60" value="25" oninput="refreshStudioOutput()"></div>
+                                    <div class="sx-f"><label>Taille <b id="st-ps-v">30px</b></label>
+                                        <input type="range" id="studio-pts-size" min="14" max="60" value="30" oninput="refreshStudioOutput()"></div>
                                     <div class="sx-f"><label>Couleur</label>
                                         <input type="color" id="studio-pts-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
                                 </div>
                                 <div class="sx-f"><label>Libellé sous le chiffre</label>
                                     <input type="text" id="studio-pts-label" value="POINTS" oninput="refreshStudioOutput()"></div>
                                 <div class="sx-2">
-                                    <div class="sx-f"><label>Taille du libellé <b id="st-pls-v">8.5px</b></label>
-                                        <input type="range" id="studio-pts-label-size" min="6" max="18" value="9" oninput="refreshStudioOutput()"></div>
+                                    <div class="sx-f"><label>Taille du libellé <b id="st-pls-v">10px</b></label>
+                                        <input type="range" id="studio-pts-label-size" min="6" max="18" value="10" oninput="refreshStudioOutput()"></div>
                                     <div class="sx-f"><label>Couleur du libellé</label>
                                         <input type="color" id="studio-pts-label-color" value="#dddddd" oninput="refreshStudioOutput()"></div>
                                 </div>
@@ -2405,32 +2398,23 @@
                         </div></div>
                     </section>
 
-                    <!-- 06 · PASTILLE -->
+                    <!-- 06 · LOGO -->
                     <section class="sx" data-c="amber">
                         <button type="button" class="sx-h" onclick="studioToggleSec(this)">
                             <span class="sx-n">06</span>
-                            <span class="sx-tt">Pastille du logo<em>Initiale ou image, forme, couleurs</em></span>
+                            <span class="sx-tt">Logo du commerce<em>Image affichée en haut de la carte</em></span>
                             <label class="sx-sw" onclick="event.stopPropagation()">
                                 <input type="checkbox" id="show-chip" checked onchange="refreshStudioOutput()"><span></span></label>
                             <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
                         <div class="sx-b"><div class="sx-in">
-                            <div class="sx-f"><label>Contenu</label>
-                                <input type="text" id="studio-chip-text" value="" placeholder="Initiale automatique" oninput="refreshStudioOutput()"></div>
-                            <div class="sx-2">
-                                <div class="sx-f"><label>Taille <b id="st-chs-v">36px</b></label>
-                                    <input type="range" id="studio-chip-size" min="22" max="72" value="36" oninput="refreshStudioOutput()"></div>
-                                <div class="sx-f"><label>Arrondi <b id="st-chr-v">10px</b></label>
-                                    <input type="range" id="studio-chip-radius" min="0" max="36" value="10" oninput="refreshStudioOutput()"></div>
-                            </div>
-                            <div class="sx-2">
-                                <div class="sx-f"><label>Fond</label>
-                                    <input type="color" id="studio-chip-bg" value="#ffffff" oninput="refreshStudioOutput()"></div>
-                                <div class="sx-f"><label>Texte</label>
-                                    <input type="color" id="studio-chip-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
-                            </div>
-                            <div class="sx-f"><label>Opacité du fond <b id="st-cho-v">18%</b></label>
-                                <input type="range" id="studio-chip-op" min="0" max="100" value="18" oninput="refreshStudioOutput()"></div>
+                            <label for="studio-logo-file" class="sx-drop"><i class="fa-solid fa-image"></i>
+                                <span>Importer un logo</span></label>
+                            <input type="file" id="studio-logo-file" accept="image/*" onchange="handleStudioLogoSelect(event)" hidden>
+                            <div id="studio-logo-state" class="sx-logo-state"></div>
+                            <div class="sx-f"><label>Taille <b id="st-lgs-v">44px</b></label>
+                                <input type="range" id="studio-logo-size" min="28" max="76" value="44" oninput="refreshStudioOutput()"></div>
+                            <p class="sx-hint2">Le logo est affiché tel quel : ni cadre, ni fond, ni rognage. Un PNG transparent reste transparent. Sans image importée, c'est la photo de profil du commerce qui est utilisée, puis l'initiale du nom.</p>
                         </div></div>
                     </section>
 
@@ -2445,8 +2429,8 @@
                         </button>
                         <div class="sx-b"><div class="sx-in">
                             <div class="sx-2">
-                                <div class="sx-f"><label>Épaisseur <b id="st-bh-v">5px</b></label>
-                                    <input type="range" id="studio-bar-h" min="2" max="18" value="5" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Épaisseur <b id="st-bh-v">6px</b></label>
+                                    <input type="range" id="studio-bar-h" min="2" max="18" value="6" oninput="refreshStudioOutput()"></div>
                                 <div class="sx-f"><label>Arrondi <b id="st-brr-v">99px</b></label>
                                     <input type="range" id="studio-bar-r" min="0" max="99" value="99" oninput="refreshStudioOutput()"></div>
                             </div>
@@ -2520,26 +2504,10 @@
                         </div>
                         <div class="studio-phone-screen">
                             <div class="studio-phone-title">Mes Cartes</div>
-                            <div id="studio-card-element-render" class="studio-card">
-                                <div id="studio-pattern-layer" class="studio-pattern-layer"></div>
-                                <div id="studio-overlay-layer" class="studio-card-overlay"></div>
-                                <div class="studio-card-inner" id="studio-card-inner">
-                                    <div class="studio-card-top">
-                                        <div id="studio-card-chip" class="studio-card-chip">K</div>
-                                        <div id="studio-pts-block" style="text-align:right;">
-                                            <div id="studio-points-color-render" class="studio-card-pts">240</div>
-                                            <div id="studio-pts-label" class="studio-card-pts-lbl">POINTS</div>
-                                        </div>
-                                    </div>
-                                    <div id="studio-card-title-render" class="studio-card-title">Commerce KEEPO</div>
-                                    <div id="studio-stamps-row" class="studio-stamps" style="display:none;"></div>
-                                    <div id="studio-bar-wrap" class="studio-card-bar"><i id="studio-progress-fill"></i></div>
-                                    <div class="studio-card-foot">
-                                        <span id="studio-reward-hint">Plus que 60 pts</span>
-                                        <span id="studio-reward-badge-render" class="studio-card-badge">Récompense</span>
-                                    </div>
+                            <div id="studio-card-fit" class="kc-fit">
+                                <div id="studio-card-stage" class="kc-stage kc-scope">
+                                    <div id="studio-card-host"></div>
                                 </div>
-                                <div id="studio-layer-host" class="studio-layer-host"></div>
                             </div>
                             <div class="studio-phone-ghost"></div>
                             <div class="studio-phone-ghost" style="opacity:.45;"></div>
@@ -4390,11 +4358,7 @@
     }
 
     function studioRender() {
-        const host = _g('studio-layer-host');
-        if (host) {
-            host.innerHTML = studioLayers.map(l => studioLayerHtml(l, false)).join('');
-            host.querySelectorAll('.sl').forEach(studioMakeDraggable);
-        }
+        studioRenderLayerHost();
         const list = _g('studio-layers'), cnt = _g('studio-layer-count');
         if (cnt) cnt.textContent = studioLayers.length;
         if (list) list.innerHTML = studioLayers.length ? studioLayers.map((l, i) => {
@@ -4474,7 +4438,8 @@
             ev.preventDefault();
             const id = el.dataset.id;
             studioSelect(id);
-            const card = _g('studio-card-element-render');
+            const card = document.querySelector('#studio-card-host .loyalty-card');
+            if (!card) return;
             const rect = card.getBoundingClientRect();
             if (!rect.width || !rect.height) return;      // carte non visible
             const layer = studioLayers.find(x => x.id === id);
@@ -4490,18 +4455,10 @@
         });
     }
 
-    /* ── Motifs ── */
-    function studioPatternCss(p, color) {
-        const c = color || 'rgba(255,255,255,.14)';
-        if (p === 'dots')  return { backgroundImage:`radial-gradient(${c} 1.4px, transparent 1.4px)`, backgroundSize:'14px 14px' };
-        if (p === 'lines') return { backgroundImage:`repeating-linear-gradient(45deg, ${c} 0 1px, transparent 1px 11px)`, backgroundSize:'auto' };
-        if (p === 'grid')  return { backgroundImage:`linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`, backgroundSize:'22px 22px' };
-        return { backgroundImage:'none', backgroundSize:'auto' };
-    }
-
     function studioResetAll() {
         studioLayers = []; studioSelId = null;
         currentStudioBgBase64 = null;
+        currentStudioLogoBase64 = null;
         studioApplyPreset(0);
         studioRender();
         showToast('info', 'Studio réinitialisé', 'Vous repartez du style par défaut.');
@@ -4524,68 +4481,9 @@
 
     function saveStudioDesign() {
         if (!currentMerchantId) { showToast('warning', 'Non connecté', 'Reconnectez-vous pour sauvegarder.'); return; }
-        const design = {
-            title:       document.getElementById('studio-title-input').value,
-            txtColor:    document.getElementById('studio-txt-color').value,
-            borderColor: document.getElementById('studio-border-color').value,
-            opacity:     document.getElementById('studio-overlay-opacity').value,
-            bg:          currentStudioBgBase64 || null,
-            v:           4,
-            layers:      studioLayers,            // textes, images et icones
-            // Options d apparence (format v3)
-            bgType:      studioState.bgType,
-            pattern:     studioState.pattern,
-            align:       studioState.align,
-            bg1:         _v('studio-bg1','#1B1533'),
-            grad1:       _v('studio-grad1','#5A32A0'),
-            grad2:       _v('studio-grad2','#1FA5A8'),
-            gradAngle:   Number(_v('studio-grad-angle',135)),
-            blur:        Number(_v('studio-bg-blur',0)),
-            cardH:       Number(_v('studio-card-h',170)),
-            cardR:       Number(_v('studio-card-r',18)),
-            borderW:     Number(_v('studio-border-w',0)),
-            shadow:      Number(_v('studio-shadow',1)),
-            titleFont:   _v('studio-title-font','Inter, sans-serif'),
-            titleSize:   Number(_v('studio-title-size',16)),
-            ptsSize:     Number(_v('studio-pts-size',25)),
-            ptsColor:    _v('studio-pts-color','#ffffff'),
-            titleShadow: _g('studio-title-shadow') ? _g('studio-title-shadow').checked : false,
-            // Tous les elements de la carte (format v4)
-            titleWeight: _v('studio-title-weight','700'),
-            titleLs:     Number(_v('studio-title-ls',0)),
-            titleUpper:  _g('studio-title-upper')?.checked || false,
-            cardPad:     Number(_v('studio-card-pad',16)),
-            ptsFont:     _v('studio-pts-font','Inter, sans-serif'),
-            ptsLabel:    _v('studio-pts-label','POINTS'),
-            ptsLabelSize:Number(_v('studio-pts-label-size',9)),
-            ptsLabelColor:_v('studio-pts-label-color','#dddddd'),
-            chipText:    _v('studio-chip-text',''),
-            chipSize:    Number(_v('studio-chip-size',36)),
-            chipRadius:  Number(_v('studio-chip-radius',10)),
-            chipBg:      _v('studio-chip-bg','#ffffff'),
-            chipColor:   _v('studio-chip-color','#ffffff'),
-            chipOp:      Number(_v('studio-chip-op',18)),
-            barH:        Number(_v('studio-bar-h',5)),
-            barR:        Number(_v('studio-bar-r',99)),
-            barFill:     _v('studio-bar-fill','#1FA5A8'),
-            barBg:       _v('studio-bar-bg','#ffffff'),
-            hintText:    _v('studio-hint-text','Plus que 60 pts'),
-            hintSize:    Number(_v('studio-hint-size',10)),
-            hintColor:   _v('studio-hint-color','#1FA5A8'),
-            badgeText:   _v('studio-badge-text','Récompense'),
-            badgeColor:  _v('studio-badge-color','#1FA5A8'),
-            badgeR:      Number(_v('studio-badge-r',99)),
-            // Tampons (utilises quand le programme est a tampons)
-            stampIcon:  studioState.stampIcon || 'star',
-            stampSize:  Number(_v('studio-stamp-size',21)),
-            stampGap:   Number(_v('studio-stamp-gap',6)),
-            stampOn:    _v('studio-stamp-on','#1FA5A8'),
-            stampOff:   _v('studio-stamp-off','#ffffff'),
-            stampText:  _v('studio-stamp-text',''),
-            show: { title:!!_g('show-title')?.checked, pts:!!_g('show-pts')?.checked,
-                    chip:!!_g('show-chip')?.checked, bar:!!_g('show-bar')?.checked,
-                    badge:!!_g('show-badge')?.checked }
-        };
+        // Exactement les options de l'aperçu, plus les éléments libres.
+        const design = studioCollect();
+        design.layers = studioLayers;
         const designJson = JSON.stringify(design);
 
         // 1) Sauvegarde locale (immédiate, hors-ligne)
@@ -5807,12 +5705,8 @@
         set('studio-overlay-opacity', d.opacity);
 
         // Forme
-        set('studio-card-h', d.cardH);
-        set('studio-card-r', d.cardR);
-        set('studio-card-pad', d.cardPad);
-        set('studio-border-w', d.borderW);
-        set('studio-border-color', d.borderColor);
-        set('studio-shadow', d.shadow);
+        // Le format de la carte n'est plus réglable : les anciennes
+        // valeurs (hauteur, arrondi, bordure, ombre) sont ignorées.
 
         // Enseigne
         set('studio-title-input', d.title);
@@ -5832,13 +5726,9 @@
         set('studio-pts-label-size', d.ptsLabelSize);
         set('studio-pts-label-color', d.ptsLabelColor);
 
-        // Pastille
-        set('studio-chip-text', d.chipText);
-        set('studio-chip-size', d.chipSize);
-        set('studio-chip-radius', d.chipRadius);
-        set('studio-chip-bg', d.chipBg);
-        set('studio-chip-color', d.chipColor);
-        set('studio-chip-op', d.chipOp);
+        // Logo du commerce
+        set('studio-logo-size', d.logoSize);
+        currentStudioLogoBase64 = d.logo || null;
 
         // Barre et mentions
         set('studio-bar-h', d.barH);
@@ -5899,171 +5789,217 @@
     function studioIsStamps() {
         return (typeof currentLoyaltyMode !== 'undefined') && currentLoyaltyMode === 'stamps';
     }
-    function studioRenderStamps() {
-        const row = _g('studio-stamps-row');
-        const stamps = studioIsStamps();
-        const ptsBlock = _g('studio-pts-block');
-        const modeP = _g('sx-mode-points'), modeS = _g('sx-mode-stamps');
-        const titre = _g('sx-05-title');
+    /* Conservé : setLoyaltyMode() l'appelle quand le programme change. */
+    function studioRenderStamps() { refreshStudioOutput(); }
 
-        // Panneau : n'afficher que les réglages du mode en cours
+    /* ── Logo du commerce ────────────────────────────────────────
+       Importé en PNG pour préserver une éventuelle transparence, et
+       affiché sans cadre : on ne sait jamais ce que contient le fichier. */
+    let currentStudioLogoBase64 = null;
+
+    function handleStudioLogoSelect(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (file.size > 4 * 1024 * 1024) {
+            showToast('warning', 'Image trop lourde', 'Choisissez un logo de moins de 4 Mo.');
+            e.target.value = ''; return;
+        }
+        const rd = new FileReader();
+        rd.onload = ev => {
+            const img = new Image();
+            img.onload = () => {
+                const max = 320, sc = Math.min(1, max / Math.max(img.width, img.height));
+                const cv = document.createElement('canvas');
+                cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
+                cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+                currentStudioLogoBase64 = cv.toDataURL('image/png');   // transparence conservée
+                refreshStudioOutput();
+                showToast('success', 'Logo ajouté', 'Il apparaît dès maintenant sur la carte.');
+            };
+            img.onerror = () => { currentStudioLogoBase64 = ev.target.result; refreshStudioOutput(); };
+            img.src = ev.target.result;
+        };
+        rd.readAsDataURL(file);
+        e.target.value = '';
+    }
+    function studioClearLogo() {
+        currentStudioLogoBase64 = null;
+        refreshStudioOutput();
+        showToast('info', 'Logo retiré', 'La photo de profil du commerce reprend la main.');
+    }
+
+    /* ── Options en cours ────────────────────────────────────────
+       Une seule collecte alimente l'aperçu ET l'enregistrement : ce que
+       le commerçant voit est littéralement ce qui part en base. */
+    function studioCollect() {
+        const on = (id, d) => { const e = _g(id); return e ? e.checked : !!d; };
+        return {
+            v: 5,
+            // Fond
+            bgType:      studioState.bgType,
+            pattern:     studioState.pattern,
+            align:       studioState.align,
+            bg:          currentStudioBgBase64 || null,
+            bg1:         _v('studio-bg1', '#1B1533'),
+            grad1:       _v('studio-grad1', '#5A32A0'),
+            grad2:       _v('studio-grad2', '#1FA5A8'),
+            gradAngle:   Number(_v('studio-grad-angle', 135)),
+            blur:        Number(_v('studio-bg-blur', 0)),
+            opacity:     Number(_v('studio-overlay-opacity', 50)),
+            // Accent
+            borderColor: _v('studio-border-color', '#1B8E97'),
+            // Enseigne
+            title:       _v('studio-title-input', 'Mon Commerce'),
+            titleFont:   _v('studio-title-font', 'Inter, sans-serif'),
+            titleSize:   Number(_v('studio-title-size', 17)),
+            titleWeight: _v('studio-title-weight', '700'),
+            titleLs:     Number(_v('studio-title-ls', 0)),
+            titleUpper:  on('studio-title-upper', false),
+            titleShadow: on('studio-title-shadow', false),
+            txtColor:    _v('studio-txt-color', '#ffffff'),
+            // Compteur de points
+            ptsFont:      _v('studio-pts-font', 'Inter, sans-serif'),
+            ptsSize:      Number(_v('studio-pts-size', 30)),
+            ptsColor:     _v('studio-pts-color', '#ffffff'),
+            ptsLabel:     _v('studio-pts-label', 'Points'),
+            ptsLabelSize: Number(_v('studio-pts-label-size', 10)),
+            ptsLabelColor:_v('studio-pts-label-color', '#dddddd'),
+            // Logo
+            logo:        currentStudioLogoBase64 || null,
+            logoSize:    Number(_v('studio-logo-size', 44)),
+            // Barre et mentions
+            barH:        Number(_v('studio-bar-h', 6)),
+            barR:        Number(_v('studio-bar-r', 99)),
+            barFill:     _v('studio-bar-fill', '#1FA5A8'),
+            barBg:       _v('studio-bar-bg', '#ffffff'),
+            hintText:    _v('studio-hint-text', ''),
+            hintSize:    Number(_v('studio-hint-size', 10)),
+            hintColor:   _v('studio-hint-color', '#1FA5A8'),
+            badgeText:   _v('studio-badge-text', 'Récompense'),
+            badgeColor:  _v('studio-badge-color', '#1FA5A8'),
+            badgeR:      Number(_v('studio-badge-r', 99)),
+            // Tampons
+            stampIcon:   studioState.stampIcon || 'star',
+            stampSize:   Number(_v('studio-stamp-size', 21)),
+            stampGap:    Number(_v('studio-stamp-gap', 6)),
+            stampOn:     _v('studio-stamp-on', '#1FA5A8'),
+            stampOff:    _v('studio-stamp-off', '#ffffff'),
+            stampText:   _v('studio-stamp-text', ''),
+            show: { title: on('show-title', true), pts: on('show-pts', true),
+                    chip:  on('show-chip', true),  bar: on('show-bar', true),
+                    badge: on('show-badge', true) }
+        };
+    }
+
+    /* ── Couche interactive des éléments libres ──────────────────
+       Elle est posée par-dessus la carte rendue, et survit à chaque
+       nouveau rendu (on déplace le même nœud, les poignées restent). */
+    let _studioLayerHost = null;
+    function studioRenderLayerHost() {
+        if (!_studioLayerHost) return;
+        _studioLayerHost.innerHTML = studioLayers.map(l => studioLayerHtml(l, false)).join('');
+        _studioLayerHost.querySelectorAll('.sl').forEach(studioMakeDraggable);
+    }
+    function studioMountLayerHost() {
+        const card = document.querySelector('#studio-card-host .loyalty-card');
+        if (!card) return;
+        if (!_studioLayerHost) {
+            _studioLayerHost = document.createElement('div');
+            _studioLayerHost.id = 'studio-layer-host';
+            _studioLayerHost.className = 'studio-layer-host';
+        }
+        card.appendChild(_studioLayerHost);
+        studioRenderLayerHost();
+    }
+
+    /* ── Mise à l'échelle de l'aperçu ────────────────────────────
+       La carte est construite à sa largeur réelle puis réduite d'un
+       seul facteur : les proportions restent celles du téléphone. */
+    function studioFitCard() {
+        const wrap = _g('studio-card-fit'), stage = _g('studio-card-stage');
+        if (!wrap || !stage) return;
+        const avail = wrap.clientWidth;
+        if (!avail) return;
+        const k = Math.min(1, avail / 354);
+        stage.style.transform = k < 1 ? 'scale(' + k + ')' : 'none';
+        wrap.style.height = Math.round(stage.offsetHeight * k) + 'px';
+    }
+    window.addEventListener('resize', studioFitCard);
+
+    function refreshStudioOutput() {
+        studioInitUI();
+        const S = studioCollect();
+        const stamps = studioIsStamps();
+
+        // Le panneau ne montre que les réglages du programme en cours
+        const modeP = _g('sx-mode-points'), modeS = _g('sx-mode-stamps'), titre = _g('sx-05-title');
         if (modeP) modeP.style.display = stamps ? 'none' : '';
         if (modeS) modeS.style.display = stamps ? '' : 'none';
         if (titre) titre.innerHTML = stamps
             ? 'Tampons<em>Icône, taille, couleurs</em>'
             : 'Compteur de points<em>Chiffre et libellé</em>';
 
-        if (!row) return;
-        if (!stamps) { row.style.display = 'none'; return; }
-
-        // Aperçu : la grille de tampons, dont une partie déjà obtenue
-        const total = (typeof currentStampsRequired !== 'undefined' && currentStampsRequired) || 10;
-        const acquis = Math.min(Math.ceil(total * 0.6), total);
-        const size = Number(_v('studio-stamp-size', 21));
-        const gap  = Number(_v('studio-stamp-gap', 6));
-        const on   = _v('studio-stamp-on', '#1FA5A8');
-        const off  = _v('studio-stamp-off', '#ffffff');
-        const ico  = studioState.stampIcon || 'star';
-        let html = '';
-        for (let i = 0; i < total; i++) {
-            const plein = i < acquis;
-            const bg = plein ? on : 'color-mix(in srgb, ' + off + ' 16%, transparent)';
-            const fg = plein ? '#fff' : 'color-mix(in srgb, ' + off + ' 55%, transparent)';
-            const bd = plein ? on : 'color-mix(in srgb, ' + off + ' 28%, transparent)';
-            html += '<span style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;'
-                 + 'display:inline-flex;align-items:center;justify-content:center;'
-                 + 'font-size:' + Math.round(size * 0.48) + 'px;background:' + bg + ';color:' + fg + ';'
-                 + 'border:1px solid ' + bd + ';"><i class="fa-solid fa-' + ico + '"></i></span>';
-        }
-        const legende = _v('studio-stamp-text', '');
-        row.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:' + gap + 'px;">' + html + '</div>'
-            + (legende ? '<div style="font-size:10px;margin-top:8px;color:' + on + ';">'
-                       + escapeHtml(legende) + '</div>' : '');
-        row.style.display = '';
-        if (ptsBlock) ptsBlock.style.display = 'none';   // le compteur laisse la place
+        // Valeurs affichées à côté des curseurs
         const put = (id, v) => { const e = _g(id); if (e) e.textContent = v; };
-        put('st-sts-v', size + 'px');
-        put('st-stg-v', gap + 'px');
-    }
+        put('studio-op-val', S.opacity + '%');
+        put('st-blur-v',  S.blur + 'px');
+        put('st-angle-v', S.gradAngle + '°');
+        put('st-ts-v',    S.titleSize + 'px');
+        put('st-tls-v',   S.titleLs + 'px');
+        put('st-ps-v',    S.ptsSize + 'px');
+        put('st-pls-v',   S.ptsLabelSize + 'px');
+        put('st-lgs-v',   S.logoSize + 'px');
+        put('st-bh-v',    S.barH + 'px');
+        put('st-brr-v',   S.barR + 'px');
+        put('st-hs-v',    S.hintSize + 'px');
+        put('st-bdr-v',   S.badgeR + 'px');
+        put('st-sts-v',   S.stampSize + 'px');
+        put('st-stg-v',   S.stampGap + 'px');
 
-    function refreshStudioOutput() {
-        studioInitUI();
-        const put = (id, v) => { const e = _g(id); if (e) e.textContent = v; };
-        const chk = id => { const e = _g(id); return e ? e.checked : true; };
-        const card = _g('studio-card-element-render');
-        if (!card) return;
-
-        /* ── 02 · Arrière-plan ── */
-        const opRaw = Number(_v('studio-overlay-opacity', 50));
-        const blur  = Number(_v('studio-bg-blur', 0));
-        card.style.backgroundImage = 'none';
-        card.style.backgroundColor = 'transparent';
-        if (studioState.bgType === 'image' && currentStudioBgBase64) {
-            card.style.backgroundImage = `url('${currentStudioBgBase64}')`;
-            card.style.backgroundSize = 'cover'; card.style.backgroundPosition = 'center';
-        } else if (studioState.bgType === 'gradient') {
-            card.style.backgroundImage = `linear-gradient(${_v('studio-grad-angle',135)}deg, ${_v('studio-grad1','#5A32A0')}, ${_v('studio-grad2','#1FA5A8')})`;
-        } else {
-            card.style.backgroundColor = _v('studio-bg1', '#1B1533');
+        // D'où vient le logo actuellement affiché
+        const ls = _g('studio-logo-state');
+        if (ls) {
+            ls.classList.remove('none');
+            if (currentStudioLogoBase64) {
+                ls.innerHTML = '<img src="' + currentStudioLogoBase64 + '" alt="">' +
+                    '<span>Logo importé</span>' +
+                    '<button type="button" onclick="studioClearLogo()"><i class="fa-solid fa-xmark"></i> Retirer</button>';
+            } else if (currentMerchantId) {
+                ls.innerHTML = '<img src="/logo/' + currentMerchantId + '?fb=none" alt="" ' +
+                    'onerror="this.parentNode.classList.add(\'none\');this.parentNode.querySelector(\'span\').textContent=' +
+                    '\'Aucun logo — l\\u2019initiale du nom sera affichée.\'">' +
+                    '<span>Photo de profil du commerce</span>';
+            } else {
+                ls.innerHTML = '<span>Aucun logo — l\u2019initiale du nom sera affichée.</span>';
+            }
         }
-        const ov = _g('studio-overlay-layer');
-        if (ov) {
-            ov.style.background = `rgba(0,0,0,${opRaw/100})`;
-            ov.style.backdropFilter = blur ? `blur(${blur}px)` : '';
-            ov.style.webkitBackdropFilter = blur ? `blur(${blur}px)` : '';
-        }
-        const pat = _g('studio-pattern-layer');
-        if (pat) { const c = studioPatternCss(studioState.pattern);
-            pat.style.backgroundImage = c.backgroundImage; pat.style.backgroundSize = c.backgroundSize; }
-        put('studio-op-val', opRaw + '%'); put('st-blur-v', blur + 'px');
-        put('st-angle-v', _v('studio-grad-angle',135) + '°');
 
-        /* ── 03 · Forme ── */
-        const H = Number(_v('studio-card-h',170)), R = Number(_v('studio-card-r',18));
-        const PAD = Number(_v('studio-card-pad',16)), BW = Number(_v('studio-border-w',0));
-        const SH = Number(_v('studio-shadow',1)), accent = _v('studio-border-color','#1B8E97');
-        card.style.minHeight = H + 'px';
-        card.style.borderRadius = R + 'px';
-        card.style.border = BW ? `${BW}px solid ${accent}` : 'none';
-        card.style.boxShadow = ['none','0 6px 16px -10px rgba(0,0,0,.45)',
-            '0 12px 28px -14px rgba(0,0,0,.55)','0 22px 44px -18px rgba(0,0,0,.7)'][SH];
-        const inner = _g('studio-card-inner'); if (inner) inner.style.padding = PAD + 'px';
-        put('st-h-v', H+'px'); put('st-r-v', R+'px'); put('st-pad-v', PAD+'px');
-        put('st-bw-v', BW+'px'); put('st-sh-v', ['Aucune','Légère','Moyenne','Forte'][SH]);
-
-        /* ── 04 · Enseigne ── */
-        const title = _v('studio-title-input','Commerce KEEPO') || 'Commerce KEEPO';
-        const tSize = Number(_v('studio-title-size',16)), tLs = Number(_v('studio-title-ls',0));
-        const t = _g('studio-card-title-render');
-        if (t) {
-            t.style.display = chk('show-title') ? '' : 'none';
-            t.textContent = chk('studio-title-upper') ? title.toUpperCase() : title;
-            t.style.color = _v('studio-txt-color','#ffffff');
-            t.style.fontFamily = _v('studio-title-font','Inter, sans-serif');
-            t.style.fontSize = tSize + 'px';
-            t.style.fontWeight = _v('studio-title-weight','700');
-            t.style.letterSpacing = tLs + 'px';
-            t.style.textAlign = studioState.align;
-            t.style.textShadow = chk('studio-title-shadow') ? '0 2px 8px rgba(0,0,0,.55)' : 'none';
-        }
-        put('st-ts-v', tSize+'px'); put('st-tls-v', tLs+'px');
-
-        /* ── 05 · Points ── */
-        const pSize = Number(_v('studio-pts-size',25)), plSize = Number(_v('studio-pts-label-size',9));
-        const blk = _g('studio-pts-block'); if (blk) blk.style.display = chk('show-pts') ? '' : 'none';
-        const pts = _g('studio-points-color-render');
-        if (pts) { pts.style.color = _v('studio-pts-color','#ffffff'); pts.style.fontSize = pSize+'px';
-            pts.style.fontFamily = _v('studio-pts-font','Inter, sans-serif'); }
-        const pl = _g('studio-pts-label');
-        if (pl) { pl.textContent = _v('studio-pts-label','POINTS');
-            pl.style.fontSize = plSize+'px'; pl.style.color = _v('studio-pts-label-color','#dddddd'); }
-        put('st-ps-v', pSize+'px'); put('st-pls-v', plSize+'px');
-
-        /* ── 06 · Pastille ── */
-        const chS = Number(_v('studio-chip-size',36)), chR = Number(_v('studio-chip-radius',10));
-        const chO = Number(_v('studio-chip-op',18));
-        const chip = _g('studio-card-chip');
-        if (chip) {
-            chip.style.display = chk('show-chip') ? 'grid' : 'none';
-            const custom = _v('studio-chip-text','').trim();
-            chip.textContent = custom || (title.trim().charAt(0) || 'K').toUpperCase();
-            chip.style.width = chS+'px'; chip.style.height = chS+'px';
-            chip.style.borderRadius = chR+'px';
-            chip.style.fontSize = Math.round(chS*0.42)+'px';
-            chip.style.color = _v('studio-chip-color','#ffffff');
-            const bg = _v('studio-chip-bg','#ffffff');
-            chip.style.background = `color-mix(in srgb, ${bg} ${chO}%, transparent)`;
-        }
-        put('st-chs-v', chS+'px'); put('st-chr-v', chR+'px'); put('st-cho-v', chO+'%');
-
-        /* ── 07 · Barre et mentions ── */
-        const bH = Number(_v('studio-bar-h',5)), bR = Number(_v('studio-bar-r',99));
-        const wrap = _g('studio-bar-wrap');
-        if (wrap) {
-            wrap.style.display = chk('show-bar') ? '' : 'none';
-            wrap.style.height = bH+'px'; wrap.style.borderRadius = bR+'px';
-            wrap.style.background = `color-mix(in srgb, ${_v('studio-bar-bg','#ffffff')} 22%, transparent)`;
-        }
-        const fill = _g('studio-progress-fill'); if (fill) fill.style.background = _v('studio-bar-fill','#1FA5A8');
-        const hint = _g('studio-reward-hint');
-        if (hint) { hint.textContent = _v('studio-hint-text','Plus que 60 pts');
-            hint.style.fontSize = _v('studio-hint-size',10)+'px'; hint.style.color = _v('studio-hint-color','#1FA5A8'); }
-        const badge = _g('studio-reward-badge-render');
-        if (badge) {
-            badge.style.display = chk('show-badge') ? '' : 'none';
-            badge.textContent = _v('studio-badge-text','Récompense');
-            const bc = _v('studio-badge-color','#1FA5A8');
-            badge.style.color = bc; badge.style.background = `color-mix(in srgb, ${bc} 18%, transparent)`;
-            badge.style.borderRadius = _v('studio-badge-r',99)+'px';
-        }
-        put('st-bh-v', bH+'px'); put('st-brr-v', bR+'px');
-        put('st-hs-v', _v('studio-hint-size',10)+'px'); put('st-bdr-v', _v('studio-badge-r',99)+'px');
-
-        studioRenderStamps();   // bascule points / tampons selon le programme
+        // L'aperçu EST le rendu client : même moteur, mêmes options.
+        const host = _g('studio-card-host');
+        if (!host) return;
+        const goal   = 300;
+        const nStamp = (typeof currentStampsRequired !== 'undefined' && currentStampsRequired) || 10;
+        host.innerHTML = KeepoCard.render({
+            studio:         Object.assign({}, S, { layers: [] }),  // calques = couche interactive
+            accent:         S.borderColor,
+            shopName:       S.title || 'Mon Commerce',
+            logoUrl:        currentMerchantId ? '/logo/' + currentMerchantId + '?fb=none' : '',
+            points:         stamps ? Math.min(Math.ceil(nStamp * 0.6), nStamp) : 240,
+            goal:           goal,
+            stampMode:      stamps,
+            stampGoal:      nStamp,
+            stampReward:    _v('stamp-reward', ''),
+            boutiques:      0,
+            showRewardsBtn: true,
+            animate:        false
+        });
+        studioMountLayerHost();
+        studioFitCard();
+        host.querySelectorAll('img').forEach(im => im.addEventListener('load', studioFitCard));
 
         const time = _g('studio-phone-time');
         if (time) { const n = new Date();
-            time.textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; }
+            time.textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0'); }
     }
 
     // ─── NOTIFICATIONS ───
@@ -7974,9 +7910,10 @@
         const brdEl  = document.getElementById('studio-border-color');
         if (txtEl)  txtEl.value  = txt;
         if (brdEl)  brdEl.value  = border;
-        // Store bgColor as a global tint (no bg image set)
-        const rendEl = document.getElementById('studio-card-element-render');
-        if (rendEl) rendEl.style.backgroundColor = bg;
+        // La couleur de fond passe par les réglages : l'aperçu se reconstruit ensuite.
+        const bgEl = document.getElementById('studio-bg1');
+        if (bgEl) bgEl.value = bg;
+        if (typeof studioSetBgType === 'function') studioSetBgType('color');
         if (typeof refreshStudioOutput === 'function') refreshStudioOutput();
         closeAiModal();
         showToast('success', 'Design appliqué', 'Cliquez sur "Enregistrer le design" pour sauvegarder.');

@@ -16,6 +16,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="KEEPO">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/keepo-card.css?v=1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +25,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/keepo-card.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -218,63 +220,6 @@
 
         /* ─── Cartes de fidélité ─────────────────────────────── */
         .cards-grid { display: flex; flex-direction: column; gap: 14px; }
-        .loyalty-card {
-            position: relative; border-radius: var(--r); padding: 20px; cursor: pointer;
-            background: var(--card-bg); border: 1px solid var(--border); overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            transition: transform .4s var(--ease), box-shadow .4s var(--ease);
-            animation: cardIn .6s var(--ease) both;
-        }
-        @keyframes cardIn { from { opacity: 0; transform: translateY(16px); } }
-        .loyalty-card::before {              /* liseré coloré du commerce */
-            content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-            background: var(--card-accent, var(--grad));
-        }
-        .loyalty-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-        .loyalty-card:active { transform: scale(.988); }
-        .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-        .card-logo-chip {
-            width: 44px; height: 44px; border-radius: var(--r-xs); overflow: hidden; flex-shrink: 0;
-            background: var(--card-accent, var(--grad)); color: #fff; display: grid; place-items: center;
-            font-size: 17px; font-weight: 700;
-        }
-        .card-logo-chip { position: relative; }
-        .card-logo-chip img {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; display: block; border-radius: inherit;
-        }
-        .card-points-block { text-align: right; }
-        .card-points-num { font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -.045em;
-            color: var(--card-accent, var(--acc)); font-variant-numeric: tabular-nums; }
-        .card-points-lbl { font-size: 10.5px; color: var(--muted); font-weight: 500;
-            text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
-        .merchant-name { font-size: 17px; font-weight: 650; letter-spacing: -.025em; margin-top: 12px; }
-        .card-progress-wrap { margin-top: 14px; }
-        .card-progress-labels { display: flex; justify-content: space-between; font-size: 11.5px;
-            color: var(--muted); margin-bottom: 6px; font-variant-numeric: tabular-nums; }
-        .card-progress-track { height: 6px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
-        .card-progress-fill { height: 100%; border-radius: 99px; background: var(--card-accent, var(--grad));
-            transition: width 1.1s var(--ease); }
-        .card-footer { display: flex; align-items: center; justify-content: space-between;
-            margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--border); }
-        .card-reward-badge {
-            display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600;
-            padding: 5px 11px; border-radius: 999px; border: 1px solid var(--acc-line);
-            background: var(--acc-soft); color: var(--acc);
-        }
-        .btn-see-rewards {
-            background: none; border: 1px solid var(--border-2); color: var(--sub); font-size: 12.5px;
-            font-weight: 550; padding: 7px 13px; border-radius: 999px; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 6px; transition: all .25s var(--ease);
-        }
-        .btn-see-rewards:hover { border-color: var(--acc); color: var(--acc); background: var(--acc-soft); }
-        .tier-badge {
-            display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
-            padding: 3px 9px; border-radius: 999px; margin-top: 10px; letter-spacing: .04em;
-        }
-        .tier-gold { background: rgba(176,122,18,.10); color: var(--gold); border: 1px solid var(--gold-glow); }
-        .tier-silver { background: rgba(120,120,140,.10); color: #6E6E82; border: 1px solid rgba(120,120,140,.22); }
-        .tier-bronze { background: rgba(160,100,60,.10); color: #93613C; border: 1px solid rgba(160,100,60,.20); }
 
         /* Portefeuille vide */
         .empty-wallet { text-align: center; padding: 52px 24px; background: var(--bg-3);
@@ -640,9 +585,6 @@
             .stat-pill { padding: 12px 8px; }
             .stat-pill-val { font-size: 19px; }
             .stat-pill-lbl { font-size: 10px; }
-            .loyalty-card { padding: 16px; }
-            .card-points-num { font-size: 26px; }
-            .merchant-name { font-size: 15.5px; }
             .btn-logout span, .btn-logout { font-size: 12.5px; padding: 0 10px; }
             .nav-item { font-size: 9px; }
             .profile-avatar-big { width: 74px; height: 74px; font-size: 28px; }
@@ -689,18 +631,8 @@
 
         /* Carte avec image de fond (studio du commerçant) : le contenu passe en
            clair pour rester lisible par-dessus la photo et son voile sombre. */
-        .loyalty-card.has-bg { border-color: rgba(255,255,255,.16); }
-        .loyalty-card.has-bg .merchant-name,
-        .loyalty-card.has-bg .card-points-num,
-        .loyalty-card.has-bg .card-progress-labels { color: #fff; }
-        .loyalty-card.has-bg .card-points-lbl,
-        .loyalty-card.has-bg .card-progress-labels span { color: rgba(255,255,255,.78); }
-        .loyalty-card.has-bg .card-footer { border-top-color: rgba(255,255,255,.20); }
-        .loyalty-card.has-bg .card-progress-track { background: rgba(255,255,255,.22); }
-        .loyalty-card.has-bg .btn-see-rewards { border-color: rgba(255,255,255,.34); color: #fff; }
-        .loyalty-card.has-bg .btn-see-rewards:hover { background: rgba(255,255,255,.14); border-color: #fff; color: #fff; }
-        .loyalty-card.has-bg .card-reward-badge { background: rgba(255,255,255,.16);
-            border-color:var(--faint); color: #fff; }
+        /* Le style de la carte de fidelite vit desormais dans css/keepo-card.css,
+           partage avec l'apercu du Studio Design Card cote commercant. */
 
     </style>
 </head>
@@ -1747,172 +1679,66 @@
             const design    = cardDesigns[card.merchant_id] || {};
             const shopName  = design.title || (card.merchant_profile ? card.merchant_profile.name : "Commerce Partenaire");
             const points    = card.points_balance || 0;
-            const initial   = shopName.charAt(0).toUpperCase();
             const goal      = rewardGoals[card.merchant_id] || 10;
-            const pct       = Math.min((points / goal) * 100, 100);
-            const remaining = Math.max(goal - points, 0);
             const hasReward = points >= goal;
-            const shopSafe  = shopName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            const shopSafe  = shopName.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-            // ── Couleurs depuis le studio du commerçant ──
-            let cardColor = '#16B8C4'; // fallback
-            let cardBgImg = null;
-            let cardOverlayOpacity = 0.5;
-            let cardLayers = [];   // textes / images / icones ajoutes dans le Studio
+            // ── Habillage defini par le commercant dans le Studio ──
+            let cardColor  = design.color || '#16B8C4';
             let cardStudio = null;
-
-            if (design.color) cardColor = design.color;
-
             if (design.studio_json) {
                 try {
-                    const studio = JSON.parse(design.studio_json);
-                    if (studio.borderColor) cardColor = studio.borderColor;
-                    if (studio.bg)          cardBgImg = studio.bg;
-                    if (studio.opacity)     cardOverlayOpacity = Number(studio.opacity) / 100;
-                    if (Array.isArray(studio.layers)) cardLayers = studio.layers;
-                    cardStudio = studio;   // options d apparence (fond, forme, typographie)
-                } catch(e) {}
+                    cardStudio = JSON.parse(design.studio_json);
+                    if (cardStudio.borderColor) cardColor = cardStudio.borderColor;
+                } catch (e) { console.warn('studio_json illisible', e); }
             }
 
-            const cardGlow  = hexToGlow(cardColor);
-            // Apparence composee dans le Studio : fond (uni / degrade / image), motif,
-            // hauteur, arrondi, bordure et ombre. Valeurs de repli = ancien rendu.
-            const S = cardStudio || {};
-            let bgStyle = '';
-            if (S.bgType === 'gradient') {
-                bgStyle = `background-image:linear-gradient(${S.gradAngle??135}deg, ${S.grad1||'#5A32A0'}, ${S.grad2||'#1FA5A8'});`;
-            } else if (S.bgType === 'color') {
-                bgStyle = `background-color:${S.bg1||'#1B1533'};`;
-            } else if (cardBgImg) {
-                bgStyle = `background-image:url('${cardBgImg}');background-size:cover;background-position:center;`;
-            }
-            if (S.cardH)   bgStyle += `min-height:${S.cardH}px;`;
-            if (S.cardR !== undefined) bgStyle += `border-radius:${S.cardR}px;`;
-            if (S.borderW) bgStyle += `border:${S.borderW}px solid ${cardColor};`;
-            if (S.shadow !== undefined) bgStyle += `box-shadow:${['none','0 6px 16px -10px rgba(0,0,0,.45)','0 12px 28px -14px rgba(0,0,0,.55)','0 22px 44px -18px rgba(0,0,0,.7)'][S.shadow]||''};`;
-            // Motif optionnel, dessine au-dessus du fond
-            const patEl = (S.pattern && S.pattern !== 'none') ? (() => {
-                const c = 'rgba(255,255,255,.14)';
-                const css = S.pattern === 'dots'
-                    ? `background-image:radial-gradient(${c} 1.4px, transparent 1.4px);background-size:14px 14px;`
-                    : S.pattern === 'lines'
-                    ? `background-image:repeating-linear-gradient(45deg, ${c} 0 1px, transparent 1px 11px);`
-                    : `background-image:linear-gradient(${c} 1px, transparent 1px),linear-gradient(90deg, ${c} 1px, transparent 1px);background-size:22px 22px;`;
-                return `<div style="position:absolute;inset:0;z-index:1;pointer-events:none;${css}"></div>`;
-            })() : '';
-            // Overlay sombre si image de fond (lisibilité)
-            // Calques composes par le commercant dans le Studio (positions en %)
-            const layersEl = cardLayers.length ? `<div style="position:absolute;inset:0;z-index:2;pointer-events:none;">` +
-                cardLayers.map(l => {
-                    const pos = `position:absolute;left:${l.x}%;top:${l.y}%;transform:translate(-50%,-50%) rotate(${l.rot||0}deg);`;
-                    if (l.type === "text") {
-                        return `<div style="${pos}font-size:${l.size}px;font-family:${l.font};font-weight:${l.weight};color:${l.color};white-space:pre-wrap;max-width:92%;">${escapeHtml(l.text||"")}</div>`;
-                    }
-                    if (l.type === "icon") {
-                        return `<div style="${pos}font-size:${l.size}px;color:${l.color};"><i class="fa-solid fa-${escapeHtml(l.icon||"star")}"></i></div>`;
-                    }
-                    return `<div style="${pos}width:${l.w}%;opacity:${(l.opacity??100)/100};"><img src="${l.src}" alt="" style="width:100%;display:block;border-radius:${l.radius||0}px;"></div>`;
-                }).join("") + `</div>` : "";
-
-            const overlayEl = cardBgImg
-                ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,${cardOverlayOpacity});border-radius:inherit;pointer-events:none;z-index:0;"></div>`
-                : '';
-
-            // ── Plan du commerçant — détermine les fonctionnalités visibles ──
-            const merchantPlan = merchantPlans[card.merchant_id] || 'essential';
+            // ── Plan du commercant — determine les fonctionnalites visibles ──
+            const merchantPlan  = merchantPlans[card.merchant_id] || 'essential';
             const isMerchantPro = merchantPlan !== 'essential';
 
-            // ── VIP Tier badge (Pro uniquement) ──
-            const lifetime = card.lifetime_points || 0;
+            // ── Niveau VIP (Pro uniquement) ──
+            const lifetime  = card.lifetime_points || 0;
             const silverThr = design.tier_silver_threshold ?? 500;
             const goldThr   = design.tier_gold_threshold   ?? 2000;
-            let tierBadge = '';
+            let tier = null;
             if (isMerchantPro) {
                 if (lifetime >= goldThr) {
-                    tierBadge = `<div class="tier-badge tier-gold" title="Niveau Gold — multiplicateur appliqué"><i class="fa-solid fa-medal" style="color:#ffd700;"></i> GOLD</div>`;
+                    tier = { cls:'gold', color:'#ffd700', label:'GOLD',
+                             title:'Niveau Gold — multiplicateur appliqué' };
                 } else if (lifetime >= silverThr) {
-                    tierBadge = `<div class="tier-badge tier-silver" title="Niveau Silver — multiplicateur appliqué"><i class="fa-solid fa-medal" style="color:#c0c0c0;"></i> SILVER</div>`;
+                    tier = { cls:'silver', color:'#c0c0c0', label:'SILVER',
+                             title:'Niveau Silver — multiplicateur appliqué' };
                 } else {
-                    tierBadge = `<div class="tier-badge tier-bronze" title="Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver"><i class="fa-solid fa-medal" style="color:#cd7f32;"></i> BRONZE</div>`;
+                    tier = { cls:'bronze', color:'#cd7f32', label:'BRONZE',
+                             title:`Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver` };
                 }
             }
-
-            // ── Badge multi-boutique ──
-            const boutiques = merchantBoutiquesMap[card.merchant_id] || [];
-            const boutiquesCount = boutiques.length;
-            const boutiquesBadge = boutiquesCount > 1
-                ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;margin-bottom:4px;"><i class="fa-solid fa-store" style="font-size:9px;"></i> Valable dans ${boutiquesCount} boutiques</div>`
-                : '';
 
             // ── Mode tampons ? (sinon points classiques) ──
             const isStampMode = (design.loyalty_mode === 'stamps');
             const stampGoal   = isStampMode ? (design.stamps_required || 10) : goal;
-            const stampReward = (design.stamp_reward || '').trim();
             const rewardReady = isStampMode ? (points >= stampGoal) : hasReward;
 
-            let middleBlock, footerStatus;
-            if (isStampMode) {
-                const filled = Math.min(points, stampGoal);
-                let cells = '';
-                for (let s = 0; s < stampGoal; s++) {
-                    const on = s < filled;
-                    const _sz = S.stampSize || 21, _ic = S.stampIcon || 'star';
-                    const _on = S.stampOn || cardColor, _off = S.stampOff || null;
-                    cells += `<span style="width:${_sz}px;height:${_sz}px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(_sz*0.48)}px;background:${on?_on:(_off?`color-mix(in srgb, ${_off} 16%, transparent)`:'var(--bg-2)')};color:${on?'#fff':(_off?`color-mix(in srgb, ${_off} 55%, transparent)`:'var(--faint)')};border:1px solid ${on?_on:(_off?`color-mix(in srgb, ${_off} 28%, transparent)`:'var(--border-2)')};">${on?`<i class="fa-solid fa-${_ic}"></i>`:''}</span>`;
-                }
-                middleBlock = `
-                        <div style="display:flex;flex-wrap:wrap;gap:${S.stampGap||6}px;margin:12px 0 6px;">${cells}</div>
-                        <div style="font-size:11px;color:var(--sub);">
-                            ${rewardReady
-                                ? `🎉 Carte pleine — ${stampReward || 'récompense'} à retirer !`
-                                : (stampReward ? `Récompense : <strong style="color:${cardColor}">${stampReward}</strong>` : `${stampGoal} tampons = 1 récompense`)}
-                        </div>`;
-                footerStatus = rewardReady
-                    ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> À retirer en caisse !</div>`
-                    : `<div style="font-size:10px;color:var(--muted);">encore ${Math.max(stampGoal-points,0)} tampon${(stampGoal-points)>1?'s':''}</div>`;
-            } else {
-                middleBlock = `
-                        <div class="card-progress-wrap">
-                            <div class="card-progress-labels">
-                                <span>${points} pts</span>
-                                <span>Objectif : ${goal} pts</span>
-                            </div>
-                            <div class="card-progress-track">
-                                <div class="card-progress-fill" data-width="${pct}%" style="width:0%;background:${cardColor}"></div>
-                            </div>
-                        </div>`;
-                footerStatus = hasReward
-                    ? `<div class="card-reward-badge" style="color:${cardColor};border-color:${hexToGlow(cardColor,0.35)};background:${hexToGlow(cardColor,0.1)};"><i class="fa-solid fa-gift"></i> Récompense dispo !</div>`
-                    : `<div style="font-size:10px;color:var(--muted);">encore ${remaining} pt${remaining > 1 ? 's' : ''}</div>`;
-            }
-
-            const cardHtml = `
-                <div class="loyalty-card${cardBgImg ? ' has-bg' : ''}"
-                    style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
-                    onclick="openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}', '${merchantPlan}')">
-                    ${overlayEl}
-                    ${patEl}
-                    ${layersEl}
-                    <div style="position:relative;z-index:1;">
-                        <div class="card-top">
-                            <div class="card-logo-chip">${initial}<img src="/logo/${card.merchant_id}?fb=none" alt="" loading="lazy" onerror="this.remove()"></div>
-                            <div class="card-points-block">
-                                <div class="card-points-num" style="color:${cardColor}">${isStampMode ? `${Math.min(points,stampGoal)}/${stampGoal}` : points}</div>
-                                <div class="card-points-lbl">${isStampMode
-                                    ? '<i class="fa-solid fa-stamp"></i> Tampons' : 'Points'}</div>
-                            </div>
-                        </div>
-                        ${tierBadge}
-                        <div class="merchant-name" style="${S.titleFont?`font-family:${S.titleFont};`:''}${S.titleSize?`font-size:${S.titleSize}px;`:''}${S.align?`text-align:${S.align};`:''}${S.titleShadow?'text-shadow:0 2px 8px rgba(0,0,0,.55);':''}">${escapeHtml(shopName)}</div>
-                        ${boutiquesBadge}
-                        ${middleBlock}
-                        <div class="card-footer" style="gap:8px;flex-wrap:wrap;">
-                            ${isStampMode ? '' : `<button class="btn-see-rewards" onclick="event.stopPropagation(); openRewardsSheet('${card.merchant_id}', '${shopSafe}', ${points})" style="border-color:${hexToGlow(cardColor, 0.4)};color:${cardColor};"><i class="fa-solid fa-gift"></i> Voir les récompenses</button>`}
-                            ${footerStatus}
-                        </div>
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', cardHtml);
+            // Le meme moteur alimente l'apercu du Studio cote commercant :
+            // ce que le commercant regle est exactement ce qui s'affiche ici.
+            container.insertAdjacentHTML('beforeend', KeepoCard.render({
+                studio:         cardStudio,
+                accent:         cardColor,
+                shopName:       shopName,
+                logoUrl:        `/logo/${card.merchant_id}?fb=none`,
+                points:         points,
+                goal:           goal,
+                stampMode:      isStampMode,
+                stampGoal:      stampGoal,
+                stampReward:    (design.stamp_reward || '').trim(),
+                tier:           tier,
+                boutiques:      (merchantBoutiquesMap[card.merchant_id] || []).length,
+                showRewardsBtn: true,
+                onclick:        `openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}', '${merchantPlan}')`,
+                rewardsOnclick: `event.stopPropagation(); openRewardsSheet('${card.merchant_id}', '${shopSafe}', ${points})`,
+                animate:        true
+            }));
 
             // ── Confetti : 1 fois par session si récompense débloquée ──
             if (rewardReady) {

@@ -1,0 +1,160 @@
+/* ══════════════════════════════════════════════════════════════════
+   KEEPO — Carte de fidélité (rendu unique)
+
+   Ce fichier est la SEULE définition visuelle de la carte. Il est chargé
+   par l'application client (dashboard-client.html) et par l'aperçu du
+   Studio Design Card (dashboard-commercant.html), afin que le commerçant
+   voie exactement, au pixel près, ce que verront ses clients.
+
+   Le format de la carte (largeur, arrondi, marges, ombre) est volontairement
+   figé : il appartient à l'application client, pas au Studio.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Jeu de variables de repli : permet d'afficher la carte dans une page qui
+   n'a pas le thème du client (le tableau de bord commerçant, par exemple).
+   Dans l'app client, ce sont les variables du thème en cours qui servent. */
+.kc-scope {
+    --card-bg: #FFFFFF;
+    --bg-2: #F1F1F6;
+    --border: #EBEBF1;
+    --border-2: #DEDEE7;
+    --text: #101018;
+    --sub: #3A3A48;
+    --muted: #6B6B7B;
+    --faint: #9494A4;
+    --grad: linear-gradient(135deg, #5A32A0 0%, #3F63A4 52%, #1FA5A8 100%);
+    --acc: #4B45A6;
+    --acc-soft: #F0EFFA;
+    --acc-line: rgba(75,69,166,.20);
+    --gold: #B07A12;
+    --gold-glow: rgba(176,122,18,.18);
+    --shadow-sm: 0 2px 6px rgba(16,16,24,.06);
+    --shadow-md: 0 12px 28px -14px rgba(16,16,24,.26), 0 2px 6px rgba(16,16,24,.04);
+    --r: 18px;
+    --r-xs: 9px;
+    --ease: cubic-bezier(.16,1,.3,1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+    text-align: left;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+.kc-host { container-type: inline-size; }
+.kc-scope *, .kc-scope *::before, .kc-scope *::after {
+    box-sizing: border-box; margin: 0; padding: 0;
+}
+
+/* ─── La carte ─────────────────────────────────────────────────── */
+/* La carte impose sa typographie et son interligne. Les pages hôtes ont des
+   règles universelles (css/style.css impose DM Sans à tout élément) : sans ce
+   verrou, la même carte ne se composerait pas pareil selon la page. Les polices
+   choisies dans le Studio restent prioritaires : elles sont posées en style
+   en-ligne. Les <i> sont exclus pour ne pas casser les icônes Font Awesome. */
+.loyalty-card, .loyalty-card *:not(i) {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+.loyalty-card { line-height: 1.6; }
+
+.loyalty-card {
+    position: relative; border-radius: var(--r); padding: 20px; cursor: pointer;
+    background: var(--card-bg); border: 1px solid var(--border); overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform .4s var(--ease), box-shadow .4s var(--ease);
+    animation: cardIn .6s var(--ease) both;
+}
+@keyframes cardIn { from { opacity: 0; transform: translateY(16px); } }
+.loyalty-card::before {              /* liseré coloré du commerce */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: var(--card-accent, var(--grad));
+}
+.loyalty-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.loyalty-card:active { transform: scale(.988); }
+
+/* Aperçu figé : ni animation d'entrée, ni réaction au survol. */
+.kc-static .loyalty-card,
+.loyalty-card.kc-static { animation: none; cursor: default; }
+.kc-static .loyalty-card:hover,
+.loyalty-card.kc-static:hover { transform: none; box-shadow: var(--shadow-sm); }
+.kc-static .loyalty-card:active,
+.loyalty-card.kc-static:active { transform: none; }
+
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+/* Pastille du logo — aucun fond ni contour : le logo du commerçant peut être
+   transparent, on ne lui ajoute donc jamais de cadre. L'image est contenue
+   (jamais rognée). L'initiale ne sert que s'il n'y a aucun logo. */
+.card-logo-chip {
+    position: relative; width: 44px; height: 44px; flex-shrink: 0;
+    display: grid; place-items: center;
+    font-size: 17px; font-weight: 700; line-height: 1;
+    color: var(--card-accent, var(--acc));
+}
+.card-logo-chip.has-img { color: transparent; }
+.card-logo-chip img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; display: block;
+}
+
+.card-points-block { text-align: right; }
+.card-points-num { font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -.045em;
+    color: var(--card-accent, var(--acc)); font-variant-numeric: tabular-nums; }
+.card-points-lbl { font-size: 10.5px; color: var(--muted); font-weight: 500;
+    text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+.merchant-name { font-size: 17px; font-weight: 650; letter-spacing: -.025em; margin-top: 12px; }
+.card-progress-wrap { margin-top: 14px; }
+.card-progress-labels { display: flex; justify-content: space-between; font-size: 11.5px;
+    color: var(--muted); margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.card-progress-track { height: 6px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
+.card-progress-fill { height: 100%; border-radius: 99px; background: var(--card-accent, var(--grad));
+    transition: width 1.1s var(--ease); }
+.card-stamps-row { display: flex; flex-wrap: wrap; margin: 12px 0 6px; }
+.card-stamps-note { font-size: 11px; color: var(--sub); }
+.card-footer { display: flex; align-items: center; justify-content: space-between;
+    margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--border); }
+.card-reward-badge {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600;
+    padding: 5px 11px; border-radius: 999px; border: 1px solid var(--acc-line);
+    background: var(--acc-soft); color: var(--acc);
+}
+.card-foot-note { font-size: 10px; color: var(--muted); }
+.btn-see-rewards {
+    background: none; border: 1px solid var(--border-2); color: var(--sub); font-size: 12.5px;
+    font-weight: 550; padding: 7px 13px; border-radius: 999px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; transition: all .25s var(--ease);
+    font-family: inherit;
+}
+.btn-see-rewards:hover { border-color: var(--acc); color: var(--acc); background: var(--acc-soft); }
+.tier-badge {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px; margin-top: 10px; letter-spacing: .04em;
+}
+.tier-gold { background: rgba(176,122,18,.10); color: var(--gold); border: 1px solid var(--gold-glow); }
+.tier-silver { background: rgba(120,120,140,.10); color: #6E6E82; border: 1px solid rgba(120,120,140,.22); }
+.tier-bronze { background: rgba(160,100,60,.10); color: #93613C; border: 1px solid rgba(160,100,60,.20); }
+
+/* Carte habillée par le Studio (fond uni, dégradé ou photo) : le contenu
+   passe en clair pour rester lisible par-dessus. */
+.loyalty-card.has-bg { border-color: rgba(255,255,255,.16); }
+.loyalty-card.has-bg .merchant-name,
+.loyalty-card.has-bg .card-points-num,
+.loyalty-card.has-bg .card-progress-labels { color: #fff; }
+.loyalty-card.has-bg .card-logo-chip { color: #fff; }
+.loyalty-card.has-bg .card-points-lbl,
+.loyalty-card.has-bg .card-stamps-note,
+.loyalty-card.has-bg .card-foot-note,
+.loyalty-card.has-bg .card-progress-labels span { color: rgba(255,255,255,.78); }
+.loyalty-card.has-bg .card-footer { border-top-color: rgba(255,255,255,.20); }
+.loyalty-card.has-bg .card-progress-track { background: rgba(255,255,255,.22); }
+.loyalty-card.has-bg .btn-see-rewards { border-color: rgba(255,255,255,.34); color: #fff; }
+.loyalty-card.has-bg .btn-see-rewards:hover { background: rgba(255,255,255,.14); border-color: #fff; color: #fff; }
+.loyalty-card.has-bg .card-reward-badge { background: rgba(255,255,255,.16);
+    border-color: var(--faint); color: #fff; }
+
+/* La carte s adapte a SA propre largeur, pas a celle de la fenetre : ainsi
+   l apercu du Studio (354 px, soit un telephone de 390 px) rend toujours la
+   meme chose que l app client sur ce meme telephone. */
+@container (max-width: 340px) {
+    .loyalty-card { padding: 16px; }
+    .card-points-num { font-size: 26px; }
+    .merchant-name { font-size: 15.5px; }
+}
