@@ -4236,7 +4236,11 @@
     const _v = (id, d) => { const e = _g(id); return e ? e.value : d; };
 
     /* ── Sections repliables ── */
-    function studioToggleSec(btn) { btn.closest('.st-sec').classList.toggle('open'); }
+    function studioToggleSec(btn) {
+        // Les sections portent la classe .sx ; on protege aussi contre un clic hors section.
+        const sec = btn.closest('.sx');
+        if (sec) sec.classList.toggle('open');
+    }
 
     /* ── Type de fond / motif / alignement ── */
     function studioSetBgType(t) {
