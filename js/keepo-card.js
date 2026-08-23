@@ -9,6 +9,9 @@
    l'aperçu est le rendu client, pas une imitation. Toute évolution de la
    carte se fait ici et se répercute des deux côtés.
 
+   La carte ne contient QUE ce que le Studio pilote : niveau VIP, boutiques
+   et autres informations de compte vivent dans la fenetre du QR code.
+
    Le FORMAT de la carte (largeur, arrondi, marges, ombre) n'est pas
    réglable : il appartient à l'application client. Le Studio pilote
    l'habillage (fond, motif, typographies, couleurs, logo, tampons).
@@ -89,8 +92,6 @@ window.KeepoCard = (function () {
      *   stampMode      {bool}    programme à tampons
      *   stampGoal      {number}  nombre de tampons de la carte
      *   stampReward    {string}  récompense annoncée
-     *   tier           {object}  {cls, color, label, title} ou null
-     *   boutiques      {number}  nombre de boutiques (badge si > 1)
      *   showRewardsBtn {bool}    bouton « Voir les récompenses »
      *   onclick, rewardsOnclick {string} gestionnaires (vides pour l'aperçu)
      *   animate        {bool}    animation d'entrée + barre progressive
@@ -202,16 +203,6 @@ window.KeepoCard = (function () {
         var nameEl = (S.show ? S.show.title !== false : true)
             ? '<div class="merchant-name" style="' + nameStyle + '">' + esc(shopName) + '</div>' : '';
 
-        /* ── Niveau VIP et multi-boutique ── */
-        var tierEl = o.tier
-            ? '<div class="tier-badge tier-' + esc(o.tier.cls) + '" title="' + esc(o.tier.title || '') + '">'
-            + '<i class="fa-solid fa-medal" style="color:' + css(o.tier.color, '#cd7f32') + ';"></i> '
-            + esc(o.tier.label) + '</div>' : '';
-        var boutiquesEl = num(o.boutiques, 0) > 1
-            ? '<div class="card-foot-note" style="margin-top:2px;margin-bottom:4px;">'
-            + '<i class="fa-solid fa-store" style="font-size:9px;"></i> Valable dans ' + num(o.boutiques, 0)
-            + ' boutiques</div>' : '';
-
         /* ── Bloc central : tampons ou barre de progression ── */
         var middle = '';
         if (stamps) {
@@ -269,7 +260,7 @@ window.KeepoCard = (function () {
              + overlayEl + patEl + layersEl
              + '<div style="position:relative;z-index:3;">'
              +   '<div class="card-top">' + chipEl + ptsEl + '</div>'
-             +   tierEl + nameEl + boutiquesEl + middle
+             +   nameEl + middle
              +   '<div class="card-footer" style="gap:8px;flex-wrap:wrap;">' + rewardsBtn + footStatus + '</div>'
              + '</div></div></div>';
     }

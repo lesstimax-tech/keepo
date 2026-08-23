@@ -25,7 +25,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
-    <script src="js/keepo-card.js?v=1"></script>
+    <script src="js/keepo-card.js?v=2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -445,6 +445,10 @@
             padding: 5px 12px; border-radius: 999px; margin-bottom: 10px;
         }
         #modal-merchant-name { font-size: 21px; font-weight: 700; letter-spacing: -.03em; }
+        #modal-tier { display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+            justify-content: center; margin-top: 8px; }
+        #modal-tier .tier-badge { margin-top: 0; }
+        .modal-tier-note { font-size: 11.5px; color: var(--muted); }
         .modal-sub { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
         .qr-zone {
             background: #fff; border: 1px solid var(--border); border-radius: var(--r);
@@ -967,6 +971,7 @@
         <div class="sheet-handle"></div>
         <div class="modal-merchant-chip"><i class="fa-solid fa-store" style="font-size:11px;"></i> Commerce partenaire</div>
         <h3 id="modal-merchant-name">Magasin</h3>
+        <div id="modal-tier" style="display:none;"></div>
         <p class="modal-sub">Faites scanner ce code par votre commerçant</p>
 
         <div class="qr-zone" id="client-qr-rendering-zone"></div>
@@ -1698,21 +1703,23 @@
             const isMerchantPro = merchantPlan !== 'essential';
 
             // ── Niveau VIP (Pro uniquement) ──
+            // Il ne figure plus sur la carte : la carte n'affiche que ce que le
+            // commerçant a composé dans son Studio. On le garde de côté pour la
+            // fenêtre du QR code, avec les autres informations de compte.
             const lifetime  = card.lifetime_points || 0;
             const silverThr = design.tier_silver_threshold ?? 500;
             const goldThr   = design.tier_gold_threshold   ?? 2000;
-            let tier = null;
             if (isMerchantPro) {
-                if (lifetime >= goldThr) {
-                    tier = { cls:'gold', color:'#ffd700', label:'GOLD',
-                             title:'Niveau Gold — multiplicateur appliqué' };
-                } else if (lifetime >= silverThr) {
-                    tier = { cls:'silver', color:'#c0c0c0', label:'SILVER',
-                             title:'Niveau Silver — multiplicateur appliqué' };
-                } else {
-                    tier = { cls:'bronze', color:'#cd7f32', label:'BRONZE',
-                             title:`Niveau Bronze — gagnez ${silverThr - lifetime} pts pour Silver` };
-                }
+                cardTiers[card.merchant_id] = (lifetime >= goldThr)
+                    ? { cls:'gold', color:'#ffd700', label:'GOLD',
+                        note:'Multiplicateur de points appliqué' }
+                    : (lifetime >= silverThr)
+                    ? { cls:'silver', color:'#c0c0c0', label:'SILVER',
+                        note:'Multiplicateur de points appliqué' }
+                    : { cls:'bronze', color:'#cd7f32', label:'BRONZE',
+                        note:`Encore ${silverThr - lifetime} pts pour passer Silver` };
+            } else {
+                delete cardTiers[card.merchant_id];
             }
 
             // ── Mode tampons ? (sinon points classiques) ──
@@ -1732,8 +1739,6 @@
                 stampMode:      isStampMode,
                 stampGoal:      stampGoal,
                 stampReward:    (design.stamp_reward || '').trim(),
-                tier:           tier,
-                boutiques:      (merchantBoutiquesMap[card.merchant_id] || []).length,
                 showRewardsBtn: true,
                 onclick:        `openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}', '${merchantPlan}')`,
                 rewardsOnclick: `event.stopPropagation(); openRewardsSheet('${card.merchant_id}', '${shopSafe}', ${points})`,
@@ -1759,9 +1764,25 @@
         }, 120);
     }
 
+    // Niveau VIP par commerce, alimenté au rendu des cartes et lu par la
+    // fenêtre du QR code (il n'apparaît plus sur la carte elle-même).
+    const cardTiers = {};
+
     // ─── QR MODAL ───
     async function openClientCardPopup(merchantName, currentPoints, merchantId, merchantPlan) {
         document.getElementById('modal-merchant-name').innerText = merchantName;
+
+        // Niveau VIP — déplacé ici depuis la carte
+        const tier   = cardTiers[merchantId];
+        const tierEl = document.getElementById('modal-tier');
+        if (tierEl) {
+            tierEl.innerHTML = tier
+                ? `<span class="tier-badge tier-${tier.cls}">
+                     <i class="fa-solid fa-medal" style="color:${tier.color};"></i> ${tier.label}
+                   </span><span class="modal-tier-note">${escapeHtml(tier.note)}</span>`
+                : '';
+            tierEl.style.display = tier ? 'flex' : 'none';
+        }
         document.getElementById('modal-current-points').innerText = `${currentPoints} Pts`;
 
         // Stocke pour les actions Phase 3 (wheel / gift)
