@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
     <link rel="manifest" href="/manifest.json">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#16B8C4">
+    <meta name="theme-color" content="var(--secondary-accent)">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,7 +18,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,28 +27,71 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
+        /* ══════════════════════════════════════════════════════════
+           Palette — clair par défaut, sombre via [data-theme="dark"].
+           Les noms historiques sont conservés : tout ce qui les utilise
+           bascule automatiquement d'un thème à l'autre.
+           ══════════════════════════════════════════════════════════ */
         :root {
-            --bg-dark: #050409;
-            --bg-mid: #0c0a14;
-            --bg-card: rgba(16, 13, 26, 0.8);
-            --bg-card-hover: rgba(22, 18, 36, 0.9);
-            --glass-border: rgba(255, 255, 255, 0.07);
-            --glass-border-bright: rgba(255, 255, 255, 0.14);
-            --text-main: #f0eeff;
-            --text-muted: #6e6b88;
-            --text-sub: #9b97b5;
-            --primary-accent: #ff4d82;
-            --primary-glow: rgba(255, 77, 130, 0.25);
-            --secondary-accent: #16B8C4;
-            --secondary-glow: rgba(14,124,140, 0.2);
-            --tertiary-accent: #5B3AA0;
-            --tertiary-glow: rgba(91,58,160, 0.2);
-            --essential-color: #ffa040;
-            --pro-color: #00b4d8;
-            --success: #22d47a;
-            --warning: #ffb340;
-            --danger: #ff4d6d;
+            --bg-dark: #F5F5F9;              /* fond de l'application */
+            --bg-mid: #FFFFFF;               /* surfaces */
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #FAFAFC;
+            --glass-border: #EAEAF0;
+            --glass-border-bright: #DCDCE6;
+            --text-main: #101018;
+            --text-muted: #6B6B7B;
+            --text-sub: #3A3A48;
+
+            /* Accents repris du logo */
+            --primary-accent: #4B45A6;
+            --primary-glow: rgba(75, 69, 166, 0.20);
+            --secondary-accent: #1B8E97;
+            --secondary-glow: rgba(31, 165, 168, 0.18);
+            --tertiary-accent: #5A32A0;
+            --tertiary-glow: rgba(90, 50, 160, 0.18);
+            --grad: linear-gradient(135deg, #5A32A0 0%, #3F63A4 52%, #1FA5A8 100%);
+            --grad-soft: linear-gradient(135deg, rgba(90,50,160,.10), rgba(31,165,168,.10));
+
+            --essential-color: #B07A12;
+            --pro-color: #1B8E97;
+            --success: #12925A;
+            --warning: #B07A12;
+            --danger: #D6336C;
+
+            --shadow-sm: 0 2px 6px rgba(16,16,24,.06);
+            --shadow-md: 0 12px 28px -14px rgba(16,16,24,.26), 0 2px 6px rgba(16,16,24,.04);
+            --ease: cubic-bezier(.16,1,.3,1);
             --sidebar-w: 260px;
+        }
+        :root[data-theme="dark"] {
+            --bg-dark: #08070E;
+            --bg-mid: #0E0C18;
+            --bg-card: #14111F;
+            --bg-card-hover: #1A1628;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-bright: rgba(255, 255, 255, 0.16);
+            --text-main: #F1EFFA;
+            --text-muted: #7E7A96;
+            --text-sub: #A8A4BE;
+
+            --primary-accent: #8B7CF8;
+            --primary-glow: rgba(139, 124, 248, 0.24);
+            --secondary-accent: #2FC7CB;
+            --secondary-glow: rgba(47, 199, 203, 0.22);
+            --tertiary-accent: #9C6BFF;
+            --tertiary-glow: rgba(156, 107, 255, 0.22);
+            --grad: linear-gradient(135deg, #7A4BD0 0%, #5B7FD0 52%, #2FC7CB 100%);
+            --grad-soft: linear-gradient(135deg, rgba(122,75,208,.18), rgba(47,199,203,.16));
+
+            --essential-color: #FFB35C;
+            --pro-color: #2FC7CB;
+            --success: #2ED47F;
+            --warning: var(--warning);
+            --danger: #FF5C7A;
+
+            --shadow-sm: 0 2px 6px rgba(0,0,0,.4);
+            --shadow-md: 0 14px 32px -14px rgba(0,0,0,.65);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,7 +101,7 @@
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
-            font-family: 'DM Sans', sans-serif;
+            font-family: Inter, sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -123,7 +166,7 @@
             letter-spacing: 1.5px;
             text-transform: uppercase;
             padding: 14px 14px 6px;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
 
         .nav-btn {
@@ -135,7 +178,7 @@
             display: flex; align-items: center; gap: 11px;
             transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%; position: relative; overflow: hidden;
-            font-family: 'DM Sans', sans-serif;
+            font-family: Inter, sans-serif;
         }
         .nav-btn::before {
             content: '';
@@ -145,7 +188,7 @@
             transition: height 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .nav-btn i { font-size: 14px; width: 18px; text-align: center; transition: color 0.2s; }
-        .nav-btn:hover { color: white; background: rgba(255, 255, 255, 0.05); }
+        .nav-btn:hover { color: white; background:var(--bg-card-hover); }
         .nav-btn:hover::before { height: 60%; }
         .nav-btn.active {
             color: var(--secondary-accent);
@@ -159,7 +202,7 @@
             margin-left: auto; font-size: 9px; font-weight: 700;
             background: var(--secondary-accent); color: #000;
             border-radius: 20px; padding: 2px 7px;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
         .nav-lock {
             margin-left: auto; font-size: 10px;
@@ -200,7 +243,7 @@
             border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
             font-size: 20px; font-weight: 900;
-            color: white; font-family: 'Bricolage Grotesque', sans-serif;
+            color: white; font-family: Inter, sans-serif;
             flex-shrink: 0; overflow: hidden;
         }
         .merchant-avatar.has-photo { color: transparent; }
@@ -214,7 +257,7 @@
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 28px; font-weight: 900;
-            color: white; font-family: 'Bricolage Grotesque', sans-serif;
+            color: white; font-family: Inter, sans-serif;
             flex-shrink: 0; position: relative; cursor: pointer;
             overflow: hidden;
             border: 2px solid rgba(14,124,140,0.25);
@@ -235,7 +278,7 @@
         .avatar-uploader-actions { display: flex; flex-direction: column; gap: 6px; }
         .avatar-uploader-info { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
         #merchant-title {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 22px; font-weight: 800;
             color: var(--text-main);
         }
@@ -248,7 +291,7 @@
             padding: 6px 14px; border-radius: 50px;
             font-size: 10px; font-weight: 800;
             text-transform: uppercase;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             letter-spacing: 0.5px;
         }
         .plan-essential { background: rgba(255, 160, 64, 0.1); color: var(--essential-color); border: 1px solid rgba(255, 160, 64, 0.25); }
@@ -256,14 +299,14 @@
 
         .header-notif-btn {
             width: 38px; height: 38px;
-            background: rgba(255,255,255,0.04);
+            background:var(--bg-card-hover);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: all 0.2s; color: var(--text-sub);
             font-size: 14px;
         }
-        .header-notif-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+        .header-notif-btn:hover { background:var(--bg-card-hover); color: white; }
 
         /* ─── PANELS ─── */
         .panel-view { display: none; animation: panelReveal 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -274,7 +317,7 @@
         }
 
         .panel-title {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 26px; font-weight: 900;
             color: var(--text-main);
             margin-bottom: 6px;
@@ -300,7 +343,7 @@
         .card:hover { border-color: var(--glass-border-bright); }
 
         .card-title {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 15px; font-weight: 800;
             color: var(--text-main);
             margin-bottom: 18px;
@@ -333,18 +376,18 @@
         }
         .stat-card-icon {
             width: 38px; height: 38px; border-radius: 11px;
-            background: rgba(255,255,255,0.04);
+            background:var(--bg-card-hover);
             display: flex; align-items: center; justify-content: center;
             font-size: 16px;
             margin-bottom: 14px;
             border: 1px solid var(--glass-border);
         }
-        .stat-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; font-family: 'Bricolage Grotesque', sans-serif; }
+        .stat-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; font-family: Inter, sans-serif; }
         .stat-val {
             font-size: 30px; font-weight: 900;
             color: var(--accent-color, var(--secondary-accent));
             margin-top: 6px; line-height: 1;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .stat-delta { font-size: 11px; color: var(--success); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
@@ -352,7 +395,7 @@
 
         /* ─── PROGRESS BAR ─── */
         .progress-bar-wrap { margin-top: 10px; }
-        .progress-bar-track { height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+        .progress-bar-track { height: 4px; background:var(--bg-card-hover); border-radius: 4px; overflow: hidden; }
         .progress-bar-fill {
             height: 100%; border-radius: 4px;
             background: linear-gradient(90deg, var(--secondary-accent), var(--tertiary-accent));
@@ -366,7 +409,7 @@
             display: block; font-size: 10px; font-weight: 700;
             color: var(--text-muted); margin-bottom: 7px;
             text-transform: uppercase; letter-spacing: 0.6px;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
         .form-group input,
         .form-group select,
@@ -376,7 +419,7 @@
             border: 1px solid var(--glass-border);
             background: rgba(0, 0, 0, 0.35);
             color: var(--text-main);
-            font-family: 'DM Sans', sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 13px;
             transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
@@ -390,7 +433,7 @@
         .form-group select option { background: #110e1e; }
         .form-group input[type="file"] {
             padding: 9px 12px; font-size: 11px;
-            background: rgba(255,255,255,0.02); cursor: pointer;
+            background:var(--bg-card-hover); cursor: pointer;
         }
         .form-group input[type="color"] { height: 42px; padding: 3px; cursor: pointer; }
         .form-group textarea { resize: vertical; min-height: 120px; }
@@ -405,18 +448,18 @@
             border-radius: 11px; font-weight: 700;
             cursor: pointer; transition: all 0.22s;
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 13px; letter-spacing: 0.2px;
         }
         .btn-action:hover { opacity: 0.88; transform: translateY(-2px); box-shadow: 0 8px 24px var(--secondary-glow); }
         .btn-action:active { transform: translateY(0); }
 
         .btn-secondary {
-            background: rgba(255,255,255,0.05);
+            background:var(--bg-card-hover);
             color: var(--text-sub);
             border: 1px solid var(--glass-border);
         }
-        .btn-secondary:hover { background: rgba(255,255,255,0.08); color: white; box-shadow: none; }
+        .btn-secondary:hover { background:var(--bg-card-hover); color: white; box-shadow: none; }
 
         .btn-danger {
             background: rgba(255, 77, 109, 0.12);
@@ -452,23 +495,23 @@
         .lock-overlay .lock-title {
             font-size: 12px; font-weight: 800;
             color: var(--essential-color);
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             letter-spacing: 0.5px;
         }
         .lock-overlay .lock-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
         .lock-overlay .lock-cta {
             margin-top: 10px;
-            background: linear-gradient(135deg, #ff4d82, #ffc34d);
+            background: linear-gradient(135deg, var(--primary-accent), #ffc34d);
             color: #0d0c18; font-weight: 800;
             padding: 6px 14px; border-radius: 50px;
             font-size: 10px; letter-spacing: 0.5px;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
 
         /* ─── TABS ─── */
         .tab-bar {
             display: flex; gap: 4px;
-            background: rgba(255,255,255,0.03);
+            background:var(--bg-card-hover);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
             padding: 4px;
@@ -481,7 +524,7 @@
             background: none; color: var(--text-muted);
             font-size: 12px; font-weight: 600; cursor: pointer;
             transition: all 0.2s;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
         .tab-btn.active { background: rgba(14,124,140,0.1); color: var(--secondary-accent); }
         .tab-btn:hover:not(.active) { color: var(--text-main); }
@@ -507,7 +550,7 @@
         @keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
         .toast-icon { font-size: 18px; flex-shrink: 0; }
         .toast-body { flex: 1; }
-        .toast-title { font-size: 13px; font-weight: 700; font-family: 'Bricolage Grotesque', sans-serif; }
+        .toast-title { font-size: 13px; font-weight: 700; font-family: Inter, sans-serif; }
         .toast-msg { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
         .toast.success .toast-icon { color: var(--success); }
         .toast.error .toast-icon { color: var(--danger); }
@@ -540,9 +583,9 @@
             background: linear-gradient(135deg, var(--tertiary-accent), var(--primary-accent));
             border-radius: 50%; margin: 0 auto 16px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px; font-weight: 900; font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 28px; font-weight: 900; font-family: Inter, sans-serif;
         }
-        .modal-client-name { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 900; }
+        .modal-client-name { font-family: Inter, sans-serif; font-size: 22px; font-weight: 900; }
         .modal-client-email { color: var(--text-muted); font-size: 12px; margin: 4px 0 20px; }
 
         .modal-points-box {
@@ -550,8 +593,8 @@
             border: 1px solid rgba(14,124,140, 0.15);
             border-radius: 14px; padding: 16px; margin-bottom: 20px;
         }
-        .modal-points-label { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; font-family: 'Bricolage Grotesque', sans-serif; }
-        .modal-points-val { font-size: 30px; font-weight: 900; color: var(--secondary-accent); font-family: 'Bricolage Grotesque', sans-serif; }
+        .modal-points-label { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; font-family: Inter, sans-serif; }
+        .modal-points-val { font-size: 30px; font-weight: 900; color: var(--secondary-accent); font-family: Inter, sans-serif; }
 
         /* ─── REWARDS GRID ─── */
         .rewards-display-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 16px; }
@@ -566,7 +609,7 @@
         .product-preview-card:hover { transform: translateY(-4px); border-color: var(--glass-border-bright); }
         .product-preview-card::before { content:''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.3)); z-index: 1; pointer-events: none; }
         .product-preview-card * { position: relative; z-index: 2; text-align: left; }
-        .product-preview-card h4 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 14px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        .product-preview-card h4 { font-family: Inter, sans-serif; font-size: 14px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
         .reward-pts-badge {
             display: inline-block;
             background: rgba(14,124,140,0.15);
@@ -574,7 +617,7 @@
             color: var(--secondary-accent);
             padding: 3px 10px; border-radius: 20px;
             font-size: 12px; font-weight: 700;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
 
         /* ─── ITEMS-LIST TITLE ─── */
@@ -582,7 +625,7 @@
             margin-top: 28px; font-size: 14px; font-weight: 800;
             border-top: 1px solid var(--glass-border); padding-top: 22px;
             text-align: left;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             display: flex; align-items: center; gap: 8px;
         }
 
@@ -592,17 +635,17 @@
         /* ─── NOTIFICATION TYPE CARDS ─── */
         .notif-type-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 6px; }
         .notif-type-card {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            background:var(--bg-card-hover); border: 1px solid var(--glass-border);
             border-radius: 14px; padding: 14px 12px; cursor: pointer;
             text-align: center; transition: all .2s;
         }
-        .notif-type-card:hover { border-color: var(--glass-border-bright); background: rgba(255,255,255,0.05); }
+        .notif-type-card:hover { border-color: var(--glass-border-bright); background:var(--bg-card-hover); }
         .notif-type-card.active {
             border-color: rgba(14,124,140,0.4); background: rgba(14,124,140,0.07);
             box-shadow: 0 0 12px rgba(14,124,140,0.1);
         }
         .notif-type-card .ntc-icon { font-size: 22px; margin-bottom: 6px; }
-        .notif-type-card .ntc-title { font-size: 12px; font-weight: 800; font-family: 'Bricolage Grotesque', sans-serif; color: var(--text-main); }
+        .notif-type-card .ntc-title { font-size: 12px; font-weight: 800; font-family: Inter, sans-serif; color: var(--text-main); }
         .notif-type-card .ntc-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 
         /* ─── HISTORY TABLE ─── */
@@ -611,15 +654,15 @@
             font-size: 9px; font-weight: 700; color: var(--text-muted);
             text-transform: uppercase; letter-spacing: 0.8px;
             padding: 0 16px 8px; text-align: left;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
         .history-table td {
-            padding: 14px 16px; background: rgba(255,255,255,0.02);
+            padding: 14px 16px; background:var(--bg-card-hover);
             font-size: 13px;
         }
         .history-table td:first-child { border-radius: 10px 0 0 10px; }
         .history-table td:last-child { border-radius: 0 10px 10px 0; }
-        .history-table tr:hover td { background: rgba(255,255,255,0.04); }
+        .history-table tr:hover td { background:var(--bg-card-hover); }
 
         /* ─── SCAN TERMINAL ─── */
         .scan-target-ring {
@@ -663,7 +706,7 @@
         /* ─── TOGGLE SWITCH ─── */
         .toggle-wrap { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .toggle {
-            width: 42px; height: 24px; background: rgba(255,255,255,0.08);
+            width: 42px; height: 24px; background:var(--bg-card-hover);
             border-radius: 12px; position: relative; transition: background 0.25s;
             border: 1px solid var(--glass-border); cursor: pointer; flex-shrink: 0;
         }
@@ -684,23 +727,23 @@
             grid-template-columns: 1fr 72px 62px 34px 28px;
             gap: 5px; align-items: center;
             padding: 7px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--glass-border);
         }
         .wheel-prize-row input[type="text"],
         .wheel-prize-row input[type="number"] {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
+            background:var(--bg-card-hover);
+            border: 1px solid var(--glass-border);
             border-radius: 8px; color: var(--text-main);
             padding: 5px 7px; font-size: 12px; width: 100%;
             font-family: inherit;
         }
         .wheel-prize-row input[type="color"] {
-            width: 34px; height: 30px; border: 1px solid rgba(255,255,255,0.12);
+            width: 34px; height: 30px; border: 1px solid var(--glass-border);
             border-radius: 8px; background: none; cursor: pointer; padding: 2px;
         }
         .wheel-prize-del {
             background: rgba(255,77,130,0.1); border: 1px solid rgba(255,77,130,0.2);
-            border-radius: 6px; color: #ff4d82; cursor: pointer;
+            border-radius: 6px; color: var(--primary-accent); cursor: pointer;
             padding: 5px; font-size: 11px; line-height: 1;
         }
 
@@ -732,7 +775,7 @@
         }
         .support-tile:hover { transform: translateY(-3px); border-color: var(--glass-border-bright); }
         .support-tile i { font-size: 22px; color: var(--secondary-accent); margin-bottom: 10px; }
-        .support-tile h4 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+        .support-tile h4 { font-family: Inter, sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 6px; }
         .support-tile p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
         /* ─── EMPTY STATE ─── */
@@ -754,7 +797,7 @@
         }
         .upgrade-banner i { font-size: 20px; color: var(--tertiary-accent); }
         .upgrade-banner-text { flex: 1; font-size: 13px; color: var(--text-sub); }
-        .upgrade-banner-text strong { color: var(--text-main); font-family: 'Bricolage Grotesque', sans-serif; display: block; font-size: 14px; margin-bottom: 2px; }
+        .upgrade-banner-text strong { color: var(--text-main); font-family: Inter, sans-serif; display: block; font-size: 14px; margin-bottom: 2px; }
 
         /* ─── SCROLLBAR ─── */
         ::-webkit-scrollbar { width: 5px; }
@@ -778,14 +821,14 @@
         }
         .mobile-menu-btn {
             width: 38px; height: 38px; flex-shrink: 0;
-            background: rgba(255,255,255,0.04);
+            background:var(--bg-card-hover);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; color: var(--text-sub); font-size: 16px;
             transition: all 0.2s;
         }
-        .mobile-menu-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+        .mobile-menu-btn:hover { background:var(--bg-card-hover); color: white; }
 
         .sidebar-overlay {
             display: none;
@@ -859,18 +902,18 @@
             .tab-bar { flex-wrap: wrap; width: 100%; }
         }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+        ::-webkit-scrollbar-thumb { background:var(--bg-card-hover); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background:var(--glass-border); }
 
         /* ─── MODE DE FIDÉLITÉ (Points / Tampons) ─── */
         .loyalty-mode-btn {
             display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
             padding: 14px; border-radius: 12px; cursor: pointer; text-align: left;
-            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            background:var(--bg-card-hover); border: 1px solid var(--glass-border);
             transition: all .2s;
         }
         .loyalty-mode-btn i { font-size: 18px; color: var(--text-muted); margin-bottom: 4px; transition: color .2s; }
-        .loyalty-mode-btn strong { font-size: 15px; color: var(--text-main); font-family: 'Bricolage Grotesque', sans-serif; }
+        .loyalty-mode-btn strong { font-size: 15px; color: var(--text-main); font-family: Inter, sans-serif; }
         .loyalty-mode-btn span { font-size: 11px; color: var(--text-muted); }
         .loyalty-mode-btn:hover { border-color: var(--glass-border-bright, rgba(255,255,255,0.15)); }
         .loyalty-mode-btn.active { border-color: var(--secondary-accent); background: rgba(14,124,140,0.08); }
@@ -878,14 +921,14 @@
 
         /* ─── PRESETS TAUX ─── */
         .rate-preset-btn {
-            background: rgba(255,255,255,0.04);
+            background:var(--bg-card-hover);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 5px 11px;
             font-size: 11px; font-weight: 700;
             color: var(--text-sub);
             cursor: pointer;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             transition: all .18s;
         }
         .rate-preset-btn:hover,
@@ -903,7 +946,7 @@
             border-radius: 50px; padding: 6px 14px;
             font-size: 11px; font-weight: 600; color: var(--secondary-accent);
             margin-bottom: 20px;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
         }
 
         /* ─── AI CHAT SUPPORT ─── */
@@ -931,7 +974,7 @@
         }
         .ai-chat-title-block { flex: 1; min-width: 0; }
         .ai-chat-title {
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 15px; font-weight: 800; color: var(--text-main);
             display: flex; align-items: center; gap: 8px;
         }
@@ -967,7 +1010,7 @@
             word-wrap: break-word;
         }
         .ai-msg.bot .ai-msg-bubble {
-            background: rgba(255,255,255,0.04);
+            background:var(--bg-card-hover);
             border: 1px solid var(--glass-border);
             color: var(--text-main);
             border-bottom-left-radius: 4px;
@@ -988,7 +1031,7 @@
             color: #000;
         }
         .ai-msg.user .ai-msg-avatar {
-            background: rgba(255,255,255,0.06); color: var(--text-sub);
+            background:var(--bg-card-hover); color: var(--text-sub);
         }
         .ai-typing {
             display: inline-flex; gap: 4px; padding: 4px 0;
@@ -1012,11 +1055,11 @@
         }
         .ai-chat-input {
             flex: 1; padding: 11px 16px;
-            background: rgba(255,255,255,0.04);
+            background:var(--bg-card-hover);
             border: 1px solid var(--glass-border);
             border-radius: 22px;
             color: var(--text-main); font-size: 14px;
-            font-family: 'DM Sans', sans-serif; outline: none;
+            font-family: Inter, sans-serif; outline: none;
             transition: border-color .2s;
         }
         .ai-chat-input:focus { border-color: rgba(14,124,140,0.4); }
@@ -1035,13 +1078,13 @@
             padding: 0 18px 14px;
         }
         .ai-suggestion-chip {
-            background: rgba(255,255,255,0.03);
+            background:var(--bg-card-hover);
             border: 1px solid var(--glass-border);
             border-radius: 50px;
             padding: 7px 13px;
             font-size: 12px; color: var(--text-sub);
             cursor: pointer; transition: all .15s;
-            font-family: 'DM Sans', sans-serif;
+            font-family: Inter, sans-serif;
         }
         .ai-suggestion-chip:hover {
             background: rgba(14,124,140,0.07);
@@ -1079,9 +1122,9 @@
         }
         @keyframes aiModalIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
         .ai-modal-title {
-            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
+            font-family: Inter, sans-serif; font-weight: 800;
             font-size: 19px; margin-bottom: 6px;
-            background: linear-gradient(135deg, #c5b8ff, #16B8C4);
+            background: linear-gradient(135deg, #c5b8ff, var(--secondary-accent));
             -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -1089,7 +1132,7 @@
         .ai-modal textarea, .ai-modal input {
             width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(91,58,160,0.25);
             color: var(--text-main); border-radius: 12px; padding: 12px 14px;
-            font-family: 'DM Sans', sans-serif; font-size: 14px; resize: vertical;
+            font-family: Inter, sans-serif; font-size: 14px; resize: vertical;
         }
         .ai-modal textarea:focus, .ai-modal input:focus { outline: none; border-color: rgba(91,58,160,0.6); }
         .ai-modal-actions { display: flex; gap: 10px; margin-top: 18px; }
@@ -1116,12 +1159,12 @@
             border: 1px solid rgba(91,58,160,0.2); margin-top: 14px;
             align-items: center;
         }
-        .ai-color-swatch { width: 38px; height: 38px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); }
+        .ai-color-swatch { width: 38px; height: 38px; border-radius: 10px; border: 2px solid var(--glass-border); }
 
         /* ─── ANALYTICS PHASE 2 ─── */
         .top-client-row {
             display: flex; align-items: center; gap: 12px;
-            padding: 10px 12px; background: rgba(255,255,255,0.02);
+            padding: 10px 12px; background:var(--bg-card-hover);
             border: 1px solid var(--glass-border); border-radius: 12px;
             transition: all .15s;
         }
@@ -1129,13 +1172,13 @@
         .top-rank-badge {
             width: 28px; height: 28px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900; font-size: 13px;
+            font-family: Inter, sans-serif; font-weight: 900; font-size: 13px;
             flex-shrink: 0;
         }
         .top-rank-1 { background: linear-gradient(135deg, #ffd34d, #ff9a3c); color: #1a1828; }
         .top-rank-2 { background: linear-gradient(135deg, #c0c5d4, #8d92a4); color: #1a1828; }
         .top-rank-3 { background: linear-gradient(135deg, #cd8158, #a05f3c); color: #fff; }
-        .top-rank-x { background: rgba(255,255,255,0.06); color: var(--text-sub); }
+        .top-rank-x { background:var(--bg-card-hover); color: var(--text-sub); }
         .top-client-info { flex: 1; min-width: 0; }
         .top-client-name { font-weight: 700; font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .top-client-pts  { font-size: 11px; color: var(--secondary-accent); margin-top: 2px; }
@@ -1155,7 +1198,7 @@
         .heatmap-table td.heatmap-label { font-size: 10px; color: var(--text-muted); font-weight: 700; padding-right: 8px; text-align: right; }
         .heatmap-cell {
             width: 100%; height: 22px; border-radius: 4px;
-            background: rgba(255,255,255,0.02); position: relative; cursor: default;
+            background:var(--bg-card-hover); position: relative; cursor: default;
             transition: transform .12s;
         }
         .heatmap-cell:hover { transform: scale(1.4); z-index: 5; box-shadow: 0 0 0 1px rgba(14,124,140,0.5); }
@@ -1174,16 +1217,16 @@
 
         /* Comparaison */
         .period-stat {
-            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
+            background:var(--bg-card-hover); border: 1px solid var(--glass-border);
             border-radius: 14px; padding: 14px 16px;
         }
-        .period-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Bricolage Grotesque', sans-serif; }
-        .period-stat-val { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900; font-size: 24px; color: var(--text-main); margin-top: 4px; }
+        .period-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-family: Inter, sans-serif; }
+        .period-stat-val { font-family: Inter, sans-serif; font-weight: 900; font-size: 24px; color: var(--text-main); margin-top: 4px; }
         .period-stat-prev { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
         .period-stat-delta { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 50px; font-size: 11px; font-weight: 700; margin-top: 6px; }
         .period-stat-delta.up   { background: rgba(62,227,108,0.12); color: #5dd984; }
         .period-stat-delta.down { background: rgba(255,138,92,0.12); color: #ff8a5c; }
-        .period-stat-delta.flat { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+        .period-stat-delta.flat { background:var(--bg-card-hover); color: var(--text-muted); }
 
         /* ─── MODALE UPGRADE PRO SCALE ─── */
         .upgrade-modal-backdrop {
@@ -1225,16 +1268,16 @@
 
         .upgrade-close-btn {
             position: absolute; top: 18px; right: 18px; z-index: 5;
-            background: rgba(255,255,255,0.06); border: none;
+            background:var(--bg-card-hover); border: none;
             width: 36px; height: 36px; border-radius: 50%;
             color: var(--text-sub); cursor: pointer; font-size: 14px;
             transition: all .15s;
         }
-        .upgrade-close-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); transform: rotate(90deg); }
+        .upgrade-close-btn:hover { background:var(--glass-border); color: var(--text-main); transform: rotate(90deg); }
 
         .upgrade-crown {
             width: 76px; height: 76px; margin: 0 auto 18px;
-            background: linear-gradient(135deg, #ff4d82, #ffc34d 50%, #ff4d82);
+            background: linear-gradient(135deg, var(--primary-accent), #ffc34d 50%, var(--primary-accent));
             background-size: 200% 200%;
             border-radius: 22px;
             display: flex; align-items: center; justify-content: center;
@@ -1248,7 +1291,7 @@
         }
 
         .upgrade-title {
-            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
+            font-family: Inter, sans-serif; font-weight: 900;
             font-size: 30px; text-align: center; margin-bottom: 6px;
             background: linear-gradient(135deg, #fff 0%, #ff8aaa 50%, #c5b8ff 100%);
             -webkit-background-clip: text; background-clip: text;
@@ -1269,15 +1312,15 @@
         }
         .upgrade-price-tag {
             display: inline-block;
-            background: linear-gradient(135deg, #ff4d82, #ffc34d);
+            background: linear-gradient(135deg, var(--primary-accent), #ffc34d);
             color: #0d0c18; font-weight: 900;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 11px; letter-spacing: 1px;
             padding: 5px 12px; border-radius: 50px;
             margin-bottom: 12px;
         }
         .upgrade-price-val {
-            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 900;
+            font-family: Inter, sans-serif; font-weight: 900;
             font-size: 52px; color: #fff; line-height: 1;
             margin-bottom: 4px;
         }
@@ -1292,12 +1335,12 @@
         @media (max-width: 540px) { .upgrade-benefits { grid-template-columns: 1fr; } }
         .upgrade-benefit {
             display: flex; align-items: flex-start; gap: 10px;
-            padding: 10px 12px; background: rgba(255,255,255,0.025);
+            padding: 10px 12px; background:var(--bg-card-hover);
             border: 1px solid var(--glass-border); border-radius: 12px;
         }
         .upgrade-benefit-check {
             width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-            background: linear-gradient(135deg, #3ee36c, #16B8C4);
+            background: linear-gradient(135deg, #3ee36c, var(--secondary-accent));
             display: flex; align-items: center; justify-content: center;
             color: #0d0c18; font-size: 11px; font-weight: 900;
         }
@@ -1306,9 +1349,9 @@
 
         .upgrade-cta-btn {
             width: 100%;
-            background: linear-gradient(135deg, #ff4d82 0%, #ffc34d 100%);
+            background: linear-gradient(135deg, var(--primary-accent) 0%, #ffc34d 100%);
             border: none; color: #0d0c18;
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-family: Inter, sans-serif;
             font-weight: 900; font-size: 16px;
             padding: 16px 22px; border-radius: 14px;
             cursor: pointer; transition: all .2s;
@@ -1321,13 +1364,13 @@
         }
         .upgrade-cta-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .upgrade-secondary-btn {
-            width: 100%; background: rgba(255,255,255,0.04);
+            width: 100%; background:var(--bg-card-hover);
             border: 1px solid var(--glass-border); color: var(--text-sub);
             padding: 12px 18px; border-radius: 12px; cursor: pointer;
-            font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 13px;
+            font-family: Inter, sans-serif; font-weight: 700; font-size: 13px;
             transition: all .15s;
         }
-        .upgrade-secondary-btn:hover { background: rgba(255,255,255,0.07); color: var(--text-main); }
+        .upgrade-secondary-btn:hover { background:var(--bg-card-hover); color: var(--text-main); }
 
         .upgrade-footer {
             display: flex; align-items: center; justify-content: center; gap: 18px;
@@ -1363,7 +1406,7 @@
             display: flex; gap: 18px; align-items: flex-start;
         }
         .insight-icon { font-size: 20px; color: var(--pro-color); flex-shrink: 0; margin-top: 2px; }
-        .insight-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+        .insight-title { font-family: Inter, sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 6px; }
         .insight-body { font-size: 13px; color: var(--text-sub); line-height: 1.6; }
 
         /* ── Couche PRO : accessibilité & micro-interactions ── */
@@ -1373,13 +1416,13 @@
         textarea:focus:not(:focus-visible) { outline: none; }
         ::selection { background: rgba(14,124,140, 0.28); color: #fff; }
         a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
-        * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+        * { scrollbar-width: thin; scrollbar-color:var(--text-muted) transparent; }
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+        ::-webkit-scrollbar-thumb { background:var(--glass-border); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.30); background-clip: content-box; }
         button:active, .btn:active { transform: translateY(1px) scale(0.99); }
-        .skeleton { position: relative; overflow: hidden; background: rgba(255,255,255,0.05); border-radius: 12px; }
+        .skeleton { position: relative; overflow: hidden; background:var(--bg-card-hover); border-radius: 12px; }
         .skeleton::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); animation: skeletonShimmer 1.4s infinite; }
         @keyframes skeletonShimmer { 100% { transform: translateX(100%); } }
         @media (prefers-reduced-motion: reduce) {
@@ -1390,7 +1433,7 @@
         html[data-theme="light"] {
             --bg-dark:#F6F6FA; --bg-mid:#FFFFFF; --bg-card:#FFFFFF; --bg-card-hover:#F1F1F6;
             --text-main:#14141B; --text-muted:#6B6A78; --text-sub:#46455A;
-            --secondary-accent:#0E7C8C; --tertiary-accent:#5B3AA0; --primary-accent:#5B3AA0;
+            --secondary-accent:var(--secondary-accent); --tertiary-accent:var(--tertiary-accent); --primary-accent:var(--tertiary-accent);
             --glass-border:rgba(17,24,39,0.09); --glass-border-bright:rgba(17,24,39,0.16);
         }
         html[data-theme="light"] body { background-color: #F6F6FA; }
@@ -1430,7 +1473,7 @@
         <i class="fa-solid fa-bars"></i>
     </button>
     <img src="img/logo.png" alt="KEEPO" style="height:44px;flex-shrink:0;max-width:140px;object-fit:contain;">
-    <span id="mob-merchant-name" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chargement...</span>
+    <span id="mob-merchant-name" style="font-family:Inter,sans-serif;font-weight:800;font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chargement...</span>
     <div class="header-notif-btn" onclick="showToast('info','Notifications','Aucune notification en attente')">
         <i class="fa-solid fa-bell"></i>
     </div>
@@ -1524,7 +1567,7 @@
             <div class="merchant-header-left">
                 <div class="merchant-avatar" id="merchant-avatar-letter">K</div>
                 <div>
-                    <div id="merchant-title" style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:900;">Chargement...</div>
+                    <div id="merchant-title" style="font-family:Inter,sans-serif;font-size:20px;font-weight:900;">Chargement...</div>
                     <div class="header-subtitle">
                         <div class="live-dot"></div>
                         Système KEEPO synchronisé en temps réel
@@ -1532,6 +1575,7 @@
                 </div>
             </div>
             <div class="header-right">
+                <div class="header-notif-btn" id="themeToggle" onclick="toggleMerchantTheme()" title="Changer de thème"><i class="fa-solid fa-moon"></i></div>
                 <div class="header-notif-btn" onclick="showToast('info', 'Notifications', 'Aucune notification en attente')"><i class="fa-solid fa-bell"></i></div>
                 <span id="merchant-plan-badge" class="plan-badge">...</span>
             </div>
@@ -1589,7 +1633,7 @@
                     background:radial-gradient(circle,rgba(255,77,130,0.12),transparent 70%);pointer-events:none;"></div>
                 <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
                     <div style="flex:1;min-width:200px;">
-                        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:900;
+                        <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:900;
                             color:var(--text-main);margin-bottom:6px;">
                             ⚡ Vous approchez des limites du plan Essential
                         </div>
@@ -1603,12 +1647,12 @@
                         </div>
                     </div>
                     <div style="text-align:center;flex-shrink:0;">
-                        <div id="upgrade-usage-display" style="font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:900;color:var(--primary-accent);"></div>
+                        <div id="upgrade-usage-display" style="font-family:Inter,sans-serif;font-size:28px;font-weight:900;color:var(--primary-accent);"></div>
                         <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;" id="upgrade-usage-label">membres actifs</div>
                         <button onclick="openUpgradeModal('Limites du plan Essential atteintes')"
-                            style="background:linear-gradient(135deg,#ff4d82,#5B3AA0);border:none;border-radius:50px;
+                            style="background:linear-gradient(135deg,var(--primary-accent),var(--tertiary-accent));border:none;border-radius:50px;
                                padding:11px 22px;color:white;font-weight:800;font-size:13px;cursor:pointer;
-                               font-family:'Bricolage Grotesque',sans-serif;white-space:nowrap;
+                               font-family:Inter,sans-serif;white-space:nowrap;
                                box-shadow:0 6px 20px rgba(255,77,130,0.35);">
                             <i class="fa-solid fa-crown"></i>&nbsp; Passer Pro Scale
                         </button>
@@ -1715,7 +1759,7 @@
                     <button id="flip-cam-btn" onclick="flipCamera()" title="Retourner la caméra"
                         style="position:absolute;bottom:8px;right:8px;z-index:10;
                                width:36px;height:36px;border-radius:50%;
-                               background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);
+                               background:rgba(0,0,0,0.6);border:1px solid var(--glass-border);
                                color:white;font-size:16px;cursor:pointer;display:none;
                                align-items:center;justify-content:center;transition:all .2s;">
                         <i class="fa-solid fa-rotate"></i>
@@ -1723,16 +1767,16 @@
                 </div>
                 <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">Présentez le QR Code du client devant la caméra</p>
 
-                <div style="background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:14px;padding:18px;margin-bottom:14px;">
-                    <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;font-family:'Bricolage Grotesque',sans-serif;">Recherche directe par UUID client</div>
-                    <input type="text" id="manual-scan-uuid" placeholder="Coller l'UUID d'un client..." style="width:100%;padding:11px;text-align:center;background:#000;border:1px solid var(--glass-border);color:white;border-radius:10px;font-size:13px;margin-bottom:10px;font-family:'DM Sans',sans-serif;">
+                <div style="background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:14px;padding:18px;margin-bottom:14px;">
+                    <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;font-family:Inter,sans-serif;">Recherche directe par UUID client</div>
+                    <input type="text" id="manual-scan-uuid" placeholder="Coller l'UUID d'un client..." style="width:100%;padding:11px;text-align:center;background:var(--bg-dark);border:1px solid var(--glass-border);color:var(--text-main);border-radius:10px;font-size:13px;margin-bottom:10px;">
                     <button onclick="triggerSimulatedScan()" class="btn-action" style="width:100%;"><i class="fa-solid fa-magnifying-glass"></i> Analyser l'ID</button>
                 </div>
 
                 <!-- ── VALIDATION CODE RÉCOMPENSE ── -->
                 <div style="background:linear-gradient(135deg,rgba(14,124,140,0.04),transparent);
                             border:1px solid rgba(14,124,140,0.2);border-radius:14px;padding:18px;">
-                    <div style="font-size:10px;color:var(--secondary-accent);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-family:'Bricolage Grotesque',sans-serif;">
+                    <div style="font-size:10px;color:var(--secondary-accent);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-family:Inter,sans-serif;">
                         <i class="fa-solid fa-gift"></i>&nbsp; Valider un code de récompense client
                     </div>
                     <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
@@ -1745,7 +1789,7 @@
                             style="flex:1;padding:11px;text-align:center;background:#000;
                                    border:1px solid rgba(14,124,140,0.3);color:var(--secondary-accent);
                                    border-radius:10px;font-size:18px;font-weight:800;letter-spacing:6px;
-                                   font-family:'Bricolage Grotesque',sans-serif;">
+                                   font-family:Inter,sans-serif;">
                         <button onclick="validateClaimCode()" class="btn-action"
                             style="flex-shrink:0;padding:11px 18px;background:rgba(14,124,140,0.12);
                                    color:var(--secondary-accent);border:1px solid rgba(14,124,140,0.3);">
@@ -1786,11 +1830,11 @@
             <!-- ── Installation automatique ── -->
             <div class="card" style="margin-top:24px;max-width:700px;background:linear-gradient(135deg,rgba(91,58,160,0.06),rgba(14,124,140,0.05));border-color:rgba(14,124,140,0.25);">
                 <div style="display:flex;align-items:flex-start;gap:14px;">
-                    <div style="width:42px;height:42px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;">
+                    <div style="width:42px;height:42px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;">
                         <i class="fa-solid fa-mobile-screen"></i>
                     </div>
                     <div>
-                        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;margin-bottom:4px;">L'installation se propose toute seule</div>
+                        <div style="font-family:Inter,sans-serif;font-weight:800;font-size:15px;margin-bottom:4px;">L'installation se propose toute seule</div>
                         <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin:0;">
                             Un seul QR suffit : quand un client le scanne avec son appareil photo, sa carte de fidélité s'ajoute et l'app lui <strong>propose automatiquement de s'installer sur son écran d'accueil</strong> (Android comme iPhone). Plus besoin de QR d'installation séparés.
                         </p>
@@ -1845,8 +1889,8 @@
                             <span id="prev-reward-pts" class="reward-pts-badge">0 Pts</span>
                         </div>
                     </div>
-                    <div style="margin-top:14px;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid var(--glass-border);">
-                        <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-family:'Bricolage Grotesque',sans-serif;">Conseils</div>
+                    <div style="margin-top:14px;padding:12px;background:var(--bg-card-hover);border-radius:10px;border:1px solid var(--glass-border);">
+                        <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-family:Inter,sans-serif;">Conseils</div>
                         <p style="font-size:12px;color:var(--text-sub);line-height:1.6;">Proposez des récompenses attractives à partir de 5–10 points pour encourager l'engagement rapide de vos nouveaux membres.</p>
                     </div>
                 </div>
@@ -1918,7 +1962,7 @@
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                     <!-- Filtre par jour (accessible à tous) -->
-                    <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:10px;padding:2px 4px 2px 12px;">
+                    <div style="display:flex;align-items:center;gap:6px;background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:10px;padding:2px 4px 2px 12px;">
                         <i class="fa-solid fa-calendar-day" style="color:var(--secondary-accent);font-size:13px;"></i>
                         <input type="date" id="history-date-filter" onchange="applyHistoryDayFilter()" title="Filtrer par jour"
                             style="background:transparent;border:none;color:var(--text-main);font-size:13px;font-family:inherit;padding:7px 4px;cursor:pointer;color-scheme:dark;">
@@ -1966,7 +2010,7 @@
                         </div>
                         <div class="form-group">
                             <label>Couleur d'accent</label>
-                            <input type="color" id="studio-border-color" value="#16B8C4" oninput="refreshStudioOutput()">
+                            <input type="color" id="studio-border-color" value="var(--secondary-accent)" oninput="refreshStudioOutput()">
                         </div>
                     </div>
                     <div class="form-group">
@@ -1980,7 +2024,7 @@
                     <button onclick="saveStudioDesign()" class="btn-action" style="width:100%;"><i class="fa-solid fa-floppy-disk"></i> Enregistrer le design</button>
                 </div>
                 <div>
-                    <div style="margin-bottom:20px;font-weight:800;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;color:var(--text-sub);text-align:center;letter-spacing:.5px;text-transform:uppercase;">
+                    <div style="margin-bottom:20px;font-weight:800;font-family:Inter,sans-serif;font-size:14px;color:var(--text-sub);text-align:center;letter-spacing:.5px;text-transform:uppercase;">
                         <i class="fa-solid fa-mobile-screen-button" style="margin-right:6px;color:var(--secondary-accent);"></i>Aperçu Client Temps Réel
                     </div>
 
@@ -2000,14 +2044,14 @@
                         ">
                             <!-- Notch / Dynamic island -->
                             <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);width:72px;height:22px;background:#0a0910;border-radius:20px;z-index:10;display:flex;align-items:center;justify-content:center;gap:5px;">
-                                <div style="width:8px;height:8px;background:#1a1830;border-radius:50%;border:1px solid rgba(255,255,255,0.06);"></div>
+                                <div style="width:8px;height:8px;background:#1a1830;border-radius:50%;border:1px solid var(--glass-border);"></div>
                                 <div style="width:5px;height:5px;background:#0f0e1c;border-radius:50%;"></div>
                             </div>
                             <!-- Boutons latéraux gauche -->
-                            <div style="position:absolute;left:-3px;top:80px;width:3px;height:28px;background:rgba(255,255,255,0.08);border-radius:2px 0 0 2px;"></div>
-                            <div style="position:absolute;left:-3px;top:118px;width:3px;height:28px;background:rgba(255,255,255,0.08);border-radius:2px 0 0 2px;"></div>
+                            <div style="position:absolute;left:-3px;top:80px;width:3px;height:28px;background:var(--bg-card-hover);border-radius:2px 0 0 2px;"></div>
+                            <div style="position:absolute;left:-3px;top:118px;width:3px;height:28px;background:var(--bg-card-hover);border-radius:2px 0 0 2px;"></div>
                             <!-- Bouton latéral droit -->
-                            <div style="position:absolute;right:-3px;top:95px;width:3px;height:50px;background:rgba(255,255,255,0.08);border-radius:0 2px 2px 0;"></div>
+                            <div style="position:absolute;right:-3px;top:95px;width:3px;height:50px;background:var(--bg-card-hover);border-radius:0 2px 2px 0;"></div>
 
                             <!-- Écran (fidèle à la vraie app client : claire, carte premium sombre) -->
                             <div style="background:#FAFAFC;border-radius:36px;overflow:hidden;">
@@ -2023,31 +2067,31 @@
 
                                 <!-- App header -->
                                 <div style="padding:6px 14px 10px;display:flex;align-items:center;justify-content:space-between;">
-                                    <div style="font-size:13px;font-weight:900;color:#14141B;font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.3px;">Mes Cartes</div>
+                                    <div style="font-size:13px;font-weight:900;color:#14141B;font-family:Inter,sans-serif;letter-spacing:-.3px;">Mes Cartes</div>
                                     <div style="display:flex;align-items:center;gap:5px;background:#fff;border:1px solid rgba(20,20,27,.09);border-radius:50px;padding:3px 8px 3px 3px;">
-                                        <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#5B3AA0,#16B8C4);"></div>
+                                        <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));"></div>
                                         <span style="font-size:8px;font-weight:700;color:#14141B;">Client</span>
                                     </div>
                                 </div>
 
                                 <!-- Carte de fidélité (élément réel du studio) -->
                                 <div style="padding:0 10px 8px;">
-                                    <div id="studio-card-element-render" style="width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.14);padding:14px 16px;box-sizing:border-box;text-align:left;background-size:cover;background-position:center;background:linear-gradient(140deg,#1C1733 0%,#131125 46%,#0E1F26 100%);position:relative;overflow:hidden;box-shadow:0 2px 4px rgba(20,20,27,.10),0 14px 30px -12px rgba(20,20,27,.40);">
+                                    <div id="studio-card-element-render" style="width:100%;border-radius:18px;border:1px solid var(--glass-border);padding:14px 16px;box-sizing:border-box;text-align:left;background-size:cover;background-position:center;background:linear-gradient(140deg,#1C1733 0%,#131125 46%,#0E1F26 100%);position:relative;overflow:hidden;box-shadow:0 2px 4px rgba(20,20,27,.10),0 14px 30px -12px rgba(20,20,27,.40);">
                                         <div id="studio-overlay-layer" style="position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:1;"></div>
                                         <div style="position:relative;z-index:2;">
                                             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-                                                <div id="studio-card-chip" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;color:#fff;">C</div>
+                                                <div id="studio-card-chip" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;font-weight:800;font-size:13px;color:#fff;">C</div>
                                                 <div style="text-align:right;">
-                                                    <div id="studio-points-color-render" style="font-weight:900;font-size:19px;line-height:1;color:var(--secondary-accent);font-family:'Bricolage Grotesque',sans-serif;">340</div>
-                                                    <div style="font-size:7px;color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;">Points</div>
+                                                    <div id="studio-points-color-render" style="font-weight:900;font-size:19px;line-height:1;color:var(--secondary-accent);font-family:Inter,sans-serif;">340</div>
+                                                    <div style="font-size:7px;color:var(--text-muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;">Points</div>
                                                 </div>
                                             </div>
-                                            <h3 id="studio-card-title-render" style="margin:0 0 8px;font-weight:800;font-size:14px;color:#fff;font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.2px;">Commerce KEEPO</h3>
-                                            <div style="height:4px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;margin-bottom:6px;">
+                                            <h3 id="studio-card-title-render" style="margin:0 0 8px;font-weight:800;font-size:14px;color:#fff;font-family:Inter,sans-serif;letter-spacing:-.2px;">Commerce KEEPO</h3>
+                                            <div style="height:4px;border-radius:4px;background:var(--glass-border);overflow:hidden;margin-bottom:6px;">
                                                 <div id="studio-progress-fill" style="height:100%;width:68%;border-radius:4px;background:var(--secondary-accent);"></div>
                                             </div>
                                             <div style="display:flex;justify-content:space-between;align-items:center;">
-                                                <span style="font-size:8px;color:rgba(255,255,255,.55);">encore 60 pts</span>
+                                                <span style="font-size:8px;color:var(--text-sub);">encore 60 pts</span>
                                                 <span id="studio-reward-hint" style="font-size:8px;font-weight:700;color:var(--secondary-accent);">🎁 Objectif : 400</span>
                                             </div>
                                         </div>
@@ -2068,9 +2112,9 @@
 
                                 <!-- Mini nav du bas (fidèle à l'app) -->
                                 <div style="margin:4px 10px 8px;background:rgba(255,255,255,.9);border:1px solid rgba(20,20,27,.07);border-radius:14px;padding:5px 12px;display:flex;align-items:center;justify-content:space-between;">
-                                    <i class="fa-solid fa-wallet" style="font-size:9px;color:#0E7C8C;"></i>
+                                    <i class="fa-solid fa-wallet" style="font-size:9px;color:var(--secondary-accent);"></i>
                                     <i class="fa-solid fa-clock-rotate-left" style="font-size:9px;color:#B4B3C0;"></i>
-                                    <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#5B3AA0,#16B8C4);display:flex;align-items:center;justify-content:center;margin-top:-12px;border:2px solid #fff;box-shadow:0 3px 8px rgba(91,58,160,.35);">
+                                    <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));display:flex;align-items:center;justify-content:center;margin-top:-12px;border:2px solid #fff;box-shadow:0 3px 8px rgba(91,58,160,.35);">
                                         <i class="fa-solid fa-qrcode" style="font-size:9px;color:#fff;"></i>
                                     </div>
                                     <i class="fa-solid fa-gift" style="font-size:9px;color:#B4B3C0;"></i>
@@ -2103,7 +2147,7 @@
                 <div style="width:64px;height:64px;background:rgba(14,124,140,0.08);border:1px solid rgba(14,124,140,0.15);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:var(--secondary-accent);">
                     <i class="fa-solid fa-paper-plane"></i>
                 </div>
-                <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;margin-bottom:8px;">Aucune automation configurée</h3>
+                <h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:800;margin-bottom:8px;">Aucune automation configurée</h3>
                 <p style="color:var(--text-muted);font-size:13px;margin-bottom:24px;">Automatisez vos e-mails de relance, de fidélisation et d'avis clients.</p>
                 <button onclick="openNotificationBuilderFlow()" class="btn-action btn-primary-gradient" style="font-size:14px;padding:14px 32px;"><i class="fa-solid fa-circle-plus"></i> Créer une notification automatisée</button>
             </div>
@@ -2149,7 +2193,7 @@
                         <input type="number" id="relance-days" value="30" min="1" max="365"
                             style="width:74px;text-align:center;padding:8px 10px;font-size:16px;font-weight:700;
                                    background:#000;border:1px solid rgba(14,124,140,0.35);color:var(--secondary-accent);
-                                   border-radius:8px;font-family:'Bricolage Grotesque',sans-serif;">
+                                   border-radius:8px;font-family:Inter,sans-serif;">
                         <span style="font-size:13px;font-weight:600;color:var(--text-sub);">jours sans achat</span>
                     </div>
                 </div>
@@ -2165,7 +2209,7 @@
                             onchange="if(this.value!==''&&+this.value<15)this.value=15"
                             style="width:74px;text-align:center;padding:8px 10px;font-size:16px;font-weight:700;
                                    background:#000;border:1px solid rgba(255,195,77,0.35);color:#ffc34d;
-                                   border-radius:8px;font-family:'Bricolage Grotesque',sans-serif;">
+                                   border-radius:8px;font-family:Inter,sans-serif;">
                         <span style="font-size:13px;font-weight:600;color:var(--text-sub);">minutes après un achat</span>
                     </div>
                     <div style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.5;">Minimum 15 minutes — le moteur d'envoi s'exécute toutes les 15 min.</div>
@@ -2174,7 +2218,7 @@
                             <i class="fa-brands fa-google" style="color:#ffc34d;"></i> Lien de votre page d'avis Google
                         </label>
                         <input type="url" id="avis-review-url" placeholder="https://g.page/r/XXXXXXXX/review"
-                            style="width:100%;padding:10px 12px;font-size:13px;background:rgba(255,255,255,0.03);
+                            style="width:100%;padding:10px 12px;font-size:13px;background:var(--bg-card-hover);
                                    border:1px solid rgba(255,195,77,0.3);color:var(--text-main);border-radius:10px;font-family:inherit;">
                         <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.5;">
                             Sur Google Maps : votre fiche → <strong>« Demander des avis »</strong> → copiez le lien. Il deviendra un bouton <strong>« ⭐ Laisser mon avis »</strong> dans l'e-mail.
@@ -2244,9 +2288,9 @@
 
             <!-- ══ CAMPAGNE MANUELLE ══ -->
             <div class="card" style="max-width:680px;margin:32px auto 0;border-color:rgba(255,77,130,0.2);">
-                <div class="card-title"><i class="fa-solid fa-bullhorn" style="color:#ff4d82;"></i> Campagne Email Manuelle</div>
+                <div class="card-title"><i class="fa-solid fa-bullhorn" style="color:var(--primary-accent);"></i> Campagne Email Manuelle</div>
                 <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;line-height:1.6;">
-                    Envoyez un email ciblé maintenant à un segment de vos clients. Utilisez <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">{{prenom}}</code> et <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">{{enseigne}}</code> pour personnaliser.
+                    Envoyez un email ciblé maintenant à un segment de vos clients. Utilisez <code style="background:var(--bg-card-hover);padding:2px 6px;border-radius:4px;">{{prenom}}</code> et <code style="background:var(--bg-card-hover);padding:2px 6px;border-radius:4px;">{{enseigne}}</code> pour personnaliser.
                 </p>
 
                 <!-- Segment -->
@@ -2341,7 +2385,7 @@
                     <h3 id="boutique-qr-modal-title" style="margin-bottom:16px;font-size:17px;"></h3>
                     <div id="boutique-qr-zone" style="display:flex;justify-content:center;align-items:center;min-height:200px;margin-bottom:16px;"></div>
                     <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Le client scanne ce QR pour rejoindre votre programme de fidélité depuis cette boutique.</p>
-                    <button onclick="closeBoutiqueQrModal()" class="btn-action" style="background:rgba(255,255,255,.07);border:1px solid var(--glass-border);color:var(--text-main);padding:10px 24px;border-radius:10px;cursor:pointer;font-size:13px;width:100%;">Fermer</button>
+                    <button onclick="closeBoutiqueQrModal()" class="btn-action" style="background:var(--bg-card-hover);border:1px solid var(--glass-border);color:var(--text-main);padding:10px 24px;border-radius:10px;cursor:pointer;font-size:13px;width:100%;">Fermer</button>
                 </div>
             </div>
         </div>
@@ -2505,7 +2549,7 @@
                     </div>
                     <div class="form-group" id="points-config-block">
                         <label>Règle de conversion des points</label>
-                        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
+                        <div style="background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
                             <!-- Inputs libres -->
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
                                 <span style="font-size:13px;color:var(--text-sub);">Pour</span>
@@ -2513,13 +2557,13 @@
                                     oninput="updateRatePreview()"
                                     style="width:72px;padding:8px 10px;text-align:center;font-size:15px;font-weight:700;
                                            background:#000;border:1px solid rgba(14,124,140,0.3);color:var(--secondary-accent);
-                                           border-radius:8px;font-family:'Bricolage Grotesque',sans-serif;">
+                                           border-radius:8px;font-family:Inter,sans-serif;">
                                 <span style="font-size:13px;color:var(--text-sub);">€ dépensés →</span>
                                 <input type="number" id="rate-points" min="1" step="1" value="1"
                                     oninput="updateRatePreview()"
                                     style="width:64px;padding:8px 10px;text-align:center;font-size:15px;font-weight:700;
                                            background:#000;border:1px solid rgba(255,195,77,0.3);color:#ffc34d;
-                                           border-radius:8px;font-family:'Bricolage Grotesque',sans-serif;">
+                                           border-radius:8px;font-family:Inter,sans-serif;">
                                 <span style="font-size:13px;color:var(--text-sub);">point(s)</span>
                             </div>
                             <!-- Aperçu dynamique -->
@@ -2539,12 +2583,12 @@
                     </div>
                     <div class="form-group" id="stamps-config-block" style="display:none;">
                         <label>Carte à tampons</label>
-                        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
+                        <div style="background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
                                 <input type="number" id="stamps-required" min="2" max="50" value="10"
                                     style="width:64px;padding:8px 10px;text-align:center;font-size:15px;font-weight:700;
                                            background:#000;border:1px solid rgba(14,124,140,0.3);color:var(--secondary-accent);
-                                           border-radius:8px;font-family:'Bricolage Grotesque',sans-serif;">
+                                           border-radius:8px;font-family:Inter,sans-serif;">
                                 <span style="font-size:13px;color:var(--text-sub);">tampons (1 par passage) donnent droit à&nbsp;:</span>
                             </div>
                             <input type="text" id="stamp-reward" maxlength="60" placeholder="Ex : 1 café offert, -10% sur l'addition…"
@@ -2598,16 +2642,16 @@
                     <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--glass-border);">
                         <div style="width:44px;height:44px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,#ffc34d,#ff8a5c);display:flex;align-items:center;justify-content:center;font-size:21px;">👑</div>
                         <div>
-                            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:16px;line-height:1.3;">4 leviers pour fidéliser, sans rien gérer au quotidien</div>
+                            <div style="font-family:Inter,sans-serif;font-weight:800;font-size:16px;line-height:1.3;">4 leviers pour fidéliser, sans rien gérer au quotidien</div>
                             <p style="color:var(--text-muted);font-size:12.5px;line-height:1.6;margin:5px 0 0;">Réglez chaque levier une seule fois. Ensuite, tout se déclenche <strong style="color:var(--text-sub);">automatiquement</strong>. Activez seulement ceux qui vous intéressent, puis cliquez sur <strong style="color:var(--text-sub);">Enregistrer</strong> en bas.</p>
                         </div>
                     </div>
 
                     <!-- ① Parrainage -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:rgba(255,255,255,0.015);">
+                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:var(--bg-card-hover);">
                         <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
                             <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(14,124,140,0.12);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-users" style="color:var(--secondary-accent);font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:'Bricolage Grotesque',sans-serif;">1. Parrainage</div>
+                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">1. Parrainage</div>
                         </div>
                         <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Un client amène un ami&nbsp;? Les <strong style="color:var(--text-sub);">deux</strong> reçoivent des points. Le bouche-à-oreille qui se récompense tout seul.</p>
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:47px;">
@@ -2618,10 +2662,10 @@
                     </div>
 
                     <!-- ② Anniversaire -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:rgba(255,255,255,0.015);">
+                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:var(--bg-card-hover);">
                         <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
                             <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(255,138,92,0.12);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-cake-candles" style="color:#ff8a5c;font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:'Bricolage Grotesque',sans-serif;">2. Cadeau d'anniversaire</div>
+                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">2. Cadeau d'anniversaire</div>
                         </div>
                         <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Le jour de son anniversaire, votre client reçoit un bonus de points en automatique. Une attention qui fait revenir.</p>
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:47px;">
@@ -2632,10 +2676,10 @@
                     </div>
 
                     <!-- ③ Roue de la fortune -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:rgba(255,255,255,0.015);">
+                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:var(--bg-card-hover);">
                         <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
                             <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(91,58,160,0.14);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-dice" style="color:#c5b8ff;font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:'Bricolage Grotesque',sans-serif;">3. Roue de la fortune</div>
+                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">3. Roue de la fortune</div>
                         </div>
                         <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Après plusieurs visites, votre client tente sa chance et gagne un lot. Un jeu qui donne envie de revenir.</p>
                         <div style="margin-left:47px;">
@@ -2650,7 +2694,7 @@
                             </div>
 
                             <!-- Éditeur de lots -->
-                            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px;">
+                            <div style="background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:14px;padding:14px;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                                     <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;"><i class="fa-solid fa-gift" style="margin-right:5px;color:#c5b8ff;"></i>Les lots à gagner</span>
                                     <div style="display:flex;align-items:center;gap:8px;">
@@ -2659,7 +2703,7 @@
                                     </div>
                                 </div>
                                 <p style="font-size:11px;color:var(--text-muted);line-height:1.5;margin:0 0 10px;">Le total des chances doit faire <strong style="color:var(--text-sub);">100%</strong>. « Chance » = probabilité de tomber sur ce lot.</p>
-                                <div style="display:grid;grid-template-columns:1fr 72px 62px 34px 28px;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+                                <div style="display:grid;grid-template-columns:1fr 72px 62px 34px 28px;gap:5px;padding-bottom:6px;border-bottom:1px solid var(--glass-border);margin-bottom:4px;">
                                     <span style="font-size:10px;color:var(--text-muted);font-weight:600;">Libellé</span>
                                     <span style="font-size:10px;color:var(--text-muted);font-weight:600;">Points</span>
                                     <span style="font-size:10px;color:var(--text-muted);font-weight:600;">Chance %</span>
@@ -2672,10 +2716,10 @@
                     </div>
 
                     <!-- ④ Niveaux VIP -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:20px;background:rgba(255,255,255,0.015);">
+                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:20px;background:var(--bg-card-hover);">
                         <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
                             <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(255,211,77,0.14);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-ranking-star" style="color:#ffd700;font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:'Bricolage Grotesque',sans-serif;">4. Niveaux VIP</div>
+                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">4. Niveaux VIP</div>
                         </div>
                         <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Plus un client cumule de points au fil du temps, plus il monte de niveau — et plus il gagne de points à chaque passage. Vos meilleurs clients sont récompensés sans que vous ayez à y penser.</p>
                         <div style="margin-left:47px;">
@@ -2733,7 +2777,7 @@
                 <div class="card pro-locked-container" style="margin-bottom:20px;">
                     <div id="lock-caisse-mode"></div>
                     <div class="card-title">
-                        <i class="fa-solid fa-cash-register" style="color:#16B8C4;"></i>&nbsp; Caissiers & Mode Caisse
+                        <i class="fa-solid fa-cash-register" style="color:var(--secondary-accent);"></i>&nbsp; Caissiers & Mode Caisse
                     </div>
                     <p style="color:var(--text-muted);font-size:12px;line-height:1.6;margin-bottom:14px;">
                         Créez des comptes caissier avec PIN. Vos employés se connectent sur l'interface tablette dédiée sans accéder aux paramètres.
@@ -2741,7 +2785,7 @@
 
                     <a href="/caisse" target="_blank"
                         style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(14,124,140,0.1),rgba(91,58,160,0.08));border:1px solid rgba(14,124,140,0.3);border-radius:12px;text-decoration:none;color:#fff;margin-bottom:14px;">
-                        <div style="width:38px;height:38px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📱</div>
+                        <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📱</div>
                         <div style="flex:1;">
                             <div style="font-weight:700;font-size:14px;">Ouvrir le mode caisse</div>
                             <div style="font-size:11px;color:var(--text-muted);">Interface tablette plein écran pour comptoir</div>
@@ -2777,11 +2821,11 @@
             }
             .ob-step-dot {
                 width: 36px; height: 36px; border-radius: 50%;
-                background: rgba(255,255,255,0.04);
-                border: 2px solid rgba(255,255,255,0.1);
+                background:var(--bg-card-hover);
+                border: 2px solid var(--glass-border);
                 display: flex; align-items: center; justify-content: center;
                 font-size: 13px; font-weight: 800; color: var(--text-muted);
-                font-family: 'Bricolage Grotesque', sans-serif;
+                font-family: Inter, sans-serif;
                 transition: all 0.4s cubic-bezier(0.4,0,0.2,1); position: relative; z-index: 1;
             }
             .ob-step-dot.active {
@@ -2800,7 +2844,7 @@
             .ob-step-dot.active .ob-step-label { color: var(--secondary-accent); }
             .ob-step-line {
                 flex: 1; height: 2px; max-width: 100px;
-                background: rgba(255,255,255,0.07);
+                background:var(--bg-card-hover);
                 transition: background 0.4s;
             }
             .ob-step-line.done { background: var(--secondary-accent); }
@@ -2809,7 +2853,7 @@
             .ob-panel.active { display: block; }
 
             .ob-icon { font-size: 52px; margin-bottom: 16px; line-height: 1; }
-            .ob-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 900; color: var(--text-main); margin-bottom: 8px; }
+            .ob-title { font-family: Inter, sans-serif; font-size: 28px; font-weight: 900; color: var(--text-main); margin-bottom: 8px; }
             .ob-sub { font-size: 15px; color: var(--text-sub); margin-bottom: 32px; line-height: 1.6; }
 
             .ob-field-label {
@@ -2819,10 +2863,10 @@
             }
             .ob-input {
                 width: 100%; padding: 14px 18px;
-                background: rgba(255,255,255,0.03);
+                background:var(--bg-card-hover);
                 border: 1px solid var(--glass-border);
                 border-radius: 12px; color: var(--text-main);
-                font-size: 16px; font-family: 'DM Sans', sans-serif;
+                font-size: 16px; font-family: Inter, sans-serif;
                 transition: border-color 0.2s;
                 margin-bottom: 24px;
             }
@@ -2838,14 +2882,14 @@
             .ob-color-custom {
                 width: 38px; height: 38px; border-radius: 10px;
                 cursor: pointer; border: 2px dashed rgba(255,255,255,0.2);
-                background: rgba(255,255,255,0.03);
+                background:var(--bg-card-hover);
                 display: flex; align-items: center; justify-content: center;
                 font-size: 16px; transition: all 0.2s;
             }
-            .ob-color-custom:hover { border-color: rgba(255,255,255,0.5); }
+            .ob-color-custom:hover { border-color:var(--text-muted); }
 
             .ob-reward-preview {
-                background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
+                background:var(--bg-card-hover); border: 1px solid var(--glass-border);
                 border-radius: 16px; padding: 20px 24px;
                 display: flex; align-items: center; justify-content: space-between;
                 margin-bottom: 28px; transition: all 0.2s;
@@ -2863,19 +2907,19 @@
                 width: 100%; padding: 16px; border-radius: 12px;
                 background: linear-gradient(135deg, var(--tertiary-accent), var(--secondary-accent));
                 border: none; color: #000; font-size: 16px; font-weight: 800;
-                cursor: pointer; font-family: 'Bricolage Grotesque', sans-serif;
+                cursor: pointer; font-family: Inter, sans-serif;
                 transition: all 0.3s; margin-bottom: 12px;
                 box-shadow: 0 8px 24px rgba(14,124,140,0.2);
             }
             .ob-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(14,124,140,0.3); }
             .ob-btn-secondary {
                 width: 100%; padding: 13px; border-radius: 12px;
-                background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+                background:var(--bg-card-hover); border: 1px solid var(--glass-border);
                 color: var(--text-sub); font-size: 14px; font-weight: 600;
-                cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+                cursor: pointer; font-family: Inter, sans-serif; transition: all 0.2s;
                 margin-bottom: 8px;
             }
-            .ob-btn-secondary:hover { background: rgba(255,255,255,0.06); color: white; }
+            .ob-btn-secondary:hover { background:var(--bg-card-hover); color: white; }
 
             .ob-tip {
                 display: flex; align-items: flex-start; gap: 12px;
@@ -2914,17 +2958,17 @@
 
                 <label class="ob-field-label">Couleur de votre marque</label>
                 <div class="ob-colors" id="ob-swatches">
-                    <div class="ob-color-swatch selected" data-color="#16B8C4" style="background:#16B8C4;"></div>
-                    <div class="ob-color-swatch" data-color="#5B3AA0" style="background:#5B3AA0;"></div>
-                    <div class="ob-color-swatch" data-color="#ff4d82" style="background:#ff4d82;"></div>
+                    <div class="ob-color-swatch selected" data-color="var(--secondary-accent)" style="background:var(--secondary-accent);"></div>
+                    <div class="ob-color-swatch" data-color="var(--tertiary-accent)" style="background:var(--tertiary-accent);"></div>
+                    <div class="ob-color-swatch" data-color="var(--primary-accent)" style="background:var(--primary-accent);"></div>
                     <div class="ob-color-swatch" data-color="#ffa040" style="background:#ffa040;"></div>
-                    <div class="ob-color-swatch" data-color="#22d47a" style="background:#22d47a;"></div>
+                    <div class="ob-color-swatch" data-color="var(--success)" style="background:var(--success);"></div>
                     <div class="ob-color-swatch" data-color="#00b4d8" style="background:#00b4d8;"></div>
                     <label class="ob-color-custom" title="Couleur personnalisée">
                         🎨<input type="color" id="ob-color-custom-input" style="opacity:0;position:absolute;width:0;height:0;" onchange="onCustomColorPick(this.value)">
                     </label>
                 </div>
-                <input type="hidden" id="ob-color" value="#16B8C4">
+                <input type="hidden" id="ob-color" value="var(--secondary-accent)">
 
                 <div class="ob-tip">
                     <i class="fa-solid fa-lightbulb"></i>
@@ -3023,7 +3067,7 @@
                     <a href="" id="ob-whatsapp-btn" target="_blank" style="flex:1;padding:11px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.2);border-radius:12px;color:#25d366;text-align:center;text-decoration:none;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;">
                         <i class="fa-brands fa-whatsapp"></i> WhatsApp
                     </a>
-                    <button onclick="obShareNative()" style="flex:1;padding:11px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--text-sub);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;">
+                    <button onclick="obShareNative()" style="flex:1;padding:11px;background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:12px;color:var(--text-sub);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;">
                         <i class="fa-solid fa-share-from-square"></i> Partager
                     </button>
                 </div>
@@ -3045,7 +3089,7 @@
         <!-- ═══════════════ PARRAINAGE ═══════════════ -->
         <div id="view-parrainage" class="panel-view">
             <div style="margin-bottom:22px;">
-                <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;margin:0;">Parrainez un confrère 🤝</h1>
+                <h1 style="font-family:Inter,sans-serif;font-size:26px;font-weight:800;margin:0;">Parrainez un confrère 🤝</h1>
                 <p style="color:var(--text-muted);font-size:14px;margin-top:6px;line-height:1.6;max-width:620px;">
                     Invitez un commerçant à rejoindre KEEPO. Dès qu'il devient client payant, vous gagnez
                     <strong style="color:var(--secondary-accent);">1 mois gratuit</strong> — et lui profite d'un
@@ -3066,11 +3110,11 @@
             <!-- Statistiques -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
                 <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;padding:18px;text-align:center;">
-                    <div id="ref-count" style="font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:800;color:var(--secondary-accent);">0</div>
+                    <div id="ref-count" style="font-family:Inter,sans-serif;font-size:30px;font-weight:800;color:var(--secondary-accent);">0</div>
                     <div style="font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Filleuls inscrits</div>
                 </div>
                 <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;padding:18px;text-align:center;">
-                    <div id="ref-months" style="font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:800;color:#7c3aed;">0</div>
+                    <div id="ref-months" style="font-family:Inter,sans-serif;font-size:30px;font-weight:800;color:#7c3aed;">0</div>
                     <div style="font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Mois gratuits gagnés</div>
                 </div>
             </div>
@@ -3103,7 +3147,7 @@
                         </div>
                     </div>
                     <button onclick="resetAiChat()" title="Réinitialiser la conversation"
-                        style="background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);
+                        style="background:var(--bg-card-hover);border:1px solid var(--glass-border);
                                color:var(--text-muted);border-radius:10px;padding:7px 11px;cursor:pointer;font-size:12px;">
                         <i class="fa-solid fa-rotate-left"></i>
                     </button>
@@ -3800,7 +3844,7 @@
             .upsert({
                 merchant_id: currentMerchantId,
                 title:       design.title || 'Mon Commerce',
-                color:       design.borderColor || '#16B8C4',
+                color:       design.borderColor || 'var(--secondary-accent)',
                 studio_json: designJson
             }, { onConflict: 'merchant_id' })
             .then(({ error }) => {
@@ -3913,7 +3957,7 @@
         if (activeBox) {
             activeBox.innerHTML = active
                 ? `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;">
-                       <div style="font-size:36px;font-family:'Bricolage Grotesque',sans-serif;font-weight:900;color:var(--secondary-accent);">✕${active.multiplier}</div>
+                       <div style="font-size:36px;font-family:Inter,sans-serif;font-weight:900;color:var(--secondary-accent);">✕${active.multiplier}</div>
                        <div>
                            <div style="font-weight:800;font-size:15px;">${active.name}</div>
                            <div style="font-size:12px;color:var(--text-muted);">Jusqu'au ${new Date(active.ends_at).toLocaleDateString('fr-FR')}</div>
@@ -4005,13 +4049,15 @@
     }
 
     // ─── THÈMES D'APPLICATION ───
+    // Habillages de l'application. « light » (défaut) et « dark » reprennent les
+    // couleurs du logo ; les autres sont des variantes proposées au commerçant.
     const APP_THEMES = {
-        dark:  { '--bg-dark':'#050409','--bg-mid':'#0c0a14','--bg-card':'rgba(16,13,26,0.8)','--text-main':'#f0eeff','--text-muted':'#6e6b88','--text-sub':'#9b97b5','--secondary-accent':'#16B8C4','--tertiary-accent':'#5B3AA0','--primary-accent':'#ff4d82','--glass-border':'rgba(255,255,255,0.07)' },
-        light: { '--bg-dark':'#F6F6FA','--bg-mid':'#ffffff','--bg-card':'#ffffff','--bg-card-hover':'#F1F1F6','--text-main':'#14141B','--text-muted':'#6B6A78','--text-sub':'#46455A','--secondary-accent':'#0E7C8C','--tertiary-accent':'#5B3AA0','--primary-accent':'#5B3AA0','--glass-border':'rgba(17,24,39,0.09)' },
-        neon:  { '--bg-dark':'#06040f','--bg-mid':'#0e0b1f','--bg-card':'rgba(14,11,31,0.85)','--text-main':'#f0faff','--text-muted':'#6a6a8f','--text-sub':'#9090bf','--secondary-accent':'#00ffb3','--tertiary-accent':'#b44dff','--primary-accent':'#ff2d78','--glass-border':'rgba(180,77,255,0.12)' },
-        ocean: { '--bg-dark':'#030c14','--bg-mid':'#061825','--bg-card':'rgba(6,24,37,0.88)','--text-main':'#e8f4ff','--text-muted':'#4d7a9a','--text-sub':'#7aacc8','--secondary-accent':'#00b4d8','--tertiary-accent':'#0077ff','--primary-accent':'#16B8C4','--glass-border':'rgba(0,180,216,0.12)' },
-        amber: { '--bg-dark':'#0d0904','--bg-mid':'#17100a','--bg-card':'rgba(23,16,10,0.88)','--text-main':'#ffecd0','--text-muted':'#7a5a3a','--text-sub':'#a07850','--secondary-accent':'#f4a432','--tertiary-accent':'#c06820','--primary-accent':'#ff6b35','--glass-border':'rgba(244,164,50,0.1)' },
-        rose:  { '--bg-dark':'#0d0a10','--bg-mid':'#180e1c','--bg-card':'rgba(24,14,28,0.88)','--text-main':'#ffe8f5','--text-muted':'#7a4a6e','--text-sub':'#a06890','--secondary-accent':'#f472b6','--tertiary-accent':'#a855f7','--primary-accent':'#fb7185','--glass-border':'rgba(244,114,182,0.12)' }
+        light: { '--bg-dark':'#F5F5F9','--bg-mid':'#FFFFFF','--bg-card':'#FFFFFF','--bg-card-hover':'#FAFAFC','--text-main':'#101018','--text-muted':'#6B6B7B','--text-sub':'#3A3A48','--secondary-accent':'#1B8E97','--tertiary-accent':'#5A32A0','--primary-accent':'#4B45A6','--glass-border':'#EAEAF0','--glass-border-bright':'#DCDCE6' },
+        dark:  { '--bg-dark':'#08070E','--bg-mid':'#0E0C18','--bg-card':'#14111F','--bg-card-hover':'#1A1628','--text-main':'#F1EFFA','--text-muted':'#7E7A96','--text-sub':'#A8A4BE','--secondary-accent':'#2FC7CB','--tertiary-accent':'#9C6BFF','--primary-accent':'#8B7CF8','--glass-border':'rgba(255,255,255,0.08)','--glass-border-bright':'rgba(255,255,255,0.16)' },
+        neon:  { '--bg-dark':'#06040f','--bg-mid':'#0e0b1f','--bg-card':'#120e28','--bg-card-hover':'#181234','--text-main':'#f0faff','--text-muted':'#6a6a8f','--text-sub':'#9090bf','--secondary-accent':'#00ffb3','--tertiary-accent':'#b44dff','--primary-accent':'#ff2d78','--glass-border':'rgba(180,77,255,0.16)','--glass-border-bright':'rgba(180,77,255,0.28)' },
+        ocean: { '--bg-dark':'#030c14','--bg-mid':'#061825','--bg-card':'#082032','--bg-card-hover':'#0b2a40','--text-main':'#e8f4ff','--text-muted':'#4d7a9a','--text-sub':'#7aacc8','--secondary-accent':'#00b4d8','--tertiary-accent':'#0077ff','--primary-accent':'#00d5f2','--glass-border':'rgba(0,180,216,0.18)','--glass-border-bright':'rgba(0,180,216,0.30)' },
+        amber: { '--bg-dark':'#0d0904','--bg-mid':'#17100a','--bg-card':'#1d150d','--bg-card-hover':'#251b11','--text-main':'#ffecd0','--text-muted':'#7a5a3a','--text-sub':'#a07850','--secondary-accent':'#f4a432','--tertiary-accent':'#c06820','--primary-accent':'#ff6b35','--glass-border':'rgba(244,164,50,0.16)','--glass-border-bright':'rgba(244,164,50,0.28)' },
+        rose:  { '--bg-dark':'#0d0a10','--bg-mid':'#180e1c','--bg-card':'#1e1224','--bg-card-hover':'#26172e','--text-main':'#ffe8f5','--text-muted':'#7a4a6e','--text-sub':'#a06890','--secondary-accent':'#f472b6','--tertiary-accent':'#a855f7','--primary-accent':'#fb7185','--glass-border':'rgba(244,114,182,0.18)','--glass-border-bright':'rgba(244,114,182,0.30)' }
     };
 
     function applyAppTheme(theme) {
@@ -4081,7 +4127,7 @@
                 el.innerHTML = list.map(r => {
                     const rewarded = r.status === 'rewarded';
                     const badge = rewarded
-                        ? '<span style="font-size:11px;font-weight:700;color:#16B8C4;background:rgba(22,184,196,.12);padding:3px 10px;border-radius:20px;white-space:nowrap;">✓ Mois gagné</span>'
+                        ? '<span style="font-size:11px;font-weight:700;color:var(--secondary-accent);background:rgba(22,184,196,.12);padding:3px 10px;border-radius:20px;white-space:nowrap;">✓ Mois gagné</span>'
                         : '<span style="font-size:11px;font-weight:700;color:var(--text-muted);background:rgba(150,150,150,.12);padding:3px 10px;border-radius:20px;white-space:nowrap;">En attente de paiement</span>';
                     const name = String(r.referred_name || 'Commerçant').replace(/[<>&]/g, '');
                     return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;background:rgba(150,150,150,.05);border-radius:10px;">
@@ -4201,7 +4247,7 @@
         gateBilling = (b === 'year') ? 'year' : 'month';
         const mBtn = document.getElementById('gate-bill-month');
         const yBtn = document.getElementById('gate-bill-year');
-        const on  = 'border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(125deg,#5B3AA0,#16B8C4);color:#fff;';
+        const on  = 'border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;';
         const off = 'border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:none;color:var(--text-muted,#6B6A78);';
         if (mBtn) mBtn.style.cssText = gateBilling === 'month' ? on : off;
         if (yBtn) yBtn.style.cssText = gateBilling === 'year'  ? on : off;
@@ -4229,27 +4275,27 @@
         ov.innerHTML = `
         <div style="max-width:760px;width:100%;text-align:center;">
             <div style="font-size:38px;margin-bottom:10px;">🎁</div>
-            <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:28px;margin-bottom:8px;color:var(--text-main,#14141B);">Activez votre essai gratuit de 14 jours</h2>
+            <h2 style="font-family:Inter,sans-serif;font-weight:900;font-size:28px;margin-bottom:8px;color:var(--text-main,#14141B);">Activez votre essai gratuit de 14 jours</h2>
             <p style="color:var(--text-muted,#6B6A78);font-size:14.5px;line-height:1.65;max-width:470px;margin:0 auto 22px;">Choisissez votre formule : <strong>0&nbsp;€ aujourd'hui</strong>, premier prélèvement seulement à la fin de l'essai. Annulable en 1&nbsp;clic à tout moment pendant les 14 jours.</p>
             <div style="display:inline-flex;background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:100px;padding:4px;margin-bottom:24px;gap:4px;">
-                <button id="gate-bill-month" onclick="setGateBilling('month')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(125deg,#5B3AA0,#16B8C4);color:#fff;">Mensuel</button>
+                <button id="gate-bill-month" onclick="setGateBilling('month')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;">Mensuel</button>
                 <button id="gate-bill-year" onclick="setGateBilling('year')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:none;color:var(--text-muted,#6B6A78);">Annuel · jusqu'à -25%</button>
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:620px;margin:0 auto;">
                 <div style="background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:20px;padding:26px 22px;text-align:left;">
-                    <div style="font-weight:800;font-size:17px;font-family:'Bricolage Grotesque',sans-serif;color:var(--text-main,#14141B);">Essentiel</div>
+                    <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Essentiel</div>
                     <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-ess-price">49€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
-                    <div style="font-size:11.5px;color:#0E7C8C;font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-ess-note"></div>
+                    <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-ess-note"></div>
                     <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">150 clients actifs · scanner QR · tableau de bord</div>
                     <button onclick="startStripeUpgrade('essentiel', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Essentiel</button>
                 </div>
                 <div style="background:var(--bg-card,#fff);border:2px solid rgba(14,124,140,0.45);border-radius:20px;padding:26px 22px;text-align:left;position:relative;">
-                    <div style="position:absolute;top:-11px;right:14px;background:linear-gradient(125deg,#5B3AA0,#16B8C4);color:#fff;font-size:10px;font-weight:800;padding:4px 10px;border-radius:100px;letter-spacing:.4px;">RECOMMANDÉ</div>
-                    <div style="font-weight:800;font-size:17px;font-family:'Bricolage Grotesque',sans-serif;color:var(--text-main,#14141B);">KEEPO Pro</div>
+                    <div style="position:absolute;top:-11px;right:14px;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-size:10px;font-weight:800;padding:4px 10px;border-radius:100px;letter-spacing:.4px;">RECOMMANDÉ</div>
+                    <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">KEEPO Pro</div>
                     <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-pro-price">99€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
-                    <div style="font-size:11.5px;color:#0E7C8C;font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-pro-note"></div>
+                    <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-pro-note"></div>
                     <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">Illimité · marketing automatisé · parrainage, roue, VIP</div>
-                    <button onclick="startStripeUpgrade('pro', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(125deg,#5B3AA0,#16B8C4);color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Pro gratuitement</button>
+                    <button onclick="startStripeUpgrade('pro', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Pro gratuitement</button>
                 </div>
             </div>
             <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:20px;">🔒 Paiement sécurisé Stripe · 14 jours d'essai inclus dans les deux formules</p>
@@ -4343,12 +4389,12 @@
                 * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 body { margin: 0; padding: 0; font-family: 'Arial', sans-serif; }
                 .sheet { width: 148mm; height: 210mm; padding: 16mm 12mm; background: linear-gradient(160deg,#0a0918,#13102a); color: #fff; display: flex; flex-direction: column; align-items: center; text-align: center; }
-                h1 { font-size: 28px; margin: 0 0 8px; color: #16B8C4; font-weight: 800; letter-spacing: -.5px; }
+                h1 { font-size: 28px; margin: 0 0 8px; color: var(--secondary-accent); font-weight: 800; letter-spacing: -.5px; }
                 .biz { font-size: 22px; font-weight: 800; margin-bottom: 20px; }
                 .qr { background: white; padding: 14px; border-radius: 16px; margin-bottom: 18px; }
                 .qr svg { display: block; width: 75mm; height: 75mm; }
                 .step { background: rgba(14,124,140,0.08); border: 1px solid rgba(14,124,140,0.3); border-radius: 12px; padding: 10px 16px; margin-bottom: 8px; font-size: 13px; width: 100%; max-width: 110mm; }
-                .step b { color: #16B8C4; }
+                .step b { color: var(--secondary-accent); }
                 .footer { font-size: 11px; opacity: .6; margin-top: auto; }
             </style></head>
             <body>
@@ -4817,7 +4863,7 @@
     }
 
     // ─── ONBOARDING WIZARD ───
-    let obSelectedColor = '#16B8C4';
+    let obSelectedColor = 'var(--secondary-accent)';
     let obQrDesigner = null;
 
     document.querySelectorAll('.ob-color-swatch').forEach(sw => {
@@ -5367,7 +5413,7 @@
 
         listEl.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;">
+                <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:800;">
                     <i class="fa-solid fa-robot" style="color:var(--secondary-accent)"></i>&nbsp; Automations actives (${notificationsData.length})
                 </div>
                 <button onclick="openNotificationBuilderFlow()" class="btn-action btn-primary-gradient" style="font-size:12px;padding:10px 20px;">
@@ -5375,7 +5421,7 @@
                 </button>
             </div>` +
             notificationsData.map(n => `
-            <div style="background:rgba(255,255,255,0.02);border:1px solid ${n.active ? 'rgba(14,124,140,0.2)' : 'var(--glass-border)'};border-radius:16px;padding:18px 20px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;">
+            <div style="background:var(--bg-card-hover);border:1px solid ${n.active ? 'rgba(14,124,140,0.2)' : 'var(--glass-border)'};border-radius:16px;padding:18px 20px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;">
                 <div style="width:38px;height:38px;background:${n.active ? 'rgba(14,124,140,0.1)' : 'rgba(255,255,255,0.03)'};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
                     ${typeIcon[n.type] || '📧'}
                 </div>
@@ -6190,6 +6236,21 @@
     }
     function closeUpgradeModal() { /* no-op : la modale est remplacée par la page /pro */ }
 
+    // ─── Bascule rapide clair / sombre ──────────────────────
+    // S appuie sur le systeme d habillages existant (APP_THEMES) : un seul
+    // mecanisme, une seule preference sauvegardee.
+    function toggleMerchantTheme() {
+        const cur = document.documentElement.getAttribute("data-theme") || "light";
+        applyAppTheme(cur === "dark" ? "light" : "dark");
+    }
+    function syncThemeToggleIcon() {
+        const dark = (document.documentElement.getAttribute("data-theme") || "light") !== "light";
+        const ic = document.querySelector("#themeToggle i");
+        if (ic) ic.className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+        const meta = document.querySelector(String.fromCharCode(39) + "meta[name=" + String.fromCharCode(34) + "theme-color" + String.fromCharCode(34) + "]" + String.fromCharCode(39));
+        if (meta) meta.setAttribute("content", dark ? "#08070E" : "#F5F5F9");
+    }
+
     async function handleLogout() {
         if (realTimeHtml5QrScanner) {
             try { await realTimeHtml5QrScanner.stop(); realTimeHtml5QrScanner.clear(); } catch(e) {}
@@ -6209,12 +6270,12 @@
         ov.innerHTML = `
             <div style="background:var(--bg-card,#1a1828);border:1px solid rgba(224,36,94,0.35);border-radius:24px;max-width:420px;width:100%;padding:28px 26px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,0.5);">
                 <div style="width:56px;height:56px;border-radius:18px;margin:0 auto 14px;background:rgba(224,36,94,0.12);border:1px solid rgba(224,36,94,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;color:#ff7a9c;"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;color:var(--text-main,#fff);">Supprimer votre compte commerçant ?</h3>
+                <h3 style="font-family:Inter,sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;color:var(--text-main,#fff);">Supprimer votre compte commerçant ?</h3>
                 <p style="color:var(--text-muted,#9C9BAB);font-size:13px;line-height:1.6;margin-bottom:8px;">Action <strong style="color:var(--text-main,#fff);">irréversible</strong>. Votre programme, vos cartes, vos clients et votre historique seront effacés. <strong style="color:var(--text-main,#fff);">Votre abonnement sera annulé</strong> automatiquement.</p>
                 <p style="font-size:12px;color:var(--text-muted,#9C9BAB);margin-bottom:9px;">Écrivez <strong style="color:#ff7a9c;letter-spacing:1px;">SUPPRIMER</strong> pour confirmer :</p>
                 <input type="text" id="merchant-delete-input" placeholder="SUPPRIMER" autocomplete="off" autocapitalize="characters"
                     oninput="document.getElementById('merchant-delete-confirm').disabled = this.value.trim().toUpperCase() !== 'SUPPRIMER';"
-                    style="width:100%;text-align:center;letter-spacing:3px;font-weight:700;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);color:var(--text-main,#fff);padding:12px;border-radius:12px;font-family:inherit;font-size:15px;margin-bottom:14px;">
+                    style="width:100%;text-align:center;letter-spacing:3px;font-weight:700;background:var(--bg-card-hover);border:1px solid var(--glass-border);color:var(--text-main,#fff);padding:12px;border-radius:12px;font-family:inherit;font-size:15px;margin-bottom:14px;">
                 <button id="merchant-delete-confirm" onclick="doMerchantDeleteAccount()" disabled
                     style="width:100%;background:linear-gradient(135deg,#E0245E,#b3194a);color:#fff;border:none;border-radius:13px;padding:13px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;">
                     <i class="fa-solid fa-trash-can"></i> Supprimer définitivement
@@ -6340,13 +6401,13 @@
         }
         const escape = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         box.innerHTML = data.map(c => `
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid var(--glass-border);border-radius:12px;">
-                <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0d0c18;">${escape(c.name).charAt(0).toUpperCase()}</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:12px;">
+                <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));display:flex;align-items:center;justify-content:center;font-weight:900;color:#0d0c18;">${escape(c.name).charAt(0).toUpperCase()}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:700;font-size:13px;color:var(--text-main);">${escape(c.name)}</div>
                     <div style="font-size:11px;color:var(--text-muted);">${c.role === 'manager' ? '<i class="fa-solid fa-user-tie"></i> Manager' : '<i class="fa-solid fa-user"></i> Caissier'} ${c.active ? '· actif' : '· inactif'}</div>
                 </div>
-                <button onclick="resetCashierPin(${c.id}, '${escape(c.name).replace(/'/g,"\\'")}')" title="Changer le PIN" style="background:rgba(255,255,255,0.05);border:none;color:var(--text-sub);width:30px;height:30px;border-radius:8px;cursor:pointer;">
+                <button onclick="resetCashierPin(${c.id}, '${escape(c.name).replace(/'/g,"\\'")}')" title="Changer le PIN" style="background:var(--bg-card-hover);border:none;color:var(--text-sub);width:30px;height:30px;border-radius:8px;cursor:pointer;">
                     <i class="fa-solid fa-key"></i>
                 </button>
                 <button onclick="deleteCashier(${c.id}, '${escape(c.name).replace(/'/g,"\\'")}')" title="Supprimer" style="background:rgba(255,77,130,0.08);border:none;color:#ff8aaa;width:30px;height:30px;border-radius:8px;cursor:pointer;">
@@ -6472,8 +6533,8 @@
     // ─── Éditeur de lots — Roue de la fortune ───
     const WHEEL_DEFAULT_PRIZES = [
         { label: 'Jackpot 500 pts', points: 500, probability: 5,  color: '#ffc34d' },
-        { label: '150 pts bonus',   points: 150, probability: 15, color: '#5B3AA0' },
-        { label: '50 pts bonus',    points: 50,  probability: 25, color: '#16B8C4' },
+        { label: '150 pts bonus',   points: 150, probability: 15, color: 'var(--tertiary-accent)' },
+        { label: '50 pts bonus',    points: 50,  probability: 25, color: 'var(--secondary-accent)' },
         { label: '20 pts bonus',    points: 20,  probability: 30, color: '#ff8a5c' },
         { label: 'Pas de chance',   points: 0,   probability: 25, color: '#3a3556' }
     ];
@@ -6490,7 +6551,7 @@
                 <input type="text"   class="wpr-label" value="${safeLabel}" maxlength="20" placeholder="Libellé" oninput="updateWheelProbSum()">
                 <input type="number" class="wpr-pts"   value="${p.points ?? 0}" min="0" placeholder="0" oninput="updateWheelProbSum()">
                 <input type="number" class="wpr-prob"  value="${p.probability ?? 10}" min="1" max="99" placeholder="%" oninput="updateWheelProbSum()">
-                <input type="color"  class="wpr-color" value="${p.color || '#5B3AA0'}">
+                <input type="color"  class="wpr-color" value="${p.color || 'var(--tertiary-accent)'}">
                 <button class="wheel-prize-del" onclick="removeWheelPrize(${i})" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
             `;
             list.appendChild(row);
@@ -6504,12 +6565,12 @@
         const el = document.getElementById('wheel-prob-sum');
         if (!el) return;
         el.textContent = `Total : ${total}%`;
-        el.style.color = total === 100 ? 'var(--secondary-accent)' : '#ff4d82';
+        el.style.color = total === 100 ? 'var(--secondary-accent)' : 'var(--primary-accent)';
     }
 
     function addWheelPrize() {
         const prizes = getWheelPrizes();
-        prizes.push({ label: 'Nouveau lot', points: 10, probability: 5, color: '#5B3AA0' });
+        prizes.push({ label: 'Nouveau lot', points: 10, probability: 5, color: 'var(--tertiary-accent)' });
         renderWheelPrizes(prizes);
     }
 
@@ -6525,7 +6586,7 @@
             label:       row.querySelector('.wpr-label')?.value  || 'Lot',
             points:      parseInt(row.querySelector('.wpr-pts')?.value  || '0'),
             probability: parseInt(row.querySelector('.wpr-prob')?.value || '5'),
-            color:       row.querySelector('.wpr-color')?.value  || '#5B3AA0'
+            color:       row.querySelector('.wpr-color')?.value  || 'var(--tertiary-accent)'
         }));
     }
 
@@ -6640,7 +6701,7 @@
         ov.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(5,4,9,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px;';
         ov.addEventListener('click', (e) => { if (e.target === ov) closeModal(); });
         ov.innerHTML = `<div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:20px;padding:24px;max-width:480px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.4);" onclick="event.stopPropagation()">
-            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;color:var(--text-main);">${title}</div>
+            <div style="font-family:Inter,sans-serif;font-weight:800;font-size:18px;margin-bottom:6px;color:var(--text-main);">${title}</div>
             ${bodyHtml}
         </div>`;
         document.body.appendChild(ov);
@@ -6658,7 +6719,7 @@
             <div style="padding:4px 0 12px;">
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Décrivez votre message en quelques mots :</div>
                 <textarea id="ai-camp-prompt" rows="3" placeholder="Ex : offre spéciale -20% pour les fêtes, valable ce week-end uniquement"
-                    style="width:100%;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 12px;border-radius:12px;font-family:inherit;font-size:13px;resize:vertical;"></textarea>
+                    style="width:100%;background:rgba(0,0,0,0.35);border:1px solid var(--glass-border);color:#fff;padding:10px 12px;border-radius:12px;font-family:inherit;font-size:13px;resize:vertical;"></textarea>
                 <div style="display:flex;gap:10px;margin-top:14px;">
                     <button onclick="closeModal()" class="btn-action btn-secondary" style="padding:10px 18px;">Annuler</button>
                     <button onclick="runAiForCampaign('${merchantName.replace(/'/g,"\\'")}',this)" class="btn-action btn-ai-suggest" style="flex:1;">
@@ -6730,7 +6791,7 @@
                                 border:1px solid ${isOk ? 'rgba(34,212,122,0.25)' : 'rgba(255,195,77,0.25)'};
                                 border-radius:12px;padding:14px 16px;">
                         <div style="font-weight:700;font-size:14px;margin-bottom:4px;">
-                            ${isOk ? '<i class="fa-solid fa-circle-check" style="color:#22d47a;"></i>' : '<i class="fa-solid fa-triangle-exclamation" style="color:#ffc34d;"></i>'}
+                            ${isOk ? '<i class="fa-solid fa-circle-check" style="color:var(--success);"></i>' : '<i class="fa-solid fa-triangle-exclamation" style="color:#ffc34d;"></i>'}
                             ${d.sent} email${d.sent > 1 ? 's' : ''} envoyé${d.sent > 1 ? 's' : ''}
                             ${d.failed > 0 ? `<span style="color:#ffc34d;font-size:12px;"> · ${d.failed} échec${d.failed > 1 ? 's' : ''}</span>` : ''}
                         </div>
@@ -6899,7 +6960,7 @@
                 <div class="ai-color-preview" style="background:${data.bgColor};">
                     <div class="ai-color-swatch" style="background:${data.txtColor};"></div>
                     <div class="ai-color-swatch" style="background:${data.borderColor};border-color:${data.borderColor};"></div>
-                    <div style="flex:1;color:${data.txtColor};font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:16px;">${escapeHtml(data.tagline)}</div>
+                    <div style="flex:1;color:${data.txtColor};font-family:Inter,sans-serif;font-weight:800;font-size:16px;">${escapeHtml(data.tagline)}</div>
                 </div>
                 <div style="font-size:12px;color:var(--text-muted);margin-top:10px;font-style:italic;">${escapeHtml(data.rationale)}</div>
                 <div class="ai-modal-actions">
@@ -6983,7 +7044,7 @@
                     <button onclick="showBoutiqueQr('${b.id}','${escapeHtml(b.name).replace(/'/g,"\\'")}' )" title="Afficher QR" style="background:rgba(14,124,140,.1);border:1px solid rgba(14,124,140,.2);color:var(--secondary-accent);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px;">
                         <i class="fa-solid fa-qrcode"></i>
                     </button>
-                    <button onclick="toggleBoutiqueStatus('${b.id}', ${b.is_active})" title="${b.is_active ? 'Désactiver' : 'Activer'}" style="background:rgba(255,255,255,.06);border:1px solid var(--glass-border);color:var(--text-sub);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px;">
+                    <button onclick="toggleBoutiqueStatus('${b.id}', ${b.is_active})" title="${b.is_active ? 'Désactiver' : 'Activer'}" style="background:var(--bg-card-hover);border:1px solid var(--glass-border);color:var(--text-sub);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px;">
                         <i class="fa-solid ${b.is_active ? 'fa-pause' : 'fa-play'}"></i>
                     </button>
                     <button onclick="deleteBoutique('${b.id}')" title="Supprimer" style="background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.2);color:var(--danger);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px;">
