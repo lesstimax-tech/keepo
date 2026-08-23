@@ -18,7 +18,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,700&family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600;800;900&family=Poppins:wght@400;600;800&family=Lobster&family=Pacifico&family=Dancing+Script:wght@500;700&family=Caveat:wght@500;700&family=Abril+Fatface&family=Righteous&family=Cormorant+Garamond:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&family=Archivo+Black&family=DM+Serif+Display&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -630,177 +630,197 @@
         }
 
         /* ═══════════════ STUDIO DESIGN CARD ═══════════════ */
-        .studio-workspace { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,.9fr);
-            gap: 26px; align-items: start; }
+        .studio-workspace { display: grid; grid-template-columns: minmax(0,1.08fr) minmax(0,.92fr);
+            gap: 24px; align-items: start; }
+        .studio-panel { display: flex; flex-direction: column; gap: 14px; }
 
-        .studio-panel { display: flex; flex-direction: column; gap: 12px; }
+        /* ── Section : bloc franchement delimite ── */
+        .sx { --c: var(--tertiary-accent);
+            position: relative; border-radius: 16px; overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            transition: box-shadow .3s var(--ease), transform .3s var(--ease); }
+        .sx[data-c="cyan"]   { --c: #1FA5A8; }
+        .sx[data-c="amber"]  { --c: #C98A16; }
+        .sx[data-c="green"]  { --c: #12925A; }
+        .sx[data-c="pink"]   { --c: #D6336C; }
+        .sx[data-c="violet"] { --c: #5A32A0; }
+        .sx::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--c); opacity: .45; transition: opacity .3s var(--ease); }
+        .sx.open { box-shadow: 0 10px 26px -18px var(--c); }
+        .sx.open::before { opacity: 1; }
 
-        /* ── Sections repliables ── */
-        .st-sec { background: var(--bg-card); border: 1px solid var(--glass-border);
-            border-radius: 16px; overflow: hidden; transition: border-color .3s var(--ease),
-            box-shadow .3s var(--ease); }
-        .st-sec.open { border-color: var(--glass-border-bright); box-shadow: var(--shadow-sm); }
-        .st-head { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px;
-            background: none; border: none; cursor: pointer; text-align: left; color: var(--text-main); }
-        .st-ico { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center;
-            background: var(--grad-soft); color: var(--secondary-accent); font-size: 13px; flex-shrink: 0;
-            transition: transform .35s var(--ease); }
-        .st-sec.open .st-ico { transform: scale(1.06) rotate(-4deg); }
-        .st-t { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; font-weight: 650;
-            letter-spacing: -.015em; min-width: 0; }
-        .st-t small { font-size: 11px; font-weight: 450; color: var(--text-muted); }
-        .st-badge { font-size: 11px; font-weight: 700; min-width: 20px; text-align: center;
-            padding: 2px 7px; border-radius: 999px; background: var(--secondary-accent); color: #fff; }
-        .st-chev { font-size: 11px; color: var(--text-muted); transition: transform .35s var(--ease); }
-        .st-sec.open .st-chev { transform: rotate(180deg); }
-        .st-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .38s var(--ease); }
-        .st-sec.open .st-body { grid-template-rows: 1fr; }
-        .st-body > * { overflow: hidden; }
-        .st-body { padding: 0 16px; }
-        .st-sec.open .st-body { padding-bottom: 16px; }
+        .sx-h { width: 100%; display: flex; align-items: center; gap: 13px; padding: 15px 16px 15px 20px;
+            background: none; border: none; cursor: pointer; text-align: left; color: var(--text-main);
+            transition: background .25s var(--ease); }
+        .sx-h:hover { background: color-mix(in srgb, var(--c) 6%, transparent); }
+        .sx-n { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+            font-size: 11.5px; font-weight: 800; letter-spacing: -.02em; flex-shrink: 0;
+            background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--c);
+            font-variant-numeric: tabular-nums; transition: all .3s var(--ease); }
+        .sx.open .sx-n { background: var(--c); color: #fff; transform: scale(1.05); }
+        .sx-tt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+            font-size: 13.5px; font-weight: 650; letter-spacing: -.015em; }
+        .sx-tt em { font-style: normal; font-size: 11px; font-weight: 450; color: var(--text-muted); }
+        .sx-b2 { min-width: 22px; text-align: center; padding: 3px 8px; border-radius: 999px;
+            background: var(--c); color: #fff; font-size: 11px; font-weight: 700; }
+        .sx-c { font-size: 11px; color: var(--text-muted); transition: transform .35s var(--ease); }
+        .sx.open .sx-c { transform: rotate(180deg); color: var(--c); }
+
+        .sx-b { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease); }
+        .sx.open .sx-b { grid-template-rows: 1fr; }
+        .sx-b > .sx-in { overflow: hidden; }
+        .sx.open .sx-in { padding: 4px 18px 18px 20px; border-top: 1px dashed var(--glass-border);
+            margin-top: -1px; }
+
+        /* ── Interrupteur d'affichage ── */
+        .sx-sw { position: relative; width: 38px; height: 21px; flex-shrink: 0; cursor: pointer; }
+        .sx-sw input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 2; }
+        .sx-sw span { position: absolute; inset: 0; border-radius: 999px; background: var(--glass-border-bright);
+            transition: background .28s var(--ease); }
+        .sx-sw span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 15px; height: 15px;
+            border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+            transition: transform .28s var(--ease); }
+        .sx-sw input:checked + span { background: var(--c); }
+        .sx-sw input:checked + span::after { transform: translateX(17px); }
 
         /* ── Champs ── */
-        .st-f { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
-        .st-f > label { display: flex; align-items: center; justify-content: space-between;
-            font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase;
+        .sx-f { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+        .sx-f > label { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
             color: var(--text-muted); }
-        .st-f > label b { font-weight: 700; color: var(--secondary-accent); font-size: 11px;
-            letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
-        .st-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .st-grp { display: none; }
-        .st-grp.on { display: block; animation: stFade .3s var(--ease); }
-        @keyframes stFade { from { opacity: 0; transform: translateY(-4px) } }
+        .sx-f > label b { font-weight: 700; font-size: 11px; letter-spacing: 0; text-transform: none;
+            color: var(--c); font-variant-numeric: tabular-nums; }
+        .sx-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .sx-grp { display: none; }
+        .sx-grp.on { display: block; animation: sxIn .3s var(--ease); }
+        @keyframes sxIn { from { opacity: 0; transform: translateY(-5px) } }
+        .sx-sep { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--glass-border);
+            font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+            color: var(--c); }
 
-        .st-f input[type=text], .st-f select {
+        .sx-f input[type=text], .sx-f select {
             width: 100%; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-family: inherit;
             background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);
-            transition: border-color .2s var(--ease), box-shadow .2s var(--ease); }
-        .st-f input[type=text]:focus, .st-f select:focus { outline: none;
-            border-color: var(--secondary-accent); box-shadow: 0 0 0 3px var(--secondary-glow); }
-        .st-f input[type=color] { width: 100%; height: 38px; padding: 3px; border-radius: 10px; cursor: pointer;
-            background: var(--bg-dark); border: 1px solid var(--glass-border); }
-        .st-f input[type=range] { width: 100%; accent-color: var(--secondary-accent);
-            background: none; border: none; padding: 4px 0; cursor: pointer; }
-        .st-check { display: flex; align-items: center; gap: 9px; margin-top: 12px; cursor: pointer;
+            transition: border-color .2s, box-shadow .2s; }
+        .sx-f input[type=text]:focus, .sx-f select:focus { outline: none; border-color: var(--c);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+        .sx-f input[type=color] { width: 100%; height: 36px; padding: 3px; border-radius: 10px;
+            background: var(--bg-dark); border: 1px solid var(--glass-border); cursor: pointer; }
+        .sx-f input[type=range] { width: 100%; accent-color: var(--c); background: none; border: none;
+            padding: 4px 0; cursor: pointer; }
+        .sx-chk { display: flex; align-items: center; gap: 9px; margin-top: 13px; cursor: pointer;
             font-size: 12.5px; color: var(--text-sub); }
-        .st-check input { accent-color: var(--secondary-accent); width: 15px; height: 15px; }
+        .sx-chk input { accent-color: var(--c); width: 15px; height: 15px; }
 
-        /* ── Sélecteurs segmentés ── */
-        .st-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px;
+        .sx-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px;
             background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 11px;
-            margin-top: 12px; }
-        .st-seg.sm { margin-top: 0; }
-        .st-seg button { padding: 8px 6px; border-radius: 8px; border: none; cursor: pointer;
-            background: none; color: var(--text-muted); font-size: 12px; font-weight: 600; font-family: inherit;
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            margin-top: 14px; }
+        .sx-seg.sm { margin-top: 0; }
+        .sx-seg button { padding: 8px 6px; border-radius: 8px; border: none; cursor: pointer; background: none;
+            color: var(--text-muted); font-size: 12px; font-weight: 600; font-family: inherit;
             transition: all .22s var(--ease); }
-        .st-seg button i { font-size: 11px; }
-        .st-seg button:hover { color: var(--text-main); }
-        .st-seg button.on { background: var(--bg-card); color: var(--secondary-accent);
-            box-shadow: var(--shadow-sm); }
+        .sx-seg button.on { background: var(--bg-card); color: var(--c); box-shadow: var(--shadow-sm); }
+
+        .sx-drop { display: flex; align-items: center; gap: 10px; padding: 13px 15px; cursor: pointer;
+            border: 1.5px dashed var(--glass-border-bright); border-radius: 12px; margin-top: 14px;
+            background: var(--bg-dark); color: var(--text-sub); font-size: 13px; font-weight: 550;
+            transition: all .22s var(--ease); }
+        .sx-drop:hover { border-color: var(--c); color: var(--c); }
 
         /* ── Préréglages ── */
-        .st-presets { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; margin-top: 12px; }
-        .st-preset { border-radius: 12px; overflow: hidden; cursor: pointer; border: 1.5px solid var(--glass-border);
-            background: none; padding: 0; transition: all .28s var(--ease); }
-        .st-preset:hover { transform: translateY(-3px); border-color: var(--secondary-accent);
+        .sx-presets { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 14px; }
+        .sx-preset { border-radius: 12px; overflow: hidden; cursor: pointer; padding: 0;
+            border: 1.5px solid var(--glass-border); background: none; transition: all .28s var(--ease); }
+        .sx-preset:hover { transform: translateY(-3px) scale(1.02); border-color: var(--c);
             box-shadow: var(--shadow-md); }
-        .st-preset .sw { height: 46px; display: block; }
-        .st-preset .nm { display: block; font-size: 10.5px; font-weight: 650; padding: 6px 4px;
+        .sx-preset .sw { height: 48px; display: block; position: relative; }
+        .sx-preset .sw::after { content: "Aa"; position: absolute; inset: 0; display: grid; place-items: center;
+            color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,.4); }
+        .sx-preset .nm { display: block; font-size: 10.5px; font-weight: 650; padding: 7px 4px;
             color: var(--text-sub); background: var(--bg-dark); }
 
-        /* ── Ajout d'éléments ── */
-        .st-add { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 12px; }
-        .st-add button { display: flex; flex-direction: column; align-items: center; gap: 7px;
-            padding: 15px 8px; border-radius: 12px; cursor: pointer; font-family: inherit;
-            background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);
-            font-size: 11.5px; font-weight: 600; transition: all .25s var(--ease); position: relative;
-            overflow: hidden; }
-        .st-add button i { font-size: 17px; color: var(--secondary-accent); transition: transform .3s var(--ease); }
-        .st-add button:hover { border-color: var(--secondary-accent); transform: translateY(-3px);
-            box-shadow: var(--shadow-sm); }
-        .st-add button:hover i { transform: scale(1.15) translateY(-1px); }
+        /* ── Éléments libres ── */
+        .sx-add { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 14px; }
+        .sx-add button { display: flex; flex-direction: column; align-items: center; gap: 7px;
+            padding: 15px 8px; border-radius: 12px; cursor: pointer; font-family: inherit; font-size: 11.5px;
+            font-weight: 600; background: var(--bg-dark); border: 1px solid var(--glass-border);
+            color: var(--text-main); transition: all .25s var(--ease); }
+        .sx-add button i { font-size: 17px; color: var(--c); transition: transform .3s var(--ease); }
+        .sx-add button:hover { border-color: var(--c); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+        .sx-add button:hover i { transform: scale(1.16); }
 
-        /* ── Liste des calques ── */
-        .st-layers { display: flex; flex-direction: column; gap: 6px; margin-top: 12px;
-            max-height: 190px; overflow-y: auto; }
-        .st-layer { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px;
+        .sx-layers { display: flex; flex-direction: column; gap: 6px; margin-top: 14px;
+            max-height: 200px; overflow-y: auto; }
+        .sx-layer { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px;
             background: var(--bg-dark); border: 1px solid var(--glass-border); cursor: pointer;
-            transition: all .22s var(--ease); animation: stIn .32s var(--ease); }
-        @keyframes stIn { from { opacity: 0; transform: translateX(-8px) } }
-        .st-layer:hover { border-color: var(--glass-border-bright); transform: translateX(2px); }
-        .st-layer.sel { border-color: var(--secondary-accent); box-shadow: 0 0 0 2px var(--secondary-glow); }
-        .st-layer .k { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center;
-            background: var(--grad-soft); color: var(--secondary-accent); font-size: 11px; flex-shrink: 0; }
-        .st-layer .nm { flex: 1; font-size: 12.5px; font-weight: 550; white-space: nowrap;
+            transition: all .22s var(--ease); animation: sxSlide .3s var(--ease); }
+        @keyframes sxSlide { from { opacity: 0; transform: translateX(-8px) } }
+        .sx-layer:hover { border-color: var(--glass-border-bright); transform: translateX(2px); }
+        .sx-layer.sel { border-color: var(--c); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 22%, transparent); }
+        .sx-layer .k { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center;
+            background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--c); font-size: 11px; flex-shrink: 0; }
+        .sx-layer .nm { flex: 1; font-size: 12.5px; font-weight: 550; white-space: nowrap;
             overflow: hidden; text-overflow: ellipsis; }
-        .st-layer .act { display: flex; gap: 2px; }
-        .st-layer .act button { border: none; background: none; color: var(--text-muted); cursor: pointer;
+        .sx-layer .act { display: flex; gap: 1px; }
+        .sx-layer .act button { border: none; background: none; color: var(--text-muted); cursor: pointer;
             padding: 4px 5px; border-radius: 6px; font-size: 11px; transition: all .18s; }
-        .st-layer .act button:hover { color: var(--secondary-accent); background: var(--bg-card); }
-        .st-layer .act button.d:hover { color: var(--danger); background: rgba(214,51,108,.1); }
-        .st-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 18px 12px;
-            border: 1px dashed var(--glass-border); border-radius: 12px; margin-top: 12px; }
+        .sx-layer .act button:hover { color: var(--c); background: var(--bg-card); }
+        .sx-layer .act button.d:hover { color: var(--danger); }
+        .sx-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 18px 12px;
+            border: 1px dashed var(--glass-border); border-radius: 12px; margin-top: 14px; }
+        .sx-props { margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--bg-dark);
+            border: 1px solid var(--glass-border); animation: sxIn .3s var(--ease); }
+        .sx-props-h { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+            color: var(--c); display: flex; align-items: center; gap: 7px; }
 
-        /* ── Réglages de l'élément ── */
-        .st-props { margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--bg-dark);
-            border: 1px solid var(--glass-border); animation: stFade .3s var(--ease); }
-        .st-props-h { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
-            color: var(--secondary-accent); margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
-        .st-props .st-f:first-of-type { margin-top: 8px; }
-
-        /* ── Actions ── */
-        .st-actions { display: grid; grid-template-columns: auto 1fr; gap: 10px; margin-top: 4px; }
-        .st-btn { padding: 13px 18px; border-radius: 12px; cursor: pointer; font-family: inherit;
-            font-size: 13.5px; font-weight: 650; display: inline-flex; align-items: center;
-            justify-content: center; gap: 8px; transition: all .28s var(--ease); border: 1px solid transparent; }
-        .st-btn.ghost { background: var(--bg-card); border-color: var(--glass-border); color: var(--text-muted); }
-        .st-btn.ghost:hover { color: var(--danger); border-color: var(--danger); }
-        .st-btn.main { background: var(--grad); color: #fff; box-shadow: 0 8px 20px -10px var(--primary-glow); }
-        .st-btn.main:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -12px var(--primary-glow); }
+        .sx-actions { display: grid; grid-template-columns: auto 1fr; gap: 10px; }
+        .sx-btn { padding: 14px 20px; border-radius: 13px; cursor: pointer; font-family: inherit;
+            font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center;
+            justify-content: center; gap: 9px; border: 1px solid transparent; transition: all .28s var(--ease); }
+        .sx-btn.ghost { background: var(--bg-card); border-color: var(--glass-border); color: var(--text-muted); }
+        .sx-btn.ghost:hover { color: var(--danger); border-color: var(--danger); }
+        .sx-btn.main { background: var(--grad); color: #fff; box-shadow: 0 10px 24px -12px var(--primary-glow); }
+        .sx-btn.main:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -14px var(--primary-glow); }
 
         /* ══ Aperçu ══ */
         .studio-preview-col { position: sticky; top: 20px; }
-        .st-prev-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .st-prev-t { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+        .sx-prev-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .sx-prev-t { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
             color: var(--text-muted); display: inline-flex; align-items: center; gap: 7px; }
-        .st-live { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600;
-            color: var(--success); }
-        .st-live i { font-size: 6px; animation: stPulse 2s ease-in-out infinite; }
-        @keyframes stPulse { 50% { opacity: .25 } }
+        .sx-live { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .06em; color: var(--success); }
+        .sx-live i { font-size: 6px; animation: sxPulse 2s ease-in-out infinite; }
+        @keyframes sxPulse { 50% { opacity: .25 } }
 
-        .studio-phone { width: 296px; margin: 0 auto; border-radius: 42px; padding: 11px; position: relative;
+        .studio-phone { width: 292px; margin: 0 auto; border-radius: 42px; padding: 11px; position: relative;
             background: #0C0C12; box-shadow: 0 30px 60px -25px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07) inset; }
         .studio-phone-notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
-            width: 96px; height: 22px; background: #0C0C12; border-radius: 0 0 14px 14px; z-index: 5; }
+            width: 94px; height: 22px; background: #0C0C12; border-radius: 0 0 14px 14px; z-index: 5; }
         .studio-phone-status { display: flex; justify-content: space-between; align-items: center;
             padding: 7px 16px 5px; font-size: 10.5px; color: #fff; font-weight: 600; }
         .studio-phone-status i { font-size: 9px; margin-left: 2px; }
-        .studio-phone-screen { background: #F5F5F9; border-radius: 32px; padding: 16px 14px 20px; min-height: 430px; }
-        .studio-phone-title { font-size: 17px; font-weight: 750; color: #101018; letter-spacing: -.03em;
-            margin-bottom: 12px; }
-        .studio-phone-ghost { height: 54px; border-radius: 16px; background: #EDEDF3; margin-top: 12px; }
+        .studio-phone-screen { background: #F5F5F9; border-radius: 32px; padding: 16px 13px 20px; min-height: 420px; }
+        .studio-phone-title { font-size: 17px; font-weight: 750; color: #101018; letter-spacing: -.03em; margin-bottom: 12px; }
+        .studio-phone-ghost { height: 52px; border-radius: 16px; background: #EDEDF3; margin-top: 12px; }
 
         .studio-card { position: relative; overflow: hidden; background: #181628; min-height: 170px;
             background-size: cover; background-position: center;
             transition: min-height .3s var(--ease), border-radius .3s var(--ease), box-shadow .3s var(--ease); }
-        .studio-pattern-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-        .studio-card-overlay { position: absolute; inset: 0; z-index: 1; }
-        .studio-card-inner { position: relative; z-index: 2; padding: 16px; pointer-events: none; }
+        .studio-pattern-layer, .studio-card-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+        .studio-card-inner { position: relative; z-index: 2; padding: 16px; pointer-events: none;
+            display: flex; flex-direction: column; height: 100%; }
         .studio-card-top { display: flex; align-items: flex-start; justify-content: space-between; }
         .studio-card-chip { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
-            font-weight: 800; font-size: 15px; color: #fff; background: rgba(255,255,255,.18); }
+            font-weight: 800; font-size: 15px; color: #fff; overflow: hidden; flex-shrink: 0; }
         .studio-card-pts { font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #fff; }
-        .studio-card-pts-lbl { font-size: 8.5px; color: rgba(255,255,255,.72); letter-spacing: .1em;
-            margin-top: 3px; font-weight: 600; }
+        .studio-card-pts-lbl { font-size: 8.5px; letter-spacing: .1em; margin-top: 3px; font-weight: 600; }
         .studio-card-title { font-size: 16px; font-weight: 700; color: #fff; margin-top: 14px; letter-spacing: -.02em; }
-        .studio-card-bar { height: 5px; border-radius: 99px; background: rgba(255,255,255,.22);
-            margin-top: 12px; overflow: hidden; }
-        .studio-card-bar i { display: block; height: 100%; width: 72%; border-radius: 99px;
+        .studio-card-bar { height: 5px; border-radius: 99px; margin-top: 12px; overflow: hidden; }
+        .studio-card-bar i { display: block; height: 100%; width: 72%; border-radius: inherit;
             transition: background .3s var(--ease); }
         .studio-card-foot { display: flex; align-items: center; justify-content: space-between;
-            margin-top: 12px; font-size: 10px; color: rgba(255,255,255,.75); }
-        .studio-card-badge { padding: 3px 9px; border-radius: 999px; font-weight: 700; font-size: 9.5px; }
+            margin-top: 12px; font-size: 10px; }
+        .studio-card-badge { padding: 3px 9px; font-weight: 700; font-size: 9.5px; }
 
         .studio-layer-host { position: absolute; inset: 0; z-index: 3; }
         .sl { position: absolute; cursor: grab; user-select: none; -webkit-user-select: none;
@@ -808,8 +828,7 @@
         .sl:active { cursor: grabbing; }
         .sl.sel { outline: 1.5px dashed var(--secondary-accent); outline-offset: 3px; border-radius: 3px; }
         .sl img { display: block; width: 100%; height: auto; pointer-events: none; }
-
-        .studio-note { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 16px;
+        .studio-note { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 14px;
             display: flex; align-items: center; justify-content: center; gap: 6px; }
 
         .studio-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px,1fr)); gap: 8px;
@@ -821,95 +840,20 @@
             transform: translateY(-3px) scale(1.05); }
 
         @media (max-width: 1100px) {
-            /* Une seule colonne : l apercu passe EN HAUT et reste colle, sinon on
-               reglerait la carte sans jamais la voir. */
             .studio-workspace { grid-template-columns: 1fr; }
-            .studio-preview-col {
-                position: sticky; top: 0; z-index: 20; order: -1;
+            .studio-preview-col { position: sticky; top: 0; z-index: 20; order: -1;
                 margin: -8px -6px 6px; padding: 10px 6px 12px;
                 background: color-mix(in srgb, var(--bg-dark) 88%, transparent);
-                backdrop-filter: saturate(180%) blur(14px);
-                -webkit-backdrop-filter: saturate(180%) blur(14px);
-                border-bottom: 1px solid var(--glass-border);
-            }
-            /* Version compacte : on ne garde que la carte, pas tout le telephone */
-            .studio-preview-col .studio-phone { width: 250px; padding: 8px; border-radius: 32px; }
+                backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px);
+                border-bottom: 1px solid var(--glass-border); }
+            .studio-preview-col .studio-phone { width: 248px; padding: 8px; border-radius: 32px; }
             .studio-preview-col .studio-phone-screen { min-height: 0; padding: 12px 10px 14px; border-radius: 24px; }
             .studio-preview-col .studio-phone-title,
             .studio-preview-col .studio-phone-ghost,
             .studio-preview-col .studio-note { display: none; }
             .studio-preview-col .studio-phone-status { padding: 4px 12px 3px; }
-            .st-prev-head { margin-bottom: 8px; }
+            .sx-prev-h { margin-bottom: 8px; }
         }
-
-        /* ── Aperçu ── */
-        .studio-preview-col { position: sticky; top: 20px; }
-        .studio-preview-head { display: flex; align-items: center; justify-content: space-between;
-            font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
-            color: var(--text-muted); margin-bottom: 14px; }
-        .studio-live { display: inline-flex; align-items: center; gap: 6px; color: var(--success);
-            font-size: 10.5px; }
-        .studio-live i { font-size: 6px; animation: studioPulse 2s ease-in-out infinite; }
-        @keyframes studioPulse { 50% { opacity: .3 } }
-
-        .studio-phone { width: 300px; margin: 0 auto; border-radius: 42px; padding: 11px;
-            background: #0C0C12; box-shadow: 0 30px 60px -25px rgba(0,0,0,.55),
-            0 0 0 1px rgba(255,255,255,.06) inset; position: relative; }
-        .studio-phone-notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
-            width: 98px; height: 22px; background: #0C0C12; border-radius: 0 0 14px 14px; z-index: 5; }
-        .studio-phone-status { display: flex; justify-content: space-between; align-items: center;
-            padding: 7px 16px 4px; font-size: 10.5px; color: #fff; font-weight: 600; }
-        .studio-phone-status i { font-size: 9px; margin-left: 2px; }
-        .studio-phone-screen { background: #F5F5F9; border-radius: 32px; padding: 16px 14px 20px;
-            min-height: 430px; }
-        .studio-phone-title { font-size: 17px; font-weight: 750; color: #101018; letter-spacing: -.03em;
-            margin-bottom: 12px; }
-
-        /* La carte éditable */
-        .studio-card { position: relative; border-radius: 18px; overflow: hidden; background: #181628;
-            background-size: cover; background-position: center; min-height: 170px;
-            box-shadow: 0 10px 26px -14px rgba(0,0,0,.5); }
-        .studio-card-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
-        .studio-card-inner { position: relative; z-index: 2; padding: 16px; pointer-events: none; }
-        .studio-card-top { display: flex; align-items: flex-start; justify-content: space-between; }
-        .studio-card-chip { width: 36px; height: 36px; border-radius: 10px; display: grid;
-            place-items: center; font-weight: 800; font-size: 15px; color: #fff;
-            background: rgba(255,255,255,.16); backdrop-filter: blur(4px); }
-        .studio-card-pts { font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -.04em; }
-        .studio-card-pts-lbl { font-size: 8.5px; color: rgba(255,255,255,.72); letter-spacing: .1em;
-            margin-top: 3px; font-weight: 600; }
-        .studio-card-title { font-size: 16px; font-weight: 700; color: #fff; margin-top: 14px;
-            letter-spacing: -.02em; }
-        .studio-card-bar { height: 5px; border-radius: 99px; background: rgba(255,255,255,.22);
-            margin-top: 12px; overflow: hidden; }
-        .studio-card-bar i { display: block; height: 100%; width: 72%; border-radius: 99px; }
-        .studio-card-foot { display: flex; align-items: center; justify-content: space-between;
-            margin-top: 12px; font-size: 10px; color: rgba(255,255,255,.75); }
-        .studio-card-badge { padding: 3px 9px; border-radius: 999px; font-weight: 700; font-size: 9.5px; }
-
-        /* Zone des calques ajoutés */
-        .studio-layer-host { position: absolute; inset: 0; z-index: 3; }
-        .sl {
-            position: absolute; cursor: grab; user-select: none; -webkit-user-select: none;
-            touch-action: none; line-height: 1.2; max-width: 92%;
-        }
-        .sl:active { cursor: grabbing; }
-        .sl.sel { outline: 1.5px dashed var(--secondary-accent); outline-offset: 3px; border-radius: 3px; }
-        .sl img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
-            pointer-events: none; }
-
-        .studio-note { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 16px;
-            display: flex; align-items: center; justify-content: center; gap: 6px; }
-
-        /* Sélecteur d'icônes */
-        .studio-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px,1fr)); gap: 8px;
-            max-height: 300px; overflow-y: auto; padding: 4px; }
-        .studio-icons button { aspect-ratio: 1; border-radius: 10px; cursor: pointer; font-size: 18px;
-            background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);
-            transition: all .2s var(--ease); }
-        .studio-icons button:hover { border-color: var(--secondary-accent);
-            color: var(--secondary-accent); transform: translateY(-2px); }
-
 
         /* ─── NOTIFICATION TYPE CARDS ─── */
         .notif-type-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 6px; }
@@ -2279,169 +2223,268 @@
             </div>
             <div class="studio-workspace" style="margin-top:18px;">
 
-                <!-- ══════════ PANNEAU D'ÉDITION ══════════ -->
+                <!-- ══════════ ÉDITEUR ══════════ -->
                 <div class="studio-panel">
 
-                    <!-- ─── Préréglages ─── -->
-                    <section class="st-sec open" data-sec="presets">
-                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
-                            <span class="st-ico"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                            <span class="st-t">Styles rapides<small>Un clic pour tout changer</small></span>
-                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                    <!-- 01 · STYLES -->
+                    <section class="sx open" data-c="violet">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">01</span>
+                            <span class="sx-tt">Styles rapides<em>Un clic, toute la carte change</em></span>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
-                        <div class="st-body">
-                            <div class="st-presets" id="studio-presets"></div>
-                        </div>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-presets" id="studio-presets"></div>
+                        </div></div>
                     </section>
 
-                    <!-- ─── Fond ─── -->
-                    <section class="st-sec" data-sec="bg">
-                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
-                            <span class="st-ico"><i class="fa-solid fa-fill-drip"></i></span>
-                            <span class="st-t">Fond<small>Couleur, dégradé, image, motif</small></span>
-                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                    <!-- 02 · FOND -->
+                    <section class="sx" data-c="cyan">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">02</span>
+                            <span class="sx-tt">Arrière-plan<em>Couleur, dégradé, image, motif</em></span>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
-                        <div class="st-body">
-                            <div class="st-seg" id="studio-bgtype">
-                                <button type="button" data-v="color"    onclick="studioSetBgType('color')"><i class="fa-solid fa-square"></i> Uni</button>
-                                <button type="button" data-v="gradient" onclick="studioSetBgType('gradient')" class="on"><i class="fa-solid fa-circle-half-stroke"></i> Dégradé</button>
-                                <button type="button" data-v="image"    onclick="studioSetBgType('image')"><i class="fa-solid fa-image"></i> Image</button>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-seg" id="studio-bgtype">
+                                <button type="button" data-v="color" onclick="studioSetBgType('color')">Uni</button>
+                                <button type="button" data-v="gradient" onclick="studioSetBgType('gradient')" class="on">Dégradé</button>
+                                <button type="button" data-v="image" onclick="studioSetBgType('image')">Image</button>
                             </div>
-
-                            <div id="st-bg-color" class="st-grp">
-                                <div class="st-f"><label>Couleur</label>
+                            <div id="st-bg-color" class="sx-grp">
+                                <div class="sx-f"><label>Couleur de fond</label>
                                     <input type="color" id="studio-bg1" value="#1B1533" oninput="refreshStudioOutput()"></div>
                             </div>
-
-                            <div id="st-bg-gradient" class="st-grp">
-                                <div class="st-row2">
-                                    <div class="st-f"><label>Couleur 1</label>
-                                        <input type="color" id="studio-grad1" value="#5A32A0" oninput="refreshStudioOutput()"></div>
-                                    <div class="st-f"><label>Couleur 2</label>
-                                        <input type="color" id="studio-grad2" value="#1FA5A8" oninput="refreshStudioOutput()"></div>
+                            <div id="st-bg-gradient" class="sx-grp on">
+                                <div class="sx-2">
+                                    <div class="sx-f"><label>Départ</label><input type="color" id="studio-grad1" value="#5A32A0" oninput="refreshStudioOutput()"></div>
+                                    <div class="sx-f"><label>Arrivée</label><input type="color" id="studio-grad2" value="#1FA5A8" oninput="refreshStudioOutput()"></div>
                                 </div>
-                                <div class="st-f"><label>Orientation <b id="st-angle-v">135°</b></label>
+                                <div class="sx-f"><label>Orientation <b id="st-angle-v">135°</b></label>
                                     <input type="range" id="studio-grad-angle" min="0" max="360" value="135" oninput="refreshStudioOutput()"></div>
                             </div>
-
-                            <div id="st-bg-image" class="st-grp">
-                                <label for="studio-bg-file" class="st-drop">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                                    <span id="studio-bg-label">Choisir une image…</span>
-                                </label>
+                            <div id="st-bg-image" class="sx-grp">
+                                <label for="studio-bg-file" class="sx-drop"><i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <span id="studio-bg-label">Importer une image</span></label>
                                 <input type="file" id="studio-bg-file" accept="image/*" onchange="handleStudioFileSelect(event)" hidden>
-                                <div class="st-f"><label>Assombrir <b id="studio-op-val">50%</b></label>
+                                <div class="sx-f"><label>Assombrir <b id="studio-op-val">50%</b></label>
                                     <input type="range" id="studio-overlay-opacity" min="0" max="90" value="50" oninput="refreshStudioOutput()"></div>
-                                <div class="st-f"><label>Flou <b id="st-blur-v">0px</b></label>
-                                    <input type="range" id="studio-bg-blur" min="0" max="12" value="0" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Flou <b id="st-blur-v">0px</b></label>
+                                    <input type="range" id="studio-bg-blur" min="0" max="14" value="0" oninput="refreshStudioOutput()"></div>
                             </div>
-
-                            <div class="st-f"><label>Motif</label>
-                                <div class="st-seg sm" id="studio-pattern">
+                            <div class="sx-f"><label>Motif superposé</label>
+                                <div class="sx-seg sm" id="studio-pattern">
                                     <button type="button" onclick="studioSetPattern('none')" class="on">Aucun</button>
                                     <button type="button" onclick="studioSetPattern('dots')">Points</button>
                                     <button type="button" onclick="studioSetPattern('lines')">Rayures</button>
                                     <button type="button" onclick="studioSetPattern('grid')">Grille</button>
                                 </div>
                             </div>
-                        </div>
+                        </div></div>
                     </section>
 
-                    <!-- ─── Forme & taille ─── -->
-                    <section class="st-sec" data-sec="shape">
-                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
-                            <span class="st-ico"><i class="fa-solid fa-vector-square"></i></span>
-                            <span class="st-t">Forme &amp; taille<small>Hauteur, arrondi, bordure, ombre</small></span>
-                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                    <!-- 03 · FORME -->
+                    <section class="sx" data-c="amber">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">03</span>
+                            <span class="sx-tt">Forme de la carte<em>Taille, arrondi, bordure, ombre</em></span>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
-                        <div class="st-body">
-                            <div class="st-f"><label>Hauteur de la carte <b id="st-h-v">170px</b></label>
-                                <input type="range" id="studio-card-h" min="130" max="280" value="170" oninput="refreshStudioOutput()"></div>
-                            <div class="st-f"><label>Arrondi <b id="st-r-v">18px</b></label>
-                                <input type="range" id="studio-card-r" min="0" max="40" value="18" oninput="refreshStudioOutput()"></div>
-                            <div class="st-row2">
-                                <div class="st-f"><label>Bordure <b id="st-bw-v">0px</b></label>
-                                    <input type="range" id="studio-border-w" min="0" max="6" value="0" oninput="refreshStudioOutput()"></div>
-                                <div class="st-f"><label>Couleur bordure</label>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-f"><label>Hauteur <b id="st-h-v">170px</b></label>
+                                <input type="range" id="studio-card-h" min="130" max="300" value="170" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-f"><label>Marge intérieure <b id="st-pad-v">16px</b></label>
+                                <input type="range" id="studio-card-pad" min="8" max="34" value="16" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-f"><label>Arrondi <b id="st-r-v">18px</b></label>
+                                <input type="range" id="studio-card-r" min="0" max="46" value="18" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Bordure <b id="st-bw-v">0px</b></label>
+                                    <input type="range" id="studio-border-w" min="0" max="8" value="0" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Couleur</label>
                                     <input type="color" id="studio-border-color" value="#1B8E97" oninput="refreshStudioOutput()"></div>
                             </div>
-                            <div class="st-f"><label>Ombre portée <b id="st-sh-v">Moyenne</b></label>
+                            <div class="sx-f"><label>Ombre portée <b id="st-sh-v">Moyenne</b></label>
                                 <input type="range" id="studio-shadow" min="0" max="3" value="1" oninput="refreshStudioOutput()"></div>
-                        </div>
+                        </div></div>
                     </section>
 
-                    <!-- ─── Typographie de la carte ─── -->
-                    <section class="st-sec" data-sec="type">
-                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
-                            <span class="st-ico"><i class="fa-solid fa-font"></i></span>
-                            <span class="st-t">Textes de la carte<small>Enseigne et compteur de points</small></span>
-                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                    <!-- 04 · ENSEIGNE -->
+                    <section class="sx" data-c="violet">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">04</span>
+                            <span class="sx-tt">Nom de l'enseigne<em>Texte, police, taille, couleur</em></span>
+                            <label class="sx-sw" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="show-title" checked onchange="refreshStudioOutput()"><span></span></label>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
-                        <div class="st-body">
-                            <div class="st-f"><label>Enseigne</label>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-f"><label>Texte affiché</label>
                                 <input type="text" id="studio-title-input" value="Commerce KEEPO" oninput="refreshStudioOutput()"></div>
-                            <div class="st-f"><label>Police</label>
+                            <div class="sx-f"><label>Police</label>
                                 <select id="studio-title-font" onchange="refreshStudioOutput()"></select></div>
-                            <div class="st-row2">
-                                <div class="st-f"><label>Taille <b id="st-ts-v">16px</b></label>
-                                    <input type="range" id="studio-title-size" min="11" max="30" value="16" oninput="refreshStudioOutput()"></div>
-                                <div class="st-f"><label>Couleur</label>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Taille <b id="st-ts-v">16px</b></label>
+                                    <input type="range" id="studio-title-size" min="10" max="42" value="16" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Couleur</label>
                                     <input type="color" id="studio-txt-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
                             </div>
-                            <div class="st-f"><label>Alignement</label>
-                                <div class="st-seg sm" id="studio-title-align">
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Graisse</label>
+                                    <select id="studio-title-weight" onchange="refreshStudioOutput()">
+                                        <option value="400">Normal</option><option value="600">Semi-gras</option>
+                                        <option value="700" selected>Gras</option><option value="900">Très gras</option>
+                                    </select></div>
+                                <div class="sx-f"><label>Interlettrage <b id="st-tls-v">0px</b></label>
+                                    <input type="range" id="studio-title-ls" min="-2" max="10" value="0" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="sx-f"><label>Alignement</label>
+                                <div class="sx-seg sm" id="studio-title-align">
                                     <button type="button" onclick="studioSetAlign('left')" class="on"><i class="fa-solid fa-align-left"></i></button>
                                     <button type="button" onclick="studioSetAlign('center')"><i class="fa-solid fa-align-center"></i></button>
                                     <button type="button" onclick="studioSetAlign('right')"><i class="fa-solid fa-align-right"></i></button>
-                                </div>
-                            </div>
-                            <label class="st-check"><input type="checkbox" id="studio-title-shadow" onchange="refreshStudioOutput()"> Ombre sur les textes (meilleure lisibilité)</label>
-                            <div class="st-row2">
-                                <div class="st-f"><label>Taille des points <b id="st-ps-v">25px</b></label>
-                                    <input type="range" id="studio-pts-size" min="16" max="46" value="25" oninput="refreshStudioOutput()"></div>
-                                <div class="st-f"><label>Couleur des points</label>
-                                    <input type="color" id="studio-pts-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
-                            </div>
-                        </div>
+                                </div></div>
+                            <label class="sx-chk"><input type="checkbox" id="studio-title-shadow" onchange="refreshStudioOutput()"><span>Ombre du texte</span></label>
+                            <label class="sx-chk"><input type="checkbox" id="studio-title-upper" onchange="refreshStudioOutput()"><span>Tout en majuscules</span></label>
+                        </div></div>
                     </section>
 
-                    <!-- ─── Éléments (calques) ─── -->
-                    <section class="st-sec open" data-sec="layers">
-                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
-                            <span class="st-ico"><i class="fa-solid fa-layer-group"></i></span>
-                            <span class="st-t">Éléments<small>Textes, images et icônes libres</small></span>
-                            <span class="st-badge" id="studio-layer-count">0</span>
-                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                    <!-- 05 · POINTS -->
+                    <section class="sx" data-c="cyan">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">05</span>
+                            <span class="sx-tt">Compteur de points<em>Chiffre et libellé</em></span>
+                            <label class="sx-sw" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="show-pts" checked onchange="refreshStudioOutput()"><span></span></label>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
-                        <div class="st-body">
-                            <div class="st-add">
-                                <button type="button" onclick="studioAddLayer('text')"><i class="fa-solid fa-t"></i><span>Texte</span></button>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-f"><label>Police du chiffre</label>
+                                <select id="studio-pts-font" onchange="refreshStudioOutput()"></select></div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Taille <b id="st-ps-v">25px</b></label>
+                                    <input type="range" id="studio-pts-size" min="14" max="60" value="25" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Couleur</label>
+                                    <input type="color" id="studio-pts-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="sx-f"><label>Libellé sous le chiffre</label>
+                                <input type="text" id="studio-pts-label" value="POINTS" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Taille du libellé <b id="st-pls-v">8.5px</b></label>
+                                    <input type="range" id="studio-pts-label-size" min="6" max="18" value="9" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Couleur du libellé</label>
+                                    <input type="color" id="studio-pts-label-color" value="#dddddd" oninput="refreshStudioOutput()"></div>
+                            </div>
+                        </div></div>
+                    </section>
+
+                    <!-- 06 · PASTILLE -->
+                    <section class="sx" data-c="amber">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">06</span>
+                            <span class="sx-tt">Pastille du logo<em>Initiale ou image, forme, couleurs</em></span>
+                            <label class="sx-sw" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="show-chip" checked onchange="refreshStudioOutput()"><span></span></label>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
+                        </button>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-f"><label>Contenu</label>
+                                <input type="text" id="studio-chip-text" value="" placeholder="Initiale automatique" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Taille <b id="st-chs-v">36px</b></label>
+                                    <input type="range" id="studio-chip-size" min="22" max="72" value="36" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Arrondi <b id="st-chr-v">10px</b></label>
+                                    <input type="range" id="studio-chip-radius" min="0" max="36" value="10" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Fond</label>
+                                    <input type="color" id="studio-chip-bg" value="#ffffff" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Texte</label>
+                                    <input type="color" id="studio-chip-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="sx-f"><label>Opacité du fond <b id="st-cho-v">18%</b></label>
+                                <input type="range" id="studio-chip-op" min="0" max="100" value="18" oninput="refreshStudioOutput()"></div>
+                        </div></div>
+                    </section>
+
+                    <!-- 07 · PROGRESSION -->
+                    <section class="sx" data-c="green">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">07</span>
+                            <span class="sx-tt">Barre &amp; mentions<em>Progression, texte, badge</em></span>
+                            <label class="sx-sw" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="show-bar" checked onchange="refreshStudioOutput()"><span></span></label>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
+                        </button>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Épaisseur <b id="st-bh-v">5px</b></label>
+                                    <input type="range" id="studio-bar-h" min="2" max="18" value="5" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Arrondi <b id="st-brr-v">99px</b></label>
+                                    <input type="range" id="studio-bar-r" min="0" max="99" value="99" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Remplissage</label>
+                                    <input type="color" id="studio-bar-fill" value="#1FA5A8" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Fond de barre</label>
+                                    <input type="color" id="studio-bar-bg" value="#ffffff" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="sx-sep">Mentions du bas</div>
+                            <div class="sx-f"><label>Texte de gauche</label>
+                                <input type="text" id="studio-hint-text" value="Plus que 60 pts" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Taille <b id="st-hs-v">10px</b></label>
+                                    <input type="range" id="studio-hint-size" min="7" max="20" value="10" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Couleur</label>
+                                    <input type="color" id="studio-hint-color" value="#1FA5A8" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <label class="sx-chk"><input type="checkbox" id="show-badge" checked onchange="refreshStudioOutput()"><span>Afficher le badge de récompense</span></label>
+                            <div class="sx-f"><label>Texte du badge</label>
+                                <input type="text" id="studio-badge-text" value="Récompense" oninput="refreshStudioOutput()"></div>
+                            <div class="sx-2">
+                                <div class="sx-f"><label>Couleur du badge</label>
+                                    <input type="color" id="studio-badge-color" value="#1FA5A8" oninput="refreshStudioOutput()"></div>
+                                <div class="sx-f"><label>Arrondi <b id="st-bdr-v">99px</b></label>
+                                    <input type="range" id="studio-badge-r" min="0" max="99" value="99" oninput="refreshStudioOutput()"></div>
+                            </div>
+                        </div></div>
+                    </section>
+
+                    <!-- 08 · ÉLÉMENTS LIBRES -->
+                    <section class="sx open" data-c="pink">
+                        <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                            <span class="sx-n">08</span>
+                            <span class="sx-tt">Éléments libres<em>Textes, images et icônes</em></span>
+                            <span class="sx-b2" id="studio-layer-count">0</span>
+                            <i class="fa-solid fa-chevron-down sx-c"></i>
+                        </button>
+                        <div class="sx-b"><div class="sx-in">
+                            <div class="sx-add">
+                                <button type="button" onclick="studioAddLayer('text')"><i class="fa-solid fa-font"></i><span>Texte</span></button>
                                 <button type="button" onclick="document.getElementById('studio-img-file').click()"><i class="fa-solid fa-image"></i><span>Image</span></button>
                                 <button type="button" onclick="studioOpenIconPicker()"><i class="fa-solid fa-shapes"></i><span>Icône</span></button>
                             </div>
                             <input type="file" id="studio-img-file" accept="image/*" onchange="studioAddImageLayer(event)" hidden>
-                            <div id="studio-layers" class="st-layers"></div>
-                            <div id="studio-props-sec" class="st-props" style="display:none;">
-                                <div class="st-props-h"><i class="fa-solid fa-sliders"></i> Réglages de l'élément</div>
+                            <div id="studio-layers" class="sx-layers"></div>
+                            <div id="studio-props-sec" class="sx-props" style="display:none;">
+                                <div class="sx-props-h"><i class="fa-solid fa-sliders"></i> Réglages</div>
                                 <div id="studio-props"></div>
                             </div>
-                        </div>
+                        </div></div>
                     </section>
 
-                    <div class="st-actions">
-                        <button onclick="studioResetAll()" class="st-btn ghost" type="button"><i class="fa-solid fa-rotate-left"></i> Réinitialiser</button>
-                        <button onclick="saveStudioDesign()" class="st-btn main" type="button"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+                    <div class="sx-actions">
+                        <button onclick="studioResetAll()" class="sx-btn ghost" type="button"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button onclick="saveStudioDesign()" class="sx-btn main" type="button"><i class="fa-solid fa-floppy-disk"></i> Enregistrer la carte</button>
                     </div>
                 </div>
 
                 <!-- ══════════ APERÇU ══════════ -->
                 <div class="studio-preview-col">
-                    <div class="st-prev-head">
-                        <span class="st-prev-t"><i class="fa-solid fa-mobile-screen-button"></i> Aperçu client</span>
-                        <span class="st-live"><i class="fa-solid fa-circle"></i> en direct</span>
+                    <div class="sx-prev-h">
+                        <span class="sx-prev-t"><i class="fa-solid fa-mobile-screen-button"></i> Aperçu</span>
+                        <span class="sx-live"><i class="fa-solid fa-circle"></i> direct</span>
                     </div>
-
-                    <div class="studio-phone" id="studio-phone">
+                    <div class="studio-phone">
                         <div class="studio-phone-notch"></div>
                         <div class="studio-phone-status">
                             <span id="studio-phone-time">09:41</span>
@@ -2455,13 +2498,13 @@
                                 <div class="studio-card-inner" id="studio-card-inner">
                                     <div class="studio-card-top">
                                         <div id="studio-card-chip" class="studio-card-chip">K</div>
-                                        <div style="text-align:right;">
+                                        <div id="studio-pts-block" style="text-align:right;">
                                             <div id="studio-points-color-render" class="studio-card-pts">240</div>
-                                            <div class="studio-card-pts-lbl">POINTS</div>
+                                            <div id="studio-pts-label" class="studio-card-pts-lbl">POINTS</div>
                                         </div>
                                     </div>
                                     <div id="studio-card-title-render" class="studio-card-title">Commerce KEEPO</div>
-                                    <div class="studio-card-bar"><i id="studio-progress-fill"></i></div>
+                                    <div id="studio-bar-wrap" class="studio-card-bar"><i id="studio-progress-fill"></i></div>
                                     <div class="studio-card-foot">
                                         <span id="studio-reward-hint">Plus que 60 pts</span>
                                         <span id="studio-reward-badge-render" class="studio-card-badge">Récompense</span>
@@ -2473,8 +2516,7 @@
                             <div class="studio-phone-ghost" style="opacity:.45;"></div>
                         </div>
                     </div>
-
-                    <p class="studio-note"><i class="fa-solid fa-circle-info"></i> Exactement ce que verront vos clients.</p>
+                    <p class="studio-note"><i class="fa-solid fa-circle-info"></i> Rendu réel côté client</p>
                 </div>
             </div>
         </div>
@@ -4176,16 +4218,6 @@
     let studioSelId  = null;
     let studioState  = { bgType: 'gradient', pattern: 'none', align: 'left' };
 
-    const STUDIO_FONTS = [
-        ['Inter, sans-serif', 'Inter — moderne'],
-        ['Georgia, serif', 'Georgia — élégant'],
-        ['"Playfair Display", Georgia, serif', 'Playfair — chic'],
-        ['"Trebuchet MS", sans-serif', 'Trebuchet — rond'],
-        ['"Courier New", monospace', 'Courier — machine'],
-        ['Impact, sans-serif', 'Impact — fort'],
-        ['"Brush Script MT", cursive', 'Script — manuscrit'],
-        ['Verdana, sans-serif', 'Verdana — lisible']
-    ];
     const STUDIO_ICONS = ['star','heart','crown','gift','mug-hot','utensils','scissors','cart-shopping',
         'bread-slice','ice-cream','pizza-slice','wine-glass','beer-mug-empty','cake-candles','leaf','fire',
         'bolt','gem','award','ticket','basket-shopping','shirt','dog','cat','spa','dumbbell','book','music',
@@ -4334,7 +4366,7 @@
         if (list) list.innerHTML = studioLayers.length ? studioLayers.map((l, i) => {
             const ico = l.type === 'text' ? 'font' : l.type === 'icon' ? 'star' : 'image';
             const nm  = l.type === 'text' ? (l.text || 'Texte') : l.type === 'icon' ? l.icon : 'Image';
-            return `<div class="st-layer${l.id===studioSelId?' sel':''}" onclick="studioSelect('${l.id}')">
+            return `<div class="sx-layer${l.id===studioSelId?' sel':''}" onclick="studioSelect('${l.id}')">
                 <span class="k"><i class="fa-solid fa-${ico}"></i></span>
                 <span class="nm">${escapeHtml(String(nm))}</span>
                 <span class="act">
@@ -4343,7 +4375,7 @@
                   <button onclick="studioDuplicate('${l.id}',event)" title="Dupliquer"><i class="fa-solid fa-clone"></i></button>
                   <button class="d" onclick="studioDeleteLayer('${l.id}',event)" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
                 </span></div>`;
-        }).join('') : '<div class="st-empty">Aucun élément.<br>Ajoutez un texte, une image ou une icône.</div>';
+        }).join('') : '<div class="sx-empty">Aucun élément.<br>Ajoutez un texte, une image ou une icône.</div>';
         studioRenderProps();
     }
 
@@ -4358,35 +4390,35 @@
         const fb = k => `studioSet('${l.id}','${k}',this.checked)`;
         let h = '';
         if (l.type === 'text') {
-            h += `<div class="st-f"><label>Texte</label><input type="text" value="${escapeHtml(l.text)}" oninput="${f('text')}"></div>
-              <div class="st-f"><label>Police</label><select onchange="${f('font')}">`
+            h += `<div class="sx-f"><label>Texte</label><input type="text" value="${escapeHtml(l.text)}" oninput="${f('text')}"></div>
+              <div class="sx-f"><label>Police</label><select onchange="${f('font')}">`
               + STUDIO_FONTS.map(([v,n]) => `<option value="${v}" ${l.font===v?'selected':''}>${n}</option>`).join('')
               + `</select></div>
-              <div class="st-row2">
-                <div class="st-f"><label>Taille <b>${l.size}px</b></label><input type="range" min="8" max="54" value="${l.size}" oninput="${f('size')}"></div>
-                <div class="st-f"><label>Graisse</label><select onchange="${f('weight')}">
+              <div class="sx-2">
+                <div class="sx-f"><label>Taille <b>${l.size}px</b></label><input type="range" min="8" max="54" value="${l.size}" oninput="${f('size')}"></div>
+                <div class="sx-f"><label>Graisse</label><select onchange="${f('weight')}">
                   ${[['300','Fin'],['400','Normal'],['600','Semi-gras'],['700','Gras'],['900','Très gras']]
                     .map(([v,n]) => `<option value="${v}" ${l.weight==v?'selected':''}>${n}</option>`).join('')}
                 </select></div></div>
-              <div class="st-row2">
-                <div class="st-f"><label>Couleur</label><input type="color" value="${l.color}" oninput="${f('color')}"></div>
-                <div class="st-f"><label>Espacement <b>${l.ls||0}px</b></label><input type="range" min="-2" max="12" value="${l.ls||0}" oninput="${f('ls')}"></div></div>
-              <label class="st-check"><input type="checkbox" ${l.shadow?'checked':''} onchange="${fb('shadow')}"> Ombre portée</label>`;
+              <div class="sx-2">
+                <div class="sx-f"><label>Couleur</label><input type="color" value="${l.color}" oninput="${f('color')}"></div>
+                <div class="sx-f"><label>Espacement <b>${l.ls||0}px</b></label><input type="range" min="-2" max="12" value="${l.ls||0}" oninput="${f('ls')}"></div></div>
+              <label class="sx-chk"><input type="checkbox" ${l.shadow?'checked':''} onchange="${fb('shadow')}"> Ombre portée</label>`;
         } else if (l.type === 'icon') {
-            h += `<div class="st-row2">
-                <div class="st-f"><label>Taille <b>${l.size}px</b></label><input type="range" min="12" max="90" value="${l.size}" oninput="${f('size')}"></div>
-                <div class="st-f"><label>Couleur</label><input type="color" value="${l.color}" oninput="${f('color')}"></div></div>
-              <label class="st-check"><input type="checkbox" ${l.shadow?'checked':''} onchange="${fb('shadow')}"> Ombre portée</label>
-              <button type="button" class="st-btn ghost" style="width:100%;margin-top:12px;" onclick="studioOpenIconPicker()">
+            h += `<div class="sx-2">
+                <div class="sx-f"><label>Taille <b>${l.size}px</b></label><input type="range" min="12" max="90" value="${l.size}" oninput="${f('size')}"></div>
+                <div class="sx-f"><label>Couleur</label><input type="color" value="${l.color}" oninput="${f('color')}"></div></div>
+              <label class="sx-chk"><input type="checkbox" ${l.shadow?'checked':''} onchange="${fb('shadow')}"> Ombre portée</label>
+              <button type="button" class="sx-btn ghost" style="width:100%;margin-top:12px;" onclick="studioOpenIconPicker()">
                 <i class="fa-solid fa-repeat"></i> Changer d'icône</button>`;
         } else {
-            h += `<div class="st-row2">
-                <div class="st-f"><label>Largeur <b>${l.w}%</b></label><input type="range" min="8" max="95" value="${l.w}" oninput="${f('w')}"></div>
-                <div class="st-f"><label>Arrondi <b>${l.radius}px</b></label><input type="range" min="0" max="50" value="${l.radius}" oninput="${f('radius')}"></div></div>`;
+            h += `<div class="sx-2">
+                <div class="sx-f"><label>Largeur <b>${l.w}%</b></label><input type="range" min="8" max="95" value="${l.w}" oninput="${f('w')}"></div>
+                <div class="sx-f"><label>Arrondi <b>${l.radius}px</b></label><input type="range" min="0" max="50" value="${l.radius}" oninput="${f('radius')}"></div></div>`;
         }
-        h += `<div class="st-row2">
-                <div class="st-f"><label>Rotation <b>${l.rot||0}°</b></label><input type="range" min="-180" max="180" value="${l.rot||0}" oninput="${f('rot')}"></div>
-                <div class="st-f"><label>Opacité <b>${l.op??100}%</b></label><input type="range" min="10" max="100" value="${l.op??100}" oninput="${f('op')}"></div></div>`;
+        h += `<div class="sx-2">
+                <div class="sx-f"><label>Rotation <b>${l.rot||0}°</b></label><input type="range" min="-180" max="180" value="${l.rot||0}" oninput="${f('rot')}"></div>
+                <div class="sx-f"><label>Opacité <b>${l.op??100}%</b></label><input type="range" min="10" max="100" value="${l.op??100}" oninput="${f('op')}"></div></div>`;
         box.innerHTML = h;
     }
 
@@ -4397,7 +4429,7 @@
         const host = _g('studio-layer-host');
         const el = host && host.querySelector(`.sl[data-id="${id}"]`);
         if (el) { el.outerHTML = studioLayerHtml(l, false); studioMakeDraggable(host.querySelector(`.sl[data-id="${id}"]`)); }
-        if (key === 'text') { const n = document.querySelector('.st-layer.sel .nm'); if (n) n.textContent = val; }
+        if (key === 'text') { const n = document.querySelector('.sx-layer.sel .nm'); if (n) n.textContent = val; }
         if (nums.includes(key)) studioRenderProps();   // rafraîchit la valeur affichée
     }
 
@@ -4443,13 +4475,15 @@
 
     /* ── Initialisation (listes déroulantes, préréglages) ── */
     function studioInitUI() {
-        const sel = _g('studio-title-font');
-        if (sel && !sel.options.length)
-            sel.innerHTML = STUDIO_FONTS.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
+        // Les deux listes de polices partagent le meme catalogue
+        const opts = STUDIO_FONTS.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
+        ['studio-title-font','studio-pts-font'].forEach(id => {
+            const s = _g(id); if (s && !s.options.length) s.innerHTML = opts;
+        });
         const pr = _g('studio-presets');
         if (pr && !pr.children.length)
             pr.innerHTML = STUDIO_PRESETS.map((p, i) =>
-                `<button type="button" class="st-preset" onclick="studioApplyPreset(${i})">
+                `<button type="button" class="sx-preset" onclick="studioApplyPreset(${i})">
                    <span class="sw" style="background:linear-gradient(${p.a}deg, ${p.g1}, ${p.g2});"></span>
                    <span class="nm">${p.n}</span></button>`).join('');
     }
@@ -4462,7 +4496,7 @@
             borderColor: document.getElementById('studio-border-color').value,
             opacity:     document.getElementById('studio-overlay-opacity').value,
             bg:          currentStudioBgBase64 || null,
-            v:           3,
+            v:           4,
             layers:      studioLayers,            // textes, images et icones
             // Options d apparence (format v3)
             bgType:      studioState.bgType,
@@ -4481,7 +4515,35 @@
             titleSize:   Number(_v('studio-title-size',16)),
             ptsSize:     Number(_v('studio-pts-size',25)),
             ptsColor:    _v('studio-pts-color','#ffffff'),
-            titleShadow: _g('studio-title-shadow') ? _g('studio-title-shadow').checked : false
+            titleShadow: _g('studio-title-shadow') ? _g('studio-title-shadow').checked : false,
+            // Tous les elements de la carte (format v4)
+            titleWeight: _v('studio-title-weight','700'),
+            titleLs:     Number(_v('studio-title-ls',0)),
+            titleUpper:  _g('studio-title-upper')?.checked || false,
+            cardPad:     Number(_v('studio-card-pad',16)),
+            ptsFont:     _v('studio-pts-font','Inter, sans-serif'),
+            ptsLabel:    _v('studio-pts-label','POINTS'),
+            ptsLabelSize:Number(_v('studio-pts-label-size',9)),
+            ptsLabelColor:_v('studio-pts-label-color','#dddddd'),
+            chipText:    _v('studio-chip-text',''),
+            chipSize:    Number(_v('studio-chip-size',36)),
+            chipRadius:  Number(_v('studio-chip-radius',10)),
+            chipBg:      _v('studio-chip-bg','#ffffff'),
+            chipColor:   _v('studio-chip-color','#ffffff'),
+            chipOp:      Number(_v('studio-chip-op',18)),
+            barH:        Number(_v('studio-bar-h',5)),
+            barR:        Number(_v('studio-bar-r',99)),
+            barFill:     _v('studio-bar-fill','#1FA5A8'),
+            barBg:       _v('studio-bar-bg','#ffffff'),
+            hintText:    _v('studio-hint-text','Plus que 60 pts'),
+            hintSize:    Number(_v('studio-hint-size',10)),
+            hintColor:   _v('studio-hint-color','#1FA5A8'),
+            badgeText:   _v('studio-badge-text','Récompense'),
+            badgeColor:  _v('studio-badge-color','#1FA5A8'),
+            badgeR:      Number(_v('studio-badge-r',99)),
+            show: { title:!!_g('show-title')?.checked, pts:!!_g('show-pts')?.checked,
+                    chip:!!_g('show-chip')?.checked, bar:!!_g('show-bar')?.checked,
+                    badge:!!_g('show-badge')?.checked }
         };
         const designJson = JSON.stringify(design);
 
@@ -5699,117 +5761,163 @@
         set(studio-title-font, d.titleFont); set(studio-title-size, d.titleSize);
         set(studio-pts-size, d.ptsSize); set(studio-pts-color, d.ptsColor);
         const cb = _g(studio-title-shadow); if (cb) cb.checked = !!d.titleShadow;
+        // Elements de la carte (v4)
+        set(studio-title-weight, d.titleWeight); set(studio-title-ls, d.titleLs);
+        set(studio-card-pad, d.cardPad); set(studio-pts-font, d.ptsFont);
+        set(studio-pts-label, d.ptsLabel); set(studio-pts-label-size, d.ptsLabelSize);
+        set(studio-pts-label-color, d.ptsLabelColor); set(studio-chip-text, d.chipText);
+        set(studio-chip-size, d.chipSize); set(studio-chip-radius, d.chipRadius);
+        set(studio-chip-bg, d.chipBg); set(studio-chip-color, d.chipColor);
+        set(studio-chip-op, d.chipOp); set(studio-bar-h, d.barH); set(studio-bar-r, d.barR);
+        set(studio-bar-fill, d.barFill); set(studio-bar-bg, d.barBg);
+        set(studio-hint-text, d.hintText); set(studio-hint-size, d.hintSize);
+        set(studio-hint-color, d.hintColor); set(studio-badge-text, d.badgeText);
+        set(studio-badge-color, d.badgeColor); set(studio-badge-r, d.badgeR);
+        const up = _g(studio-title-upper); if (up) up.checked = !!d.titleUpper;
+        if (d.show) Object.entries(d.show).forEach(([k, v]) => {
+            const e = _g(show- + k); if (e) e.checked = v !== false;
+        });
         studioSetBgType(d.bgType || (d.bg ? image : gradient));
         studioSetPattern(d.pattern || none);
         studioSetAlign(d.align || left);
     }
 
+    // 16 polices réellement chargées (voir le <link> Google Fonts en tête de page)
+    const STUDIO_FONTS = [
+        ['Inter, sans-serif', 'Inter — moderne'],
+        ['Montserrat, sans-serif', 'Montserrat — sûr'],
+        ['Poppins, sans-serif', 'Poppins — rond'],
+        ['\x27Space Grotesk\x27, sans-serif', 'Space Grotesk — tech'],
+        ['Oswald, sans-serif', 'Oswald — condensé'],
+        ['\x27Bebas Neue\x27, sans-serif', 'Bebas Neue — affiche'],
+        ['\x27Archivo Black\x27, sans-serif', 'Archivo Black — massif'],
+        ['\x27Playfair Display\x27, serif', 'Playfair — élégant'],
+        ['\x27DM Serif Display\x27, serif', 'DM Serif — éditorial'],
+        ['\x27Cormorant Garamond\x27, serif', 'Cormorant — raffiné'],
+        ['\x27Abril Fatface\x27, serif', 'Abril — impact'],
+        ['Lobster, cursive', 'Lobster — enseigne'],
+        ['Pacifico, cursive', 'Pacifico — décontracté'],
+        ['\x27Dancing Script\x27, cursive', 'Dancing — manuscrit'],
+        ['Caveat, cursive', 'Caveat — écrit main'],
+        ['\x27Fira Code\x27, monospace', 'Fira Code — machine']
+    ];
+
     function refreshStudioOutput() {
         studioInitUI();
-
-        const title    = _v('studio-title-input', 'Commerce KEEPO') || 'Commerce KEEPO';
-        const txtColor = _v('studio-txt-color', '#ffffff');
-        const accent   = _v('studio-border-color', '#1B8E97');
-        const opRaw    = Number(_v('studio-overlay-opacity', 50));
-        const blur     = Number(_v('studio-bg-blur', 0));
-        const cardH    = Number(_v('studio-card-h', 170));
-        const cardR    = Number(_v('studio-card-r', 18));
-        const bw       = Number(_v('studio-border-w', 0));
-        const shadow   = Number(_v('studio-shadow', 1));
-        const tSize    = Number(_v('studio-title-size', 16));
-        const tFont    = _v('studio-title-font', 'Inter, sans-serif');
-        const pSize    = Number(_v('studio-pts-size', 25));
-        const pColor   = _v('studio-pts-color', '#ffffff');
-        const tShadow  = _g('studio-title-shadow') ? _g('studio-title-shadow').checked : false;
-
-        // Étiquettes des curseurs
         const put = (id, v) => { const e = _g(id); if (e) e.textContent = v; };
-        put('studio-op-val', opRaw + '%');
-        put('st-blur-v', blur + 'px');
-        put('st-angle-v', _v('studio-grad-angle', 135) + '°');
-        put('st-h-v', cardH + 'px');
-        put('st-r-v', cardR + 'px');
-        put('st-bw-v', bw + 'px');
-        put('st-ts-v', tSize + 'px');
-        put('st-ps-v', pSize + 'px');
-        put('st-sh-v', ['Aucune', 'Légère', 'Moyenne', 'Forte'][shadow]);
-
+        const chk = id => { const e = _g(id); return e ? e.checked : true; };
         const card = _g('studio-card-element-render');
         if (!card) return;
 
-        // ── Fond ──
+        /* ── 02 · Arrière-plan ── */
+        const opRaw = Number(_v('studio-overlay-opacity', 50));
+        const blur  = Number(_v('studio-bg-blur', 0));
         card.style.backgroundImage = 'none';
         card.style.backgroundColor = 'transparent';
-        card.style.filter = '';
         if (studioState.bgType === 'image' && currentStudioBgBase64) {
             card.style.backgroundImage = `url('${currentStudioBgBase64}')`;
-            card.style.backgroundSize = 'cover';
-            card.style.backgroundPosition = 'center';
-            if (blur) card.style.filter = `blur(0px)`;   // le flou s'applique au calque, pas au contenu
+            card.style.backgroundSize = 'cover'; card.style.backgroundPosition = 'center';
         } else if (studioState.bgType === 'gradient') {
-            card.style.backgroundImage =
-                `linear-gradient(${_v('studio-grad-angle',135)}deg, ${_v('studio-grad1','#5A32A0')}, ${_v('studio-grad2','#1FA5A8')})`;
+            card.style.backgroundImage = `linear-gradient(${_v('studio-grad-angle',135)}deg, ${_v('studio-grad1','#5A32A0')}, ${_v('studio-grad2','#1FA5A8')})`;
         } else {
             card.style.backgroundColor = _v('studio-bg1', '#1B1533');
         }
-
-        // Voile d'assombrissement (utile surtout sur une photo)
         const ov = _g('studio-overlay-layer');
         if (ov) {
-            ov.style.background = `rgba(0,0,0,${opRaw / 100})`;
+            ov.style.background = `rgba(0,0,0,${opRaw/100})`;
             ov.style.backdropFilter = blur ? `blur(${blur}px)` : '';
             ov.style.webkitBackdropFilter = blur ? `blur(${blur}px)` : '';
         }
-
-        // Motif
         const pat = _g('studio-pattern-layer');
-        if (pat) {
-            const css = studioPatternCss(studioState.pattern);
-            pat.style.backgroundImage = css.backgroundImage;
-            pat.style.backgroundSize  = css.backgroundSize;
-        }
+        if (pat) { const c = studioPatternCss(studioState.pattern);
+            pat.style.backgroundImage = c.backgroundImage; pat.style.backgroundSize = c.backgroundSize; }
+        put('studio-op-val', opRaw + '%'); put('st-blur-v', blur + 'px');
+        put('st-angle-v', _v('studio-grad-angle',135) + '°');
 
-        // ── Forme ──
-        card.style.minHeight    = cardH + 'px';
-        card.style.borderRadius = cardR + 'px';
-        card.style.border       = bw ? `${bw}px solid ${accent}` : 'none';
-        card.style.boxShadow    = ['none',
-            '0 6px 16px -10px rgba(0,0,0,.45)',
-            '0 12px 28px -14px rgba(0,0,0,.55)',
-            '0 22px 44px -18px rgba(0,0,0,.7)'][shadow];
+        /* ── 03 · Forme ── */
+        const H = Number(_v('studio-card-h',170)), R = Number(_v('studio-card-r',18));
+        const PAD = Number(_v('studio-card-pad',16)), BW = Number(_v('studio-border-w',0));
+        const SH = Number(_v('studio-shadow',1)), accent = _v('studio-border-color','#1B8E97');
+        card.style.minHeight = H + 'px';
+        card.style.borderRadius = R + 'px';
+        card.style.border = BW ? `${BW}px solid ${accent}` : 'none';
+        card.style.boxShadow = ['none','0 6px 16px -10px rgba(0,0,0,.45)',
+            '0 12px 28px -14px rgba(0,0,0,.55)','0 22px 44px -18px rgba(0,0,0,.7)'][SH];
+        const inner = _g('studio-card-inner'); if (inner) inner.style.padding = PAD + 'px';
+        put('st-h-v', H+'px'); put('st-r-v', R+'px'); put('st-pad-v', PAD+'px');
+        put('st-bw-v', BW+'px'); put('st-sh-v', ['Aucune','Légère','Moyenne','Forte'][SH]);
 
-        // ── Textes de la carte ──
+        /* ── 04 · Enseigne ── */
+        const title = _v('studio-title-input','Commerce KEEPO') || 'Commerce KEEPO';
+        const tSize = Number(_v('studio-title-size',16)), tLs = Number(_v('studio-title-ls',0));
         const t = _g('studio-card-title-render');
         if (t) {
-            t.textContent = title;
-            t.style.color = txtColor;
-            t.style.fontFamily = tFont;
+            t.style.display = chk('show-title') ? '' : 'none';
+            t.textContent = chk('studio-title-upper') ? title.toUpperCase() : title;
+            t.style.color = _v('studio-txt-color','#ffffff');
+            t.style.fontFamily = _v('studio-title-font','Inter, sans-serif');
             t.style.fontSize = tSize + 'px';
+            t.style.fontWeight = _v('studio-title-weight','700');
+            t.style.letterSpacing = tLs + 'px';
             t.style.textAlign = studioState.align;
-            t.style.textShadow = tShadow ? '0 2px 8px rgba(0,0,0,.55)' : 'none';
+            t.style.textShadow = chk('studio-title-shadow') ? '0 2px 8px rgba(0,0,0,.55)' : 'none';
         }
-        const inner = _g('studio-card-inner');
-        if (inner) inner.style.textShadow = tShadow ? '0 1px 6px rgba(0,0,0,.45)' : 'none';
+        put('st-ts-v', tSize+'px'); put('st-tls-v', tLs+'px');
 
+        /* ── 05 · Points ── */
+        const pSize = Number(_v('studio-pts-size',25)), plSize = Number(_v('studio-pts-label-size',9));
+        const blk = _g('studio-pts-block'); if (blk) blk.style.display = chk('show-pts') ? '' : 'none';
         const pts = _g('studio-points-color-render');
-        if (pts) { pts.style.color = pColor; pts.style.fontSize = pSize + 'px'; }
+        if (pts) { pts.style.color = _v('studio-pts-color','#ffffff'); pts.style.fontSize = pSize+'px';
+            pts.style.fontFamily = _v('studio-pts-font','Inter, sans-serif'); }
+        const pl = _g('studio-pts-label');
+        if (pl) { pl.textContent = _v('studio-pts-label','POINTS');
+            pl.style.fontSize = plSize+'px'; pl.style.color = _v('studio-pts-label-color','#dddddd'); }
+        put('st-ps-v', pSize+'px'); put('st-pls-v', plSize+'px');
 
+        /* ── 06 · Pastille ── */
+        const chS = Number(_v('studio-chip-size',36)), chR = Number(_v('studio-chip-radius',10));
+        const chO = Number(_v('studio-chip-op',18));
         const chip = _g('studio-card-chip');
-        if (chip) { chip.textContent = (title.trim().charAt(0) || 'K').toUpperCase(); chip.style.color = txtColor; }
-
-        const fill = _g('studio-progress-fill');
-        if (fill) fill.style.background = accent;
-        const hint = _g('studio-reward-hint');
-        if (hint) hint.style.color = accent;
-        const badge = _g('studio-reward-badge-render');
-        if (badge) { badge.style.color = accent; badge.style.background = accent + '22'; }
-
-        // Heure de l'aperçu
-        const time = _g('studio-phone-time');
-        if (time) {
-            const n = new Date();
-            time.textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+        if (chip) {
+            chip.style.display = chk('show-chip') ? 'grid' : 'none';
+            const custom = _v('studio-chip-text','').trim();
+            chip.textContent = custom || (title.trim().charAt(0) || 'K').toUpperCase();
+            chip.style.width = chS+'px'; chip.style.height = chS+'px';
+            chip.style.borderRadius = chR+'px';
+            chip.style.fontSize = Math.round(chS*0.42)+'px';
+            chip.style.color = _v('studio-chip-color','#ffffff');
+            const bg = _v('studio-chip-bg','#ffffff');
+            chip.style.background = `color-mix(in srgb, ${bg} ${chO}%, transparent)`;
         }
+        put('st-chs-v', chS+'px'); put('st-chr-v', chR+'px'); put('st-cho-v', chO+'%');
+
+        /* ── 07 · Barre et mentions ── */
+        const bH = Number(_v('studio-bar-h',5)), bR = Number(_v('studio-bar-r',99));
+        const wrap = _g('studio-bar-wrap');
+        if (wrap) {
+            wrap.style.display = chk('show-bar') ? '' : 'none';
+            wrap.style.height = bH+'px'; wrap.style.borderRadius = bR+'px';
+            wrap.style.background = `color-mix(in srgb, ${_v('studio-bar-bg','#ffffff')} 22%, transparent)`;
+        }
+        const fill = _g('studio-progress-fill'); if (fill) fill.style.background = _v('studio-bar-fill','#1FA5A8');
+        const hint = _g('studio-reward-hint');
+        if (hint) { hint.textContent = _v('studio-hint-text','Plus que 60 pts');
+            hint.style.fontSize = _v('studio-hint-size',10)+'px'; hint.style.color = _v('studio-hint-color','#1FA5A8'); }
+        const badge = _g('studio-reward-badge-render');
+        if (badge) {
+            badge.style.display = chk('show-badge') ? '' : 'none';
+            badge.textContent = _v('studio-badge-text','Récompense');
+            const bc = _v('studio-badge-color','#1FA5A8');
+            badge.style.color = bc; badge.style.background = `color-mix(in srgb, ${bc} 18%, transparent)`;
+            badge.style.borderRadius = _v('studio-badge-r',99)+'px';
+        }
+        put('st-bh-v', bH+'px'); put('st-brr-v', bR+'px');
+        put('st-hs-v', _v('studio-hint-size',10)+'px'); put('st-bdr-v', _v('studio-badge-r',99)+'px');
+
+        const time = _g('studio-phone-time');
+        if (time) { const n = new Date();
+            time.textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; }
     }
 
     // ─── NOTIFICATIONS ───
