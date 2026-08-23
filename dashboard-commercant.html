@@ -894,7 +894,9 @@
         }
 
         @media (max-width: 560px) {
-            .main-content { padding: 12px 14px 36px; }
+            /* Conserve la marge haute qui degage la barre fixe : sinon cette regle,
+               plus tardive, ecrasait le padding-top et le contenu passait dessous. */
+            .main-content { padding: calc(80px + env(safe-area-inset-top, 0px)) 14px 36px; }
             .stats-grid { grid-template-columns: 1fr; }
             .rewards-display-grid { grid-template-columns: 1fr; }
             .card { padding: 18px 16px; }
