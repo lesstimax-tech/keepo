@@ -930,7 +930,12 @@ async function handleSendCampaign(request, env) {
 // ── Logo public d'un commerçant (avatar du profil, décodé du base64) ──
 async function handleMerchantLogo(request, env, url) {
   const merchantId = url.pathname.slice('/logo/'.length).split('/')[0];
-  const fallback = () => Response.redirect(new URL('/img/icon-192.png', url.origin).toString(), 302);
+  // ?fb=none : renvoyer 404 au lieu de l'icône par défaut, pour que l'appelant
+  // puisse afficher sa propre solution de repli (ex. l'initiale du commerce).
+  const noFallback = url.searchParams.get('fb') === 'none';
+  const fallback = () => noFallback
+    ? new Response(null, { status: 404 })
+    : Response.redirect(new URL('/img/icon-192.png', url.origin).toString(), 302);
   if (!isUuid(merchantId)) return fallback();
 
   const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';

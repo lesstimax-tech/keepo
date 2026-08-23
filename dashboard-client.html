@@ -128,9 +128,16 @@
 
         /* ─── En-tête de l application ─────────────────────────── */
         header {
+            position: sticky; top: 0; z-index: 40;
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            padding: 16px 0 4px;
+            padding: 12px 14px; margin: 10px 0 6px;
+            background: color-mix(in srgb, var(--bg-3) 62%, transparent);
+            backdrop-filter: saturate(180%) blur(16px);
+            -webkit-backdrop-filter: saturate(180%) blur(16px);
+            border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+            border-radius: var(--r-sm);
         }
+        .user-badge, .user-badge * { background: transparent; }
 
         /* ─── Écran de démarrage ─────────────────────────────── */
         .splash-logo-wrap { position: relative; display: grid; place-items: center; margin-bottom: 26px; }
@@ -231,7 +238,11 @@
             background: var(--card-accent, var(--grad)); color: #fff; display: grid; place-items: center;
             font-size: 17px; font-weight: 700;
         }
-        .card-logo-chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .card-logo-chip { position: relative; }
+        .card-logo-chip img {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; display: block; border-radius: inherit;
+        }
         .card-points-block { text-align: right; }
         .card-points-num { font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -.045em;
             color: var(--card-accent, var(--acc)); font-variant-numeric: tabular-nums; }
@@ -449,6 +460,7 @@
             align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 600;
             color: var(--faint); letter-spacing: .02em; transition: color .25s var(--ease);
             padding: 0; height: 100%;   /* toute la hauteur de la barre = cible confortable */
+            position: relative;         /* ancre le badge de notification sur SON onglet */
         }
         .nav-icon { font-size: 18px; transition: transform .3s var(--ease); }
         .nav-item.active { color: var(--acc); }
@@ -521,6 +533,19 @@
         .card-detail-action-text { flex: 1; display: flex; flex-direction: column; text-align: left; }
         .card-detail-action-text span { font-size: 14px; font-weight: 600; letter-spacing: -.02em; }
         .card-detail-action-text small { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+        /* Boutons Wallet — desactives en attendant l ouverture */
+        .wallet-soon {
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            margin-bottom: 8px; cursor: not-allowed; opacity: .62;
+            background: var(--bg-2); color: var(--muted); border: 1px solid var(--border);
+        }
+        .wallet-soon:hover { background: var(--bg-2); border-color: var(--border); }
+        .soon-chip {
+            font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+            color: var(--acc); background: var(--acc-soft); border: 1px solid var(--acc-line);
+            padding: 2px 8px; border-radius: 999px;
+        }
 
         /* ─── Assistant IA ───────────────────────────────────── */
         .ai-client-msg-avatar {
@@ -1052,14 +1077,14 @@
             </button>
         </div>
 
-        <button id="googleWalletBtn" onclick="addToGoogleWallet()" class="modal-close-btn"
-            style="background:#000;color:#fff;border:none;display:flex;align-items:center;justify-content:center;gap:9px;font-weight:700;margin-bottom:8px;">
-            <i class="fa-solid fa-wallet" style="font-size:17px;"></i> Ajouter à Google Wallet
+        <button id="googleWalletBtn" class="modal-close-btn wallet-soon" disabled aria-disabled="true"
+            title="Bientôt disponible">
+            <i class="fa-solid fa-lock"></i> Google Wallet <span class="soon-chip">Bientôt</span>
         </button>
 
-        <button id="appleWalletBtn" onclick="addToAppleWallet()" class="modal-close-btn"
-            style="background:#000;color:#fff;border:none;display:flex;align-items:center;justify-content:center;gap:9px;font-weight:700;margin-bottom:8px;">
-            <i class="fa-brands fa-apple" style="font-size:18px;"></i> Ajouter à Apple Wallet
+        <button id="appleWalletBtn" class="modal-close-btn wallet-soon" disabled aria-disabled="true"
+            title="Bientôt disponible">
+            <i class="fa-solid fa-lock"></i> Apple Wallet <span class="soon-chip">Bientôt</span>
         </button>
 
         <button class="modal-close-btn" onclick="closeQrModal()">
@@ -1825,10 +1850,11 @@
                     ${overlayEl}
                     <div style="position:relative;z-index:1;">
                         <div class="card-top">
-                            <div class="card-logo-chip">${initial}</div>
+                            <div class="card-logo-chip">${initial}<img src="/logo/${card.merchant_id}?fb=none" alt="" loading="lazy" onerror="this.remove()"></div>
                             <div class="card-points-block">
                                 <div class="card-points-num" style="color:${cardColor}">${isStampMode ? `${Math.min(points,stampGoal)}/${stampGoal}` : points}</div>
-                                <div class="card-points-lbl">${isStampMode ? 'Tampons' : 'Points'}</div>
+                                <div class="card-points-lbl">${isStampMode
+                                    ? '<i class="fa-solid fa-stamp"></i> Tampons' : 'Points'}</div>
                             </div>
                         </div>
                         ${tierBadge}
@@ -2386,9 +2412,14 @@
                     : isReward
                         ? `<i class="fa-solid fa-gift" style="color:var(--pink);"></i>`
                         : `<i class="fa-solid fa-arrow-down" style="color:var(--pink);"></i>`;
+                // Programme en tampons ? (design du commerce mis en cache par le portefeuille)
+                const isStamp   = (merchantCardDesigns[tx.merchant_id] || {}).loyalty_mode === 'stamps';
                 const ptsColor  = isCredit ? 'var(--green)' : 'var(--pink)';
                 const ptsStr    = isCredit ? `+${pts}` : `-${pts}`;
-                const label     = isCredit ? 'Points gagnés' : isReward ? 'Récompense utilisée' : 'Points débités';
+                const label     = isStamp
+                    ? (isCredit ? (pts > 1 ? `${pts} tampons ajoutés` : 'Tampon ajouté')
+                                : isReward ? 'Carte utilisée' : 'Tampons retirés')
+                    : (isCredit ? 'Points gagnés' : isReward ? 'Récompense utilisée' : 'Points débités');
                 const amountStr = tx.amount ? ` · ${Number(tx.amount).toFixed(2)} €` : '';
                 const boutiqueStr = boutique
                     ? ` <span style="opacity:.6;"><i class="fa-solid fa-store" style="font-size:9px;"></i> ${escapeHtml(boutique)}</span>`
@@ -2400,7 +2431,9 @@
                         <div class="tx-merchant">${escapeHtml(merchant)}</div>
                         <div class="tx-date">${label} · ${time}${amountStr}${boutiqueStr}</div>
                     </div>
-                    <div class="tx-pts" style="color:${ptsColor};">${ptsStr} pts</div>
+                    <div class="tx-pts" style="color:${ptsColor};">${isStamp
+                        ? `${ptsStr} <i class="fa-solid fa-stamp" title="tampon"></i>`
+                        : `${ptsStr} pts`}</div>
                 </div>`;
             }).join('')}
         `).join('');
