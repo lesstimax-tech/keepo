@@ -1228,3 +1228,95 @@ language sql security definer set search_path = public stable as $$
   order by r.created_at desc;
 $$;
 grant execute on function public.get_my_referrals() to authenticated;
+
+-- ════════════════════════════════════════════════════════
+--  RETIRER UNE CARTE DE SON PORTEFEUILLE (côté client)
+-- ════════════════════════════════════════════════════════
+-- Le client peut retirer une carte de son portefeuille. La ligne n'est PAS
+-- supprimée : elle porte les garde-fous anti-abus du programme —
+--   • wheel_last_spin_visits : nombre de visites au dernier tour de roue
+--   • last_birthday_bonus    : dernier bonus anniversaire versé
+-- Une suppression physique permettrait de les remettre à zéro en boucle
+-- (retirer la carte, la rajouter, retourner la roue, recommencer).
+-- La carte disparaît donc du portefeuille et n'y revient que si le client
+-- rescanne le QR du commerce — auquel cas il retrouve ses points.
+alter table public.loyalty_balances add column if not exists hidden_at timestamptz;
+
+create index if not exists loyalty_balances_client_visible_idx
+  on public.loyalty_balances (client_id) where hidden_at is null;
+
+-- Retire la carte du portefeuille de l'appelant, et de lui seul.
+-- SECURITY DEFINER plutôt qu'une politique RLS d'UPDATE : une politique
+-- ouvrirait la table entière à l'écriture par le client (points compris).
+create or replace function public.hide_loyalty_card(p_merchant_id uuid)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  v_client uuid := auth.uid();
+begin
+  if v_client is null then
+    raise exception 'Non authentifié';
+  end if;
+
+  update public.loyalty_balances
+     set hidden_at = now()
+   where client_id = v_client
+     and merchant_id = p_merchant_id
+     and hidden_at is null;
+
+  if not found then
+    raise exception 'Carte introuvable dans votre portefeuille';
+  end if;
+end;
+$$;
+revoke all on function public.hide_loyalty_card(uuid) from public;
+grant execute on function public.hide_loyalty_card(uuid) to authenticated;
+
+-- Ajoute (ou remet) la carte d'un commerce dans le portefeuille de l'appelant.
+-- Remplace l'INSERT direct côté client : celui-ci butait sur la contrainte
+-- d'unicité pour une carte retirée, et la carte ne pouvait plus revenir.
+-- Renvoie 'created' | 'restored' | 'existing'.
+create or replace function public.join_loyalty_card(p_merchant_id uuid)
+returns text
+language plpgsql security definer set search_path = public as $$
+declare
+  v_client uuid := auth.uid();
+  v_hidden timestamptz;
+  v_exists boolean;
+begin
+  if v_client is null then
+    raise exception 'Non authentifié';
+  end if;
+  if v_client = p_merchant_id then
+    raise exception 'Vous ne pouvez pas rejoindre votre propre programme';
+  end if;
+  if not exists (
+    select 1 from public.profiles
+    where id = p_merchant_id and role = 'commercant'
+  ) then
+    raise exception 'Commerce introuvable';
+  end if;
+
+  select hidden_at, true into v_hidden, v_exists
+  from public.loyalty_balances
+  where client_id = v_client and merchant_id = p_merchant_id;
+
+  if not coalesce(v_exists, false) then
+    insert into public.loyalty_balances (merchant_id, client_id, points_balance)
+    values (p_merchant_id, v_client, 0)
+    on conflict (merchant_id, client_id) do nothing;
+    return 'created';
+  end if;
+
+  if v_hidden is not null then
+    update public.loyalty_balances
+       set hidden_at = null
+     where client_id = v_client and merchant_id = p_merchant_id;
+    return 'restored';
+  end if;
+
+  return 'existing';
+end;
+$$;
+revoke all on function public.join_loyalty_card(uuid) from public;
+grant execute on function public.join_loyalty_card(uuid) to authenticated;

@@ -445,6 +445,17 @@
             padding: 5px 12px; border-radius: 999px; margin-bottom: 10px;
         }
         #modal-merchant-name { font-size: 21px; font-weight: 700; letter-spacing: -.03em; }
+        .modal-remove-btn {
+            width: 100%; margin-top: 10px; padding: 12px; border-radius: 999px;
+            background: none; border: 1px solid var(--border-2); color: var(--muted);
+            font-family: inherit; font-size: 13px; font-weight: 550; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all .25s var(--ease);
+        }
+        .modal-remove-btn:hover:not(:disabled) {
+            color: #C4322F; border-color: rgba(196,50,47,.38); background: rgba(196,50,47,.06);
+        }
+        .modal-remove-btn:disabled { opacity: .6; cursor: default; }
         #modal-tier { display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
             justify-content: center; margin-top: 8px; }
         #modal-tier .tier-badge { margin-top: 0; }
@@ -1024,6 +1035,10 @@
             <i class="fa-solid fa-lock"></i> Apple Wallet <span class="soon-chip">Bientôt</span>
         </button>
 
+        <button id="qrModalRemoveBtn" class="modal-remove-btn" onclick="removeCurrentCard()">
+            <i class="fa-solid fa-trash-can"></i> Retirer cette carte
+        </button>
+
         <button class="modal-close-btn" onclick="closeQrModal()">
             <i class="fa-solid fa-xmark"></i> Fermer
         </button>
@@ -1564,7 +1579,8 @@
         const { data: walletData, error } = await supabaseClient
             .from('loyalty_balances')
             .select(`id, points_balance, lifetime_points, merchant_id, merchant_profile:merchant_id ( name )`)
-            .eq('client_id', currentClientId);
+            .eq('client_id', currentClientId)
+            .is('hidden_at', null);   // les cartes retirées ne s'affichent plus
 
         if (error) {
             container.innerHTML = `<div class="empty-wallet"><div class="empty-wallet-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>Erreur de sync</h3><p>${error.message}</p></div>`;
@@ -2026,25 +2042,62 @@
 
     // Rejoint le programme de fidélité d'un commerçant (partagé entre toutes ses boutiques)
     async function _joinMerchantLoyalty(merchantId, boutiqueName) {
-        const { error } = await supabaseClient
-            .from('loyalty_balances')
-            .insert([{ client_id: currentClientId, merchant_id: merchantId, points_balance: 0 }]);
+        // Passe par le serveur : une carte retirée du portefeuille existe
+        // toujours en base (elle porte les garde-fous anti-abus), un simple
+        // INSERT butait donc sur la contrainte d'unicité sans la ramener.
+        const { data: issue, error } = await supabaseClient
+            .rpc('join_loyalty_card', { p_merchant_id: merchantId });
 
-        if (error && error.code !== '23505') {
+        if (error) {
             showToast('error', 'Erreur de liaison', error.message);
-        } else if (error && error.code === '23505') {
-            const label = boutiqueName ? `"${boutiqueName}"` : 'ce commerce';
-            showToast('warning', 'Carte déjà obtenue', `Vous possédez déjà la carte de fidélité de ${label} !`);
-            switchView('view-wallet');
-            setTimeout(() => maybeProposeInstall(true), 1600);
-        } else {
-            const label = boutiqueName ? `Boutique "${boutiqueName}"` : 'Nouveau commerce';
-            showToast('success', 'Nouvelle carte ajoutée ! 🎉', `${label} — bienvenue dans ce programme de fidélité.`);
-            loadClientWallet();
-            switchView('view-wallet');
-            setTimeout(() => maybeProposeInstall(true), 1600);
+            return;
         }
+
+        const label = boutiqueName ? `"${boutiqueName}"` : 'ce commerce';
+        if (issue === 'existing') {
+            showToast('warning', 'Carte déjà obtenue', `Vous possédez déjà la carte de fidélité de ${label} !`);
+        } else if (issue === 'restored') {
+            showToast('success', 'Carte de retour 🎉', `La carte de ${label} revient dans votre portefeuille, avec vos points.`);
+        } else {
+            const nom = boutiqueName ? `Boutique "${boutiqueName}"` : 'Nouveau commerce';
+            showToast('success', 'Nouvelle carte ajoutée ! 🎉', `${nom} — bienvenue dans ce programme de fidélité.`);
+        }
+
+        loadClientWallet();
+        switchView('view-wallet');
+        setTimeout(() => maybeProposeInstall(true), 1600);
     }
+
+    // ─── RETIRER UNE CARTE ───
+    // La carte quitte le portefeuille ; le solde, lui, est conservé en base et
+    // revient si le client rescanne le QR du commerce. C'est dit tel quel dans
+    // la confirmation : promettre un effacement définitif serait faux.
+    async function removeCurrentCard() {
+        if (!currentQrMerchantId) return;
+        const nom = currentQrMerchantName || 'ce commerce';
+        if (!confirm(
+            `Retirer la carte de ${nom} de votre portefeuille ?\n\n`
+          + `Elle disparaîtra de vos cartes. Vos ${currentQrPoints} point(s) restent enregistrés `
+          + `chez le commerçant : si vous rescannez son QR Code, la carte revient avec son solde.`
+        )) return;
+
+        const btn = document.getElementById('qrModalRemoveBtn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Retrait…'; }
+
+        const { error } = await supabaseClient
+            .rpc('hide_loyalty_card', { p_merchant_id: currentQrMerchantId });
+
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Retirer cette carte'; }
+
+        if (error) {
+            showToast('error', 'Retrait impossible', error.message);
+            return;
+        }
+        closeQrModal();
+        showToast('success', 'Carte retirée', `${nom} ne figure plus dans votre portefeuille.`);
+        loadClientWallet();
+    }
+
 
     // ─── NAVIGATION ───
     function switchView(viewId) {
