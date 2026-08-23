@@ -103,7 +103,7 @@
             color: var(--text-main);
             font-family: Inter, sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow-x: clip;   /* clip et non hidden : sinon position:sticky ne fonctionne plus */
         }
 
         /* ─── NOISE + BACKGROUND FX ─── */
@@ -224,7 +224,7 @@
         ═══════════════════════════ */
         .main-content {
             padding: 36px 44px;
-            overflow-y: auto;
+            overflow-y: visible;   /* le defilement appartient a la page : l apercu peut ainsi rester colle */
             min-height: 100vh;
         }
 
@@ -821,8 +821,25 @@
             transform: translateY(-3px) scale(1.05); }
 
         @media (max-width: 1100px) {
+            /* Une seule colonne : l apercu passe EN HAUT et reste colle, sinon on
+               reglerait la carte sans jamais la voir. */
             .studio-workspace { grid-template-columns: 1fr; }
-            .studio-preview-col { position: static; }
+            .studio-preview-col {
+                position: sticky; top: 0; z-index: 20; order: -1;
+                margin: -8px -6px 6px; padding: 10px 6px 12px;
+                background: color-mix(in srgb, var(--bg-dark) 88%, transparent);
+                backdrop-filter: saturate(180%) blur(14px);
+                -webkit-backdrop-filter: saturate(180%) blur(14px);
+                border-bottom: 1px solid var(--glass-border);
+            }
+            /* Version compacte : on ne garde que la carte, pas tout le telephone */
+            .studio-preview-col .studio-phone { width: 250px; padding: 8px; border-radius: 32px; }
+            .studio-preview-col .studio-phone-screen { min-height: 0; padding: 12px 10px 14px; border-radius: 24px; }
+            .studio-preview-col .studio-phone-title,
+            .studio-preview-col .studio-phone-ghost,
+            .studio-preview-col .studio-note { display: none; }
+            .studio-preview-col .studio-phone-status { padding: 4px 12px 3px; }
+            .st-prev-head { margin-bottom: 8px; }
         }
 
         /* ── Aperçu ── */
@@ -893,10 +910,6 @@
         .studio-icons button:hover { border-color: var(--secondary-accent);
             color: var(--secondary-accent); transform: translateY(-2px); }
 
-        @media (max-width: 1100px) {
-            .studio-workspace { grid-template-columns: 1fr; }
-            .studio-preview-col { position: static; }
-        }
 
         /* ─── NOTIFICATION TYPE CARDS ─── */
         .notif-type-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 6px; }
