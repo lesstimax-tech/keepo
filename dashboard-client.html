@@ -1758,6 +1758,7 @@
             let cardColor = '#16B8C4'; // fallback
             let cardBgImg = null;
             let cardOverlayOpacity = 0.5;
+            let cardLayers = [];   // textes / images / icones ajoutes dans le Studio
 
             if (design.color) cardColor = design.color;
 
@@ -1767,12 +1768,26 @@
                     if (studio.borderColor) cardColor = studio.borderColor;
                     if (studio.bg)          cardBgImg = studio.bg;
                     if (studio.opacity)     cardOverlayOpacity = Number(studio.opacity) / 100;
+                    if (Array.isArray(studio.layers)) cardLayers = studio.layers;
                 } catch(e) {}
             }
 
             const cardGlow  = hexToGlow(cardColor);
             const bgStyle   = cardBgImg ? `background-image:url('${cardBgImg}');background-size:cover;background-position:center;` : '';
             // Overlay sombre si image de fond (lisibilité)
+            // Calques composes par le commercant dans le Studio (positions en %)
+            const layersEl = cardLayers.length ? `<div style="position:absolute;inset:0;z-index:2;pointer-events:none;">` +
+                cardLayers.map(l => {
+                    const pos = `position:absolute;left:${l.x}%;top:${l.y}%;transform:translate(-50%,-50%) rotate(${l.rot||0}deg);`;
+                    if (l.type === "text") {
+                        return `<div style="${pos}font-size:${l.size}px;font-family:${l.font};font-weight:${l.weight};color:${l.color};white-space:pre-wrap;max-width:92%;">${escapeHtml(l.text||"")}</div>`;
+                    }
+                    if (l.type === "icon") {
+                        return `<div style="${pos}font-size:${l.size}px;color:${l.color};"><i class="fa-solid fa-${escapeHtml(l.icon||"star")}"></i></div>`;
+                    }
+                    return `<div style="${pos}width:${l.w}%;opacity:${(l.opacity??100)/100};"><img src="${l.src}" alt="" style="width:100%;display:block;border-radius:${l.radius||0}px;"></div>`;
+                }).join("") + `</div>` : "";
+
             const overlayEl = cardBgImg
                 ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,${cardOverlayOpacity});border-radius:inherit;pointer-events:none;z-index:0;"></div>`
                 : '';
@@ -1848,6 +1863,7 @@
                     style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
                     onclick="openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}', '${merchantPlan}')">
                     ${overlayEl}
+                    ${layersEl}
                     <div style="position:relative;z-index:1;">
                         <div class="card-top">
                             <div class="card-logo-chip">${initial}<img src="/logo/${card.merchant_id}?fb=none" alt="" loading="lazy" onerror="this.remove()"></div>
