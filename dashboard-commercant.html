@@ -629,71 +629,201 @@
             display: flex; align-items: center; gap: 8px;
         }
 
-        /* ═══════════ STUDIO DESIGN CARD ═══════════ */
-        .studio-workspace { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr);
+        /* ═══════════════ STUDIO DESIGN CARD ═══════════════ */
+        .studio-workspace { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,.9fr);
             gap: 26px; align-items: start; }
-        .studio-panel { display: flex; flex-direction: column; gap: 18px; }
-        .studio-sec { border-top: 1px solid var(--glass-border); padding-top: 16px; }
-        .studio-sec:first-child { border-top: none; padding-top: 0; }
-        .studio-sec-t { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;
-            letter-spacing: -.01em; margin-bottom: 12px; color: var(--text-main); }
-        .studio-sec-t i { color: var(--secondary-accent); font-size: 13px; }
-        .studio-val { margin-left: auto; font-size: 11.5px; font-weight: 600; color: var(--text-muted);
-            background: var(--bg-dark); border: 1px solid var(--glass-border);
-            padding: 2px 8px; border-radius: 999px; }
 
-        /* Zone de dépôt d'image */
-        .studio-drop { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer;
-            border: 1.5px dashed var(--glass-border-bright); border-radius: 12px;
-            background: var(--bg-dark); color: var(--text-sub); font-size: 13.5px; font-weight: 500;
+        .studio-panel { display: flex; flex-direction: column; gap: 12px; }
+
+        /* ── Sections repliables ── */
+        .st-sec { background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: 16px; overflow: hidden; transition: border-color .3s var(--ease),
+            box-shadow .3s var(--ease); }
+        .st-sec.open { border-color: var(--glass-border-bright); box-shadow: var(--shadow-sm); }
+        .st-head { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+            background: none; border: none; cursor: pointer; text-align: left; color: var(--text-main); }
+        .st-ico { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center;
+            background: var(--grad-soft); color: var(--secondary-accent); font-size: 13px; flex-shrink: 0;
+            transition: transform .35s var(--ease); }
+        .st-sec.open .st-ico { transform: scale(1.06) rotate(-4deg); }
+        .st-t { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; font-weight: 650;
+            letter-spacing: -.015em; min-width: 0; }
+        .st-t small { font-size: 11px; font-weight: 450; color: var(--text-muted); }
+        .st-badge { font-size: 11px; font-weight: 700; min-width: 20px; text-align: center;
+            padding: 2px 7px; border-radius: 999px; background: var(--secondary-accent); color: #fff; }
+        .st-chev { font-size: 11px; color: var(--text-muted); transition: transform .35s var(--ease); }
+        .st-sec.open .st-chev { transform: rotate(180deg); }
+        .st-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .38s var(--ease); }
+        .st-sec.open .st-body { grid-template-rows: 1fr; }
+        .st-body > * { overflow: hidden; }
+        .st-body { padding: 0 16px; }
+        .st-sec.open .st-body { padding-bottom: 16px; }
+
+        /* ── Champs ── */
+        .st-f { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+        .st-f > label { display: flex; align-items: center; justify-content: space-between;
+            font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase;
+            color: var(--text-muted); }
+        .st-f > label b { font-weight: 700; color: var(--secondary-accent); font-size: 11px;
+            letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+        .st-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .st-grp { display: none; }
+        .st-grp.on { display: block; animation: stFade .3s var(--ease); }
+        @keyframes stFade { from { opacity: 0; transform: translateY(-4px) } }
+
+        .st-f input[type=text], .st-f select {
+            width: 100%; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-family: inherit;
+            background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);
+            transition: border-color .2s var(--ease), box-shadow .2s var(--ease); }
+        .st-f input[type=text]:focus, .st-f select:focus { outline: none;
+            border-color: var(--secondary-accent); box-shadow: 0 0 0 3px var(--secondary-glow); }
+        .st-f input[type=color] { width: 100%; height: 38px; padding: 3px; border-radius: 10px; cursor: pointer;
+            background: var(--bg-dark); border: 1px solid var(--glass-border); }
+        .st-f input[type=range] { width: 100%; accent-color: var(--secondary-accent);
+            background: none; border: none; padding: 4px 0; cursor: pointer; }
+        .st-check { display: flex; align-items: center; gap: 9px; margin-top: 12px; cursor: pointer;
+            font-size: 12.5px; color: var(--text-sub); }
+        .st-check input { accent-color: var(--secondary-accent); width: 15px; height: 15px; }
+
+        /* ── Sélecteurs segmentés ── */
+        .st-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px;
+            background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 11px;
+            margin-top: 12px; }
+        .st-seg.sm { margin-top: 0; }
+        .st-seg button { padding: 8px 6px; border-radius: 8px; border: none; cursor: pointer;
+            background: none; color: var(--text-muted); font-size: 12px; font-weight: 600; font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
             transition: all .22s var(--ease); }
-        .studio-drop:hover { border-color: var(--secondary-accent); color: var(--secondary-accent); }
-        .studio-drop i { font-size: 15px; }
+        .st-seg button i { font-size: 11px; }
+        .st-seg button:hover { color: var(--text-main); }
+        .st-seg button.on { background: var(--bg-card); color: var(--secondary-accent);
+            box-shadow: var(--shadow-sm); }
 
-        .studio-range { width: 100%; accent-color: var(--secondary-accent); background: none;
-            border: none; padding: 6px 0; }
+        /* ── Préréglages ── */
+        .st-presets { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; margin-top: 12px; }
+        .st-preset { border-radius: 12px; overflow: hidden; cursor: pointer; border: 1.5px solid var(--glass-border);
+            background: none; padding: 0; transition: all .28s var(--ease); }
+        .st-preset:hover { transform: translateY(-3px); border-color: var(--secondary-accent);
+            box-shadow: var(--shadow-md); }
+        .st-preset .sw { height: 46px; display: block; }
+        .st-preset .nm { display: block; font-size: 10.5px; font-weight: 650; padding: 6px 4px;
+            color: var(--text-sub); background: var(--bg-dark); }
 
-        /* Boutons d'ajout */
-        .studio-add { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-        .studio-add button { display: flex; flex-direction: column; align-items: center; gap: 6px;
-            padding: 14px 8px; border-radius: 12px; cursor: pointer; font-size: 12px; font-weight: 600;
+        /* ── Ajout d'éléments ── */
+        .st-add { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 12px; }
+        .st-add button { display: flex; flex-direction: column; align-items: center; gap: 7px;
+            padding: 15px 8px; border-radius: 12px; cursor: pointer; font-family: inherit;
+            background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);
+            font-size: 11.5px; font-weight: 600; transition: all .25s var(--ease); position: relative;
+            overflow: hidden; }
+        .st-add button i { font-size: 17px; color: var(--secondary-accent); transition: transform .3s var(--ease); }
+        .st-add button:hover { border-color: var(--secondary-accent); transform: translateY(-3px);
+            box-shadow: var(--shadow-sm); }
+        .st-add button:hover i { transform: scale(1.15) translateY(-1px); }
+
+        /* ── Liste des calques ── */
+        .st-layers { display: flex; flex-direction: column; gap: 6px; margin-top: 12px;
+            max-height: 190px; overflow-y: auto; }
+        .st-layer { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px;
+            background: var(--bg-dark); border: 1px solid var(--glass-border); cursor: pointer;
+            transition: all .22s var(--ease); animation: stIn .32s var(--ease); }
+        @keyframes stIn { from { opacity: 0; transform: translateX(-8px) } }
+        .st-layer:hover { border-color: var(--glass-border-bright); transform: translateX(2px); }
+        .st-layer.sel { border-color: var(--secondary-accent); box-shadow: 0 0 0 2px var(--secondary-glow); }
+        .st-layer .k { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center;
+            background: var(--grad-soft); color: var(--secondary-accent); font-size: 11px; flex-shrink: 0; }
+        .st-layer .nm { flex: 1; font-size: 12.5px; font-weight: 550; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; }
+        .st-layer .act { display: flex; gap: 2px; }
+        .st-layer .act button { border: none; background: none; color: var(--text-muted); cursor: pointer;
+            padding: 4px 5px; border-radius: 6px; font-size: 11px; transition: all .18s; }
+        .st-layer .act button:hover { color: var(--secondary-accent); background: var(--bg-card); }
+        .st-layer .act button.d:hover { color: var(--danger); background: rgba(214,51,108,.1); }
+        .st-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 18px 12px;
+            border: 1px dashed var(--glass-border); border-radius: 12px; margin-top: 12px; }
+
+        /* ── Réglages de l'élément ── */
+        .st-props { margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--bg-dark);
+            border: 1px solid var(--glass-border); animation: stFade .3s var(--ease); }
+        .st-props-h { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+            color: var(--secondary-accent); margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
+        .st-props .st-f:first-of-type { margin-top: 8px; }
+
+        /* ── Actions ── */
+        .st-actions { display: grid; grid-template-columns: auto 1fr; gap: 10px; margin-top: 4px; }
+        .st-btn { padding: 13px 18px; border-radius: 12px; cursor: pointer; font-family: inherit;
+            font-size: 13.5px; font-weight: 650; display: inline-flex; align-items: center;
+            justify-content: center; gap: 8px; transition: all .28s var(--ease); border: 1px solid transparent; }
+        .st-btn.ghost { background: var(--bg-card); border-color: var(--glass-border); color: var(--text-muted); }
+        .st-btn.ghost:hover { color: var(--danger); border-color: var(--danger); }
+        .st-btn.main { background: var(--grad); color: #fff; box-shadow: 0 8px 20px -10px var(--primary-glow); }
+        .st-btn.main:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -12px var(--primary-glow); }
+
+        /* ══ Aperçu ══ */
+        .studio-preview-col { position: sticky; top: 20px; }
+        .st-prev-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .st-prev-t { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+            color: var(--text-muted); display: inline-flex; align-items: center; gap: 7px; }
+        .st-live { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600;
+            color: var(--success); }
+        .st-live i { font-size: 6px; animation: stPulse 2s ease-in-out infinite; }
+        @keyframes stPulse { 50% { opacity: .25 } }
+
+        .studio-phone { width: 296px; margin: 0 auto; border-radius: 42px; padding: 11px; position: relative;
+            background: #0C0C12; box-shadow: 0 30px 60px -25px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07) inset; }
+        .studio-phone-notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+            width: 96px; height: 22px; background: #0C0C12; border-radius: 0 0 14px 14px; z-index: 5; }
+        .studio-phone-status { display: flex; justify-content: space-between; align-items: center;
+            padding: 7px 16px 5px; font-size: 10.5px; color: #fff; font-weight: 600; }
+        .studio-phone-status i { font-size: 9px; margin-left: 2px; }
+        .studio-phone-screen { background: #F5F5F9; border-radius: 32px; padding: 16px 14px 20px; min-height: 430px; }
+        .studio-phone-title { font-size: 17px; font-weight: 750; color: #101018; letter-spacing: -.03em;
+            margin-bottom: 12px; }
+        .studio-phone-ghost { height: 54px; border-radius: 16px; background: #EDEDF3; margin-top: 12px; }
+
+        .studio-card { position: relative; overflow: hidden; background: #181628; min-height: 170px;
+            background-size: cover; background-position: center;
+            transition: min-height .3s var(--ease), border-radius .3s var(--ease), box-shadow .3s var(--ease); }
+        .studio-pattern-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+        .studio-card-overlay { position: absolute; inset: 0; z-index: 1; }
+        .studio-card-inner { position: relative; z-index: 2; padding: 16px; pointer-events: none; }
+        .studio-card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+        .studio-card-chip { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+            font-weight: 800; font-size: 15px; color: #fff; background: rgba(255,255,255,.18); }
+        .studio-card-pts { font-size: 25px; font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #fff; }
+        .studio-card-pts-lbl { font-size: 8.5px; color: rgba(255,255,255,.72); letter-spacing: .1em;
+            margin-top: 3px; font-weight: 600; }
+        .studio-card-title { font-size: 16px; font-weight: 700; color: #fff; margin-top: 14px; letter-spacing: -.02em; }
+        .studio-card-bar { height: 5px; border-radius: 99px; background: rgba(255,255,255,.22);
+            margin-top: 12px; overflow: hidden; }
+        .studio-card-bar i { display: block; height: 100%; width: 72%; border-radius: 99px;
+            transition: background .3s var(--ease); }
+        .studio-card-foot { display: flex; align-items: center; justify-content: space-between;
+            margin-top: 12px; font-size: 10px; color: rgba(255,255,255,.75); }
+        .studio-card-badge { padding: 3px 9px; border-radius: 999px; font-weight: 700; font-size: 9.5px; }
+
+        .studio-layer-host { position: absolute; inset: 0; z-index: 3; }
+        .sl { position: absolute; cursor: grab; user-select: none; -webkit-user-select: none;
+            touch-action: none; line-height: 1.2; max-width: 92%; }
+        .sl:active { cursor: grabbing; }
+        .sl.sel { outline: 1.5px dashed var(--secondary-accent); outline-offset: 3px; border-radius: 3px; }
+        .sl img { display: block; width: 100%; height: auto; pointer-events: none; }
+
+        .studio-note { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 16px;
+            display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        .studio-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px,1fr)); gap: 8px;
+            max-height: 320px; overflow-y: auto; padding: 4px; }
+        .studio-icons button { aspect-ratio: 1; border-radius: 11px; cursor: pointer; font-size: 18px;
             background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main);
             transition: all .22s var(--ease); }
-        .studio-add button i { font-size: 16px; color: var(--secondary-accent); }
-        .studio-add button:hover { border-color: var(--secondary-accent); transform: translateY(-2px);
-            box-shadow: var(--shadow-sm); }
-        .studio-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 10px;
-            display: flex; align-items: center; gap: 6px; }
+        .studio-icons button:hover { border-color: var(--secondary-accent); color: var(--secondary-accent);
+            transform: translateY(-3px) scale(1.05); }
 
-        /* Liste des calques */
-        .studio-layers { display: flex; flex-direction: column; gap: 6px; max-height: 210px; overflow-y: auto; }
-        .studio-layer { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 10px;
-            background: var(--bg-dark); border: 1px solid var(--glass-border); cursor: pointer;
-            transition: all .2s var(--ease); }
-        .studio-layer:hover { border-color: var(--glass-border-bright); }
-        .studio-layer.sel { border-color: var(--secondary-accent);
-            box-shadow: 0 0 0 2px var(--secondary-glow); }
-        .studio-layer i.k { width: 22px; text-align: center; color: var(--secondary-accent); font-size: 13px; }
-        .studio-layer .nm { flex: 1; font-size: 12.5px; font-weight: 550; color: var(--text-main);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .studio-layer .del { border: none; background: none; color: var(--text-muted); cursor: pointer;
-            padding: 4px 6px; border-radius: 6px; font-size: 12px; }
-        .studio-layer .del:hover { color: var(--danger); background: rgba(214,51,108,.10); }
-        .studio-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 14px;
-            border: 1px dashed var(--glass-border); border-radius: 10px; }
-
-        /* Panneau de propriétés */
-        #studio-props { display: flex; flex-direction: column; gap: 12px; }
-        .sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .sp-f { display: flex; flex-direction: column; gap: 5px; }
-        .sp-f label { font-size: 11px; font-weight: 600; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: .05em; }
-        .sp-f input[type=text], .sp-f select, .sp-f input[type=number] {
-            width: 100%; padding: 9px 11px; border-radius: 9px; font-size: 13px;
-            background: var(--bg-dark); border: 1px solid var(--glass-border); color: var(--text-main); }
-        .sp-f input[type=color] { width: 100%; height: 36px; padding: 3px; border-radius: 9px;
-            background: var(--bg-dark); border: 1px solid var(--glass-border); cursor: pointer; }
-        .sp-f input[type=range] { accent-color: var(--secondary-accent); }
+        @media (max-width: 1100px) {
+            .studio-workspace { grid-template-columns: 1fr; }
+            .studio-preview-col { position: static; }
+        }
 
         /* ── Aperçu ── */
         .studio-preview-col { position: sticky; top: 20px; }
@@ -2136,78 +2266,169 @@
             </div>
             <div class="studio-workspace" style="margin-top:18px;">
 
-                <!-- ══════════ COLONNE GAUCHE : OUTILS ══════════ -->
-                <div class="card studio-panel">
+                <!-- ══════════ PANNEAU D'ÉDITION ══════════ -->
+                <div class="studio-panel">
 
-                    <!-- Fond de la carte -->
-                    <div class="studio-sec">
-                        <div class="studio-sec-t"><i class="fa-solid fa-fill-drip"></i> Fond de la carte</div>
-                        <div class="form-group" style="margin-bottom:10px;">
-                            <label>Enseigne / Titre</label>
-                            <input type="text" id="studio-title-input" value="Commerce KEEPO" oninput="refreshStudioOutput()">
+                    <!-- ─── Préréglages ─── -->
+                    <section class="st-sec open" data-sec="presets">
+                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
+                            <span class="st-ico"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span class="st-t">Styles rapides<small>Un clic pour tout changer</small></span>
+                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                        </button>
+                        <div class="st-body">
+                            <div class="st-presets" id="studio-presets"></div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Couleur du texte</label>
-                                <input type="color" id="studio-txt-color" value="#ffffff" oninput="refreshStudioOutput()">
+                    </section>
+
+                    <!-- ─── Fond ─── -->
+                    <section class="st-sec" data-sec="bg">
+                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
+                            <span class="st-ico"><i class="fa-solid fa-fill-drip"></i></span>
+                            <span class="st-t">Fond<small>Couleur, dégradé, image, motif</small></span>
+                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                        </button>
+                        <div class="st-body">
+                            <div class="st-seg" id="studio-bgtype">
+                                <button type="button" data-v="color"    onclick="studioSetBgType('color')"><i class="fa-solid fa-square"></i> Uni</button>
+                                <button type="button" data-v="gradient" onclick="studioSetBgType('gradient')" class="on"><i class="fa-solid fa-circle-half-stroke"></i> Dégradé</button>
+                                <button type="button" data-v="image"    onclick="studioSetBgType('image')"><i class="fa-solid fa-image"></i> Image</button>
                             </div>
-                            <div class="form-group">
-                                <label>Couleur d'accent</label>
-                                <input type="color" id="studio-border-color" value="#1B8E97" oninput="refreshStudioOutput()">
+
+                            <div id="st-bg-color" class="st-grp">
+                                <div class="st-f"><label>Couleur</label>
+                                    <input type="color" id="studio-bg1" value="#1B1533" oninput="refreshStudioOutput()"></div>
+                            </div>
+
+                            <div id="st-bg-gradient" class="st-grp">
+                                <div class="st-row2">
+                                    <div class="st-f"><label>Couleur 1</label>
+                                        <input type="color" id="studio-grad1" value="#5A32A0" oninput="refreshStudioOutput()"></div>
+                                    <div class="st-f"><label>Couleur 2</label>
+                                        <input type="color" id="studio-grad2" value="#1FA5A8" oninput="refreshStudioOutput()"></div>
+                                </div>
+                                <div class="st-f"><label>Orientation <b id="st-angle-v">135°</b></label>
+                                    <input type="range" id="studio-grad-angle" min="0" max="360" value="135" oninput="refreshStudioOutput()"></div>
+                            </div>
+
+                            <div id="st-bg-image" class="st-grp">
+                                <label for="studio-bg-file" class="st-drop">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <span id="studio-bg-label">Choisir une image…</span>
+                                </label>
+                                <input type="file" id="studio-bg-file" accept="image/*" onchange="handleStudioFileSelect(event)" hidden>
+                                <div class="st-f"><label>Assombrir <b id="studio-op-val">50%</b></label>
+                                    <input type="range" id="studio-overlay-opacity" min="0" max="90" value="50" oninput="refreshStudioOutput()"></div>
+                                <div class="st-f"><label>Flou <b id="st-blur-v">0px</b></label>
+                                    <input type="range" id="studio-bg-blur" min="0" max="12" value="0" oninput="refreshStudioOutput()"></div>
+                            </div>
+
+                            <div class="st-f"><label>Motif</label>
+                                <div class="st-seg sm" id="studio-pattern">
+                                    <button type="button" onclick="studioSetPattern('none')" class="on">Aucun</button>
+                                    <button type="button" onclick="studioSetPattern('dots')">Points</button>
+                                    <button type="button" onclick="studioSetPattern('lines')">Rayures</button>
+                                    <button type="button" onclick="studioSetPattern('grid')">Grille</button>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Image d'arrière-plan</label>
-                            <label for="studio-bg-file" class="studio-drop">
-                                <i class="fa-solid fa-image"></i>
-                                <span id="studio-bg-label">Choisir une image…</span>
-                            </label>
-                            <input type="file" id="studio-bg-file" accept="image/*" onchange="handleStudioFileSelect(event)" hidden>
+                    </section>
+
+                    <!-- ─── Forme & taille ─── -->
+                    <section class="st-sec" data-sec="shape">
+                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
+                            <span class="st-ico"><i class="fa-solid fa-vector-square"></i></span>
+                            <span class="st-t">Forme &amp; taille<small>Hauteur, arrondi, bordure, ombre</small></span>
+                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                        </button>
+                        <div class="st-body">
+                            <div class="st-f"><label>Hauteur de la carte <b id="st-h-v">170px</b></label>
+                                <input type="range" id="studio-card-h" min="130" max="280" value="170" oninput="refreshStudioOutput()"></div>
+                            <div class="st-f"><label>Arrondi <b id="st-r-v">18px</b></label>
+                                <input type="range" id="studio-card-r" min="0" max="40" value="18" oninput="refreshStudioOutput()"></div>
+                            <div class="st-row2">
+                                <div class="st-f"><label>Bordure <b id="st-bw-v">0px</b></label>
+                                    <input type="range" id="studio-border-w" min="0" max="6" value="0" oninput="refreshStudioOutput()"></div>
+                                <div class="st-f"><label>Couleur bordure</label>
+                                    <input type="color" id="studio-border-color" value="#1B8E97" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="st-f"><label>Ombre portée <b id="st-sh-v">Moyenne</b></label>
+                                <input type="range" id="studio-shadow" min="0" max="3" value="1" oninput="refreshStudioOutput()"></div>
                         </div>
-                        <div class="form-group">
-                            <label>Assombrir le fond <span id="studio-op-val" class="studio-val">50%</span></label>
-                            <input type="range" id="studio-overlay-opacity" min="0" max="85" value="50"
-                                   oninput="refreshStudioOutput()" class="studio-range">
+                    </section>
+
+                    <!-- ─── Typographie de la carte ─── -->
+                    <section class="st-sec" data-sec="type">
+                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
+                            <span class="st-ico"><i class="fa-solid fa-font"></i></span>
+                            <span class="st-t">Textes de la carte<small>Enseigne et compteur de points</small></span>
+                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                        </button>
+                        <div class="st-body">
+                            <div class="st-f"><label>Enseigne</label>
+                                <input type="text" id="studio-title-input" value="Commerce KEEPO" oninput="refreshStudioOutput()"></div>
+                            <div class="st-f"><label>Police</label>
+                                <select id="studio-title-font" onchange="refreshStudioOutput()"></select></div>
+                            <div class="st-row2">
+                                <div class="st-f"><label>Taille <b id="st-ts-v">16px</b></label>
+                                    <input type="range" id="studio-title-size" min="11" max="30" value="16" oninput="refreshStudioOutput()"></div>
+                                <div class="st-f"><label>Couleur</label>
+                                    <input type="color" id="studio-txt-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            <div class="st-f"><label>Alignement</label>
+                                <div class="st-seg sm" id="studio-title-align">
+                                    <button type="button" onclick="studioSetAlign('left')" class="on"><i class="fa-solid fa-align-left"></i></button>
+                                    <button type="button" onclick="studioSetAlign('center')"><i class="fa-solid fa-align-center"></i></button>
+                                    <button type="button" onclick="studioSetAlign('right')"><i class="fa-solid fa-align-right"></i></button>
+                                </div>
+                            </div>
+                            <label class="st-check"><input type="checkbox" id="studio-title-shadow" onchange="refreshStudioOutput()"> Ombre sur les textes (meilleure lisibilité)</label>
+                            <div class="st-row2">
+                                <div class="st-f"><label>Taille des points <b id="st-ps-v">25px</b></label>
+                                    <input type="range" id="studio-pts-size" min="16" max="46" value="25" oninput="refreshStudioOutput()"></div>
+                                <div class="st-f"><label>Couleur des points</label>
+                                    <input type="color" id="studio-pts-color" value="#ffffff" oninput="refreshStudioOutput()"></div>
+                            </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <!-- Ajout d'éléments -->
-                    <div class="studio-sec">
-                        <div class="studio-sec-t"><i class="fa-solid fa-layer-group"></i> Ajouter un élément</div>
-                        <div class="studio-add">
-                            <button type="button" onclick="studioAddLayer('text')"><i class="fa-solid fa-font"></i> Texte</button>
-                            <button type="button" onclick="document.getElementById('studio-img-file').click()"><i class="fa-solid fa-image"></i> Image</button>
-                            <button type="button" onclick="studioOpenIconPicker()"><i class="fa-solid fa-star"></i> Icône</button>
+                    <!-- ─── Éléments (calques) ─── -->
+                    <section class="st-sec open" data-sec="layers">
+                        <button type="button" class="st-head" onclick="studioToggleSec(this)">
+                            <span class="st-ico"><i class="fa-solid fa-layer-group"></i></span>
+                            <span class="st-t">Éléments<small>Textes, images et icônes libres</small></span>
+                            <span class="st-badge" id="studio-layer-count">0</span>
+                            <i class="fa-solid fa-chevron-down st-chev"></i>
+                        </button>
+                        <div class="st-body">
+                            <div class="st-add">
+                                <button type="button" onclick="studioAddLayer('text')"><i class="fa-solid fa-t"></i><span>Texte</span></button>
+                                <button type="button" onclick="document.getElementById('studio-img-file').click()"><i class="fa-solid fa-image"></i><span>Image</span></button>
+                                <button type="button" onclick="studioOpenIconPicker()"><i class="fa-solid fa-shapes"></i><span>Icône</span></button>
+                            </div>
+                            <input type="file" id="studio-img-file" accept="image/*" onchange="studioAddImageLayer(event)" hidden>
+                            <div id="studio-layers" class="st-layers"></div>
+                            <div id="studio-props-sec" class="st-props" style="display:none;">
+                                <div class="st-props-h"><i class="fa-solid fa-sliders"></i> Réglages de l'élément</div>
+                                <div id="studio-props"></div>
+                            </div>
                         </div>
-                        <input type="file" id="studio-img-file" accept="image/*" onchange="studioAddImageLayer(event)" hidden>
-                        <p class="studio-hint"><i class="fa-solid fa-hand-pointer"></i> Glissez un élément sur la carte pour le déplacer.</p>
-                    </div>
+                    </section>
 
-                    <!-- Calques -->
-                    <div class="studio-sec">
-                        <div class="studio-sec-t"><i class="fa-solid fa-list"></i> Éléments <span id="studio-layer-count" class="studio-val">0</span></div>
-                        <div id="studio-layers" class="studio-layers"></div>
+                    <div class="st-actions">
+                        <button onclick="studioResetAll()" class="st-btn ghost" type="button"><i class="fa-solid fa-rotate-left"></i> Réinitialiser</button>
+                        <button onclick="saveStudioDesign()" class="st-btn main" type="button"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
                     </div>
-
-                    <!-- Propriétés de l'élément sélectionné -->
-                    <div class="studio-sec" id="studio-props-sec" style="display:none;">
-                        <div class="studio-sec-t"><i class="fa-solid fa-sliders"></i> Propriétés</div>
-                        <div id="studio-props"></div>
-                    </div>
-
-                    <button onclick="saveStudioDesign()" class="btn-action" style="width:100%;margin-top:4px;">
-                        <i class="fa-solid fa-floppy-disk"></i> Enregistrer le design
-                    </button>
                 </div>
 
-                <!-- ══════════ COLONNE DROITE : APERÇU ══════════ -->
+                <!-- ══════════ APERÇU ══════════ -->
                 <div class="studio-preview-col">
-                    <div class="studio-preview-head">
-                        <span><i class="fa-solid fa-mobile-screen-button"></i> Aperçu client</span>
-                        <span class="studio-live"><i class="fa-solid fa-circle"></i> en direct</span>
+                    <div class="st-prev-head">
+                        <span class="st-prev-t"><i class="fa-solid fa-mobile-screen-button"></i> Aperçu client</span>
+                        <span class="st-live"><i class="fa-solid fa-circle"></i> en direct</span>
                     </div>
 
-                    <div class="studio-phone">
+                    <div class="studio-phone" id="studio-phone">
                         <div class="studio-phone-notch"></div>
                         <div class="studio-phone-status">
                             <span id="studio-phone-time">09:41</span>
@@ -2215,11 +2436,10 @@
                         </div>
                         <div class="studio-phone-screen">
                             <div class="studio-phone-title">Mes Cartes</div>
-
-                            <!-- La carte éditable -->
                             <div id="studio-card-element-render" class="studio-card">
+                                <div id="studio-pattern-layer" class="studio-pattern-layer"></div>
                                 <div id="studio-overlay-layer" class="studio-card-overlay"></div>
-                                <div class="studio-card-inner">
+                                <div class="studio-card-inner" id="studio-card-inner">
                                     <div class="studio-card-top">
                                         <div id="studio-card-chip" class="studio-card-chip">K</div>
                                         <div style="text-align:right;">
@@ -2234,19 +2454,14 @@
                                         <span id="studio-reward-badge-render" class="studio-card-badge">Récompense</span>
                                     </div>
                                 </div>
-                                <!-- Calques ajoutés par le commerçant -->
                                 <div id="studio-layer-host" class="studio-layer-host"></div>
                             </div>
-
                             <div class="studio-phone-ghost"></div>
-                            <div class="studio-phone-ghost" style="opacity:.5;"></div>
+                            <div class="studio-phone-ghost" style="opacity:.45;"></div>
                         </div>
                     </div>
 
-                    <p class="studio-note">
-                        <i class="fa-solid fa-circle-info"></i>
-                        Voilà exactement ce que verront vos clients dans leur application.
-                    </p>
+                    <p class="studio-note"><i class="fa-solid fa-circle-info"></i> Exactement ce que verront vos clients.</p>
                 </div>
             </div>
         </div>
@@ -3940,53 +4155,101 @@
 
     // ─── PERSISTANCE : STUDIO ───
     /* ══════════════════════════════════════════════════════════
-       STUDIO — éditeur de calques de la carte de fidélité
-       Chaque élément (texte, image, icône) est un calque positionné
-       en pourcentage, donc fidèle quelle que soit la taille d'écran.
+       STUDIO DESIGN CARD — moteur
+       Un état unique (studioState) décrit toute la carte ; l'aperçu
+       en est le reflet direct, et c'est lui qu'on enregistre.
        ══════════════════════════════════════════════════════════ */
-    let studioLayers = [];       // [{id,type,...}]
+    let studioLayers = [];
     let studioSelId  = null;
+    let studioState  = { bgType: 'gradient', pattern: 'none', align: 'left' };
 
     const STUDIO_FONTS = [
-        ['Inter, sans-serif', 'Inter (par défaut)'],
-        ['Georgia, serif', 'Georgia (élégant)'],
-        ['"Courier New", monospace', 'Courier (machine)'],
-        ['"Trebuchet MS", sans-serif', 'Trebuchet (rond)'],
-        ['Impact, sans-serif', 'Impact (impact)'],
-        ['"Brush Script MT", cursive', 'Script (manuscrit)']
+        ['Inter, sans-serif', 'Inter — moderne'],
+        ['Georgia, serif', 'Georgia — élégant'],
+        ['"Playfair Display", Georgia, serif', 'Playfair — chic'],
+        ['"Trebuchet MS", sans-serif', 'Trebuchet — rond'],
+        ['"Courier New", monospace', 'Courier — machine'],
+        ['Impact, sans-serif', 'Impact — fort'],
+        ['"Brush Script MT", cursive', 'Script — manuscrit'],
+        ['Verdana, sans-serif', 'Verdana — lisible']
     ];
     const STUDIO_ICONS = ['star','heart','crown','gift','mug-hot','utensils','scissors','cart-shopping',
-        'bread-slice','ice-cream','pizza-slice','wine-glass','leaf','fire','bolt','gem','award','ticket',
-        'basket-shopping','shirt','dog','spa','dumbbell','book'];
+        'bread-slice','ice-cream','pizza-slice','wine-glass','beer-mug-empty','cake-candles','leaf','fire',
+        'bolt','gem','award','ticket','basket-shopping','shirt','dog','cat','spa','dumbbell','book','music',
+        'camera','palette','key','clock','location-dot','phone','check','percent'];
+    const STUDIO_PRESETS = [
+        { n:'Nuit',    bgType:'gradient', g1:'#5A32A0', g2:'#1FA5A8', a:135, txt:'#ffffff', acc:'#1FA5A8', pat:'none' },
+        { n:'Or',      bgType:'gradient', g1:'#2B2118', g2:'#B07A12', a:160, txt:'#FFF4DF', acc:'#E7B34A', pat:'none' },
+        { n:'Menthe',  bgType:'gradient', g1:'#0F3D33', g2:'#2FC7A1', a:120, txt:'#ffffff', acc:'#2FC7A1', pat:'dots' },
+        { n:'Encre',   bgType:'color',    g1:'#12121A', g2:'#12121A', a:135, txt:'#ffffff', acc:'#8B7CF8', pat:'grid' },
+        { n:'Corail',  bgType:'gradient', g1:'#7A1F3D', g2:'#FF6B6B', a:145, txt:'#ffffff', acc:'#FFB4A2', pat:'none' },
+        { n:'Papier',  bgType:'color',    g1:'#F3EFE7', g2:'#F3EFE7', a:135, txt:'#1A1A1A', acc:'#B07A12', pat:'lines' }
+    ];
 
     const _sUid = () => 'l' + Math.random().toString(36).slice(2, 8);
+    const _g = id => document.getElementById(id);
+    const _v = (id, d) => { const e = _g(id); return e ? e.value : d; };
 
-    /* ── Ajout de calques ─────────────────────────────────── */
+    /* ── Sections repliables ── */
+    function studioToggleSec(btn) { btn.closest('.st-sec').classList.toggle('open'); }
+
+    /* ── Type de fond / motif / alignement ── */
+    function studioSetBgType(t) {
+        studioState.bgType = t;
+        document.querySelectorAll('#studio-bgtype button').forEach(b =>
+            b.classList.toggle('on', b.dataset.v === t));
+        ['color','gradient','image'].forEach(k =>
+            _g('st-bg-' + k)?.classList.toggle('on', k === t));
+        refreshStudioOutput();
+    }
+    function studioSetPattern(p) {
+        studioState.pattern = p;
+        document.querySelectorAll('#studio-pattern button').forEach((b, i) =>
+            b.classList.toggle('on', ['none','dots','lines','grid'][i] === p));
+        refreshStudioOutput();
+    }
+    function studioSetAlign(a) {
+        studioState.align = a;
+        document.querySelectorAll('#studio-title-align button').forEach((b, i) =>
+            b.classList.toggle('on', ['left','center','right'][i] === a));
+        refreshStudioOutput();
+    }
+    function studioApplyPreset(i) {
+        const p = STUDIO_PRESETS[i];
+        _g('studio-grad1').value = p.g1; _g('studio-grad2').value = p.g2;
+        _g('studio-bg1').value = p.g1;
+        _g('studio-grad-angle').value = p.a;
+        _g('studio-txt-color').value = p.txt;
+        _g('studio-pts-color').value = p.txt;
+        _g('studio-border-color').value = p.acc;
+        studioSetBgType(p.bgType);
+        studioSetPattern(p.pat);
+        showToast('success', 'Style « ' + p.n +' » appliqué', 'Ajustez-le ensuite comme vous voulez.');
+    }
+
+    /* ── Calques ── */
     function studioAddLayer(type, extra) {
-        const base = { id: _sUid(), type, x: 50, y: 50, rot: 0 };
-        if (type === 'text') Object.assign(base, {
-            text: 'Votre texte', size: 16, font: STUDIO_FONTS[0][0], weight: 700, color: '#ffffff'
-        });
-        if (type === 'icon') Object.assign(base, { icon: extra || 'star', size: 26, color: '#ffffff' });
-        if (type === 'image') Object.assign(base, { src: extra, w: 30, radius: 8, opacity: 100 });
-        studioLayers.push(base);
-        studioSelId = base.id;
+        const base = { id: _sUid(), type, x: 50, y: 50, rot: 0, op: 100 };
+        if (type === 'text')  Object.assign(base, { text:'Votre texte', size:16, font:STUDIO_FONTS[0][0],
+            weight:700, color:'#ffffff', ls:0, shadow:false });
+        if (type === 'icon')  Object.assign(base, { icon: extra || 'star', size:26, color:'#ffffff', shadow:false });
+        if (type === 'image') Object.assign(base, { src: extra, w:30, radius:8 });
+        studioLayers.push(base); studioSelId = base.id;
         studioRender();
         showToast('success', 'Élément ajouté', 'Glissez-le sur la carte pour le placer.');
     }
     function studioAddImageLayer(e) {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
-        if (file.size > 3 * 1024 * 1024) {
-            showToast('warning', 'Image trop lourde', 'Choisissez une image de moins de 3 Mo.');
+        if (file.size > 4 * 1024 * 1024) {
+            showToast('warning', 'Image trop lourde', 'Choisissez une image de moins de 4 Mo.');
             e.target.value = ''; return;
         }
-        const reader = new FileReader();
-        reader.onload = ev => {
-            // Redimensionne pour rester léger en base
+        const rd = new FileReader();
+        rd.onload = ev => {
             const img = new Image();
-            img.onload = () => {
-                const max = 520, sc = Math.min(1, max / Math.max(img.width, img.height));
+            img.onload = () => {                       // compression : la carte est stockée en base
+                const max = 560, sc = Math.min(1, max / Math.max(img.width, img.height));
                 const cv = document.createElement('canvas');
                 cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
                 cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
@@ -3994,17 +4257,17 @@
             };
             img.src = ev.target.result;
         };
-        reader.readAsDataURL(file);
-        e.target.value = '';
+        rd.readAsDataURL(file); e.target.value = '';
     }
     function studioOpenIconPicker() {
-        const html = '<div class="studio-icons">' + STUDIO_ICONS.map(n =>
+        showModal('Choisir une icône', '<div class="studio-icons">' + STUDIO_ICONS.map(n =>
             `<button type="button" onclick="studioPickIcon('${n}')" title="${n}"><i class="fa-solid fa-${n}"></i></button>`
-        ).join('') + '</div>';
-        showModal('Choisir une icône', html);
+        ).join('') + '</div>');
     }
     function studioPickIcon(name) {
-        studioAddLayer('icon', name);
+        const l = studioLayers.find(x => x.id === studioSelId);
+        if (l && l.type === 'icon') { l.icon = name; studioRender(); }
+        else studioAddLayer('icon', name);
         if (typeof closeModal === 'function') closeModal();
     }
     function studioDeleteLayer(id, ev) {
@@ -4013,145 +4276,169 @@
         if (studioSelId === id) studioSelId = null;
         studioRender();
     }
+    function studioDuplicate(id, ev) {
+        if (ev) ev.stopPropagation();
+        const l = studioLayers.find(x => x.id === id); if (!l) return;
+        const c = { ...l, id: _sUid(), x: Math.min(95, l.x + 6), y: Math.min(95, l.y + 6) };
+        studioLayers.push(c); studioSelId = c.id; studioRender();
+    }
+    function studioMove(id, dir, ev) {          // ordre d'empilement
+        if (ev) ev.stopPropagation();
+        const i = studioLayers.findIndex(x => x.id === id);
+        const j = i + dir;
+        if (i < 0 || j < 0 || j >= studioLayers.length) return;
+        [studioLayers[i], studioLayers[j]] = [studioLayers[j], studioLayers[i]];
+        studioRender();
+    }
     function studioSelect(id) { studioSelId = id; studioRender(); }
 
-    /* ── Rendu ────────────────────────────────────────────── */
+    /* ── Rendu d'un calque (partagé avec l'app client) ── */
     function studioLayerHtml(l, forClient) {
         const sel = (!forClient && l.id === studioSelId) ? ' sel' : '';
-        const pos = `left:${l.x}%;top:${l.y}%;transform:translate(-50%,-50%) rotate(${l.rot || 0}deg);`;
-        if (l.type === 'text') {
+        const sh = l.shadow ? 'text-shadow:0 2px 6px rgba(0,0,0,.55);' : '';
+        const pos = `left:${l.x}%;top:${l.y}%;transform:translate(-50%,-50%) rotate(${l.rot||0}deg);`
+                  + `opacity:${(l.op ?? 100)/100};`;
+        if (l.type === 'text')
             return `<div class="sl${sel}" data-id="${l.id}" style="${pos}font-size:${l.size}px;`
-                 + `font-family:${l.font};font-weight:${l.weight};color:${l.color};white-space:pre-wrap;">`
-                 + escapeHtml(l.text) + `</div>`;
-        }
-        if (l.type === 'icon') {
-            return `<div class="sl${sel}" data-id="${l.id}" style="${pos}font-size:${l.size}px;color:${l.color};">`
-                 + `<i class="fa-solid fa-${l.icon}"></i></div>`;
-        }
-        return `<div class="sl${sel}" data-id="${l.id}" style="${pos}width:${l.w}%;border-radius:${l.radius}px;`
-             + `opacity:${(l.opacity ?? 100) / 100};"><img src="${l.src}" alt=""></div>`;
+                 + `font-family:${l.font};font-weight:${l.weight};color:${l.color};`
+                 + `letter-spacing:${l.ls||0}px;${sh}white-space:pre-wrap;">${escapeHtml(l.text||'')}</div>`;
+        if (l.type === 'icon')
+            return `<div class="sl${sel}" data-id="${l.id}" style="${pos}font-size:${l.size}px;`
+                 + `color:${l.color};${l.shadow?'filter:drop-shadow(0 2px 5px rgba(0,0,0,.5));':''}">`
+                 + `<i class="fa-solid fa-${escapeHtml(l.icon||'star')}"></i></div>`;
+        return `<div class="sl${sel}" data-id="${l.id}" style="${pos}width:${l.w}%;">`
+             + `<img src="${l.src}" alt="" style="border-radius:${l.radius||0}px;"></div>`;
     }
 
     function studioRender() {
-        const host = document.getElementById('studio-layer-host');
+        const host = _g('studio-layer-host');
         if (host) {
             host.innerHTML = studioLayers.map(l => studioLayerHtml(l, false)).join('');
-            host.querySelectorAll('.sl').forEach(el => studioMakeDraggable(el));
+            host.querySelectorAll('.sl').forEach(studioMakeDraggable);
         }
-        // Liste
-        const list = document.getElementById('studio-layers');
-        const cnt = document.getElementById('studio-layer-count');
+        const list = _g('studio-layers'), cnt = _g('studio-layer-count');
         if (cnt) cnt.textContent = studioLayers.length;
-        if (list) {
-            list.innerHTML = studioLayers.length ? studioLayers.map(l => {
-                const ico = l.type === 'text' ? 'font' : l.type === 'icon' ? 'star' : 'image';
-                const nm  = l.type === 'text' ? l.text : l.type === 'icon' ? l.icon : 'Image';
-                return `<div class="studio-layer${l.id === studioSelId ? ' sel' : ''}" onclick="studioSelect('${l.id}')">
-                    <i class="k fa-solid fa-${ico}"></i><span class="nm">${escapeHtml(String(nm))}</span>
-                    <button class="del" onclick="studioDeleteLayer('${l.id}', event)" title="Supprimer">
-                        <i class="fa-solid fa-trash"></i></button></div>`;
-            }).join('') : '<div class="studio-empty">Aucun élément. Ajoutez du texte, une image ou une icône.</div>';
-        }
+        if (list) list.innerHTML = studioLayers.length ? studioLayers.map((l, i) => {
+            const ico = l.type === 'text' ? 'font' : l.type === 'icon' ? 'star' : 'image';
+            const nm  = l.type === 'text' ? (l.text || 'Texte') : l.type === 'icon' ? l.icon : 'Image';
+            return `<div class="st-layer${l.id===studioSelId?' sel':''}" onclick="studioSelect('${l.id}')">
+                <span class="k"><i class="fa-solid fa-${ico}"></i></span>
+                <span class="nm">${escapeHtml(String(nm))}</span>
+                <span class="act">
+                  <button onclick="studioMove('${l.id}',1,event)" title="Avancer"><i class="fa-solid fa-arrow-up"></i></button>
+                  <button onclick="studioMove('${l.id}',-1,event)" title="Reculer"><i class="fa-solid fa-arrow-down"></i></button>
+                  <button onclick="studioDuplicate('${l.id}',event)" title="Dupliquer"><i class="fa-solid fa-clone"></i></button>
+                  <button class="d" onclick="studioDeleteLayer('${l.id}',event)" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                </span></div>`;
+        }).join('') : '<div class="st-empty">Aucun élément.<br>Ajoutez un texte, une image ou une icône.</div>';
         studioRenderProps();
     }
 
-    /* ── Panneau de propriétés ────────────────────────────── */
+    /* ── Réglages de l'élément sélectionné ── */
     function studioRenderProps() {
-        const sec = document.getElementById('studio-props-sec');
-        const box = document.getElementById('studio-props');
+        const sec = _g('studio-props-sec'), box = _g('studio-props');
         if (!sec || !box) return;
         const l = studioLayers.find(x => x.id === studioSelId);
         if (!l) { sec.style.display = 'none'; return; }
         sec.style.display = '';
-        const f = (k, v) => `studioSet('${l.id}','${k}',this.value)`;
-        let html = '';
+        const f = k => `studioSet('${l.id}','${k}',this.value)`;
+        const fb = k => `studioSet('${l.id}','${k}',this.checked)`;
+        let h = '';
         if (l.type === 'text') {
-            html += `<div class="sp-f"><label>Texte</label>
-                <input type="text" value="${escapeHtml(l.text)}" oninput="${f('text')}"></div>
-                <div class="sp-f"><label>Police</label><select onchange="${f('font')}">`
-                + STUDIO_FONTS.map(([v, n]) => `<option value="${v}" ${l.font === v ? 'selected' : ''}>${n}</option>`).join('')
-                + `</select></div>
-                <div class="sp-row">
-                  <div class="sp-f"><label>Taille ${l.size}px</label>
-                    <input type="range" min="8" max="48" value="${l.size}" oninput="${f('size')}"></div>
-                  <div class="sp-f"><label>Graisse</label><select onchange="${f('weight')}">
-                    <option value="400" ${l.weight == 400 ? 'selected' : ''}>Normal</option>
-                    <option value="600" ${l.weight == 600 ? 'selected' : ''}>Semi-gras</option>
-                    <option value="700" ${l.weight == 700 ? 'selected' : ''}>Gras</option>
-                    <option value="900" ${l.weight == 900 ? 'selected' : ''}>Très gras</option>
-                  </select></div>
-                </div>
-                <div class="sp-f"><label>Couleur</label>
-                  <input type="color" value="${l.color}" oninput="${f('color')}"></div>`;
+            h += `<div class="st-f"><label>Texte</label><input type="text" value="${escapeHtml(l.text)}" oninput="${f('text')}"></div>
+              <div class="st-f"><label>Police</label><select onchange="${f('font')}">`
+              + STUDIO_FONTS.map(([v,n]) => `<option value="${v}" ${l.font===v?'selected':''}>${n}</option>`).join('')
+              + `</select></div>
+              <div class="st-row2">
+                <div class="st-f"><label>Taille <b>${l.size}px</b></label><input type="range" min="8" max="54" value="${l.size}" oninput="${f('size')}"></div>
+                <div class="st-f"><label>Graisse</label><select onchange="${f('weight')}">
+                  ${[['300','Fin'],['400','Normal'],['600','Semi-gras'],['700','Gras'],['900','Très gras']]
+                    .map(([v,n]) => `<option value="${v}" ${l.weight==v?'selected':''}>${n}</option>`).join('')}
+                </select></div></div>
+              <div class="st-row2">
+                <div class="st-f"><label>Couleur</label><input type="color" value="${l.color}" oninput="${f('color')}"></div>
+                <div class="st-f"><label>Espacement <b>${l.ls||0}px</b></label><input type="range" min="-2" max="12" value="${l.ls||0}" oninput="${f('ls')}"></div></div>
+              <label class="st-check"><input type="checkbox" ${l.shadow?'checked':''} onchange="${fb('shadow')}"> Ombre portée</label>`;
         } else if (l.type === 'icon') {
-            html += `<div class="sp-row">
-                  <div class="sp-f"><label>Taille ${l.size}px</label>
-                    <input type="range" min="12" max="72" value="${l.size}" oninput="${f('size')}"></div>
-                  <div class="sp-f"><label>Couleur</label>
-                    <input type="color" value="${l.color}" oninput="${f('color')}"></div>
-                </div>
-                <button type="button" class="btn-action" style="width:100%;" onclick="studioOpenIconPicker()">
-                  <i class="fa-solid fa-repeat"></i> Changer d'icône</button>`;
+            h += `<div class="st-row2">
+                <div class="st-f"><label>Taille <b>${l.size}px</b></label><input type="range" min="12" max="90" value="${l.size}" oninput="${f('size')}"></div>
+                <div class="st-f"><label>Couleur</label><input type="color" value="${l.color}" oninput="${f('color')}"></div></div>
+              <label class="st-check"><input type="checkbox" ${l.shadow?'checked':''} onchange="${fb('shadow')}"> Ombre portée</label>
+              <button type="button" class="st-btn ghost" style="width:100%;margin-top:12px;" onclick="studioOpenIconPicker()">
+                <i class="fa-solid fa-repeat"></i> Changer d'icône</button>`;
         } else {
-            html += `<div class="sp-row">
-                  <div class="sp-f"><label>Largeur ${l.w}%</label>
-                    <input type="range" min="8" max="90" value="${l.w}" oninput="${f('w')}"></div>
-                  <div class="sp-f"><label>Arrondi ${l.radius}px</label>
-                    <input type="range" min="0" max="40" value="${l.radius}" oninput="${f('radius')}"></div>
-                </div>
-                <div class="sp-f"><label>Opacité ${l.opacity ?? 100}%</label>
-                  <input type="range" min="10" max="100" value="${l.opacity ?? 100}" oninput="${f('opacity')}"></div>`;
+            h += `<div class="st-row2">
+                <div class="st-f"><label>Largeur <b>${l.w}%</b></label><input type="range" min="8" max="95" value="${l.w}" oninput="${f('w')}"></div>
+                <div class="st-f"><label>Arrondi <b>${l.radius}px</b></label><input type="range" min="0" max="50" value="${l.radius}" oninput="${f('radius')}"></div></div>`;
         }
-        html += `<div class="sp-f"><label>Rotation ${l.rot || 0}°</label>
-                  <input type="range" min="-45" max="45" value="${l.rot || 0}" oninput="${f('rot')}"></div>`;
-        box.innerHTML = html;
+        h += `<div class="st-row2">
+                <div class="st-f"><label>Rotation <b>${l.rot||0}°</b></label><input type="range" min="-180" max="180" value="${l.rot||0}" oninput="${f('rot')}"></div>
+                <div class="st-f"><label>Opacité <b>${l.op??100}%</b></label><input type="range" min="10" max="100" value="${l.op??100}" oninput="${f('op')}"></div></div>`;
+        box.innerHTML = h;
     }
 
     function studioSet(id, key, val) {
-        const l = studioLayers.find(x => x.id === id);
-        if (!l) return;
-        const num = ['size', 'weight', 'w', 'radius', 'opacity', 'rot', 'x', 'y'];
-        l[key] = num.includes(key) ? Number(val) : val;
-        // On ne redessine que ce qu'il faut : l'aperçu reste fluide pendant le glissement d'un curseur
-        const host = document.getElementById('studio-layer-host');
+        const l = studioLayers.find(x => x.id === id); if (!l) return;
+        const nums = ['size','weight','w','radius','op','rot','ls'];
+        l[key] = (val === true || val === false) ? val : (nums.includes(key) ? Number(val) : val);
+        const host = _g('studio-layer-host');
         const el = host && host.querySelector(`.sl[data-id="${id}"]`);
         if (el) { el.outerHTML = studioLayerHtml(l, false); studioMakeDraggable(host.querySelector(`.sl[data-id="${id}"]`)); }
-        const lab = document.querySelector(`#studio-props .sp-f label`);
-        if (['size','w','radius','opacity','rot'].includes(key)) studioRenderProps();
-        if (key === 'text') {
-            const n = document.querySelector(`.studio-layer.sel .nm`);
-            if (n) n.textContent = val;
-        }
+        if (key === 'text') { const n = document.querySelector('.st-layer.sel .nm'); if (n) n.textContent = val; }
+        if (nums.includes(key)) studioRenderProps();   // rafraîchit la valeur affichée
     }
 
-    /* ── Glisser-déposer (souris + tactile) ───────────────── */
+    /* ── Glisser-déposer ── */
     function studioMakeDraggable(el) {
         if (!el) return;
         el.addEventListener('pointerdown', ev => {
             ev.preventDefault();
             const id = el.dataset.id;
             studioSelect(id);
-            const card = document.getElementById('studio-card-element-render');
+            const card = _g('studio-card-element-render');
             const rect = card.getBoundingClientRect();
-            if (!rect.width || !rect.height) return;   // carte non visible : rien a deplacer
+            if (!rect.width || !rect.height) return;      // carte non visible
             const layer = studioLayers.find(x => x.id === id);
             const move = e => {
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                layer.x = Math.max(2, Math.min(98, Math.round(x)));
-                layer.y = Math.max(2, Math.min(98, Math.round(y)));
+                layer.x = Math.max(2, Math.min(98, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+                layer.y = Math.max(2, Math.min(98, Math.round(((e.clientY - rect.top) / rect.height) * 100)));
                 const cur = document.querySelector(`#studio-layer-host .sl[data-id="${id}"]`);
-                if (cur) cur.style.cssText = cur.style.cssText
-                    .replace(/left:[^;]+;/, `left:${layer.x}%;`)
-                    .replace(/top:[^;]+;/, `top:${layer.y}%;`);
+                if (cur) { cur.style.left = layer.x + '%'; cur.style.top = layer.y + '%'; }
             };
-            const up = () => {
-                window.removeEventListener('pointermove', move);
-                window.removeEventListener('pointerup', up);
-            };
+            const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
             window.addEventListener('pointermove', move);
             window.addEventListener('pointerup', up);
         });
+    }
+
+    /* ── Motifs ── */
+    function studioPatternCss(p, color) {
+        const c = color || 'rgba(255,255,255,.14)';
+        if (p === 'dots')  return { backgroundImage:`radial-gradient(${c} 1.4px, transparent 1.4px)`, backgroundSize:'14px 14px' };
+        if (p === 'lines') return { backgroundImage:`repeating-linear-gradient(45deg, ${c} 0 1px, transparent 1px 11px)`, backgroundSize:'auto' };
+        if (p === 'grid')  return { backgroundImage:`linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`, backgroundSize:'22px 22px' };
+        return { backgroundImage:'none', backgroundSize:'auto' };
+    }
+
+    function studioResetAll() {
+        studioLayers = []; studioSelId = null;
+        currentStudioBgBase64 = null;
+        studioApplyPreset(0);
+        studioRender();
+        showToast('info', 'Studio réinitialisé', 'Vous repartez du style par défaut.');
+    }
+
+    /* ── Initialisation (listes déroulantes, préréglages) ── */
+    function studioInitUI() {
+        const sel = _g('studio-title-font');
+        if (sel && !sel.options.length)
+            sel.innerHTML = STUDIO_FONTS.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
+        const pr = _g('studio-presets');
+        if (pr && !pr.children.length)
+            pr.innerHTML = STUDIO_PRESETS.map((p, i) =>
+                `<button type="button" class="st-preset" onclick="studioApplyPreset(${i})">
+                   <span class="sw" style="background:linear-gradient(${p.a}deg, ${p.g1}, ${p.g2});"></span>
+                   <span class="nm">${p.n}</span></button>`).join('');
     }
 
     function saveStudioDesign() {
@@ -4162,8 +4449,26 @@
             borderColor: document.getElementById('studio-border-color').value,
             opacity:     document.getElementById('studio-overlay-opacity').value,
             bg:          currentStudioBgBase64 || null,
-            v:           2,                       // format avec calques
-            layers:      studioLayers             // textes, images et icones ajoutes
+            v:           3,
+            layers:      studioLayers,            // textes, images et icones
+            // Options d apparence (format v3)
+            bgType:      studioState.bgType,
+            pattern:     studioState.pattern,
+            align:       studioState.align,
+            bg1:         _v('studio-bg1','#1B1533'),
+            grad1:       _v('studio-grad1','#5A32A0'),
+            grad2:       _v('studio-grad2','#1FA5A8'),
+            gradAngle:   Number(_v('studio-grad-angle',135)),
+            blur:        Number(_v('studio-bg-blur',0)),
+            cardH:       Number(_v('studio-card-h',170)),
+            cardR:       Number(_v('studio-card-r',18)),
+            borderW:     Number(_v('studio-border-w',0)),
+            shadow:      Number(_v('studio-shadow',1)),
+            titleFont:   _v('studio-title-font','Inter, sans-serif'),
+            titleSize:   Number(_v('studio-title-size',16)),
+            ptsSize:     Number(_v('studio-pts-size',25)),
+            ptsColor:    _v('studio-pts-color','#ffffff'),
+            titleShadow: _g('studio-title-shadow') ? _g('studio-title-shadow').checked : false
         };
         const designJson = JSON.stringify(design);
 
@@ -4210,6 +4515,7 @@
                 if (d.opacity)     document.getElementById('studio-overlay-opacity').value = d.opacity;
                 if (d.bg) currentStudioBgBase64 = d.bg;
                 studioLayers = Array.isArray(d.layers) ? d.layers : [];
+                studioApplySaved(d);
                 studioRender();
                 refreshStudioOutput();
                 return;
@@ -4226,6 +4532,7 @@
                 if (d.opacity)     document.getElementById('studio-overlay-opacity').value = d.opacity;
                 if (d.bg) currentStudioBgBase64 = d.bg;
                 studioLayers = Array.isArray(d.layers) ? d.layers : [];
+                studioApplySaved(d);
                 studioRender();
                 // Re-cache dans localStorage pour les prochaines fois
                 localStorage.setItem(`KEEPO_studio_${currentMerchantId}`, cardFallback.studio_json);
@@ -5368,45 +5675,127 @@
         reader.readAsDataURL(file);
     }
 
+
+    // Restaure les options d apparence enregistrees (formats v2 et v3)
+    function studioApplySaved(d) {
+        const set = (id, v) => { const e = _g(id); if (e && v !== undefined && v !== null) e.value = v; };
+        set(studio-bg1, d.bg1); set(studio-grad1, d.grad1); set(studio-grad2, d.grad2);
+        set(studio-grad-angle, d.gradAngle); set(studio-bg-blur, d.blur);
+        set(studio-card-h, d.cardH); set(studio-card-r, d.cardR);
+        set(studio-border-w, d.borderW); set(studio-shadow, d.shadow);
+        set(studio-title-font, d.titleFont); set(studio-title-size, d.titleSize);
+        set(studio-pts-size, d.ptsSize); set(studio-pts-color, d.ptsColor);
+        const cb = _g(studio-title-shadow); if (cb) cb.checked = !!d.titleShadow;
+        studioSetBgType(d.bgType || (d.bg ? image : gradient));
+        studioSetPattern(d.pattern || none);
+        studioSetAlign(d.align || left);
+    }
+
     function refreshStudioOutput() {
-        const title = document.getElementById('studio-title-input').value || "Commerce KEEPO";
-        const txtColor = document.getElementById('studio-txt-color').value;
-        const borderCol = document.getElementById('studio-border-color').value;
-        const opacityRaw = document.getElementById('studio-overlay-opacity').value || 50;
-        const opacity = opacityRaw / 100;
-        const opLbl = document.getElementById('studio-op-val');
-        if (opLbl) opLbl.textContent = opacityRaw + "%";
+        studioInitUI();
 
-        const card = document.getElementById('studio-card-element-render');
-        document.getElementById('studio-card-title-render').innerText = title;
-        document.getElementById('studio-card-title-render').style.color = txtColor;
-        card.style.borderColor = borderCol;
-        document.getElementById('studio-points-color-render').style.color = borderCol;
-        document.getElementById('studio-overlay-layer').style.background = `rgba(0,0,0,${opacity})`;
+        const title    = _v('studio-title-input', 'Commerce KEEPO') || 'Commerce KEEPO';
+        const txtColor = _v('studio-txt-color', '#ffffff');
+        const accent   = _v('studio-border-color', '#1B8E97');
+        const opRaw    = Number(_v('studio-overlay-opacity', 50));
+        const blur     = Number(_v('studio-bg-blur', 0));
+        const cardH    = Number(_v('studio-card-h', 170));
+        const cardR    = Number(_v('studio-card-r', 18));
+        const bw       = Number(_v('studio-border-w', 0));
+        const shadow   = Number(_v('studio-shadow', 1));
+        const tSize    = Number(_v('studio-title-size', 16));
+        const tFont    = _v('studio-title-font', 'Inter, sans-serif');
+        const pSize    = Number(_v('studio-pts-size', 25));
+        const pColor   = _v('studio-pts-color', '#ffffff');
+        const tShadow  = _g('studio-title-shadow') ? _g('studio-title-shadow').checked : false;
 
-        // Badge récompense : couleur synchronisée
-        const badge = document.getElementById('studio-reward-badge-render');
-        if (badge) { badge.style.color = borderCol; badge.style.background = borderCol + '18'; }
+        // Étiquettes des curseurs
+        const put = (id, v) => { const e = _g(id); if (e) e.textContent = v; };
+        put('studio-op-val', opRaw + '%');
+        put('st-blur-v', blur + 'px');
+        put('st-angle-v', _v('studio-grad-angle', 135) + '°');
+        put('st-h-v', cardH + 'px');
+        put('st-r-v', cardR + 'px');
+        put('st-bw-v', bw + 'px');
+        put('st-ts-v', tSize + 'px');
+        put('st-ps-v', pSize + 'px');
+        put('st-sh-v', ['Aucune', 'Légère', 'Moyenne', 'Forte'][shadow]);
 
-        // Nouveaux éléments de l'aperçu fidèle : initiale, barre, indice cadeau
-        const chip = document.getElementById('studio-card-chip');
-        if (chip) chip.innerText = (title.trim().charAt(0) || 'K').toUpperCase();
-        const fill = document.getElementById('studio-progress-fill');
-        if (fill) fill.style.background = borderCol;
-        const hint = document.getElementById('studio-reward-hint');
-        if (hint) hint.style.color = borderCol;
+        const card = _g('studio-card-element-render');
+        if (!card) return;
 
-        // Heure temps réel dans le phone mockup
-        const timeEl = document.getElementById('studio-phone-time');
-        if (timeEl) {
-            const now = new Date();
-            timeEl.innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        // ── Fond ──
+        card.style.backgroundImage = 'none';
+        card.style.backgroundColor = 'transparent';
+        card.style.filter = '';
+        if (studioState.bgType === 'image' && currentStudioBgBase64) {
+            card.style.backgroundImage = `url('${currentStudioBgBase64}')`;
+            card.style.backgroundSize = 'cover';
+            card.style.backgroundPosition = 'center';
+            if (blur) card.style.filter = `blur(0px)`;   // le flou s'applique au calque, pas au contenu
+        } else if (studioState.bgType === 'gradient') {
+            card.style.backgroundImage =
+                `linear-gradient(${_v('studio-grad-angle',135)}deg, ${_v('studio-grad1','#5A32A0')}, ${_v('studio-grad2','#1FA5A8')})`;
+        } else {
+            card.style.backgroundColor = _v('studio-bg1', '#1B1533');
         }
 
-        if (currentStudioBgBase64) {
-            card.style.backgroundImage = `url('${currentStudioBgBase64}')`;
-        } else {
-            card.style.backgroundImage = 'none'; card.style.backgroundColor = '#181628';
+        // Voile d'assombrissement (utile surtout sur une photo)
+        const ov = _g('studio-overlay-layer');
+        if (ov) {
+            ov.style.background = `rgba(0,0,0,${opRaw / 100})`;
+            ov.style.backdropFilter = blur ? `blur(${blur}px)` : '';
+            ov.style.webkitBackdropFilter = blur ? `blur(${blur}px)` : '';
+        }
+
+        // Motif
+        const pat = _g('studio-pattern-layer');
+        if (pat) {
+            const css = studioPatternCss(studioState.pattern);
+            pat.style.backgroundImage = css.backgroundImage;
+            pat.style.backgroundSize  = css.backgroundSize;
+        }
+
+        // ── Forme ──
+        card.style.minHeight    = cardH + 'px';
+        card.style.borderRadius = cardR + 'px';
+        card.style.border       = bw ? `${bw}px solid ${accent}` : 'none';
+        card.style.boxShadow    = ['none',
+            '0 6px 16px -10px rgba(0,0,0,.45)',
+            '0 12px 28px -14px rgba(0,0,0,.55)',
+            '0 22px 44px -18px rgba(0,0,0,.7)'][shadow];
+
+        // ── Textes de la carte ──
+        const t = _g('studio-card-title-render');
+        if (t) {
+            t.textContent = title;
+            t.style.color = txtColor;
+            t.style.fontFamily = tFont;
+            t.style.fontSize = tSize + 'px';
+            t.style.textAlign = studioState.align;
+            t.style.textShadow = tShadow ? '0 2px 8px rgba(0,0,0,.55)' : 'none';
+        }
+        const inner = _g('studio-card-inner');
+        if (inner) inner.style.textShadow = tShadow ? '0 1px 6px rgba(0,0,0,.45)' : 'none';
+
+        const pts = _g('studio-points-color-render');
+        if (pts) { pts.style.color = pColor; pts.style.fontSize = pSize + 'px'; }
+
+        const chip = _g('studio-card-chip');
+        if (chip) { chip.textContent = (title.trim().charAt(0) || 'K').toUpperCase(); chip.style.color = txtColor; }
+
+        const fill = _g('studio-progress-fill');
+        if (fill) fill.style.background = accent;
+        const hint = _g('studio-reward-hint');
+        if (hint) hint.style.color = accent;
+        const badge = _g('studio-reward-badge-render');
+        if (badge) { badge.style.color = accent; badge.style.background = accent + '22'; }
+
+        // Heure de l'aperçu
+        const time = _g('studio-phone-time');
+        if (time) {
+            const n = new Date();
+            time.textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
         }
     }
 

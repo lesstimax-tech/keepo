@@ -1759,6 +1759,7 @@
             let cardBgImg = null;
             let cardOverlayOpacity = 0.5;
             let cardLayers = [];   // textes / images / icones ajoutes dans le Studio
+            let cardStudio = null;
 
             if (design.color) cardColor = design.color;
 
@@ -1769,11 +1770,36 @@
                     if (studio.bg)          cardBgImg = studio.bg;
                     if (studio.opacity)     cardOverlayOpacity = Number(studio.opacity) / 100;
                     if (Array.isArray(studio.layers)) cardLayers = studio.layers;
+                    cardStudio = studio;   // options d apparence (fond, forme, typographie)
                 } catch(e) {}
             }
 
             const cardGlow  = hexToGlow(cardColor);
-            const bgStyle   = cardBgImg ? `background-image:url('${cardBgImg}');background-size:cover;background-position:center;` : '';
+            // Apparence composee dans le Studio : fond (uni / degrade / image), motif,
+            // hauteur, arrondi, bordure et ombre. Valeurs de repli = ancien rendu.
+            const S = cardStudio || {};
+            let bgStyle = '';
+            if (S.bgType === 'gradient') {
+                bgStyle = `background-image:linear-gradient(${S.gradAngle??135}deg, ${S.grad1||'#5A32A0'}, ${S.grad2||'#1FA5A8'});`;
+            } else if (S.bgType === 'color') {
+                bgStyle = `background-color:${S.bg1||'#1B1533'};`;
+            } else if (cardBgImg) {
+                bgStyle = `background-image:url('${cardBgImg}');background-size:cover;background-position:center;`;
+            }
+            if (S.cardH)   bgStyle += `min-height:${S.cardH}px;`;
+            if (S.cardR !== undefined) bgStyle += `border-radius:${S.cardR}px;`;
+            if (S.borderW) bgStyle += `border:${S.borderW}px solid ${cardColor};`;
+            if (S.shadow !== undefined) bgStyle += `box-shadow:${['none','0 6px 16px -10px rgba(0,0,0,.45)','0 12px 28px -14px rgba(0,0,0,.55)','0 22px 44px -18px rgba(0,0,0,.7)'][S.shadow]||''};`;
+            // Motif optionnel, dessine au-dessus du fond
+            const patEl = (S.pattern && S.pattern !== 'none') ? (() => {
+                const c = 'rgba(255,255,255,.14)';
+                const css = S.pattern === 'dots'
+                    ? `background-image:radial-gradient(${c} 1.4px, transparent 1.4px);background-size:14px 14px;`
+                    : S.pattern === 'lines'
+                    ? `background-image:repeating-linear-gradient(45deg, ${c} 0 1px, transparent 1px 11px);`
+                    : `background-image:linear-gradient(${c} 1px, transparent 1px),linear-gradient(90deg, ${c} 1px, transparent 1px);background-size:22px 22px;`;
+                return `<div style="position:absolute;inset:0;z-index:1;pointer-events:none;${css}"></div>`;
+            })() : '';
             // Overlay sombre si image de fond (lisibilité)
             // Calques composes par le commercant dans le Studio (positions en %)
             const layersEl = cardLayers.length ? `<div style="position:absolute;inset:0;z-index:2;pointer-events:none;">` +
@@ -1863,6 +1889,7 @@
                     style="--card-glow:${cardGlow};--card-color1:${cardColor};--card-color2:${cardColor};--card-accent:${cardColor};--card-accent2:${cardColor};${bgStyle}"
                     onclick="openClientCardPopup('${shopSafe}', ${points}, '${card.merchant_id}', '${merchantPlan}')">
                     ${overlayEl}
+                    ${patEl}
                     ${layersEl}
                     <div style="position:relative;z-index:1;">
                         <div class="card-top">
@@ -1874,7 +1901,7 @@
                             </div>
                         </div>
                         ${tierBadge}
-                        <div class="merchant-name">${escapeHtml(shopName)}</div>
+                        <div class="merchant-name" style="${S.titleFont?`font-family:${S.titleFont};`:''}${S.titleSize?`font-size:${S.titleSize}px;`:''}${S.align?`text-align:${S.align};`:''}${S.titleShadow?'text-shadow:0 2px 8px rgba(0,0,0,.55);':''}">${escapeHtml(shopName)}</div>
                         ${boutiquesBadge}
                         ${middleBlock}
                         <div class="card-footer" style="gap:8px;flex-wrap:wrap;">
