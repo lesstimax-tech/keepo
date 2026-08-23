@@ -3956,7 +3956,7 @@
                 if (phone) phone.value = extras.phone || '';
                 if (sec && extras.sector) sec.value = extras.sector;
                 if (cp)    cp.value    = extras.postcode || '';
-            } catch(e) {}
+            } catch(e) { console.warn('[KEEPO] Studio — restauration :', e); }
         }
 
         // ── Phase 3 : programme avancé ──
@@ -4598,7 +4598,7 @@
                 studioRender();
                 refreshStudioOutput();
                 return;
-            } catch(e) {}
+            } catch(e) { console.warn('[KEEPO] Studio — restauration :', e); }
         }
 
         // Priorité 2 : studio_json Supabase (autre appareil ou localStorage effacé)
@@ -4617,7 +4617,7 @@
                 localStorage.setItem(`KEEPO_studio_${currentMerchantId}`, cardFallback.studio_json);
                 refreshStudioOutput();
                 return;
-            } catch(e) {}
+            } catch(e) { console.warn('[KEEPO] Studio — restauration :', e); }
         }
 
         // Priorité 3 : valeurs brutes de la carte (titre + couleur seulement)
@@ -5755,35 +5755,73 @@
     }
 
 
-    // Restaure les options d apparence enregistrees (formats v2 et v3)
+    // Restaure les options d'apparence enregistrées (formats v2 à v4)
     function studioApplySaved(d) {
+        if (!d) return;
         const set = (id, v) => { const e = _g(id); if (e && v !== undefined && v !== null) e.value = v; };
-        set(studio-bg1, d.bg1); set(studio-grad1, d.grad1); set(studio-grad2, d.grad2);
-        set(studio-grad-angle, d.gradAngle); set(studio-bg-blur, d.blur);
-        set(studio-card-h, d.cardH); set(studio-card-r, d.cardR);
-        set(studio-border-w, d.borderW); set(studio-shadow, d.shadow);
-        set(studio-title-font, d.titleFont); set(studio-title-size, d.titleSize);
-        set(studio-pts-size, d.ptsSize); set(studio-pts-color, d.ptsColor);
-        const cb = _g(studio-title-shadow); if (cb) cb.checked = !!d.titleShadow;
-        // Elements de la carte (v4)
-        set(studio-title-weight, d.titleWeight); set(studio-title-ls, d.titleLs);
-        set(studio-card-pad, d.cardPad); set(studio-pts-font, d.ptsFont);
-        set(studio-pts-label, d.ptsLabel); set(studio-pts-label-size, d.ptsLabelSize);
-        set(studio-pts-label-color, d.ptsLabelColor); set(studio-chip-text, d.chipText);
-        set(studio-chip-size, d.chipSize); set(studio-chip-radius, d.chipRadius);
-        set(studio-chip-bg, d.chipBg); set(studio-chip-color, d.chipColor);
-        set(studio-chip-op, d.chipOp); set(studio-bar-h, d.barH); set(studio-bar-r, d.barR);
-        set(studio-bar-fill, d.barFill); set(studio-bar-bg, d.barBg);
-        set(studio-hint-text, d.hintText); set(studio-hint-size, d.hintSize);
-        set(studio-hint-color, d.hintColor); set(studio-badge-text, d.badgeText);
-        set(studio-badge-color, d.badgeColor); set(studio-badge-r, d.badgeR);
-        const up = _g(studio-title-upper); if (up) up.checked = !!d.titleUpper;
-        if (d.show) Object.entries(d.show).forEach(([k, v]) => {
-            const e = _g(show- + k); if (e) e.checked = v !== false;
-        });
-        studioSetBgType(d.bgType || (d.bg ? image : gradient));
-        studioSetPattern(d.pattern || none);
-        studioSetAlign(d.align || left);
+        const tick = (id, v) => { const e = _g(id); if (e) e.checked = v !== false; };
+
+        // Arrière-plan
+        set('studio-bg1', d.bg1);
+        set('studio-grad1', d.grad1);
+        set('studio-grad2', d.grad2);
+        set('studio-grad-angle', d.gradAngle);
+        set('studio-bg-blur', d.blur);
+        set('studio-overlay-opacity', d.opacity);
+
+        // Forme
+        set('studio-card-h', d.cardH);
+        set('studio-card-r', d.cardR);
+        set('studio-card-pad', d.cardPad);
+        set('studio-border-w', d.borderW);
+        set('studio-border-color', d.borderColor);
+        set('studio-shadow', d.shadow);
+
+        // Enseigne
+        set('studio-title-input', d.title);
+        set('studio-title-font', d.titleFont);
+        set('studio-title-size', d.titleSize);
+        set('studio-title-weight', d.titleWeight);
+        set('studio-title-ls', d.titleLs);
+        set('studio-txt-color', d.txtColor);
+        tick('studio-title-shadow', !!d.titleShadow);
+        tick('studio-title-upper', !!d.titleUpper);
+
+        // Compteur de points
+        set('studio-pts-font', d.ptsFont);
+        set('studio-pts-size', d.ptsSize);
+        set('studio-pts-color', d.ptsColor);
+        set('studio-pts-label', d.ptsLabel);
+        set('studio-pts-label-size', d.ptsLabelSize);
+        set('studio-pts-label-color', d.ptsLabelColor);
+
+        // Pastille
+        set('studio-chip-text', d.chipText);
+        set('studio-chip-size', d.chipSize);
+        set('studio-chip-radius', d.chipRadius);
+        set('studio-chip-bg', d.chipBg);
+        set('studio-chip-color', d.chipColor);
+        set('studio-chip-op', d.chipOp);
+
+        // Barre et mentions
+        set('studio-bar-h', d.barH);
+        set('studio-bar-r', d.barR);
+        set('studio-bar-fill', d.barFill);
+        set('studio-bar-bg', d.barBg);
+        set('studio-hint-text', d.hintText);
+        set('studio-hint-size', d.hintSize);
+        set('studio-hint-color', d.hintColor);
+        set('studio-badge-text', d.badgeText);
+        set('studio-badge-color', d.badgeColor);
+        set('studio-badge-r', d.badgeR);
+
+        // Interrupteurs d'affichage
+        if (d.show) Object.keys(d.show).forEach(k => tick('show-' + k, d.show[k]));
+
+        // Sélecteurs (ils déclenchent eux-mêmes le rafraîchissement)
+        studioSetBgType(d.bgType || (d.bg ? 'image' : 'gradient'));
+        studioSetPattern(d.pattern || 'none');
+        studioSetAlign(d.align || 'left');
     }
 
     // 16 polices réellement chargées (voir le <link> Google Fonts en tête de page)
