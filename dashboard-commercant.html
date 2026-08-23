@@ -2352,11 +2352,12 @@
                     <section class="sx" data-c="cyan">
                         <button type="button" class="sx-h" onclick="studioToggleSec(this)">
                             <span class="sx-n">05</span>
-                            <span class="sx-tt">Compteur de points<em>Chiffre et libellé</em></span>
+                            <span class="sx-tt" id="sx-05-title">Compteur de points<em>Chiffre et libellé</em></span>
                             <label class="sx-sw" onclick="event.stopPropagation()">
                                 <input type="checkbox" id="show-pts" checked onchange="refreshStudioOutput()"><span></span></label>
                             <i class="fa-solid fa-chevron-down sx-c"></i>
                         </button>
+                            <div id="sx-mode-points">
                         <div class="sx-b"><div class="sx-in">
                             <div class="sx-f"><label>Police du chiffre</label>
                                 <select id="studio-pts-font" onchange="refreshStudioOutput()"></select></div>
@@ -2373,6 +2374,33 @@
                                     <input type="range" id="studio-pts-label-size" min="6" max="18" value="9" oninput="refreshStudioOutput()"></div>
                                 <div class="sx-f"><label>Couleur du libellé</label>
                                     <input type="color" id="studio-pts-label-color" value="#dddddd" oninput="refreshStudioOutput()"></div>
+                            </div>
+                            </div>
+                            <!-- Mode TAMPONS : remplace le compteur quand le programme est a tampons -->
+                            <div id="sx-mode-stamps" style="display:none;">
+                                <div class="sx-f"><label>Icône du tampon</label>
+                                    <div class="sx-seg sm" id="studio-stamp-icon">
+                                        <button type="button" onclick="studioSetStampIcon('star')" class="on"><i class="fa-solid fa-star"></i></button>
+                                        <button type="button" onclick="studioSetStampIcon('heart')"><i class="fa-solid fa-heart"></i></button>
+                                        <button type="button" onclick="studioSetStampIcon('mug-hot')"><i class="fa-solid fa-mug-hot"></i></button>
+                                        <button type="button" onclick="studioSetStampIcon('stamp')"><i class="fa-solid fa-stamp"></i></button>
+                                        <button type="button" onclick="studioSetStampIcon('check')"><i class="fa-solid fa-check"></i></button>
+                                    </div></div>
+                                <div class="sx-2">
+                                    <div class="sx-f"><label>Taille <b id="st-sts-v">21px</b></label>
+                                        <input type="range" id="studio-stamp-size" min="12" max="40" value="21" oninput="refreshStudioOutput()"></div>
+                                    <div class="sx-f"><label>Espacement <b id="st-stg-v">6px</b></label>
+                                        <input type="range" id="studio-stamp-gap" min="2" max="16" value="6" oninput="refreshStudioOutput()"></div>
+                                </div>
+                                <div class="sx-2">
+                                    <div class="sx-f"><label>Tampon obtenu</label>
+                                        <input type="color" id="studio-stamp-on" value="#1FA5A8" oninput="refreshStudioOutput()"></div>
+                                    <div class="sx-f"><label>Tampon vide</label>
+                                        <input type="color" id="studio-stamp-off" value="#ffffff" oninput="refreshStudioOutput()"></div>
+                                </div>
+                                <div class="sx-f"><label>Texte sous les tampons</label>
+                                    <input type="text" id="studio-stamp-text" value="10 tampons = 1 récompense" oninput="refreshStudioOutput()"></div>
+                                <p class="sx-hint2">Le nombre de tampons vient de vos Paramètres (carte à tampons).</p>
                             </div>
                         </div></div>
                     </section>
@@ -2504,6 +2532,7 @@
                                         </div>
                                     </div>
                                     <div id="studio-card-title-render" class="studio-card-title">Commerce KEEPO</div>
+                                    <div id="studio-stamps-row" class="studio-stamps" style="display:none;"></div>
                                     <div id="studio-bar-wrap" class="studio-card-bar"><i id="studio-progress-fill"></i></div>
                                     <div class="studio-card-foot">
                                         <span id="studio-reward-hint">Plus que 60 pts</span>
@@ -3885,6 +3914,7 @@
     let currentStampsRequired = 10;
     function setLoyaltyMode(mode) {
         currentLoyaltyMode = (mode === 'stamps') ? 'stamps' : 'points';
+        if (typeof refreshStudioOutput === 'function') refreshStudioOutput();
         document.getElementById('mode-points-btn')?.classList.toggle('active', currentLoyaltyMode === 'points');
         document.getElementById('mode-stamps-btn')?.classList.toggle('active', currentLoyaltyMode === 'stamps');
         const pb = document.getElementById('points-config-block');
@@ -4545,6 +4575,13 @@
             badgeText:   _v('studio-badge-text','Récompense'),
             badgeColor:  _v('studio-badge-color','#1FA5A8'),
             badgeR:      Number(_v('studio-badge-r',99)),
+            // Tampons (utilises quand le programme est a tampons)
+            stampIcon:  studioState.stampIcon || 'star',
+            stampSize:  Number(_v('studio-stamp-size',21)),
+            stampGap:   Number(_v('studio-stamp-gap',6)),
+            stampOn:    _v('studio-stamp-on','#1FA5A8'),
+            stampOff:   _v('studio-stamp-off','#ffffff'),
+            stampText:  _v('studio-stamp-text',''),
             show: { title:!!_g('show-title')?.checked, pts:!!_g('show-pts')?.checked,
                     chip:!!_g('show-chip')?.checked, bar:!!_g('show-bar')?.checked,
                     badge:!!_g('show-badge')?.checked }
@@ -5815,6 +5852,12 @@
         set('studio-badge-color', d.badgeColor);
         set('studio-badge-r', d.badgeR);
 
+        // Tampons
+        set('studio-stamp-size', d.stampSize); set('studio-stamp-gap', d.stampGap);
+        set('studio-stamp-on', d.stampOn); set('studio-stamp-off', d.stampOff);
+        set('studio-stamp-text', d.stampText);
+        if (d.stampIcon) studioSetStampIcon(d.stampIcon);
+
         // Interrupteurs d'affichage
         if (d.show) Object.keys(d.show).forEach(k => tick('show-' + k, d.show[k]));
 
@@ -5843,6 +5886,65 @@
         ['Caveat, cursive', 'Caveat — écrit main'],
         ['\x27Fira Code\x27, monospace', 'Fira Code — machine']
     ];
+
+    /* ── Mode TAMPONS ─────────────────────────────────────────
+       Le Studio suit le programme choisi dans les Paramètres :
+       carte à points → compteur, carte à tampons → grille de tampons. */
+    function studioSetStampIcon(name) {
+        studioState.stampIcon = name;
+        document.querySelectorAll('#studio-stamp-icon button').forEach(b =>
+            b.classList.toggle('on', (b.getAttribute('onclick') || '').indexOf("'" + name + "'") > -1));
+        refreshStudioOutput();
+    }
+    function studioIsStamps() {
+        return (typeof currentLoyaltyMode !== 'undefined') && currentLoyaltyMode === 'stamps';
+    }
+    function studioRenderStamps() {
+        const row = _g('studio-stamps-row');
+        const stamps = studioIsStamps();
+        const ptsBlock = _g('studio-pts-block');
+        const modeP = _g('sx-mode-points'), modeS = _g('sx-mode-stamps');
+        const titre = _g('sx-05-title');
+
+        // Panneau : n'afficher que les réglages du mode en cours
+        if (modeP) modeP.style.display = stamps ? 'none' : '';
+        if (modeS) modeS.style.display = stamps ? '' : 'none';
+        if (titre) titre.innerHTML = stamps
+            ? 'Tampons<em>Icône, taille, couleurs</em>'
+            : 'Compteur de points<em>Chiffre et libellé</em>';
+
+        if (!row) return;
+        if (!stamps) { row.style.display = 'none'; return; }
+
+        // Aperçu : la grille de tampons, dont une partie déjà obtenue
+        const total = (typeof currentStampsRequired !== 'undefined' && currentStampsRequired) || 10;
+        const acquis = Math.min(Math.ceil(total * 0.6), total);
+        const size = Number(_v('studio-stamp-size', 21));
+        const gap  = Number(_v('studio-stamp-gap', 6));
+        const on   = _v('studio-stamp-on', '#1FA5A8');
+        const off  = _v('studio-stamp-off', '#ffffff');
+        const ico  = studioState.stampIcon || 'star';
+        let html = '';
+        for (let i = 0; i < total; i++) {
+            const plein = i < acquis;
+            const bg = plein ? on : 'color-mix(in srgb, ' + off + ' 16%, transparent)';
+            const fg = plein ? '#fff' : 'color-mix(in srgb, ' + off + ' 55%, transparent)';
+            const bd = plein ? on : 'color-mix(in srgb, ' + off + ' 28%, transparent)';
+            html += '<span style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;'
+                 + 'display:inline-flex;align-items:center;justify-content:center;'
+                 + 'font-size:' + Math.round(size * 0.48) + 'px;background:' + bg + ';color:' + fg + ';'
+                 + 'border:1px solid ' + bd + ';"><i class="fa-solid fa-' + ico + '"></i></span>';
+        }
+        const legende = _v('studio-stamp-text', '');
+        row.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:' + gap + 'px;">' + html + '</div>'
+            + (legende ? '<div style="font-size:10px;margin-top:8px;color:' + on + ';">'
+                       + escapeHtml(legende) + '</div>' : '');
+        row.style.display = '';
+        if (ptsBlock) ptsBlock.style.display = 'none';   // le compteur laisse la place
+        const put = (id, v) => { const e = _g(id); if (e) e.textContent = v; };
+        put('st-sts-v', size + 'px');
+        put('st-stg-v', gap + 'px');
+    }
 
     function refreshStudioOutput() {
         studioInitUI();
@@ -5956,6 +6058,8 @@
         }
         put('st-bh-v', bH+'px'); put('st-brr-v', bR+'px');
         put('st-hs-v', _v('studio-hint-size',10)+'px'); put('st-bdr-v', _v('studio-badge-r',99)+'px');
+
+        studioRenderStamps();   // bascule points / tampons selon le programme
 
         const time = _g('studio-phone-time');
         if (time) { const n = new Date();

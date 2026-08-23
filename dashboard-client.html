@@ -1856,10 +1856,12 @@
                 let cells = '';
                 for (let s = 0; s < stampGoal; s++) {
                     const on = s < filled;
-                    cells += `<span style="width:21px;height:21px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;background:${on?cardColor:'var(--bg-2)'};color:${on?'#fff':'var(--faint)'};border:1px solid ${on?cardColor:'var(--border-2)'};">${on?'★':''}</span>`;
+                    const _sz = S.stampSize || 21, _ic = S.stampIcon || 'star';
+                    const _on = S.stampOn || cardColor, _off = S.stampOff || null;
+                    cells += `<span style="width:${_sz}px;height:${_sz}px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(_sz*0.48)}px;background:${on?_on:(_off?`color-mix(in srgb, ${_off} 16%, transparent)`:'var(--bg-2)')};color:${on?'#fff':(_off?`color-mix(in srgb, ${_off} 55%, transparent)`:'var(--faint)')};border:1px solid ${on?_on:(_off?`color-mix(in srgb, ${_off} 28%, transparent)`:'var(--border-2)')};">${on?`<i class="fa-solid fa-${_ic}"></i>`:''}</span>`;
                 }
                 middleBlock = `
-                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 6px;">${cells}</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:${S.stampGap||6}px;margin:12px 0 6px;">${cells}</div>
                         <div style="font-size:11px;color:var(--sub);">
                             ${rewardReady
                                 ? `🎉 Carte pleine — ${stampReward || 'récompense'} à retirer !`
