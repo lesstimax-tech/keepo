@@ -2049,7 +2049,13 @@
             .rpc('join_loyalty_card', { p_merchant_id: merchantId });
 
         if (error) {
-            showToast('error', 'Erreur de liaison', error.message);
+            // Le commerce a atteint la capacité de son offre : ce n'est pas une
+            // panne, et ce n'est pas au client d'en comprendre la raison technique.
+            const plein = /Limite de \d+ membres/.test(error.message || '');
+            showToast('error',
+                plein ? 'Carte indisponible' : 'Erreur de liaison',
+                plein ? 'Ce commerce ne peut plus ajouter de nouvelle carte pour le moment.'
+                      : error.message);
             return;
         }
 

@@ -1320,3 +1320,151 @@ end;
 $$;
 revoke all on function public.join_loyalty_card(uuid) from public;
 grant execute on function public.join_loyalty_card(uuid) to authenticated;
+
+-- ════════════════════════════════════════════════════════
+--  LIMITE DE MEMBRES SELON L'OFFRE
+-- ════════════════════════════════════════════════════════
+-- L'offre Essentiel est vendue « 150 membres maximum » sur le site, mais
+-- rien ne l'appliquait : tous les commerces avaient de fait une capacité
+-- illimitée. On la fait respecter ici.
+--
+-- Le contrôle est posé en DÉCLENCHEUR sur la table, pas dans chaque
+-- fonction : il n'existe pas moins de six chemins qui créent une ligne
+-- (caisse, scan client, parrainage, carte cadeau, bonus anniversaire…) et
+-- d'autres viendront. Un seul point de passage, impossible à contourner.
+
+-- Capacité d'une offre. NULL = illimité.
+create or replace function public.merchant_member_limit(p_plan text)
+returns int
+language sql immutable as $$
+  select case lower(coalesce(p_plan, 'essential'))
+           when 'essential' then 150
+           when 'essentiel' then 150
+           else null                      -- pro, pro scale : illimité
+         end;
+$$;
+
+-- Le garde-fou.
+create or replace function public.enforce_member_limit()
+returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  v_limit int;
+  v_count int;
+begin
+  -- Un membre déjà inscrit ne consomme pas une nouvelle place. Ce cas se
+  -- produit à chaque « insert … on conflict do update » : la caisse qui
+  -- crédite des points passe par là, et ne doit jamais être bloquée.
+  if exists (
+    select 1 from public.loyalty_balances
+    where merchant_id = new.merchant_id and client_id = new.client_id
+  ) then
+    return new;
+  end if;
+
+  select public.merchant_member_limit(plan) into v_limit
+  from public.profiles where id = new.merchant_id;
+
+  if v_limit is null then
+    return new;                                   -- offre illimitée
+  end if;
+
+  -- Les cartes retirées par le client libèrent leur place.
+  select count(*) into v_count
+  from public.loyalty_balances
+  where merchant_id = new.merchant_id and hidden_at is null;
+
+  if v_count >= v_limit then
+    raise exception
+      'Limite de % membres atteinte pour ce commerce (offre Essentiel).', v_limit
+      using errcode = 'check_violation',
+            hint    = 'Passez à Pro Scale pour des membres illimités.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists loyalty_balances_member_limit on public.loyalty_balances;
+create trigger loyalty_balances_member_limit
+  before insert on public.loyalty_balances
+  for each row execute function public.enforce_member_limit();
+
+-- Remettre une carte retirée reprend une place : c'est un UPDATE, donc le
+-- déclencheur ci-dessus ne le voit pas. join_loyalty_card vérifie lui-même.
+create or replace function public.join_loyalty_card(p_merchant_id uuid)
+returns text
+language plpgsql security definer set search_path = public as $$
+declare
+  v_client uuid := auth.uid();
+  v_hidden timestamptz;
+  v_exists boolean;
+  v_limit  int;
+  v_count  int;
+begin
+  if v_client is null then
+    raise exception 'Non authentifié';
+  end if;
+  if v_client = p_merchant_id then
+    raise exception 'Vous ne pouvez pas rejoindre votre propre programme';
+  end if;
+  if not exists (
+    select 1 from public.profiles
+    where id = p_merchant_id and role = 'commercant'
+  ) then
+    raise exception 'Commerce introuvable';
+  end if;
+
+  select hidden_at, true into v_hidden, v_exists
+  from public.loyalty_balances
+  where client_id = v_client and merchant_id = p_merchant_id;
+
+  if not coalesce(v_exists, false) then
+    -- Nouvelle carte : le déclencheur applique la limite.
+    insert into public.loyalty_balances (merchant_id, client_id, points_balance)
+    values (p_merchant_id, v_client, 0)
+    on conflict (merchant_id, client_id) do nothing;
+    return 'created';
+  end if;
+
+  if v_hidden is not null then
+    select public.merchant_member_limit(plan) into v_limit
+    from public.profiles where id = p_merchant_id;
+
+    if v_limit is not null then
+      select count(*) into v_count
+      from public.loyalty_balances
+      where merchant_id = p_merchant_id and hidden_at is null;
+
+      if v_count >= v_limit then
+        raise exception
+          'Limite de % membres atteinte pour ce commerce (offre Essentiel).', v_limit
+          using errcode = 'check_violation';
+      end if;
+    end if;
+
+    update public.loyalty_balances
+       set hidden_at = null
+     where client_id = v_client and merchant_id = p_merchant_id;
+    return 'restored';
+  end if;
+
+  return 'existing';
+end;
+$$;
+revoke all on function public.join_loyalty_card(uuid) from public;
+grant execute on function public.join_loyalty_card(uuid) to authenticated;
+
+-- Le commerçant doit voir sa consommation AVANT de buter dessus.
+-- NULL en second champ = illimité.
+create or replace function public.my_member_usage()
+returns table (used int, max_members int)
+language sql security definer set search_path = public stable as $$
+  select
+    (select count(*)::int from public.loyalty_balances
+      where merchant_id = auth.uid() and hidden_at is null),
+    public.merchant_member_limit(
+      (select plan from public.profiles where id = auth.uid()));
+$$;
+revoke all on function public.my_member_usage() from public;
+grant execute on function public.my_member_usage() to authenticated;

@@ -1825,6 +1825,7 @@
                     <div class="progress-bar-wrap" style="margin-top:10px;">
                         <div class="progress-bar-track"><div class="progress-bar-fill" id="prog-clients" style="width:0%"></div></div>
                     </div>
+                    <div id="stat-clients-cap" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
                 </div>
 
                 <div class="stat-card" style="--accent-color: var(--tertiary-accent)">
@@ -6637,12 +6638,40 @@
 
         // ── Membres actifs (avec dates pour delta mensuel) ──
         const { data: records } = await supabaseClient
-            .from('loyalty_balances').select('points_balance, created_at').eq('merchant_id', currentMerchantId);
+            .from('loyalty_balances').select('points_balance, created_at').eq('merchant_id', currentMerchantId).is('hidden_at', null);
         if (records) {
             const count = records.length;
             animateCounter('stat-total-clients', 0, count, 800);
             const prog = document.getElementById('prog-clients');
-            if (prog) setTimeout(() => { prog.style.width = Math.min((count / 50) * 100, 100) + '%'; }, 300);
+            // Capacité de l'offre : même source que le garde-fou en base,
+            // pour que la barre ne mente jamais sur ce qui est réellement permis.
+            let maxMembers = null;
+            try {
+                const { data: usage } = await supabaseClient.rpc('my_member_usage');
+                if (usage && usage[0]) maxMembers = usage[0].max_members;
+            } catch (e) { console.warn('Capacité de l\'offre illisible :', e); }
+
+            const cap  = document.getElementById('stat-clients-cap');
+            if (prog) {
+                const pct = maxMembers ? Math.min((count / maxMembers) * 100, 100) : 100;
+                setTimeout(() => { prog.style.width = pct + '%'; }, 300);
+                prog.style.background = (maxMembers && count >= maxMembers)
+                    ? 'var(--danger, #C4322F)'
+                    : (maxMembers && count >= maxMembers * 0.85 ? 'var(--warning, #B07A12)' : '');
+            }
+            if (cap) {
+                if (!maxMembers) {
+                    cap.innerHTML = '<i class="fa-solid fa-infinity"></i> Membres illimités';
+                } else if (count >= maxMembers) {
+                    cap.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${count} / ${maxMembers} —`
+                        + ` limite atteinte, <a href="/upgrade" style="color:var(--primary-accent);font-weight:600;">passez Pro</a>`;
+                } else if (count >= maxMembers * 0.85) {
+                    cap.innerHTML = `${count} / ${maxMembers} membres — plus que ${maxMembers - count} places,`
+                        + ` <a href="/upgrade" style="color:var(--primary-accent);font-weight:600;">voir Pro</a>`;
+                } else {
+                    cap.textContent = `${count} / ${maxMembers} membres de votre offre`;
+                }
+            }
             refreshUpgradeTunnel(count);
 
             // Delta : combien rejoints ce mois vs total
