@@ -160,8 +160,13 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
     return { error: 'GEMINI_API_KEY non configurée', status: 500 };
   }
 
+  // maxOutputTokens couvre AUSSI les jetons de réflexion : à 600, un modèle
+  // Gemini 3 pouvait tout dépenser à réfléchir et ne rien rendre.
+  // thinkingLevel bas = réponses rapides, ce qu'on veut pour du support.
+  // Le champ est récent : s'il est refusé, on rejoue sans (voir plus bas).
   const finalGenConfig = {
-    temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 600,
+    temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 1200,
+    thinkingLevel: 'low',
     ...generationConfig
   };
   if (jsonMode) finalGenConfig.responseMimeType = 'application/json';
@@ -178,19 +183,41 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
     ],
   };
 
+  // Un appel qui traîne finit en 524 côté Cloudflare : illisible pour
+  // l'utilisateur et impossible à diagnostiquer. On borne l'attente nous-mêmes.
+  async function envoyer(corps) {
+    const stop = new AbortController();
+    const minuteur = setTimeout(() => stop.abort(), 25000);
+    try {
+      return await fetch(`${geminiUrl(env)}?key=${GEMINI_API_KEY}`, {
+        method  : 'POST',
+        headers : { 'Content-Type': 'application/json' },
+        body    : JSON.stringify(corps),
+        signal  : stop.signal,
+      });
+    } finally { clearTimeout(minuteur); }
+  }
+
   try {
-    const res = await fetch(`${geminiUrl(env)}?key=${GEMINI_API_KEY}`, {
-      method  : 'POST',
-      headers : { 'Content-Type': 'application/json' },
-      body    : JSON.stringify(payload),
-    });
+    let res = await envoyer(payload);
+
+    // thinkingLevel est récent et n'existe pas sur tous les modèles. S'il est
+    // refusé, on rejoue une fois sans lui plutôt que de tomber en panne.
+    if (res.status === 400 && finalGenConfig.thinkingLevel) {
+      const txt = await res.clone().text();
+      if (/thinking|Unknown name|Invalid JSON payload/i.test(txt)) {
+        console.log('thinkingLevel refusé, nouvel essai sans');
+        const sansReflexion = { ...payload, generationConfig: { ...finalGenConfig } };
+        delete sansReflexion.generationConfig.thinkingLevel;
+        res = await envoyer(sansReflexion);
+      }
+    }
 
     if (!res.ok) {
       const errTxt = await res.text();
       console.log('Gemini error', res.status, errTxt);
       return { error: 'Erreur Gemini ' + res.status, details: errTxt.slice(0, 500), status: 502 };
     }
-
     const data  = await res.json();
     const text  = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
     if (!text) {
@@ -200,6 +227,11 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
     return { text };
 
   } catch (err) {
+    if (err && err.name === 'AbortError') {
+      return { error: 'Le modèle a mis trop de temps à répondre',
+               details: 'Délai de 25 s dépassé. Un modèle plus léger (GEMINI_MODEL='
+                      + 'gemini-3.5-flash-lite) répondra plus vite.', status: 504 };
+    }
     return { error: 'Erreur serveur', details: String(err), status: 500 };
   }
 }
@@ -271,7 +303,9 @@ async function handleAiStatus(request, env) {
   const r  = await callGemini(env, {
     systemPrompt: 'Réponds exactement : OK',
     contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
-    generationConfig: { maxOutputTokens: 5, temperature: 0 },
+    // Budget large et reflexion minimale : les jetons de reflexion comptent
+    // dans maxOutputTokens, un ping trop serre reviendrait vide.
+    generationConfig: { maxOutputTokens: 80, temperature: 0, thinkingLevel: 'minimal' },
   });
   out.duree = (Date.now() - t0) + ' ms';
   if (r.error) {
