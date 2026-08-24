@@ -16,8 +16,12 @@
 // sans toucher au code.
 const DEFAULT_GEMINI_MODEL = 'gemini-3.7-flash';
 const geminiModel = env => (env && env.GEMINI_MODEL) || DEFAULT_GEMINI_MODEL;
-const geminiUrl   = env =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel(env)}:generateContent`;
+// Modèle de repli, essayé quand le principal est sature. Par defaut le plus
+// leger : mieux vaut une reponse un peu moins fine que pas de reponse.
+const DEFAULT_GEMINI_FALLBACK = 'gemini-3.5-flash-lite';
+const geminiFallback = env => (env && env.GEMINI_MODEL_FALLBACK) || DEFAULT_GEMINI_FALLBACK;
+const geminiUrlFor = modele =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`;
 
 // ──────────── Prompts système ────────────
 
@@ -177,19 +181,19 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
     generationConfig  : finalGenConfig,
     safetySettings    : [
       { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
     ],
   };
 
   // Un appel qui traîne finit en 524 côté Cloudflare : illisible pour
   // l'utilisateur et impossible à diagnostiquer. On borne l'attente nous-mêmes.
-  async function envoyer(corps) {
+  async function envoyer(corps, modele) {
     const stop = new AbortController();
     const minuteur = setTimeout(() => stop.abort(), 25000);
     try {
-      return await fetch(`${geminiUrl(env)}?key=${GEMINI_API_KEY}`, {
+      return await fetch(geminiUrlFor(modele) + '?key=' + GEMINI_API_KEY, {
         method  : 'POST',
         headers : { 'Content-Type': 'application/json' },
         body    : JSON.stringify(corps),
@@ -197,34 +201,64 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
       });
     } finally { clearTimeout(minuteur); }
   }
+  const pause = ms => new Promise(r => setTimeout(r, ms));
+
+  // Le modèle le plus récent est aussi le plus sollicité : il renvoie 503
+  // « high demand » par a-coups. On réessaie, puis on bascule sur le repli.
+  const candidats = [];
+  for (const m of [geminiModel(env), geminiFallback(env)]) {
+    if (m && !candidats.includes(m)) candidats.push(m);
+  }
+
+  let dernierStatut = 0, dernierTexte = '';
 
   try {
-    let res = await envoyer(payload);
+    for (const modele of candidats) {
+      for (let essai = 1; essai <= 2; essai++) {
+        let res = await envoyer(payload, modele);
 
-    // thinkingLevel est récent et n'existe pas sur tous les modèles. S'il est
-    // refusé, on rejoue une fois sans lui plutôt que de tomber en panne.
-    if (res.status === 400 && finalGenConfig.thinkingLevel) {
-      const txt = await res.clone().text();
-      if (/thinking|Unknown name|Invalid JSON payload/i.test(txt)) {
-        console.log('thinkingLevel refusé, nouvel essai sans');
-        const sansReflexion = { ...payload, generationConfig: { ...finalGenConfig } };
-        delete sansReflexion.generationConfig.thinkingLevel;
-        res = await envoyer(sansReflexion);
+        // thinkingLevel est récent et n'existe pas sur tous les modèles.
+        // S'il est refusé, on rejoue une fois sans lui.
+        if (res.status === 400 && finalGenConfig.thinkingLevel) {
+          const txt = await res.clone().text();
+          if (/thinking|Unknown name|Invalid JSON payload/i.test(txt)) {
+            console.log('thinkingLevel refusé, nouvel essai sans');
+            const sansReflexion = { ...payload, generationConfig: { ...finalGenConfig } };
+            delete sansReflexion.generationConfig.thinkingLevel;
+            res = await envoyer(sansReflexion, modele);
+          }
+        }
+
+        if (res.ok) {
+          const data = await res.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+          if (!text) {
+            console.log('Gemini réponse vide', JSON.stringify(data).slice(0, 500));
+            return { error: 'Réponse vide',
+                     details: JSON.stringify(data?.promptFeedback || data).slice(0, 300),
+                     status: 502 };
+          }
+          return { text, model: modele };
+        }
+
+        dernierStatut = res.status;
+        dernierTexte  = await res.text();
+        console.log('Gemini error', modele, res.status, dernierTexte.slice(0, 200));
+
+        // 503 = modèle saturé, 429 = quota momentané : les deux passent.
+        // Toute autre erreur est définitive, inutile d'insister.
+        const surcharge = res.status === 503 || res.status === 429;
+        if (!surcharge) return { error: 'Erreur Gemini ' + res.status,
+                                 details: dernierTexte.slice(0, 500), status: 502 };
+        if (essai < 2) await pause(700);
       }
     }
 
-    if (!res.ok) {
-      const errTxt = await res.text();
-      console.log('Gemini error', res.status, errTxt);
-      return { error: 'Erreur Gemini ' + res.status, details: errTxt.slice(0, 500), status: 502 };
-    }
-    const data  = await res.json();
-    const text  = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-    if (!text) {
-      console.log('Gemini empty response', JSON.stringify(data).slice(0, 500));
-      return { error: 'Réponse vide', details: JSON.stringify(data?.promptFeedback || data).slice(0, 300), status: 502 };
-    }
-    return { text };
+    return {
+      error  : 'Modèles surchargés (' + dernierStatut + ')',
+      details: 'Essayé : ' + candidats.join(', ') + '. ' + dernierTexte.slice(0, 300),
+      status : 503,
+    };
 
   } catch (err) {
     if (err && err.name === 'AbortError') {
@@ -320,6 +354,8 @@ async function handleAiStatus(request, env) {
     return json(out, 200);
   }
   out.verdict = 'OK — le modèle répond.';
+  if (r.model && r.model !== geminiModel(env))
+    out.verdict = 'OK — via le repli « ' + r.model + ' », le modèle principal étant saturé.';
   out.reponse = r.text;
   return json(out, 200);
 }
