@@ -9,8 +9,15 @@
 //  Tout le reste → assets statiques
 // ════════════════════════════════════════════════════════════════
 
-const GEMINI_MODEL = 'gemini-3-flash-preview';
-const GEMINI_URL   = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+// Modèle Gemini. « gemini-3-flash-preview » a été retiré avec l'arrivée des
+// versions stables : tout appel renvoyait 404. On prend le modèle courant,
+// et on le rend réglable par variable pour pouvoir changer de palier
+// (3.7-flash → 3.6-flash → 3.5-flash-lite, du plus capable au moins cher)
+// sans toucher au code.
+const DEFAULT_GEMINI_MODEL = 'gemini-3.7-flash';
+const geminiModel = env => (env && env.GEMINI_MODEL) || DEFAULT_GEMINI_MODEL;
+const geminiUrl   = env =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel(env)}:generateContent`;
 
 // ──────────── Prompts système ────────────
 
@@ -23,7 +30,7 @@ CONTEXTE PRODUIT :
 - Les clients échangent leurs points contre des récompenses (cafés offerts, réductions, etc.).
 - Pour réclamer une récompense : le client génère un code unique à 6 caractères, le commerçant le valide dans son terminal.
 - Le commerçant configure : taux de conversion points (X€ = Y points), récompenses, événements multiplicateurs (×2/×3/×5), notifications email automatiques.
-- Plans : Essential (50 membres max) et Pro Scale (illimité, analytics, export CSV).
+- Plans : Essentiel (150 membres maximum) et Pro Scale (membres illimités, analytics, assistant IA, mode caisse, export CSV).
 
 TON RÔLE :
 - Réponds en français, ton chaleureux mais professionnel.
@@ -172,7 +179,7 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
   };
 
   try {
-    const res = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+    const res = await fetch(`${geminiUrl(env)}?key=${GEMINI_API_KEY}`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
       body    : JSON.stringify(payload),
@@ -214,6 +221,50 @@ function extractJson(text) {
 }
 
 // ──────────── Handlers ────────────
+
+// Diagnostic de l'IA. Réservé au commerçant connecté : la réponse révèle la
+// configuration du service, elle n'a rien à faire en accès libre. Elle ne
+// renvoie JAMAIS la clé, seulement sa présence et sa longueur.
+async function handleAiStatus(request, env) {
+  const auth = await requireMerchant(request, env);
+  if (auth.error) return auth.error;
+
+  const key = env.GEMINI_API_KEY || '';
+  const out = {
+    cle:     key ? 'présente (' + key.length + ' caractères)' : 'ABSENTE',
+    modele:  geminiModel(env),
+    source:  env.GEMINI_MODEL ? 'variable GEMINI_MODEL' : 'valeur par défaut',
+  };
+  if (!key) {
+    out.verdict = 'Clé Gemini non configurée sur Cloudflare.';
+    out.remede  = 'npx wrangler secret put GEMINI_API_KEY';
+    return json(out, 200);
+  }
+
+  // Ping réel : c'est le seul moyen de distinguer une clé invalide d'un
+  // modèle retiré ou d'un quota dépassé.
+  const t0 = Date.now();
+  const r  = await callGemini(env, {
+    systemPrompt: 'Réponds exactement : OK',
+    contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
+    generationConfig: { maxOutputTokens: 5, temperature: 0 },
+  });
+  out.duree = (Date.now() - t0) + ' ms';
+  if (r.error) {
+    out.verdict = 'ÉCHEC — ' + r.error;
+    out.detail  = r.details || '';
+    if (/404|not found|is not found/i.test(out.detail))
+      out.remede = 'Ce modèle n\'existe plus. Essayez GEMINI_MODEL=gemini-3.6-flash.';
+    else if (/API key not valid|API_KEY_INVALID|401|403/i.test(out.detail))
+      out.remede = 'Clé refusée par Google. Régénérez-la sur aistudio.google.com.';
+    else if (/quota|RESOURCE_EXHAUSTED|429/i.test(out.detail))
+      out.remede = 'Quota atteint. Vérifiez la facturation du projet Google.';
+    return json(out, 200);
+  }
+  out.verdict = 'OK — le modèle répond.';
+  out.reponse = r.text;
+  return json(out, 200);
+}
 
 async function handleAiChat(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
@@ -1582,6 +1633,7 @@ export default {
     }
 
     switch (url.pathname) {
+      case '/api/ai-status':               return handleAiStatus(request, env);
       case '/api/ai-chat':                 return handleAiChat(request, env);
       case '/api/ai-client-chat':          return handleClientChat(request, env);
       case '/api/ai-email-writer':         return handleEmailWriter(request, env);

@@ -6498,12 +6498,26 @@
             reply = await fetchAiReply(aiChatHistory);
         } catch (err) {
             const msg = err?.message || '';
+            // Les messages ci-dessous parlaient d'une Edge Function Supabase :
+            // l'IA passe par le Worker Cloudflare depuis un moment. On donne
+            // maintenant la vraie marche à suivre, et le détail renvoyé par le
+            // serveur plutôt qu'un texte générique.
             if (msg === 'NOT_DEPLOYED') {
-                reply = "⚙️ **L'assistant IA n'est pas encore activé.**\n\nPour l'activer, allez sur **supabase.com** → votre projet → **Edge Functions** → créez la fonction `KEEPO-ai-support`, puis ajoutez le secret `GEMINI_API_KEY` dans **Settings → Vault**.";
+                reply = "⚙️ **L'assistant n'est pas joignable.**\n\n"
+                      + "Le service IA tourne sur Cloudflare. Vérifiez que la clé est en place :\n"
+                      + "`npx wrangler secret put GEMINI_API_KEY`\n\n"
+                      + "Puis redéployez le site — un changement de secret ne prend effet qu'au déploiement suivant.";
             } else if (msg === 'NO_KEY') {
-                reply = "🔑 **Clé API manquante.** La fonction est déployée mais la clé Gemini n'est pas configurée. Allez sur **supabase.com → Settings → Vault** et ajoutez le secret `GEMINI_API_KEY`.";
+                reply = "🔑 **Clé Gemini manquante.**\n\n"
+                      + "Ajoutez-la côté Cloudflare :\n`npx wrangler secret put GEMINI_API_KEY`\n\n"
+                      + "La clé se crée sur **aistudio.google.com**.";
             } else {
-                reply = "⚠️ Une erreur inattendue s'est produite. Vérifiez votre connexion internet et réessayez.";
+                // Le serveur sait pourquoi il a échoué : on le montre, plutôt
+                // que de renvoyer le commerçant vers sa connexion internet.
+                reply = "⚠️ **L'assistant a rencontré une erreur.**\n\n"
+                      + (msg ? "`" + msg + "`\n\n" : "")
+                      + "Si cela persiste, ouvrez `/api/ai-status` en étant connecté : "
+                      + "le diagnostic indique la cause exacte.";
             }
             console.error('AI chat error:', msg, err);
         }
