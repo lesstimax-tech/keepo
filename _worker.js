@@ -167,10 +167,12 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
   // maxOutputTokens couvre AUSSI les jetons de réflexion : à 600, un modèle
   // Gemini 3 pouvait tout dépenser à réfléchir et ne rien rendre.
   // thinkingLevel bas = réponses rapides, ce qu'on veut pour du support.
-  // Le champ est récent : s'il est refusé, on rejoue sans (voir plus bas).
+  // Imbrication exigée par generateContent : generationConfig.thinkingConfig
+  // .thinkingLevel. Au premier niveau, Gemini refuse en 400 — on rejoue
+  // alors sans, mais la réflexion repasse au maximum et l appel expire.
   const finalGenConfig = {
     temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 1200,
-    thinkingLevel: 'low',
+    thinkingConfig: { thinkingLevel: 'low' },
     ...generationConfig
   };
   if (jsonMode) finalGenConfig.responseMimeType = 'application/json';
@@ -211,6 +213,9 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
   }
 
   let dernierStatut = 0, dernierTexte = '';
+  // Si Gemini refuse le reglage de reflexion, l appel redevient lent : il
+  // faut pouvoir le constater au lieu de le deduire d un delai depasse.
+  let reflexionRefusee = false;
 
   try {
     for (const modele of candidats) {
@@ -219,12 +224,13 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
 
         // thinkingLevel est récent et n'existe pas sur tous les modèles.
         // S'il est refusé, on rejoue une fois sans lui.
-        if (res.status === 400 && finalGenConfig.thinkingLevel) {
+        if (res.status === 400 && finalGenConfig.thinkingConfig) {
           const txt = await res.clone().text();
           if (/thinking|Unknown name|Invalid JSON payload/i.test(txt)) {
-            console.log('thinkingLevel refusé, nouvel essai sans');
+            console.log('thinkingConfig refusé, nouvel essai sans');
+            reflexionRefusee = true;
             const sansReflexion = { ...payload, generationConfig: { ...finalGenConfig } };
-            delete sansReflexion.generationConfig.thinkingLevel;
+            delete sansReflexion.generationConfig.thinkingConfig;
             res = await envoyer(sansReflexion, modele);
           }
         }
@@ -238,7 +244,7 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
                      details: JSON.stringify(data?.promptFeedback || data).slice(0, 300),
                      status: 502 };
           }
-          return { text, model: modele };
+          return { text, model: modele, reflexionRefusee };
         }
 
         dernierStatut = res.status;
@@ -339,7 +345,8 @@ async function handleAiStatus(request, env) {
     contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
     // Budget large et reflexion minimale : les jetons de reflexion comptent
     // dans maxOutputTokens, un ping trop serre reviendrait vide.
-    generationConfig: { maxOutputTokens: 80, temperature: 0, thinkingLevel: 'minimal' },
+    generationConfig: { maxOutputTokens: 80, temperature: 0,
+                        thinkingConfig: { thinkingLevel: 'minimal' } },
   });
   out.duree = (Date.now() - t0) + ' ms';
   if (r.error) {
@@ -354,6 +361,9 @@ async function handleAiStatus(request, env) {
     return json(out, 200);
   }
   out.verdict = 'OK — le modèle répond.';
+  if (r.reflexionRefusee)
+    out.avertissement = 'Le réglage de réflexion a été refusé par Gemini : '
+                      + 'les réponses longues risquent de dépasser le délai.';
   if (r.model && r.model !== geminiModel(env))
     out.verdict = 'OK — via le repli « ' + r.model + ' », le modèle principal étant saturé.';
   out.reponse = r.text;

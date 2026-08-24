@@ -6571,6 +6571,7 @@
                     + '• Modèle : `' + (d.modele || '?') + '` (' + (d.source || '?') + ')' + "\n"
                     + (d.duree ? '• Temps de réponse : ' + d.duree + "\n" : '')
                     + (d.autresSecrets ? '• Autres secrets : ' + d.autresSecrets + "\n" : '')
+                    + (d.avertissement ? '⚠️ ' + d.avertissement + "\n" : '')
                     + "\n" + '**' + (d.verdict || 'sans verdict') + '**';
             if (d.detail) txt += "\n\n" + '```' + "\n" + String(d.detail).slice(0, 400) + "\n" + '```';
             if (d.remede) txt += "\n\n" + '👉 ' + d.remede;
