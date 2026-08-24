@@ -3,6 +3,7 @@
 //  Endpoints IA :
 //    POST /api/ai-chat                  → support commerçant
 //    POST /api/ai-client-chat           → support client
+//    POST /api/ai-public-chat         → visiteurs non connectés
 //    POST /api/ai-email-writer          → génère email marketing
 //    POST /api/ai-reward-suggestions    → suggère récompenses
 //    POST /api/ai-design-studio         → génère palette + design carte
@@ -57,6 +58,32 @@ TON RÔLE :
 - Très concis (2-3 phrases max).
 - Pas de jargon technique.
 - Si question hors sujet, redirige gentiment.`;
+
+const PUBLIC_PROMPT = `Tu es l'assistant de KEEPO, une plateforme française de fidélité digitale pour commerces de proximité. Tu réponds à des visiteurs qui découvrent le produit : commerçants curieux, parfois clients d'une enseigne.
+
+CE QU'EST KEEPO :
+- Le commerçant remplace les cartes papier par une carte de fidélité digitale. Son client la reçoit en scannant un QR Code posé sur le comptoir, sans installer d'application.
+- Deux formules de programme : cumul de points, ou carte à tampons.
+- Pour créditer : le commerçant scanne le QR personnel du client.
+- Pour une récompense : le client génère un code à 6 caractères, le commerçant le valide.
+- Le commerçant personnalise sa carte dans un Studio (couleurs, logo, fond, typographies).
+
+LES OFFRES :
+- Essentiel — 49 € HT/mois (ou 499 € HT/an) : jusqu'à 150 membres, cartes digitales, Studio, notifications e-mail.
+- Pro Scale — 99 € HT/mois (ou 890 € HT/an, environ trois mois offerts) : membres illimités, analytics avancée, assistant IA, mode caisse tablette, caissiers illimités, marketing automatisé, parrainage, multi-boutiques, export CSV, support sous 4 h ouvrées.
+- Sans engagement, résiliable en un clic. Paiement par Stripe. Prix hors taxes, à destination des professionnels.
+
+HONNÊTETÉ — non négociable :
+- KEEPO démarre : il n'y a PAS encore de témoignages clients, pas de chiffres de résultats. N'en invente jamais, même si on insiste.
+- N'invente aucune fonctionnalité absente de cette liste. Si tu ne sais pas, dis-le et propose d'écrire à contact@keepo.eu.
+- Ne promets aucun remboursement : la résiliation prend effet à la fin de la période en cours, sans remboursement au prorata.
+
+TON RÔLE :
+- Réponds en français, chaleureux et direct. Trois à cinq phrases, sauf demande de détail.
+- Oriente vers ce qui est utile : la démo (/demo, sans inscription), la page d'abonnement (/upgrade), la création de compte (/connexion).
+- Tu n'as accès à aucun compte ni donnée : si on te demande un solde ou des statistiques, invite à se connecter.
+- Si on te demande quel modèle tu utilises, réponds simplement que tu es l'assistant KEEPO.`;
+
 
 const EMAIL_WRITER_PROMPT = `Tu es un rédacteur publicitaire expert pour les commerces de proximité français utilisant KEEPO (programme de fidélité).
 
@@ -297,6 +324,41 @@ function extractJson(text) {
 // Diagnostic de l'IA. Réservé au commerçant connecté : la réponse révèle la
 // configuration du service, elle n'a rien à faire en accès libre. Elle ne
 // renvoie JAMAIS la clé, seulement sa présence et sa longueur.
+// Assistant des pages publiques. Pas de compte requis — c'est le but : un
+// visiteur doit pouvoir poser ses questions avant de s'inscrire. En
+// contrepartie, la limite est posée sur l'adresse IP et la conversation est
+// bornée, pour que ce point ouvert ne devienne pas un robinet à dépenses.
+async function handlePublicChat(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+
+  const ip = request.headers.get('CF-Connecting-IP') || 'inconnu';
+  const rl = await rateLimit(env, 'AI_LIMITER', 'public:' + ip);
+  if (rl) return rl;
+
+  let body;
+  try { body = await request.json(); }
+  catch { return json({ error: 'Corps invalide' }, 400); }
+
+  const messages = Array.isArray(body?.messages) ? body.messages : [];
+  if (messages.length === 0) return json({ error: 'Aucun message' }, 400);
+
+  // Six échanges suffisent pour renseigner un visiteur ; au-delà, la note
+  // grimpe sans rien apporter puisqu'aucune donnée de compte n'est en jeu.
+  const contents = messages.slice(-6).map(m => ({
+    role  : (m.role === 'model' || m.role === 'assistant') ? 'model' : 'user',
+    parts : [{ text: String(m.content || '').slice(0, 1200) }],
+  }));
+
+  const result = await callGemini(env, {
+    systemPrompt: PUBLIC_PROMPT,
+    contents,
+    generationConfig: { maxOutputTokens: 900, temperature: 0.7 },
+  });
+
+  if (result.error) return json({ error: result.error, details: result.details }, result.status || 502);
+  return json({ reply: result.text });
+}
+
 async function handleAiStatus(request, env) {
   const auth = await requireMerchant(request, env);
   if (auth.error) return auth.error;
@@ -1737,6 +1799,7 @@ export default {
     }
 
     switch (url.pathname) {
+      case '/api/ai-public-chat':          return handlePublicChat(request, env);
       case '/api/ai-status':               return handleAiStatus(request, env);
       case '/api/ai-chat':                 return handleAiChat(request, env);
       case '/api/ai-client-chat':          return handleClientChat(request, env);
