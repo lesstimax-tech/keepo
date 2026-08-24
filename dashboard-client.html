@@ -3513,6 +3513,17 @@
         if (sugg) sugg.style.display = 'none';
         sendClientAiMessage();
     }
+    // Le Worker refuse les appels IA sans jeton de session (401). Un seul
+    // endroit pour construire les en-têtes : impossible d'en oublier un.
+    async function aiHeaders() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) throw new Error('SESSION_EXPIREE');
+        return {
+            'Content-Type' : 'application/json',
+            'Authorization': 'Bearer ' + session.access_token
+        };
+    }
+
     async function sendClientAiMessage() {
         const input = document.getElementById('aiClientInput');
         const text  = input?.value?.trim();
@@ -3530,7 +3541,7 @@
         let reply;
         try {
             const res = await fetch('/api/ai-client-chat', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: await aiHeaders(),
                 body: JSON.stringify({
                     messages: aiClientHistory.slice(-10),
                     userContext: {

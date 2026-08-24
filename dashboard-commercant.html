@@ -3528,6 +3528,11 @@
                             <span class="ai-chat-status-dot"></span>
                             En ligne · Réponse en quelques secondes
                         </div>
+                    <button onclick="runAiDiagnostic()" title="Diagnostic de l'assistant"
+                        style="background:var(--bg-card-hover);border:1px solid var(--glass-border);
+                               color:var(--text-muted);border-radius:10px;padding:7px 11px;cursor:pointer;font-size:12px;">
+                        <i class="fa-solid fa-stethoscope"></i>
+                    </button>
                     </div>
                     <button onclick="resetAiChat()" title="Réinitialiser la conversation"
                         style="background:var(--bg-card-hover);border:1px solid var(--glass-border);
@@ -6502,6 +6507,9 @@
             // l'IA passe par le Worker Cloudflare depuis un moment. On donne
             // maintenant la vraie marche à suivre, et le détail renvoyé par le
             // serveur plutôt qu'un texte générique.
+            if (msg === 'SESSION_EXPIREE') {
+                reply = "🔒 **Votre session a expiré.** Rechargez la page pour vous reconnecter.";
+            } else
             if (msg === 'NOT_DEPLOYED') {
                 reply = "⚙️ **L'assistant n'est pas joignable.**\n\n"
                       + "Le service IA tourne sur Cloudflare. Vérifiez que la clé est en place :\n"
@@ -6516,8 +6524,8 @@
                 // que de renvoyer le commerçant vers sa connexion internet.
                 reply = "⚠️ **L'assistant a rencontré une erreur.**\n\n"
                       + (msg ? "`" + msg + "`\n\n" : "")
-                      + "Si cela persiste, ouvrez `/api/ai-status` en étant connecté : "
-                      + "le diagnostic indique la cause exacte.";
+                      + "Si cela persiste, cliquez sur le stéthoscope en haut de cette "
+                      + "conversation : le diagnostic indique la cause exacte.";
             }
             console.error('AI chat error:', msg, err);
         }
@@ -6531,6 +6539,44 @@
         aiChatLoading = false;
         sendBtn.disabled = false;
         if (input) input.focus();
+    }
+
+    // Interroge /api/ai-status et affiche le résultat dans la conversation.
+    // La route est protégée : elle a besoin du jeton de session, on ne peut
+    // donc pas l'ouvrir en tapant l'URL dans le navigateur.
+    // Le Worker refuse les appels IA sans jeton de session (401). Un seul
+    // endroit pour construire les en-têtes : impossible d'en oublier un.
+    async function aiHeaders() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) throw new Error('SESSION_EXPIREE');
+        return {
+            'Content-Type' : 'application/json',
+            'Authorization': 'Bearer ' + session.access_token
+        };
+    }
+
+    async function runAiDiagnostic() {
+        appendAiBubble('bot', '🩺 Diagnostic en cours…');
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) { appendAiBubble('bot', '⚠️ Session expirée — reconnectez-vous.'); return; }
+
+            const res = await fetch('/api/ai-status', {
+                headers: { 'Authorization': 'Bearer ' + session.access_token }
+            });
+            const d = await res.json();
+
+            let txt = '**Diagnostic de l\'assistant**' + "\n\n"
+                    + '• Clé : ' + (d.cle || '?') + "\n"
+                    + '• Modèle : `' + (d.modele || '?') + '` (' + (d.source || '?') + ')' + "\n"
+                    + (d.duree ? '• Temps de réponse : ' + d.duree + "\n" : '')
+                    + "\n" + '**' + (d.verdict || 'sans verdict') + '**';
+            if (d.detail) txt += "\n\n" + '```' + "\n" + String(d.detail).slice(0, 400) + "\n" + '```';
+            if (d.remede) txt += "\n\n" + '👉 ' + d.remede;
+            appendAiBubble('bot', txt);
+        } catch (e) {
+            appendAiBubble('bot', '⚠️ Diagnostic impossible : ' + (e.message || e));
+        }
     }
 
     async function fetchAiReply(history) {
@@ -6547,7 +6593,7 @@
         try {
             res = await fetch('/api/ai-chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: await aiHeaders(),
                 body: JSON.stringify({
                     messages: history.slice(-12),
                     userContext
@@ -7711,7 +7757,7 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…';
         try {
             const res = await fetch('/api/ai-email-writer', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: await aiHeaders(),
                 body: JSON.stringify({ prompt, type: 'offre', merchantName })
             });
             const d = await res.json();
@@ -7806,7 +7852,7 @@
         if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…'; }
         try {
             const res = await fetch('/api/ai-email-writer', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: await aiHeaders(),
                 body: JSON.stringify({ prompt, type, merchantName })
             });
             const data = await res.json();
@@ -7849,7 +7895,7 @@
         if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…'; }
         try {
             const res = await fetch('/api/ai-reward-suggestions', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: await aiHeaders(),
                 body: JSON.stringify({ description, pointsPerEuro })
             });
             const data = await res.json();
@@ -7920,7 +7966,7 @@
         if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Génération…'; }
         try {
             const res = await fetch('/api/ai-design-studio', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: await aiHeaders(),
                 body: JSON.stringify({ description })
             });
             const data = await res.json();
