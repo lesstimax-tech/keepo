@@ -1328,32 +1328,41 @@ grant execute on function public.join_loyalty_card(uuid) to authenticated;
 -- rien ne l'appliquait : tous les commerces avaient de fait une capacité
 -- illimitée. On la fait respecter ici.
 --
--- Le contrôle est posé en DÉCLENCHEUR sur la table, pas dans chaque
--- fonction : il n'existe pas moins de six chemins qui créent une ligne
--- (caisse, scan client, parrainage, carte cadeau, bonus anniversaire…) et
--- d'autres viendront. Un seul point de passage, impossible à contourner.
+-- Étiquettes de dollar nommées plutôt que le délimiteur nu : certains
+-- éditeurs SQL découpent mal les scripts sur le délimiteur anonyme.
 
--- Capacité d'une offre. NULL = illimité.
+-- ── Capacité d'une offre
 create or replace function public.merchant_member_limit(p_plan text)
 returns int
-language sql immutable as $$
+language sql
+immutable
+as $limite$
   select case lower(coalesce(p_plan, 'essential'))
            when 'essential' then 150
            when 'essentiel' then 150
            else null                      -- pro, pro scale : illimité
          end;
-$$;
+$limite$;
 
--- Le garde-fou.
+
+
+-- ── Le garde-fou, posé sur la table
+--  En déclencheur plutôt que dans chaque fonction : six chemins créent
+--  une ligne (caisse, scan client, parrainage, carte cadeau, bonus
+--  anniversaire, ajout direct) et d'autres viendront. Un seul point de
+--  passage, impossible à contourner.
 create or replace function public.enforce_member_limit()
 returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql
+security definer
+set search_path = public
+as $garde$
 declare
   v_limit int;
   v_count int;
 begin
   -- Un membre déjà inscrit ne consomme pas une nouvelle place. Ce cas se
-  -- produit à chaque « insert … on conflict do update » : la caisse qui
+  -- produit à chaque « insert ... on conflict do update » : la caisse qui
   -- crédite des points passe par là, et ne doit jamais être bloquée.
   if exists (
     select 1 from public.loyalty_balances
@@ -1383,18 +1392,25 @@ begin
 
   return new;
 end;
-$$;
+$garde$;
 
 drop trigger if exists loyalty_balances_member_limit on public.loyalty_balances;
+
 create trigger loyalty_balances_member_limit
   before insert on public.loyalty_balances
   for each row execute function public.enforce_member_limit();
 
--- Remettre une carte retirée reprend une place : c'est un UPDATE, donc le
--- déclencheur ci-dessus ne le voit pas. join_loyalty_card vérifie lui-même.
+
+
+-- ── Ajout et restauration d'une carte
+--  Remettre une carte retirée est un UPDATE : le déclencheur ne le voit
+--  pas. Cette fonction vérifie donc elle-même avant de rendre la carte.
 create or replace function public.join_loyalty_card(p_merchant_id uuid)
 returns text
-language plpgsql security definer set search_path = public as $$
+language plpgsql
+security definer
+set search_path = public
+as $rejoindre$
 declare
   v_client uuid := auth.uid();
   v_hidden timestamptz;
@@ -1451,20 +1467,29 @@ begin
 
   return 'existing';
 end;
-$$;
+$rejoindre$;
+
 revoke all on function public.join_loyalty_card(uuid) from public;
 grant execute on function public.join_loyalty_card(uuid) to authenticated;
 
--- Le commerçant doit voir sa consommation AVANT de buter dessus.
--- NULL en second champ = illimité.
+
+
+-- ── Ce que le commerçant voit dans son tableau de bord
+--  Il doit voir sa consommation AVANT de buter dessus.
+--  Second champ à NULL = offre illimitée.
 create or replace function public.my_member_usage()
 returns table (used int, max_members int)
-language sql security definer set search_path = public stable as $$
+language sql
+security definer
+set search_path = public
+stable
+as $usage$
   select
     (select count(*)::int from public.loyalty_balances
       where merchant_id = auth.uid() and hidden_at is null),
     public.merchant_member_limit(
       (select plan from public.profiles where id = auth.uid()));
-$$;
+$usage$;
+
 revoke all on function public.my_member_usage() from public;
 grant execute on function public.my_member_usage() to authenticated;
