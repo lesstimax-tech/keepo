@@ -120,6 +120,11 @@
         '.kca-wait i:nth-child(2){animation-delay:.18s}.kca-wait i:nth-child(3){animation-delay:.36s}',
         '@keyframes kcaP{0%,60%,100%{opacity:.28;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}',
 
+        '.kca-fait{align-self:flex-start;display:flex;align-items:center;gap:8px;max-width:90%;',
+        '  background:#EAF7F0;border:1px solid rgba(14,159,110,.28);color:#0B7A55;',
+        '  border-radius:12px;padding:9px 12px;font-size:13px;font-weight:550;',
+        '  animation:kcaIn .34s cubic-bezier(.16,1,.3,1) both}',
+        '.kca-fait svg{width:15px;height:15px;flex-shrink:0}',
         '.kca-sugg{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 12px;background:#FAFAFB;flex-shrink:0}',
         '.kca-sugg button{background:#fff;border:1px solid #DEDEE7;border-radius:999px;padding:8px 13px;',
         '  font-size:12.5px;font-family:inherit;color:#33333D;cursor:pointer;transition:all .2s}',
@@ -149,7 +154,8 @@
         bulle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
         etoile: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.6L21 10l-5.3 4.2L17 21l-5-3.4L7 21l1.3-6.8L3 10l6.8-1.4z"/></svg>',
         croix: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
-        envoi: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>'
+        envoi: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>',
+        coche: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
     };
 
     /* ── Construction ────────────────────────────────────────────── */
@@ -205,6 +211,16 @@
         corps.scrollTop = corps.scrollHeight;
         return d;
     }
+    // Une action a réellement modifié le compte : on la montre à part du
+    // texte, pour qu'elle ne se noie pas dans la réponse.
+    function fait(libelle) {
+        var d = document.createElement('div');
+        d.className = 'kca-fait';
+        d.innerHTML = SVG.coche + '<span>' + esc(libelle) + '</span>';
+        corps.appendChild(d);
+        corps.scrollTop = corps.scrollHeight;
+    }
+
     function attente() {
         var d = document.createElement('div');
         d.className = 'kca-wait';
@@ -323,6 +339,13 @@
                     : 'Je n\'ai pas réussi à répondre. Réessayez dans un instant.';
                 bulle('bot', m);
                 return;
+            }
+            var actions = r.d.actions || [];
+            actions.forEach(function (a) { fait(a.libelle); });
+            // La page peut avoir des listes à recharger : sans cela le
+            // commerçant voit un écran périmé et refait le travail.
+            if (actions.length && typeof window.KEEPO_ON_ACTION === 'function') {
+                try { window.KEEPO_ON_ACTION(actions); } catch (e) { console.warn(e); }
             }
             historique.push({ role: 'model', content: r.d.reply });
             bulle('bot', r.d.reply);

@@ -6555,6 +6555,17 @@
         };
     }
 
+    // Appelé par la bulle après une action de l'assistant : les écrans
+    // concernés se remettent à jour tout seuls.
+    window.KEEPO_ON_ACTION = function (actions) {
+        try { if (typeof loadRewardsFromDB === 'function') loadRewardsFromDB(); } catch (e) {}
+        try { if (typeof loadSettingsFromCard === 'function') loadSettingsFromCard(); } catch (e) {}
+        try { if (typeof refreshDashboardCloudCounters === 'function') refreshDashboardCloudCounters(); } catch (e) {}
+        if (typeof showToast === 'function' && actions && actions.length) {
+            showToast('success', 'Assistant', actions[0].libelle);
+        }
+    };
+
     async function runAiDiagnostic() {
         appendAiBubble('bot', '🩺 Diagnostic en cours…');
         try {

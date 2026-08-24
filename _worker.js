@@ -185,7 +185,7 @@ async function rateLimit(env, name, key) {
   return null;
 }
 
-async function callGemini(env, { systemPrompt, contents, generationConfig = {}, jsonMode = false }) {
+async function callGemini(env, { systemPrompt, contents, generationConfig = {}, jsonMode = false, tools = null }) {
   const GEMINI_API_KEY = env.GEMINI_API_KEY || '';
   if (!GEMINI_API_KEY) {
     return { error: 'GEMINI_API_KEY non configurée', status: 500 };
@@ -208,6 +208,8 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
     systemInstruction : { parts: [{ text: systemPrompt }] },
     contents,
     generationConfig  : finalGenConfig,
+    // Outils que le modèle peut décider d'appeler lui-même.
+    ...(tools ? { tools: [{ functionDeclarations: tools }] } : {}),
     safetySettings    : [
       { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
@@ -263,15 +265,21 @@ async function callGemini(env, { systemPrompt, contents, generationConfig = {}, 
         }
 
         if (res.ok) {
-          const data = await res.json();
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-          if (!text) {
+          const data  = await res.json();
+          const parts = (data && data.candidates && data.candidates[0]
+                      && data.candidates[0].content && data.candidates[0].content.parts) || [];
+          const text   = parts.map(function (p) { return p.text || ''; }).join('').trim();
+          const appels = parts.filter(function (p) { return p.functionCall; })
+                              .map(function (p) { return p.functionCall; });
+          // Une réponse sans texte est normale quand le modèle appelle un outil :
+          // ce n'est une anomalie que si elle ne contient rien du tout.
+          if (!text && appels.length === 0) {
             console.log('Gemini réponse vide', JSON.stringify(data).slice(0, 500));
             return { error: 'Réponse vide',
-                     details: JSON.stringify(data?.promptFeedback || data).slice(0, 300),
+                     details: JSON.stringify((data && data.promptFeedback) || data).slice(0, 300),
                      status: 502 };
           }
-          return { text, model: modele, reflexionRefusee };
+          return { text, appels, parts, model: modele, reflexionRefusee };
         }
 
         dernierStatut = res.status;
@@ -328,6 +336,233 @@ function extractJson(text) {
 // visiteur doit pouvoir poser ses questions avant de s'inscrire. En
 // contrepartie, la limite est posée sur l'adresse IP et la conversation est
 // bornée, pour que ce point ouvert ne devienne pas un robinet à dépenses.
+// ════════════════════════════════════════════════════════════════
+//  OUTILS DE L'ASSISTANT COMMERÇANT
+//  L'assistant ne se contente plus d'expliquer : il agit.
+//
+//  Principe de sécurité : toutes les écritures passent par Supabase avec
+//  LE JETON DU COMMERÇANT, jamais avec la clé de service. Le RLS s'applique
+//  donc normalement — l'assistant ne peut rien faire que le commerçant ne
+//  puisse faire lui-même, et jamais sur le compte d'un autre.
+//
+//  Ne sont volontairement PAS exposés : suppression de récompense, envoi de
+//  campagne, suppression de compte. Irréversible ou tourné vers l'extérieur :
+//  cela reste au commerçant, à la main.
+// ════════════════════════════════════════════════════════════════
+
+const OUTILS_COMMERCANT = [
+  {
+    name: 'lister_recompenses',
+    description: "Liste les récompenses du commerçant, avec leur identifiant et le nombre de points requis. À appeler avant toute modification, pour connaître les identifiants.",
+    parameters: { type: 'OBJECT', properties: {} },
+  },
+  {
+    name: 'creer_recompense',
+    description: "Crée une nouvelle récompense. Demander le nom et le nombre de points si l'utilisateur ne les a pas donnés.",
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        nom          : { type: 'STRING',  description: "Nom visible par le client, ex. « Café offert »" },
+        points_requis: { type: 'INTEGER', description: 'Points nécessaires pour obtenir la récompense (entier positif)' },
+      },
+      required: ['nom', 'points_requis'],
+    },
+  },
+  {
+    name: 'modifier_recompense',
+    description: "Modifie le nom ou le coût d'une récompense existante. Utiliser lister_recompenses avant, pour obtenir l'identifiant.",
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        id           : { type: 'INTEGER', description: 'Identifiant de la récompense' },
+        nom          : { type: 'STRING',  description: 'Nouveau nom (facultatif)' },
+        points_requis: { type: 'INTEGER', description: 'Nouveau coût en points (facultatif)' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'lire_programme',
+    description: "Lit les réglages du programme de fidélité : nom de l'enseigne, taux de points par euro, mode (points ou tampons), offre souscrite.",
+    parameters: { type: 'OBJECT', properties: {} },
+  },
+  {
+    name: 'regler_taux_points',
+    description: "Règle combien de points le client gagne par euro dépensé. Exemple : 0.1 signifie 1 point pour 10 €.",
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        points_par_euro: { type: 'NUMBER', description: 'Points gagnés par euro dépensé, entre 0.01 et 100' },
+      },
+      required: ['points_par_euro'],
+    },
+  },
+  {
+    name: 'basculer_mode',
+    description: "Bascule le programme entre le cumul de points et la carte à tampons.",
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        mode      : { type: 'STRING',  description: "« points » ou « tampons »" },
+        nb_tampons: { type: 'INTEGER', description: 'Nombre de tampons pour une carte pleine (mode tampons uniquement)' },
+        recompense: { type: 'STRING',  description: 'Récompense obtenue une fois la carte pleine (mode tampons uniquement)' },
+      },
+      required: ['mode'],
+    },
+  },
+  {
+    name: 'statistiques',
+    description: "Donne le nombre de membres du programme et la capacité restante de l'offre.",
+    parameters: { type: 'OBJECT', properties: {} },
+  },
+];
+
+// Appel Supabase au nom du commerçant connecté. Le jeton porte son identité :
+// le RLS fait le reste, on n'a aucun contrôle d'accès à réimplémenter ici.
+async function supaAuNomDe(env, token, chemin, opts) {
+  const SUPA_URL  = env.SUPABASE_URL      || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_ANON = env.SUPABASE_ANON_KEY || 'sb_publishable_XJoCbPawUCipKr2lunV8HA_r8XQ0rJ1';
+  const o = opts || {};
+  const res = await fetch(`${SUPA_URL}/rest/v1/${chemin}`, {
+    method : o.method || 'GET',
+    headers: {
+      'apikey'       : SUPA_ANON,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type' : 'application/json',
+      'Prefer'       : o.prefer || 'return=representation',
+    },
+    body: o.body ? JSON.stringify(o.body) : undefined,
+  });
+  const txt = await res.text();
+  let data = null;
+  try { data = txt ? JSON.parse(txt) : null; } catch (_) { data = txt; }
+  return { ok: res.ok, statut: res.status, data };
+}
+
+// Exécute un outil demandé par le modèle. Renvoie ce qui sera relu par le
+// modèle, plus un résumé destiné à l'interface (ce que le commerçant verra).
+async function executerOutil(nom, args, ctx) {
+  const { env, token, merchantId } = ctx;
+  const a = args || {};
+
+  try {
+    if (nom === 'lister_recompenses') {
+      const r = await supaAuNomDe(env, token,
+        `rewards?merchant_id=eq.${merchantId}&select=id,name,points_required&order=points_required.asc`);
+      if (!r.ok) return { donnees: { erreur: 'Lecture impossible' } };
+      return { donnees: { recompenses: r.data || [] } };
+    }
+
+    if (nom === 'creer_recompense') {
+      const points = Math.round(Number(a.points_requis));
+      const titre  = String(a.nom || '').trim().slice(0, 80);
+      if (!titre)                       return { donnees: { erreur: 'Nom manquant' } };
+      if (!isFinite(points) || points < 1)
+        return { donnees: { erreur: 'Le nombre de points doit être un entier supérieur à zéro.' } };
+
+      const r = await supaAuNomDe(env, token, 'rewards', {
+        method: 'POST',
+        body  : { merchant_id: merchantId, name: titre, points_required: points },
+      });
+      if (!r.ok) return { donnees: { erreur: 'Création refusée', detail: String(r.data).slice(0, 200) } };
+      const cree = Array.isArray(r.data) ? r.data[0] : r.data;
+      return {
+        donnees: { succes: true, recompense: cree },
+        action : { type: 'creation', libelle: `Récompense « ${titre} » créée à ${points} points` },
+      };
+    }
+
+    if (nom === 'modifier_recompense') {
+      const id = Math.round(Number(a.id));
+      if (!isFinite(id)) return { donnees: { erreur: 'Identifiant invalide' } };
+      const patch = {};
+      if (a.nom !== undefined && String(a.nom).trim()) patch.name = String(a.nom).trim().slice(0, 80);
+      if (a.points_requis !== undefined) {
+        const p = Math.round(Number(a.points_requis));
+        if (!isFinite(p) || p < 1) return { donnees: { erreur: 'Points invalides' } };
+        patch.points_required = p;
+      }
+      if (Object.keys(patch).length === 0) return { donnees: { erreur: 'Rien à modifier' } };
+
+      const r = await supaAuNomDe(env, token,
+        `rewards?id=eq.${id}&merchant_id=eq.${merchantId}`, { method: 'PATCH', body: patch });
+      if (!r.ok)              return { donnees: { erreur: 'Modification refusée', detail: String(r.data).slice(0, 200) } };
+      if (!r.data || !r.data.length)
+        return { donnees: { erreur: "Aucune récompense de ce commerce ne porte cet identifiant." } };
+      const maj = r.data[0];
+      return {
+        donnees: { succes: true, recompense: maj },
+        action : { type: 'modification', libelle: `Récompense « ${maj.name} » mise à jour (${maj.points_required} points)` },
+      };
+    }
+
+    if (nom === 'lire_programme') {
+      const r = await supaAuNomDe(env, token,
+        `merchant_cards?merchant_id=eq.${merchantId}&select=title,points_per_euro,plan,loyalty_mode,stamps_required,stamp_reward`);
+      // loyalty_mode peut ne pas exister si la migration n'a pas été jouée :
+      // on retente alors sans ces colonnes plutôt que de renvoyer une erreur.
+      if (!r.ok) {
+        const b = await supaAuNomDe(env, token,
+          `merchant_cards?merchant_id=eq.${merchantId}&select=title,points_per_euro,plan`);
+        if (!b.ok) return { donnees: { erreur: 'Lecture impossible' } };
+        return { donnees: { programme: (b.data || [])[0] || {}, mode_tampons_indisponible: true } };
+      }
+      return { donnees: { programme: (r.data || [])[0] || {} } };
+    }
+
+    if (nom === 'regler_taux_points') {
+      const taux = Number(a.points_par_euro);
+      if (!isFinite(taux) || taux <= 0 || taux > 100)
+        return { donnees: { erreur: 'Le taux doit être compris entre 0.01 et 100.' } };
+      const r = await supaAuNomDe(env, token, `merchant_cards?merchant_id=eq.${merchantId}`,
+        { method: 'PATCH', body: { points_per_euro: taux } });
+      if (!r.ok) return { donnees: { erreur: 'Modification refusée', detail: String(r.data).slice(0, 200) } };
+      return {
+        donnees: { succes: true, points_par_euro: taux },
+        action : { type: 'reglage', libelle: `Taux réglé à ${taux} point(s) par euro` },
+      };
+    }
+
+    if (nom === 'basculer_mode') {
+      const mode = String(a.mode || '').toLowerCase().indexOf('tampon') >= 0 ? 'stamps' : 'points';
+      const patch = { loyalty_mode: mode };
+      if (mode === 'stamps') {
+        const n = Math.round(Number(a.nb_tampons));
+        patch.stamps_required = (isFinite(n) && n >= 2 && n <= 50) ? n : 10;
+        if (a.recompense) patch.stamp_reward = String(a.recompense).trim().slice(0, 80);
+      }
+      const r = await supaAuNomDe(env, token, `merchant_cards?merchant_id=eq.${merchantId}`,
+        { method: 'PATCH', body: patch });
+      if (!r.ok) {
+        return { donnees: { erreur: "Le mode tampons n'est pas encore activé sur cette base.",
+                            detail: 'Migration loyalty_mode / stamps_required à jouer.' } };
+      }
+      return {
+        donnees: { succes: true, mode },
+        action : { type: 'reglage',
+                   libelle: mode === 'stamps'
+                     ? `Programme basculé en carte à tampons (${patch.stamps_required} tampons)`
+                     : 'Programme basculé en cumul de points' },
+      };
+    }
+
+    if (nom === 'statistiques') {
+      const m = await supaAuNomDe(env, token,
+        `loyalty_balances?merchant_id=eq.${merchantId}&hidden_at=is.null&select=points_balance`);
+      const membres = m.ok && Array.isArray(m.data) ? m.data.length : 0;
+      const u = await supaAuNomDe(env, token, 'rpc/my_member_usage', { method: 'POST', body: {} });
+      const cap = (u.ok && Array.isArray(u.data) && u.data[0]) ? u.data[0].max_members : null;
+      return { donnees: { membres, capacite: cap === null ? 'illimitée' : cap } };
+    }
+
+    return { donnees: { erreur: 'Outil inconnu' } };
+
+  } catch (err) {
+    return { donnees: { erreur: 'Échec de l\'outil', detail: String(err).slice(0, 200) } };
+  }
+}
+
+
 async function handlePublicChat(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
 
@@ -440,6 +675,11 @@ async function handleAiChat(request, env) {
   const rl = await rateLimit(env, 'AI_LIMITER', auth.user.id);
   if (rl) return rl;
 
+  // Le jeton d'origine sert à agir AU NOM du commerçant : les outils passent
+  // par lui, jamais par la clé de service. Le RLS reste donc la seule autorité.
+  const entete = request.headers.get('Authorization') || '';
+  const token  = entete.startsWith('Bearer ') ? entete.slice(7).trim() : '';
+
   let body;
   try { body = await request.json(); }
   catch { return json({ error: 'Corps invalide' }, 400); }
@@ -454,18 +694,51 @@ async function handleAiChat(request, env) {
     ctx.pointsPerEuro ? `Taux : ${ctx.pointsPerEuro} points par euro` : null,
   ].filter(Boolean).join('\n');
 
-  const fullSystem = userCtx
+  const fullSystem = (userCtx
     ? `${SUPPORT_MERCHANT_PROMPT}\n\n--- CONTEXTE UTILISATEUR ---\n${userCtx}`
-    : SUPPORT_MERCHANT_PROMPT;
+    : SUPPORT_MERCHANT_PROMPT) + `
+
+--- TU PEUX AGIR ---
+Tu disposes d'outils qui modifient réellement le compte du commerçant. Quand il
+demande une action que tu sais faire, FAIS-LA — ne te contente pas d'expliquer
+où cliquer. Puis confirme en une phrase ce qui a été fait.
+- Il ne manque qu'un paramètre ? Demande-le, brièvement, au lieu d'inventer.
+- Avant de modifier une récompense, liste-les pour retrouver son identifiant.
+- Tu ne peux PAS supprimer de récompense, envoyer une campagne ni supprimer un
+  compte : dis-le franchement et indique où le faire à la main.
+- Un outil renvoie une erreur ? Explique-la simplement, n'affirme jamais qu'une
+  action a réussi si ce n'est pas le cas.`;
 
   const contents = messages.map(m => ({
     role  : (m.role === 'model' || m.role === 'assistant') ? 'model' : 'user',
     parts : [{ text: String(m.content || '').slice(0, 4000) }],
   }));
 
-  const result = await callGemini(env, { systemPrompt: fullSystem, contents });
-  if (result.error) return json(result, result.status);
-  return json({ reply: result.text || "Je n'ai pas pu générer de réponse." });
+  const outilCtx = { env, token, merchantId: auth.user.id };
+  const actions  = [];
+
+  let r = await callGemini(env, { systemPrompt: fullSystem, contents, tools: OUTILS_COMMERCANT });
+
+  // Le modèle peut enchaîner : lister, puis modifier, puis conclure. On borne
+  // à quatre tours — au-delà c'est qu'il tourne en rond, et chaque tour coûte.
+  let tours = 0;
+  while (!r.error && r.appels && r.appels.length && tours < 4) {
+    tours++;
+    contents.push({ role: 'model', parts: r.parts });
+
+    const reponses = [];
+    for (const appel of r.appels) {
+      const sortie = await executerOutil(appel.name, appel.args || {}, outilCtx);
+      if (sortie.action) actions.push(sortie.action);
+      reponses.push({ functionResponse: { name: appel.name, response: sortie.donnees } });
+    }
+    contents.push({ role: 'user', parts: reponses });
+
+    r = await callGemini(env, { systemPrompt: fullSystem, contents, tools: OUTILS_COMMERCANT });
+  }
+
+  if (r.error) return json({ error: r.error, details: r.details }, r.status || 502);
+  return json({ reply: r.text, actions });
 }
 
 async function handleClientChat(request, env) {
