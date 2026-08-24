@@ -237,7 +237,31 @@ async function handleAiStatus(request, env) {
   };
   if (!key) {
     out.verdict = 'Clé Gemini non configurée sur Cloudflare.';
-    out.remede  = 'npx wrangler secret put GEMINI_API_KEY';
+
+    // Le Worker reçoit-il seulement des secrets ? Si les autres arrivent et
+    // pas celui-ci, le problème est le nom ou le type de l'entrée. Si aucun
+    // n'arrive, c'est que les secrets ont été posés sur un autre projet.
+    const connus = ['RESEND_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET',
+                    'SUPABASE_SERVICE_ROLE', 'GOOGLE_WALLET_SA_EMAIL'];
+    const presents = connus.filter(n => env[n]);
+
+    // Fautes de frappe fréquentes sur le nom.
+    const variantes = ['GEMINI_KEY', 'GEMINI_APIKEY', 'GEMINI_API', 'GOOGLE_API_KEY',
+                       'GEMINI_API_KEY ', 'gemini_api_key', 'AI_API_KEY'];
+    const trouvee = variantes.find(n => env[n]);
+
+    out.autresSecrets = presents.length + ' sur ' + connus.length + ' reçus par ce Worker';
+    if (trouvee) {
+      out.remede = 'Une clé existe sous le nom « ' + trouvee +' ». Renommez-la exactement GEMINI_API_KEY.';
+    } else if (presents.length === 0) {
+      out.remede = 'Aucun secret n\'arrive jusqu\'à ce Worker : ils ont probablement été '
+                 + 'posés sur un autre projet Cloudflare. Le bon est le Worker nommé « keepo » '
+                 + '(Workers & Pages → keepo → Settings → Variables and Secrets).';
+    } else {
+      out.remede = 'Les autres secrets arrivent bien, donc le projet est le bon. '
+                 + 'Vérifiez le nom exact — GEMINI_API_KEY, sans espace ni minuscule — '
+                 + 'et le type « Secret ». Puis redéployez si rien ne change.';
+    }
     return json(out, 200);
   }
 
