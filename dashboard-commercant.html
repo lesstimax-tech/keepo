@@ -3701,7 +3701,7 @@
 
         <div id="view-support" class="panel-view">
             <h2 class="panel-title">Aide & Support</h2>
-            <p class="panel-subtitle">Notre équipe est disponible 7j/7 pour vous accompagner</p>
+            <p class="panel-subtitle">L'assistant répond tout de suite. Pour le reste, écrivez-nous — c'est un humain qui lit.</p>
 
             <!-- ══════════ CHAT IA KEEPO ══════════ -->
             <div class="ai-chat-card">
@@ -3749,34 +3749,168 @@
                 </div>
             </div>
 
-            <div class="support-grid">
-                <div class="support-tile" onclick="showToast('info','Chat en direct','Connexion avec un conseiller...')">
-                    <i class="fa-solid fa-comments"></i>
-                    <h4>Chat en direct</h4>
-                    <p>Discutez instantanément avec un conseiller KEEPO. Temps de réponse moyen : 2 min.</p>
+            <style>
+            /* ══════════════════════════════════════════════════════════
+               Aide & Support — que des actions qui aboutissent vraiment.
+               Les quatre tuiles précédentes se contentaient d'afficher
+               « Ticket créé » sans rien créer : pire qu'un bouton inerte,
+               un commerçant attendait ensuite un rappel qui ne venait pas.
+               ══════════════════════════════════════════════════════════ */
+            .sup-h { display: flex; align-items: center; gap: 10px; margin: 30px 0 14px;
+                font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+                color: var(--text-muted); }
+            .sup-h::after { content: ""; flex: 1; height: 1px; background: var(--glass-border); }
+
+            /* Questions fréquentes */
+            .sup-faq { display: grid; gap: 9px; max-width: 720px; }
+            .sup-q { background: var(--bg-card); border: 1px solid var(--glass-border);
+                border-radius: 14px; overflow: hidden; transition: border-color .3s var(--ease); }
+            .sup-q.open { border-color: var(--primary-accent); box-shadow: var(--shadow-sm); }
+            .sup-q > button { width: 100%; display: flex; align-items: center; justify-content: space-between;
+                gap: 14px; padding: 16px 18px; background: none; border: none; cursor: pointer;
+                font-family: Inter, sans-serif; font-size: 14.5px; font-weight: 600;
+                color: var(--text-main); text-align: left; }
+            .sup-q > button i { color: var(--secondary-accent); font-size: 12px; flex-shrink: 0;
+                transition: transform .35s var(--ease); }
+            .sup-q.open > button i { transform: rotate(180deg); }
+            .sup-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s var(--ease); }
+            .sup-q.open .sup-a { grid-template-rows: 1fr; }
+            .sup-a > div { overflow: hidden; }
+            .sup-a p { margin: 0; padding: 0 18px 17px; font-size: 13.5px; line-height: 1.65;
+                color: var(--text-sub); }
+            .sup-a b { color: var(--text-main); font-weight: 650; }
+
+            /* Ressources */
+            .sup-res { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+                gap: 12px; max-width: 720px; }
+            .sup-res a, .sup-res button { display: flex; align-items: flex-start; gap: 13px;
+                padding: 17px 18px; border-radius: 15px; cursor: pointer; text-align: left;
+                text-decoration: none; font-family: Inter, sans-serif;
+                background: var(--bg-card); border: 1px solid var(--glass-border);
+                box-shadow: var(--shadow-sm); transition: all .3s var(--ease); }
+            .sup-res a:hover, .sup-res button:hover { transform: translateY(-3px);
+                border-color: var(--primary-accent); box-shadow: var(--shadow-md); }
+            .sup-res .ic { width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px;
+                display: grid; place-items: center; font-size: 14px; color: #fff;
+                background: var(--grad); box-shadow: 0 6px 14px -8px var(--primary-glow); }
+            .sup-res b { display: block; font-size: 14px; font-weight: 700; color: var(--text-main);
+                margin-bottom: 3px; }
+            .sup-res span { font-size: 12.5px; color: var(--text-muted); line-height: 1.45; }
+
+            /* Nous écrire */
+            .sup-mail { max-width: 720px; padding: 22px; border-radius: 18px;
+                background: var(--grad-soft); border: 1px solid var(--glass-border); }
+            .sup-mail h4 { font-family: Inter, sans-serif; font-size: 17px; font-weight: 750;
+                color: var(--text-main); margin: 0 0 8px; letter-spacing: -.02em; }
+            .sup-mail p { font-size: 13.5px; color: var(--text-sub); line-height: 1.6; margin: 0 0 16px; }
+            .sup-mail .go { display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px;
+                border-radius: 12px; border: none; cursor: pointer; text-decoration: none;
+                background: var(--grad); color: #fff; font-size: 14.5px; font-weight: 700;
+                font-family: Inter, sans-serif; box-shadow: 0 10px 22px -12px var(--primary-glow);
+                transition: transform .3s var(--ease); }
+            .sup-mail .go:hover { transform: translateY(-2px); }
+            .sup-mail .fine { display: block; margin-top: 12px; font-size: 12px; color: var(--text-muted); }
+            @media (prefers-reduced-motion: reduce) {
+                .sup-res a, .sup-res button, .sup-mail .go, .sup-q > button i, .sup-a { transition: none; }
+            }
+            </style>
+
+            <!-- ══════════ QUESTIONS FRÉQUENTES ══════════ -->
+            <div class="sup-h">Questions fréquentes</div>
+            <div class="sup-faq">
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Comment mes clients obtiennent-ils leur carte&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p>Ils scannent le <b>QR Code de votre comptoir</b>, celui de l'onglet
+                        <b>Code QR</b>. Il est le même pour tous vos clients : vous l'imprimez une fois et vous le
+                        laissez près de la caisse. La carte apparaît sur leur téléphone en quelques secondes.</p></div></div>
                 </div>
-                <div class="support-tile" onclick="showToast('success','Ticket créé','Un conseiller prend en charge votre dossier.')">
-                    <i class="fa-solid fa-ticket"></i>
-                    <h4>Ouvrir un ticket</h4>
-                    <p>Pour les demandes complexes, une équipe dédiée traitera votre dossier sous 24h.</p>
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Doivent-ils installer une application&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p>Non, jamais. Tout se passe dans leur navigateur. Ils peuvent
+                        ajouter KEEPO à leur écran d'accueil s'ils le souhaitent, mais rien ne les y oblige —
+                        c'est l'un des points qui font accepter le programme.</p></div></div>
                 </div>
-                <div class="support-tile" onclick="showToast('info','Documentation','Ouverture de la base de connaissances...')">
-                    <i class="fa-solid fa-book-open"></i>
-                    <h4>Documentation</h4>
-                    <p>Guides, tutoriels vidéo et FAQ pour paramétrer votre terminal en autonomie.</p>
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Comment créditer des points après un achat&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p>Vous scannez <b>le QR personnel du client</b> depuis l'onglet
+                        <b>Scanner</b> ou depuis le terminal de caisse, puis vous saisissez le montant de la vente.
+                        Les points sont crédités aussitôt. Attention à ne pas confondre : votre QR sert à
+                        s'inscrire, le sien à créditer.</p></div></div>
                 </div>
-                <div class="support-tile" onclick="showToast('info','Rendez-vous','Calendrier de prise de rendez-vous disponible...')">
-                    <i class="fa-solid fa-calendar-check"></i>
-                    <h4>Rendez-vous dédié</h4>
-                    <p>Planifiez une session d'onboarding avec un expert KEEPO (plan Pro inclus).</p>
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Comment valider une récompense&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p>Le client génère un <b>code à six caractères</b> depuis sa carte.
+                        Vous le saisissez dans votre terminal : il est vérifié, puis consommé. Le code ne vaut
+                        qu'une fois et expire après usage — il ne peut pas être réutilisé ni partagé.</p></div></div>
+                </div>
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Points ou tampons&nbsp;: que choisir&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p>Les <b>points</b> conviennent quand les paniers varient beaucoup :
+                        le client cumule selon ce qu'il dépense. Les <b>tampons</b> conviennent quand le produit
+                        est toujours le même — un tampon par passage, la dixième offerte. Le choix se change à tout
+                        moment dans les Réglages.</p></div></div>
+                </div>
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Puis-je équiper mes employés&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p>Oui. Vous créez un compte caissier par employé, chacun avec son
+                        code PIN, dans les Réglages. Ils se connectent au <b>terminal de caisse</b> sur une tablette,
+                        et l'historique indique qui a crédité quel client. Cette fonction fait partie de
+                        l'offre Pro&nbsp;Scale.</p></div></div>
+                </div>
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Combien de clients puis-je avoir&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p><b>150 membres</b> avec l'offre Essentiel, <b>illimité</b> avec
+                        Pro&nbsp;Scale. La carte «&nbsp;Membres actifs&nbsp;» de votre tableau de bord affiche en
+                        permanence où vous en êtes, et vous prévient avant d'arriver à la limite.</p></div></div>
+                </div>
+                <div class="sup-q">
+                    <button type="button" onclick="supToggle(this)">Comment arrêter mon abonnement&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="sup-a"><div><p>En un clic depuis vos Réglages, sans frais ni pénalité. L'arrêt
+                        prend effet à la fin de la période déjà payée, <b>sans remboursement au prorata</b>.
+                        Vos données sont conservées : vous repassez en Essentiel et pouvez reprendre quand
+                        vous voulez.</p></div></div>
                 </div>
             </div>
 
-            <div class="card" style="max-width:600px;margin-top:24px;background:linear-gradient(135deg,rgba(91,58,160,0.06),rgba(14,124,140,0.04));border-color:rgba(91,58,160,0.2);">
-                <div class="card-title"><i class="fa-solid fa-headset" style="color:var(--tertiary-accent)"></i> Support Premium KEEPO</div>
-                <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:16px;">Nos ingénieurs vous aident à paramétrer vos intégrations logicielles et vos impressions de supports physiques. Disponible 7j/7 de 8h à 22h.</p>
-                <button onclick="showToast('success','Ticket créé','Un conseiller prend en charge votre dossier sous 24h.')" class="btn-action btn-primary-gradient"><i class="fa-solid fa-headset"></i> Contacter le Support Premium</button>
+            <!-- ══════════ RESSOURCES ══════════ -->
+            <div class="sup-h">Ressources</div>
+            <div class="sup-res">
+                <button type="button" onclick="supRejouerTuto()">
+                    <span class="ic"><i class="fa-solid fa-graduation-cap"></i></span>
+                    <span><b>Revoir la prise en main</b>
+                          <span>Les quatre étapes et les gestes du comptoir</span></span>
+                </button>
+                <a href="/demo" target="_blank" rel="noopener">
+                    <span class="ic"><i class="fa-solid fa-play"></i></span>
+                    <span><b>Démo interactive</b>
+                          <span>Voir KEEPO du point de vue d'un client</span></span>
+                </a>
+                <a href="/upgrade" target="_blank" rel="noopener">
+                    <span class="ic"><i class="fa-solid fa-crown"></i></span>
+                    <span><b>Comparer les offres</b>
+                          <span>Ce que débloque Pro Scale, en détail</span></span>
+                </a>
+                <a href="/cgu-cgv" target="_blank" rel="noopener">
+                    <span class="ic"><i class="fa-solid fa-file-lines"></i></span>
+                    <span><b>Conditions générales</b>
+                          <span>Facturation, résiliation, données</span></span>
+                </a>
             </div>
+
+            <!-- ══════════ NOUS ÉCRIRE ══════════ -->
+            <div class="sup-h">Une question que l'assistant n'a pas résolue</div>
+            <div class="sup-mail">
+                <h4>Écrivez-nous directement</h4>
+                <p>KEEPO est une jeune équipe : votre message arrive chez la personne qui écrit le produit,
+                   pas dans une file d'attente. Réponse sous <b>4&nbsp;heures ouvrées</b> pour les abonnés
+                   Pro&nbsp;Scale, sous 24&nbsp;heures sinon.</p>
+                <a class="go" id="sup-mail-lien" href="mailto:contact@keepo.eu">
+                    <i class="fa-solid fa-envelope"></i> Écrire à contact@keepo.eu
+                </a>
+                <span class="fine">Les informations de votre compte (offre, identifiant) sont ajoutées
+                      automatiquement au message — cela nous évite de vous les redemander.</span>
+            </div>
+
         </div>
 
     </main>
@@ -5043,6 +5177,10 @@
             // reste à jour même si le chargement initial a échoué (session pas encore prête, etc.)
             if (currentMerchantId) loadNotificationsFromDB();
         }
+        // Le lien de contact se prépare à l'ouverture : le nom de l'enseigne et
+        // l'offre ne sont pas connus au chargement de la page.
+        if (panelId === 'view-support') supPreparerCourriel();
+
         // Charger les boutiques
         if (panelId === 'view-boutiques' && currentMerchantId) {
             loadBoutiques();
@@ -6896,6 +7034,41 @@
             showToast('success', 'Assistant', actions[0].libelle);
         }
     };
+
+    /* ─── AIDE & SUPPORT ─── */
+    function supToggle(btn) {
+        const q = btn.closest('.sup-q');
+        if (q) q.classList.toggle('open');
+    }
+
+    // Rejouer la prise en main : on lève seulement le drapeau local, sans
+    // rien effacer du programme déjà configuré.
+    function supRejouerTuto() {
+        try { localStorage.removeItem(`KEEPO_ob_done_${currentMerchantId}`); } catch (e) {}
+        obGoToStep(1);
+        switchPanel('view-onboarding');
+        showToast('info', 'Prise en main', 'Vos réglages actuels ne sont pas effacés.');
+    }
+
+    // Le lien de contact porte le contexte du compte : sans cela, le premier
+    // échange sert à redemander qui écrit et avec quelle offre.
+    function supPreparerCourriel() {
+        const lien = document.getElementById('sup-mail-lien');
+        if (!lien) return;
+        const enseigne = document.getElementById('merchant-title')?.innerText || '—';
+        const objet = `Aide KEEPO — ${enseigne}`;
+        const corps = [
+            'Bonjour,', '', '', '',
+            '— — — — — — — — — — — — — — — —',
+            'Informations techniques (ne pas effacer) :',
+            `Enseigne : ${enseigne}`,
+            `Offre : ${typeof activeMerchantPlan !== 'undefined' ? activeMerchantPlan : 'inconnue'}`,
+            `Identifiant : ${currentMerchantId || 'inconnu'}`,
+            `Navigateur : ${navigator.userAgent}`,
+        ].join('\n');
+        lien.href = 'mailto:contact@keepo.eu?subject=' + encodeURIComponent(objet)
+                  + '&body=' + encodeURIComponent(corps);
+    }
 
     async function runAiDiagnostic() {
         appendAiBubble('bot', '🩺 Diagnostic en cours…');
