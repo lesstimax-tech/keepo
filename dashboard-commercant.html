@@ -555,32 +555,62 @@
         .tab-btn:hover:not(.active) { color: var(--text-main); }
 
         /* ─── ALERTS / TOASTS ─── */
+        /* ── Notifications ────────────────────────────────────────────
+           En bas à gauche de la zone de contenu : le coin bas-droit est celui
+           de la bulle d'assistance, elles s'y recouvraient. */
         #toast-container {
-            position: fixed; bottom: 28px; right: 28px;
-            z-index: 100001; display: flex; flex-direction: column; gap: 10px;
+            position: fixed; bottom: 24px; left: calc(var(--sidebar-w) + 24px); right: auto;
+            z-index: 100001; display: flex; flex-direction: column-reverse; gap: 10px;
+            pointer-events: none;
         }
         .toast {
-            background: rgba(18, 15, 30, 0.97);
+            position: relative; overflow: hidden; pointer-events: auto; cursor: pointer;
+            background: var(--bg-card);
             border: 1px solid var(--glass-border-bright);
+            border-left: 3px solid var(--secondary-accent);
             border-radius: 14px;
-            padding: 14px 18px;
-            display: flex; align-items: center; gap: 12px;
-            min-width: 280px; max-width: 360px;
-            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
-            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
+            padding: 14px 16px 14px 15px;
+            display: flex; align-items: flex-start; gap: 12px;
+            min-width: 300px; max-width: 380px;
+            box-shadow: var(--shadow-md);
+            animation: toastIn .45s cubic-bezier(.22,1.18,.36,1) both;
         }
-        .toast.removing { animation: toastOut 0.3s ease forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
-        .toast-icon { font-size: 18px; flex-shrink: 0; }
-        .toast-body { flex: 1; }
-        .toast-title { font-size: 13px; font-weight: 700; font-family: Inter, sans-serif; }
-        .toast-msg { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .toast.success .toast-icon { color: var(--success); }
-        .toast.error .toast-icon { color: var(--danger); }
-        .toast.info .toast-icon { color: var(--secondary-accent); }
-        .toast.warning .toast-icon { color: var(--warning); }
+        .toast:hover { border-color: var(--glass-border-bright); }
+        .toast.removing { animation: toastOut .28s var(--ease) forwards; }
+        @keyframes toastIn  { from { opacity: 0; transform: translateX(-24px) scale(.96); } }
+        @keyframes toastOut { to   { opacity: 0; transform: translateX(-24px) scale(.96); } }
+
+        .toast-icon { font-size: 17px; flex-shrink: 0; line-height: 1.3; }
+        .toast-body { flex: 1; min-width: 0; }
+        .toast-title { font-size: 13.5px; font-weight: 700; font-family: Inter, sans-serif;
+            color: var(--text-main); line-height: 1.35; }
+        .toast-msg { font-size: 12.5px; color: var(--text-sub); margin-top: 3px; line-height: 1.45;
+            word-wrap: break-word; overflow-wrap: anywhere; }
+        .toast-close { flex-shrink: 0; background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 12px; padding: 2px 4px; border-radius: 6px;
+            opacity: 0; transition: opacity .2s, color .2s; }
+        .toast:hover .toast-close { opacity: 1; }
+        .toast-close:hover { color: var(--text-main); }
+
+        /* Le temps restant, discret : on voit la notification s'en aller. */
+        .toast-bar { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%;
+            background: currentColor; opacity: .35; transform-origin: left;
+            animation: toastBar linear forwards; }
+        @keyframes toastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error   { border-left-color: var(--danger); }
+        .toast.info    { border-left-color: var(--secondary-accent); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast.success .toast-icon, .toast.success .toast-bar { color: var(--success); }
+        .toast.error   .toast-icon, .toast.error   .toast-bar { color: var(--danger); }
+        .toast.info    .toast-icon, .toast.info    .toast-bar { color: var(--secondary-accent); }
+        .toast.warning .toast-icon, .toast.warning .toast-bar { color: var(--warning); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .toast { animation: none; }
+            .toast-bar { display: none; }
+        }
 
         /* ─── MODALS ─── */
         .popup-modal {
@@ -1137,7 +1167,8 @@
                 max-height: 80vh; overflow-y: auto;
             }
 
-            #toast-container { bottom: 16px; right: 12px; left: 12px; }
+            /* Plus de barre latérale, et il faut passer au-dessus de la bulle. */
+            #toast-container { bottom: 92px; right: 12px; left: 12px; }
             .toast { min-width: 0; max-width: none; }
         }
 
@@ -3982,16 +4013,56 @@
     let isQrCodeRendered = false;
 
     // ─── TOAST SYSTEM ───
+    // Une erreur mérite plus de temps de lecture qu'une confirmation.
+    const TOAST_DUREE = { success: 3800, info: 3800, warning: 6000, error: 7000 };
+
     function showToast(type, title, msg) {
-        const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info', warning: 'fa-triangle-exclamation' };
-        const container = document.getElementById('toast-container');
+        const icones = { success: 'fa-circle-check', error: 'fa-circle-xmark',
+                         info: 'fa-circle-info', warning: 'fa-triangle-exclamation' };
+        const zone = document.getElementById('toast-container');
+        if (!zone) return;
+
+        // Au-delà de trois, les plus anciennes sortent : une pile qui déborde
+        // masque le contenu au lieu d'informer.
+        while (zone.children.length >= 3) zone.firstElementChild.remove();
+
+        const duree = TOAST_DUREE[type] || TOAST_DUREE.info;
         const t = document.createElement('div');
-        t.className = `toast ${type}`;
+        t.className = 'toast ' + type;
+        t.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        t.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
         // Sécurité : title/msg peuvent contenir des données d'un autre utilisateur
         // (ex. nom d'un client) → on échappe pour empêcher tout XSS stocké.
-        t.innerHTML = `<div class="toast-icon"><i class="fa-solid ${icons[type]||icons.info}"></i></div><div class="toast-body"><div class="toast-title">${escapeHtml(title)}</div><div class="toast-msg">${escapeHtml(msg)}</div></div>`;
-        container.appendChild(t);
-        setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 300); }, 3500);
+        t.innerHTML = '<div class="toast-icon"><i class="fa-solid ' + (icones[type] || icones.info) + '"></i></div>'
+                    + '<div class="toast-body"><div class="toast-title">' + escapeHtml(title) + '</div>'
+                    + '<div class="toast-msg">' + escapeHtml(msg) + '</div></div>'
+                    + '<button class="toast-close" type="button" aria-label="Fermer">'
+                    + '<i class="fa-solid fa-xmark"></i></button>'
+                    + '<div class="toast-bar" style="animation-duration:' + duree + 'ms"></div>';
+        zone.appendChild(t);
+
+        let minuteur = null;
+        const fermer = () => {
+            if (!t.isConnected) return;
+            clearTimeout(minuteur);
+            t.classList.add('removing');
+            setTimeout(() => t.remove(), 300);
+        };
+        minuteur = setTimeout(fermer, duree);
+
+        // Cliquer la referme : on ne force personne à attendre.
+        t.addEventListener('click', fermer);
+        // Le survol suspend le compte à rebours, le temps de lire.
+        t.addEventListener('mouseenter', () => {
+            clearTimeout(minuteur);
+            const bar = t.querySelector('.toast-bar');
+            if (bar) bar.style.animationPlayState = 'paused';
+        });
+        t.addEventListener('mouseleave', () => {
+            minuteur = setTimeout(fermer, 1500);
+            const bar = t.querySelector('.toast-bar');
+            if (bar) bar.style.animationPlayState = 'running';
+        });
     }
 
     // ─── TAB HELPER ───
