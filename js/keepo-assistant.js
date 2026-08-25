@@ -63,7 +63,6 @@
         return h.replace(/\n/g, '<br>');
     }
 
-    /* ── Styles ──────────────────────────────────────────────────── */
     /* ── Styles ──────────────────────────────────────────────────
        Palette « Clarté » du site. Deux courbes d'animation seulement :
        « douce » pour les fondus, « ressort » pour ce qui apparaît — un
