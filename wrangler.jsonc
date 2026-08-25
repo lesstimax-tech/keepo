@@ -11,7 +11,10 @@
   // period = 60 s (seules 10 ou 60 sont acceptées). Clé = id du commerçant.
   "ratelimits": [
     { "name": "AI_LIMITER",       "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } },
-    { "name": "CAMPAIGN_LIMITER", "namespace_id": "1002", "simple": { "limit": 3,  "period": 60 } }
+    { "name": "CAMPAIGN_LIMITER", "namespace_id": "1002", "simple": { "limit": 3,  "period": 60 } },
+    // La saisie d'adresse produit un appel par pause de frappe : la limite
+    // doit etre large, le service appele est gratuit et public.
+    { "name": "ADDR_LIMITER",     "namespace_id": "1003", "simple": { "limit": 60, "period": 60 } }
   ],
   "assets": {
     "directory": ".",

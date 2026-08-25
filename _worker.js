@@ -7,6 +7,8 @@
 //    POST /api/ai-email-writer          → génère email marketing
 //    POST /api/ai-reward-suggestions    → suggère récompenses
 //    POST /api/ai-design-studio         → génère palette + design carte
+//    GET  /api/ai-status              → diagnostic IA (clé, modèle, ping)
+//    GET  /api/address-suggest        → suggestions d adresses (Base Adresse Nationale)
 //  Tout le reste → assets statiques
 // ════════════════════════════════════════════════════════════════
 
@@ -1976,6 +1978,54 @@ async function handleGoogleWalletSave(request, env) {
 // Le commerçant saisit son adresse → on récupère lat/lng pour l'afficher dans
 // « Découvrir » côté client. Proxifié côté serveur (User-Agent conforme à la
 // politique Nominatim) et réservé aux commerçants connectés (anti-abus).
+// Suggestions d'adresses françaises, au fil de la frappe.
+// On s'appuie sur la Base Adresse Nationale (api-adresse.data.gouv.fr) :
+// service public, sans clé, pensé pour l'autocomplétion — contrairement à
+// Nominatim dont les conditions d'usage interdisent ce type d'appels répétés.
+// Le navigateur ne peut pas l'appeler directement : le CSP limite connect-src
+// à notre domaine et Supabase. Ce relais garde donc la liste courte.
+async function handleAddressSuggest(request, env) {
+  const user = await getAuthUser(request, env);
+  if (!user) return json({ error: 'Authentification requise' }, 401);
+
+  const rl = await rateLimit(env, 'ADDR_LIMITER', user.id);
+  if (rl) return rl;
+
+  const q = (new URL(request.url).searchParams.get('q') || '').trim();
+  // En deçà de trois caractères la Base renvoie du bruit : on n'appelle pas.
+  if (q.length < 3) return json({ resultats: [] });
+
+  try {
+    const r = await fetch(
+      'https://api-adresse.data.gouv.fr/search/?limit=6&autocomplete=1&q=' + encodeURIComponent(q),
+      { headers: { 'Accept': 'application/json' } }
+    );
+    if (!r.ok) return json({ resultats: [] });
+    const g = await r.json();
+
+    // On ne renvoie que ce qui sert à l'affichage et à l'enregistrement.
+    const resultats = (g.features || []).map(f => {
+      const p = (f && f.properties) || {};
+      const c = (f && f.geometry && f.geometry.coordinates) || [];
+      return {
+        label   : p.label || '',
+        rue     : p.name || '',
+        ville   : p.city || '',
+        cp      : p.postcode || '',
+        contexte: p.context || '',
+        lat     : Number(c[1]),
+        lon     : Number(c[0]),
+      };
+    }).filter(x => x.label && isFinite(x.lat) && isFinite(x.lon));
+
+    return json({ resultats });
+  } catch {
+    // Un service de suggestion indisponible ne doit rien casser : la saisie
+    // libre reste possible, le géocodage prendra le relais à l'enregistrement.
+    return json({ resultats: [] });
+  }
+}
+
 async function handleGeocode(request, env) {
   const user = await getAuthUser(request, env);
   if (!user) return json({ error: 'Authentification requise' }, 401);
@@ -2364,6 +2414,7 @@ export default {
       case '/api/send-campaign':           return handleSendCampaign(request, env);
       case '/api/campaign-count':          return handleCampaignCount(request, env);
       case '/api/delete-account':          return handleDeleteAccount(request, env);
+      case '/api/address-suggest':        return handleAddressSuggest(request, env);
       case '/api/geocode':                 return handleGeocode(request, env);
       case '/api/google-wallet-save':      return handleGoogleWalletSave(request, env);
       case '/api/wallet-sync':             return handleWalletSync(request, env);

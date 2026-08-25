@@ -66,6 +66,29 @@
             --ease: cubic-bezier(.16,1,.3,1);
             --sidebar-w: 260px;
         }
+        /* ── Liste de suggestions d'adresses ────────────────────────
+           Elle se superpose au formulaire : au-dessus de tout ce qui
+           l'entoure, mais sous les fenêtres modales. */
+        .adr-liste { position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+            z-index: 60; display: none; flex-direction: column; overflow: hidden;
+            max-height: 268px; overflow-y: auto; border-radius: 14px;
+            background: var(--bg-card); border: 1px solid var(--glass-border-bright);
+            box-shadow: var(--shadow-md); }
+        .adr-liste.ouvert { display: flex; }
+        .adr-item { display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 12px 15px; background: none; border: none; cursor: pointer;
+            text-align: left; font-family: Inter, sans-serif;
+            border-bottom: 1px solid var(--glass-border);
+            transition: background .18s var(--ease); }
+        .adr-item:last-child { border-bottom: none; }
+        .adr-item:hover, .adr-item.sel { background: var(--grad-soft); }
+        .adr-item > i { color: var(--secondary-accent); font-size: 13px; flex-shrink: 0; }
+        .adr-item b { display: block; font-size: 14px; font-weight: 600;
+            color: var(--text-main); line-height: 1.35; }
+        .adr-item span span { display: block; font-size: 12.5px; color: var(--text-muted);
+            margin-top: 1px; }
+        @media (prefers-reduced-motion: reduce) { .adr-item { transition: none; } }
+
         :root[data-theme="dark"] {
             --bg-dark: #08070E;
             --bg-mid: #0E0C18;
@@ -5856,11 +5879,25 @@
        commerçant voit le résultat au lieu de l'imaginer. L'étape 2 traduit le
        taux en nombre de visites — le chiffre qui compte vraiment pour lui. */
     let obSelectedColor = '#1B8E97';
+    // Renseigné quand le commerçant retient une suggestion : ses coordonnées
+    // sont alors connues, inutile de géocoder à nouveau.
+    let obAdresseChoisie = null;
     let obMode          = 'points';
 
     // Les pastilles sont câblées après le chargement : au moment où ce script
     // s'exécute, le balisage de la vue n'est pas forcément déjà en place.
     document.addEventListener('DOMContentLoaded', function () {
+        brancherAdresse(document.getElementById('ob-address'), function (r) {
+            obAdresseChoisie = r;
+            const etat = document.getElementById('ob-geo');
+            if (etat) {
+                etat.style.display = 'flex';
+                etat.style.color = 'var(--success)';
+                etat.innerHTML = '<i class="fa-solid fa-circle-check"></i> '
+                               + 'Adresse reconnue — vous apparaîtrez sur la carte';
+            }
+        });
+
         document.querySelectorAll('#ob-swatches .ob-sw').forEach(function (sw) {
             sw.addEventListener('click', function () {
                 document.querySelectorAll('#ob-swatches .ob-sw').forEach(s => s.classList.remove('sel'));
@@ -5881,6 +5918,121 @@
         document.querySelectorAll('#ob-swatches .ob-sw').forEach(s => s.classList.remove('sel'));
         obPeindreCarte();
     }
+
+    /* ═══════════ SAISIE D'ADRESSE ASSISTÉE ═══════════
+       Le commerçant tape, on propose, il choisit. La suggestion retenue porte
+       déjà ses coordonnées : plus besoin de géocoder ensuite, et l'adresse
+       enregistrée est normalisée (celle de la Base Adresse Nationale).
+
+       Tout échec est silencieux : si le service ne répond pas, la saisie libre
+       reste possible et le géocodage prend le relais à l'enregistrement. */
+    function brancherAdresse(input, auChoix) {
+        if (!input || input.dataset.adresseBranchee) return;
+        input.dataset.adresseBranchee = '1';
+        input.setAttribute('autocomplete', 'off');   // sinon le navigateur superpose sa propre liste
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-autocomplete', 'list');
+        input.setAttribute('aria-expanded', 'false');
+
+        // La liste se positionne sous le champ : son parent doit servir de repère.
+        const cadre = input.parentElement;
+        if (cadre && getComputedStyle(cadre).position === 'static') cadre.style.position = 'relative';
+
+        const liste = document.createElement('div');
+        liste.className = 'adr-liste';
+        liste.setAttribute('role', 'listbox');
+        (cadre || document.body).appendChild(liste);
+
+        let resultats = [], choisi = -1, minuteur = null, requete = 0;
+
+        const fermer = () => {
+            liste.classList.remove('ouvert');
+            input.setAttribute('aria-expanded', 'false');
+            choisi = -1;
+        };
+
+        const peindre = () => {
+            if (!resultats.length) { fermer(); return; }
+            liste.innerHTML = resultats.map((r, i) =>
+                '<button type="button" role="option" class="adr-item' + (i === choisi ? ' sel' : '') + '"'
+              + ' data-i="' + i + '">'
+              + '<i class="fa-solid fa-location-dot"></i>'
+              + '<span><b>' + echapper(r.rue || r.label) + '</b>'
+              + '<span>' + echapper([r.cp, r.ville].filter(Boolean).join(' ')) + '</span></span>'
+              + '</button>').join('');
+            liste.classList.add('ouvert');
+            input.setAttribute('aria-expanded', 'true');
+        };
+
+        const retenir = (i) => {
+            const r = resultats[i];
+            if (!r) return;
+            input.value = r.label;
+            fermer();
+            resultats = [];
+            if (typeof auChoix === 'function') auChoix(r);
+        };
+
+        const chercher = async (q) => {
+            const mien = ++requete;
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) return;
+                const res = await fetch('/api/address-suggest?q=' + encodeURIComponent(q), {
+                    headers: { 'Authorization': 'Bearer ' + session.access_token }
+                });
+                const d = await res.json().catch(() => ({}));
+                // Une réponse tardive ne doit pas écraser une frappe plus récente.
+                if (mien !== requete) return;
+                resultats = Array.isArray(d.resultats) ? d.resultats : [];
+                choisi = -1;
+                peindre();
+            } catch (e) { /* silencieux : la saisie libre reste possible */ }
+        };
+
+        input.addEventListener('input', () => {
+            const q = input.value.trim();
+            clearTimeout(minuteur);
+            if (q.length < 3) { resultats = []; fermer(); return; }
+            // On attend une pause de frappe : un appel par lettre serait inutile.
+            minuteur = setTimeout(() => chercher(q), 280);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (!liste.classList.contains('ouvert')) return;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                choisi += (e.key === 'ArrowDown' ? 1 : -1);
+                if (choisi < 0) choisi = resultats.length - 1;
+                if (choisi >= resultats.length) choisi = 0;
+                peindre();
+                liste.querySelector('.sel')?.scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter') {
+                if (choisi >= 0) { e.preventDefault(); retenir(choisi); }
+            } else if (e.key === 'Escape') {
+                fermer();
+            }
+        });
+
+        liste.addEventListener('mousedown', (e) => {
+            // mousedown et non click : le champ perdrait le focus avant le clic.
+            const b = e.target.closest('.adr-item');
+            if (!b) return;
+            e.preventDefault();
+            retenir(Number(b.dataset.i));
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!liste.contains(e.target) && e.target !== input) fermer();
+        });
+    }
+
+    // Les libellés viennent d'un service externe : ils sont échappés avant affichage.
+    function echapper(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
 
     // /api/geocode vérifie le jeton de session : sans en-tête Authorization il
     // répond 401, et l'adresse paraît introuvable alors qu'elle est valide.
@@ -5970,8 +6122,12 @@
         // l'adresse texte est conservée, seule la position sur la carte manquera.
         const adresse = (document.getElementById('ob-address')?.value || '').trim();
         let geo = null;
+        // Une suggestion retenue porte déjà sa position : on ne redemande rien.
+        if (obAdresseChoisie && obAdresseChoisie.label === adresse) {
+            geo = { lat: obAdresseChoisie.lat, lon: obAdresseChoisie.lon };
+        }
         const etat = document.getElementById('ob-geo');
-        if (adresse.length >= 5) {
+        if (!geo && adresse.length >= 5) {
             if (etat) {
                 etat.style.display = 'flex';
                 etat.style.color = 'var(--text-muted)';
@@ -7994,6 +8150,30 @@
 
     // Géocode l'adresse saisie (via /api/geocode → OpenStreetMap) et enregistre
     // lat/lng. Plus besoin de GPS : on tape l'adresse, et c'est localisé.
+    // Même saisie assistée dans les Réglages. Retenir une suggestion remplit
+    // le code postal et enregistre la position sans passer par le bouton.
+    document.addEventListener('DOMContentLoaded', function () {
+        brancherAdresse(document.getElementById('settings-address'), function (r) {
+            const cp = document.getElementById('settings-postcode');
+            if (cp && r.cp) cp.value = r.cp;
+            pendingGeoLat = r.lat; pendingGeoLng = r.lon;
+            const chip = document.getElementById('geo-status-chip');
+            if (chip) {
+                chip.innerHTML = '<i class="fa-solid fa-check"></i> Adresse reconnue';
+                chip.style.color = 'var(--success)';
+            }
+            if (currentMerchantId) {
+                supabaseClient.from('merchant_cards').update({
+                    latitude: +Number(r.lat).toFixed(6), longitude: +Number(r.lon).toFixed(6),
+                    address: r.label, updated_at: new Date().toISOString()
+                }).eq('merchant_id', currentMerchantId).then(function (res) {
+                    if (!res.error) showToast('success', '📍 Adresse enregistrée',
+                        'Votre commerce apparaîtra dans « Découvrir » côté client.');
+                });
+            }
+        });
+    });
+
     async function geocodeMerchantAddress() {
         const addr = (document.getElementById('settings-address')?.value || '').trim();
         const pc   = (document.getElementById('settings-postcode')?.value || '').trim();
