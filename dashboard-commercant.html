@@ -3439,6 +3439,20 @@
                     </div>
                 </div>
 
+                <div class="ob-card">
+                    <label class="ob-lab" for="ob-address">Où se trouve votre commerce&nbsp;?</label>
+                    <input class="ob-in" id="ob-address" type="text" autocomplete="street-address"
+                           placeholder="Ex : 12 rue de la République, 69001 Lyon">
+                    <div id="ob-geo" style="display:none;align-items:center;gap:8px;margin-top:10px;
+                                            font-size:12.5px;font-weight:600;"></div>
+                    <div class="ob-note" style="margin-top:14px;">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Elle vous place sur la carte <b>«&nbsp;Autour de moi&nbsp;»</b> de
+                              l'application : les clients KEEPO du quartier vous y découvrent,
+                              même sans vous connaître. Elle apparaît aussi sur votre fiche publique.</span>
+                    </div>
+                </div>
+
                 <div class="ob-card ob-prev">
                     <div class="ob-prev-lab">Ce que verra votre client</div>
                     <div class="ob-stage"><div class="kc-scope kc-stage" id="ob-carte"></div></div>
@@ -5730,6 +5744,20 @@
         obPeindreCarte();
     }
 
+    // /api/geocode vérifie le jeton de session : sans en-tête Authorization il
+    // répond 401, et l'adresse paraît introuvable alors qu'elle est valide.
+    // Un seul endroit pour cet appel, utilisé par la prise en main et les Réglages.
+    async function keepoGeocode(adresse) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) throw new Error('SESSION_EXPIREE');
+        const res = await fetch('/api/geocode?q=' + encodeURIComponent(adresse), {
+            headers: { 'Authorization': 'Bearer ' + session.access_token }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+        return data;
+    }
+
     function obChoisirMode(mode) {
         obMode = (mode === 'stamps') ? 'stamps' : 'points';
         document.querySelectorAll('#ob-mode button').forEach(b =>
@@ -5800,7 +5828,44 @@
             return;
         }
 
+        // On localise avant d'enregistrer, mais un échec ne bloque jamais :
+        // l'adresse texte est conservée, seule la position sur la carte manquera.
+        const adresse = (document.getElementById('ob-address')?.value || '').trim();
+        let geo = null;
+        const etat = document.getElementById('ob-geo');
+        if (adresse.length >= 5) {
+            if (etat) {
+                etat.style.display = 'flex';
+                etat.style.color = 'var(--text-muted)';
+                etat.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localisation…';
+            }
+            try {
+                const r = await keepoGeocode(adresse.includes('France') ? adresse : adresse + ', France');
+                if (r.found && r.lat) {
+                    geo = r;
+                    if (etat) {
+                        etat.style.color = 'var(--success)';
+                        etat.innerHTML = '<i class="fa-solid fa-circle-check"></i> '
+                                       + 'Localisé — vous apparaîtrez sur la carte';
+                    }
+                } else if (etat) {
+                    etat.style.color = 'var(--warning)';
+                    etat.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> '
+                                   + 'Adresse non trouvée — enregistrée quand même, '
+                                   + 'vous pourrez la corriger dans les Réglages';
+                }
+            } catch (e) {
+                if (etat) {
+                    etat.style.color = 'var(--text-muted)';
+                    etat.innerHTML = '<i class="fa-solid fa-circle-info"></i> '
+                                   + 'Localisation indisponible — sans conséquence, on continue';
+                }
+            }
+        }
+
         const ligne = { merchant_id: currentMerchantId, title: nom, color: obSelectedColor };
+        if (adresse) ligne.address = adresse;
+        if (geo)     { ligne.latitude = geo.lat; ligne.longitude = geo.lon; }
         if (obMode === 'stamps') { ligne.loyalty_mode = 'stamps'; ligne.stamps_required = 10; }
         else                     { ligne.loyalty_mode = 'points'; }
 
@@ -5811,7 +5876,8 @@
         // enregistre au moins le nom et la couleur plutôt que de bloquer.
         if (error) {
             const { error: e2 } = await supabaseClient.from('merchant_cards')
-                .upsert({ merchant_id: currentMerchantId, title: nom, color: obSelectedColor },
+                .upsert({ merchant_id: currentMerchantId, title: nom, color: obSelectedColor,
+                         ...(adresse ? { address: adresse } : {}) },
                         { onConflict: 'merchant_id' });
             if (e2) { showToast('error', 'Erreur base de données', e2.message); return; }
         }
@@ -7765,12 +7831,11 @@
         }
         const full = [addr, pc, 'France'].filter(Boolean).join(', ');
         const chip = document.getElementById('geo-status-chip');
-        if (chip) { chip.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Recherche de l\'adresse…'; chip.style.color = '#c5b8ff'; }
+        if (chip) { chip.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Recherche de l\'adresse…'; chip.style.color = 'var(--text-muted)'; }
         try {
-            const res  = await fetch('/api/geocode?q=' + encodeURIComponent(full));
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || data.found === false || !data.lat) {
-                if (chip) { chip.innerHTML = '⚠️ Adresse introuvable'; chip.style.color = '#ff8a5c'; }
+            const data = await keepoGeocode(full);
+            if (data.found === false || !data.lat) {
+                if (chip) { chip.innerHTML = '⚠️ Adresse introuvable'; chip.style.color = 'var(--warning)'; }
                 showToast('warning', 'Adresse introuvable', 'Vérifiez le numéro, la rue et la ville, puis réessayez.');
                 return;
             }
@@ -7781,11 +7846,11 @@
             const { error } = await supabaseClient.from('merchant_cards')
                 .update({ latitude: lat, longitude: lng, address: addr, updated_at: new Date().toISOString() })
                 .eq('merchant_id', currentMerchantId);
-            if (error) { showToast('error', 'Erreur', error.message); if (chip) { chip.innerHTML = '⚠️ Erreur'; chip.style.color = '#ff8a5c'; } return; }
-            if (chip) { chip.innerHTML = '<i class="fa-solid fa-check"></i> Adresse localisée'; chip.style.color = '#3ee36c'; }
+            if (error) { showToast('error', 'Erreur', error.message); if (chip) { chip.innerHTML = '⚠️ Erreur'; chip.style.color = 'var(--warning)'; } return; }
+            if (chip) { chip.innerHTML = '<i class="fa-solid fa-check"></i> Adresse localisée'; chip.style.color = 'var(--success)'; }
             showToast('success', '📍 Adresse localisée', 'Votre commerce apparaîtra dans « Découvrir » côté client.');
         } catch (e) {
-            if (chip) { chip.innerHTML = '⚠️ Erreur réseau'; chip.style.color = '#ff8a5c'; }
+            if (chip) { chip.innerHTML = '⚠️ Erreur réseau'; chip.style.color = 'var(--warning)'; }
             showToast('error', 'Localisation impossible', 'Vérifiez votre connexion et réessayez.');
         }
     }
@@ -7796,7 +7861,7 @@
             showToast('error', 'Non supporté', 'Votre navigateur ne supporte pas la géolocalisation.');
             return;
         }
-        if (chip) { chip.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localisation…'; chip.style.color = '#c5b8ff'; }
+        if (chip) { chip.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Localisation…'; chip.style.color = 'var(--text-muted)'; }
         navigator.geolocation.getCurrentPosition(
             async pos => {
                 const lat = +pos.coords.latitude.toFixed(6);
@@ -7809,10 +7874,10 @@
                     .eq('merchant_id', currentMerchantId);
                 if (error) {
                     showToast('error', 'Erreur', error.message);
-                    if (chip) { chip.innerHTML = '⚠️ Erreur'; chip.style.color = '#ff8a5c'; }
+                    if (chip) { chip.innerHTML = '⚠️ Erreur'; chip.style.color = 'var(--warning)'; }
                 } else {
                     showToast('success', '📍 Position enregistrée', `Lat: ${lat}, Lng: ${lng}`);
-                    if (chip) { chip.innerHTML = `<i class="fa-solid fa-check"></i> Localisé (${lat.toFixed(3)}, ${lng.toFixed(3)})`; chip.style.color = '#3ee36c'; }
+                    if (chip) { chip.innerHTML = `<i class="fa-solid fa-check"></i> Localisé (${lat.toFixed(3)}, ${lng.toFixed(3)})`; chip.style.color = 'var(--success)'; }
                 }
             },
             err => {
@@ -7821,7 +7886,7 @@
                 else if (err.code === 2) msg = 'Position indisponible (GPS coupé ?)';
                 else if (err.code === 3) msg = 'Délai dépassé, réessayez';
                 showToast('error', 'Géoloc', msg);
-                if (chip) { chip.innerHTML = '⚠️ ' + msg; chip.style.color = '#ff8a5c'; }
+                if (chip) { chip.innerHTML = '⚠️ ' + msg; chip.style.color = 'var(--warning)'; }
             },
             { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
