@@ -5882,6 +5882,9 @@
     // Renseigné quand le commerçant retient une suggestion : ses coordonnées
     // sont alors connues, inutile de géocoder à nouveau.
     let obAdresseChoisie = null;
+    // Identifiant de la récompense affichée à l'étape 2 quand elle existe déjà :
+    // on la met alors à jour, au lieu d'en créer une seconde à chaque passage.
+    let obRecompenseId = null;
     let obMode          = 'points';
 
     // Les pastilles sont câblées après le chargement : au moment où ce script
@@ -6218,9 +6221,21 @@
             return;
         }
 
-        const { data: creee, error } = await supabaseClient.from('rewards')
-            .insert([{ merchant_id: currentMerchantId, name: nom, points_required: cout }])
-            .select('id').single();
+        // Si la récompense existait déjà (rejeu du tutoriel), on la modifie :
+        // repasser dans les étapes ne doit pas multiplier les récompenses.
+        let creee = null, error = null;
+        if (obRecompenseId) {
+            const r = await supabaseClient.from('rewards')
+                .update({ name: nom, points_required: cout })
+                .eq('id', obRecompenseId).eq('merchant_id', currentMerchantId)
+                .select('id').maybeSingle();
+            creee = r.data; error = r.error;
+        } else {
+            const r = await supabaseClient.from('rewards')
+                .insert([{ merchant_id: currentMerchantId, name: nom, points_required: cout }])
+                .select('id').single();
+            creee = r.data; error = r.error;
+        }
         if (error) { showToast('error', 'Erreur base de données', error.message); return; }
 
         // Le taux saisi ne sert à rien s'il n'est pas enregistré.
@@ -6238,7 +6253,11 @@
                 .then(() => {}, () => {});   // colonne absente : sans conséquence ici
         }
 
-        rewardsCatalogueData.push({ id: creee?.id, name: nom, points: cout, value: '', desc: '', image: null });
+        // Le catalogue affiché suit la même règle : on remplace la ligne
+        // existante plutôt que d'en empiler une identique.
+        const dejaLa = rewardsCatalogueData.findIndex(r => r.id === (creee?.id ?? obRecompenseId));
+        if (dejaLa >= 0) Object.assign(rewardsCatalogueData[dejaLa], { name: nom, points: cout });
+        else rewardsCatalogueData.push({ id: creee?.id ?? obRecompenseId, name: nom, points: cout, value: '', desc: '', image: null });
         renderRewardsCatalogueGrid();
 
         const enseigne = document.getElementById('ob-name').value.trim();
@@ -7199,11 +7218,80 @@
 
     // Rejouer la prise en main : on lève seulement le drapeau local, sans
     // rien effacer du programme déjà configuré.
-    function supRejouerTuto() {
+    // On relit la configuration en base et on remplit les champs : le
+    // commerçant retrouve sa carte telle qu'elle est, et peut ne changer
+    // qu'une chose sans tout ressaisir.
+    async function supRejouerTuto() {
         try { localStorage.removeItem(`KEEPO_ob_done_${currentMerchantId}`); } catch (e) {}
+
+        try {
+            const { data: carte } = await supabaseClient.from('merchant_cards')
+                .select('title,color,address,latitude,longitude,points_per_euro,loyalty_mode,stamps_required')
+                .eq('merchant_id', currentMerchantId).maybeSingle();
+
+            if (carte) {
+                const nom = document.getElementById('ob-name');
+                if (nom) nom.value = carte.title || '';
+
+                if (carte.color) {
+                    obSelectedColor = carte.color;
+                    document.getElementById('ob-color').value = carte.color;
+                    const px = document.getElementById('ob-color-custom-input');
+                    if (px && /^#[0-9a-fA-F]{6}$/.test(carte.color)) px.value = carte.color;
+                    // La pastille correspondante se rallume, sinon aucune ne l'est.
+                    document.querySelectorAll('#ob-swatches .ob-sw').forEach(function (s) {
+                        s.classList.toggle('sel', s.dataset.color === carte.color);
+                    });
+                }
+
+                const adr = document.getElementById('ob-address');
+                if (adr) adr.value = carte.address || '';
+                // La position déjà connue est conservée : sans cela, réenregistrer
+                // sans retoucher l'adresse ferait disparaître le commerce de la carte.
+                if (carte.address && carte.latitude && carte.longitude) {
+                    obAdresseChoisie = { label: carte.address, lat: carte.latitude, lon: carte.longitude };
+                    const etat = document.getElementById('ob-geo');
+                    if (etat) {
+                        etat.style.display = 'flex';
+                        etat.style.color = 'var(--text-muted)';
+                        etat.innerHTML = '<i class="fa-solid fa-location-dot"></i> Adresse déjà enregistrée';
+                    }
+                }
+
+                obChoisirMode(carte.loyalty_mode === 'stamps' ? 'stamps' : 'points');
+                const taux = document.getElementById('ob-rate');
+                if (taux && carte.points_per_euro) taux.value = carte.points_per_euro;
+                if (carte.loyalty_mode === 'stamps' && carte.stamps_required) {
+                    const c = document.getElementById('ob-reward-pts');
+                    if (c) c.value = carte.stamps_required;
+                }
+            }
+
+            // La première récompense, s'il y en a une : on la modifiera plutôt
+            // que d'en ajouter une deuxième identique.
+            const { data: recs } = await supabaseClient.from('rewards')
+                .select('id,name,points_required')
+                .eq('merchant_id', currentMerchantId)
+                .order('points_required', { ascending: true }).limit(1);
+            const rec = recs && recs[0];
+            if (rec) {
+                obRecompenseId = rec.id;
+                const n = document.getElementById('ob-reward-name');
+                const p = document.getElementById('ob-reward-pts');
+                if (n) n.value = rec.name || '';
+                if (p && obMode !== 'stamps') p.value = rec.points_required || 100;
+            } else {
+                obRecompenseId = null;
+            }
+        } catch (e) {
+            console.warn('[KEEPO] Rejeu de la prise en main :', e);
+        }
+
+        obPeindreCarte();
+        obRefreshPreview();
         obGoToStep(1);
         switchPanel('view-onboarding');
-        showToast('info', 'Prise en main', 'Vos réglages actuels ne sont pas effacés.');
+        showToast('info', 'Prise en main', 'Vos réglages actuels sont repris — rien n\'est effacé.');
     }
 
     // Le lien de contact porte le contexte du compte : sans cela, le premier
