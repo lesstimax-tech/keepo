@@ -612,6 +612,97 @@
             .toast-bar { display: none; }
         }
 
+        /* ── Annonces ──────────────────────────────────────────────────
+           La fenêtre d'accueil du commerçant : nouveautés et rappels. */
+        .ann-fond { position: fixed; inset: 0; z-index: 100002; display: none;
+            align-items: center; justify-content: center; padding: 20px;
+            background: rgba(13,13,17,.5); -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px); animation: annFondIn .3s var(--ease); }
+        .ann-fond.ouvert { display: flex; }
+        @keyframes annFondIn { from { opacity: 0; } }
+
+        .ann-carte { position: relative; width: 100%; max-width: 460px; overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: 24px; box-shadow: 0 50px 90px -40px rgba(13,13,17,.5);
+            animation: annCarteIn .5s cubic-bezier(.22,1.18,.36,1) both; }
+        @keyframes annCarteIn { from { opacity: 0; transform: translateY(20px) scale(.95); } }
+
+        .ann-barre-piste { position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--glass-border); z-index: 2; }
+        #ann-barre { height: 100%; width: 100%; transform-origin: left; transform: scaleX(0);
+            background: var(--grad); }
+        @keyframes annBarre { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+        .ann-fermer { position: absolute; top: 14px; right: 14px; z-index: 3;
+            width: 34px; height: 34px; border-radius: 12px; cursor: pointer; border: none;
+            background: rgba(255,255,255,.22); color: #fff; display: grid; place-items: center;
+            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+            transition: background .25s, transform .35s var(--ease); }
+        .ann-fermer:hover { background: rgba(255,255,255,.36); transform: rotate(90deg); }
+
+        .ann-illus { height: 168px; display: grid; place-items: center; overflow: hidden;
+            background: var(--grad-soft); border-bottom: 1px solid var(--glass-border); }
+        .ann-illus svg { width: 190px; height: 140px; display: block;
+            animation: annIllus .6s var(--ease) both .1s; }
+        .ann-illus img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        @keyframes annIllus { from { opacity: 0; transform: scale(.86) translateY(10px); } }
+
+        .ann-corps { padding: 24px 26px 22px; }
+        .ann-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .ann-tag { font-size: 10.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
+            color: #fff; background: var(--grad); padding: 4px 11px; border-radius: 999px; }
+        .ann-date { font-size: 12px; color: var(--text-muted); }
+        .ann-corps h3 { font-family: Inter, sans-serif; font-size: 20px; font-weight: 750;
+            letter-spacing: -.025em; color: var(--text-main); margin: 0 0 10px; line-height: 1.25; }
+        .ann-corps p { font-size: 14.5px; line-height: 1.6; color: var(--text-sub); margin: 0; }
+        .ann-cta { margin-top: 18px; display: inline-flex; align-items: center; gap: 9px;
+            padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer;
+            background: var(--grad); color: #fff; font-family: Inter, sans-serif;
+            font-size: 14px; font-weight: 700;
+            box-shadow: 0 10px 22px -12px var(--primary-glow);
+            transition: transform .3s var(--ease); }
+        .ann-cta:hover { transform: translateY(-2px); }
+        .ann-cta i { font-size: 11px; }
+
+        .ann-pied { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 14px 22px; border-top: 1px solid var(--glass-border);
+            background: var(--bg-card-hover); }
+        #ann-points { display: flex; gap: 7px; }
+        .ann-point { position: relative; width: 7px; height: 7px; border-radius: 99px; border: none; padding: 0;
+            cursor: pointer; background: var(--glass-border-bright);
+            transition: width .35s var(--ease), background .25s; }
+        /* La pastille reste fine a l oeil, mais sa zone de clic fait 31 px :
+           7 px de haut, c est intouchable au doigt. */
+        .ann-point::after { content: ''; position: absolute; inset: -12px -6px; }
+        .ann-point.on { width: 22px; background: var(--grad); }
+        .ann-nav { display: flex; align-items: center; gap: 8px; }
+        #ann-compteur { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .ann-fleche { width: 32px; height: 32px; border-radius: 10px; cursor: pointer;
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            color: var(--text-sub); display: grid; place-items: center; font-size: 11px;
+            transition: all .25s var(--ease); }
+        .ann-fleche:hover { border-color: var(--primary-accent); color: var(--primary-accent); }
+
+        /* Pastille du 🔔 */
+        .header-notif-btn { position: relative; }
+        .notif-pastille { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px;
+            padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff;
+            font-size: 10px; font-weight: 800; font-family: Inter, sans-serif;
+            display: grid; place-items: center; border: 2px solid var(--bg-mid); }
+
+        @media (max-width: 520px) {
+            .ann-carte { max-width: 100%; border-radius: 20px; }
+            .ann-illus { height: 140px; }
+            .ann-illus svg { width: 150px; height: 112px; }
+            .ann-corps { padding: 20px 20px 18px; }
+            .ann-corps h3 { font-size: 18px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .ann-fond, .ann-carte, .ann-illus svg { animation: none; }
+            #ann-barre { animation: none !important; transform: scaleX(1); }
+        }
+
+
         /* ─── MODALS ─── */
         .popup-modal {
             position: fixed; inset: 0;
@@ -1755,7 +1846,7 @@
     </button>
     <img src="img/logo.png" alt="KEEPO" style="height:44px;flex-shrink:0;max-width:140px;object-fit:contain;">
     <span id="mob-merchant-name" style="font-family:Inter,sans-serif;font-weight:800;font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chargement...</span>
-    <div class="header-notif-btn" onclick="showToast('info','Notifications','Aucune notification en attente')">
+    <div class="header-notif-btn" title="Nouveautés" onclick="annOuvrir(true)" data-notif-bell>
         <i class="fa-solid fa-bell"></i>
     </div>
 </div>
@@ -1857,7 +1948,7 @@
             </div>
             <div class="header-right">
                 <div class="header-notif-btn" id="themeToggle" onclick="toggleMerchantTheme()" title="Changer de thème"><i class="fa-solid fa-moon"></i></div>
-                <div class="header-notif-btn" onclick="showToast('info', 'Notifications', 'Aucune notification en attente')"><i class="fa-solid fa-bell"></i></div>
+                <div class="header-notif-btn" title="Nouveautés" onclick="annOuvrir(true)" data-notif-bell><i class="fa-solid fa-bell"></i></div>
                 <span id="merchant-plan-badge" class="plan-badge">...</span>
             </div>
         </header>
@@ -3970,6 +4061,28 @@
     </main>
 </div>
 
+<!-- ═══════════ ANNONCES ═══════════ -->
+<div class="ann-fond" id="ann-fond" role="dialog" aria-modal="true" aria-label="Nouveautés KEEPO">
+    <div class="ann-carte">
+        <div class="ann-barre-piste"><div id="ann-barre"></div></div>
+        <button class="ann-fermer" id="ann-fermer" type="button" aria-label="Fermer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div id="ann-boite"></div>
+        <div class="ann-pied">
+            <div id="ann-points"></div>
+            <div class="ann-nav">
+                <span id="ann-compteur"></span>
+                <button class="ann-fleche" type="button" id="ann-prec" aria-label="Précédente">
+                    <i class="fa-solid fa-chevron-left"></i></button>
+                <button class="ann-fleche" type="button" id="ann-suiv" aria-label="Suivante">
+                    <i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- ═══════════ MODAL CLIENT ═══════════ -->
 <div class="popup-modal" id="lookupCaisseModal">
     <div class="popup-modal-box">
@@ -4064,6 +4177,269 @@
             if (bar) bar.style.animationPlayState = 'running';
         });
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ANNONCES — ce qui s'affiche à l'arrivée du commerçant.
+
+       POUR EN AJOUTER UNE : une entrée en tête de KEEPO_ANNONCES, avec un
+       `id` jamais réutilisé. Les commerçants qui ne l'ont pas encore vue la
+       verront à leur prochaine connexion ; les autres ne sont pas dérangés.
+
+       Champs : id, date, tag, illus (voir ILLUSTRATIONS), titre, texte,
+       et action facultative { label, panel } ou { label, href }.
+       ═══════════════════════════════════════════════════════════════ */
+    const KEEPO_ANNONCES = [
+        {
+            id: 'assistant-agit-2026-08',
+            date: '2026-08-25',
+            tag: 'Nouveau',
+            illus: 'ia',
+            titre: "L'assistant fait le travail à votre place",
+            texte: "Demandez-lui de créer une récompense, de changer votre taux de points ou "
+                 + "d'ajouter un caissier : il le fait vraiment, il ne se contente plus d'expliquer. "
+                 + "La bulle en bas à droite, sur n'importe quelle page.",
+        },
+        {
+            id: 'carte-decouverte-2026-08',
+            date: '2026-08-25',
+            tag: 'Nouveau',
+            illus: 'localisation',
+            titre: 'Vos voisins peuvent vous trouver',
+            texte: "Renseignez l'adresse de votre commerce et vous apparaissez sur la carte "
+                 + "« Autour de moi » de l'application. Les clients KEEPO du quartier vous "
+                 + "découvrent, même sans vous connaître.",
+            action: { label: 'Renseigner mon adresse', panel: 'view-settings' },
+        },
+        {
+            id: 'parrainage-rappel-2026-08',
+            date: '2026-08-20',
+            tag: 'Rappel',
+            illus: 'parrainage',
+            titre: 'Vos clients peuvent vous en amener d’autres',
+            texte: "Chaque client dispose d'un code de parrainage. Quand un proche l'utilise, "
+                 + "tous les deux gagnent des points — et vous, un nouveau client qui vous a été "
+                 + "recommandé. Le montant du bonus se règle dans vos paramètres.",
+            action: { label: 'Voir le parrainage', panel: 'view-parrainage' },
+        },
+        {
+            id: 'studio-tampons-2026-08',
+            date: '2026-08-18',
+            tag: 'Amélioration',
+            illus: 'carte',
+            titre: 'La carte à tampons est arrivée dans le Studio',
+            texte: "Si votre programme fonctionne au tampon, le Studio vous laisse désormais "
+                 + "choisir l'icône, la taille, l'espacement et les couleurs. Et l'aperçu montre "
+                 + "exactement ce que verront vos clients, au pixel près.",
+            action: { label: 'Ouvrir le Studio', panel: 'view-studio' },
+        },
+    ];
+
+    /* Illustrations : des SVG en ligne plutôt que des fichiers. Rien à
+       déployer, rien qui puisse manquer, et elles suivent le thème. */
+    const ILLUSTRATIONS = {
+        ia: '<svg viewBox="0 0 120 90" fill="none">'
+          + '<path d="M42 20l5.5 15L63 40.5 47.5 46 42 61l-5.5-15L21 40.5 36.5 35z" fill="url(#g1)"/>'
+          + '<path d="M82 14l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="url(#g1)" opacity=".75"/>'
+          + '<path d="M78 56l2.5 7 7 2.5-7 2.5-2.5 7-2.5-7-7-2.5 7-2.5z" fill="url(#g1)" opacity=".5"/>'
+          + '<defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">'
+          + '<stop stop-color="#5A32A0"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs></svg>',
+
+        localisation: '<svg viewBox="0 0 120 90" fill="none">'
+          + '<path d="M22 26l24-9 28 9 24-9v50l-24 9-28-9-24 9z" fill="url(#g2)" opacity=".18"/>'
+          + '<path d="M46 17v50M74 26v50" stroke="url(#g2)" stroke-width="2" opacity=".45"/>'
+          + '<path d="M60 22c-8.8 0-16 7.2-16 16 0 12 16 28 16 28s16-16 16-28c0-8.8-7.2-16-16-16z" fill="url(#g2)"/>'
+          + '<circle cx="60" cy="38" r="6" fill="#fff"/>'
+          + '<defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">'
+          + '<stop stop-color="#5A32A0"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs></svg>',
+
+        parrainage: '<svg viewBox="0 0 120 90" fill="none">'
+          + '<circle cx="34" cy="34" r="13" fill="url(#g3)"/>'
+          + '<path d="M14 68c0-11 9-19 20-19s20 8 20 19z" fill="url(#g3)"/>'
+          + '<circle cx="88" cy="38" r="11" fill="url(#g3)" opacity=".55"/>'
+          + '<path d="M71 68c0-9.4 7.6-17 17-17s17 7.6 17 17z" fill="url(#g3)" opacity=".55"/>'
+          + '<path d="M56 40h10m0 0l-4-4m4 4l-4 4" stroke="url(#g3)" stroke-width="2.6" '
+          + 'stroke-linecap="round" stroke-linejoin="round"/>'
+          + '<defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">'
+          + '<stop stop-color="#5A32A0"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs></svg>',
+
+        carte: '<svg viewBox="0 0 120 90" fill="none">'
+          + '<rect x="22" y="22" width="76" height="47" rx="8" fill="url(#g4)"/>'
+          + '<rect x="30" y="31" width="18" height="13" rx="3" fill="#fff" opacity=".55"/>'
+          + '<circle cx="36" cy="57" r="4.5" fill="#fff"/><circle cx="49" cy="57" r="4.5" fill="#fff"/>'
+          + '<circle cx="62" cy="57" r="4.5" fill="#fff" opacity=".45"/>'
+          + '<circle cx="75" cy="57" r="4.5" fill="#fff" opacity=".45"/>'
+          + '<rect x="66" y="31" width="24" height="6" rx="3" fill="#fff" opacity=".7"/>'
+          + '<defs><linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">'
+          + '<stop stop-color="#5A32A0"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs></svg>',
+
+        nouveau: '<svg viewBox="0 0 120 90" fill="none">'
+          + '<path d="M60 16l7 20 21 1-16.5 13 6 20L60 58l-17.5 12 6-20L32 37l21-1z" fill="url(#g5)"/>'
+          + '<defs><linearGradient id="g5" x1="0" y1="0" x2="1" y2="1">'
+          + '<stop stop-color="#5A32A0"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs></svg>',
+    };
+
+    const ANNONCE_DUREE = 7000;          // défilement automatique
+    let annVues = [], annIndex = 0, annMinuteur = null, annEnPause = false;
+
+    function annCle() { return 'KEEPO_annonces_vues_' + (currentMerchantId || 'anon'); }
+
+    function annLues() {
+        try { return JSON.parse(localStorage.getItem(annCle()) || '[]'); } catch (e) { return []; }
+    }
+    function annMarquerLues(ids) {
+        try {
+            const set = new Set(annLues().concat(ids));
+            localStorage.setItem(annCle(), JSON.stringify([...set].slice(-80)));
+        } catch (e) {}
+        annRafraichirPastille();
+    }
+
+    // Pastille du 🔔 : le nombre d'annonces jamais vues.
+    function annRafraichirPastille() {
+        const lues = annLues();
+        const n = KEEPO_ANNONCES.filter(a => !lues.includes(a.id)).length;
+        document.querySelectorAll('.header-notif-btn .notif-pastille').forEach(e => e.remove());
+        if (!n) return;
+        document.querySelectorAll('[data-notif-bell]').forEach(b => {
+            const p = document.createElement('span');
+            p.className = 'notif-pastille';
+            p.textContent = n > 9 ? '9+' : String(n);
+            b.appendChild(p);
+        });
+    }
+
+    function annPeindre() {
+        const a = annVues[annIndex];
+        if (!a) return;
+        const boite = document.getElementById('ann-boite');
+        const dateFr = new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR',
+                        { day: 'numeric', month: 'long', year: 'numeric' });
+
+        boite.innerHTML =
+            '<div class="ann-illus">' + (a.image
+                ? '<img src="' + escapeHtml(a.image) + '" alt="">'
+                : (ILLUSTRATIONS[a.illus] || ILLUSTRATIONS.nouveau)) + '</div>'
+          + '<div class="ann-corps">'
+          +   '<div class="ann-meta"><span class="ann-tag">' + escapeHtml(a.tag || 'Nouveau') + '</span>'
+          +   '<span class="ann-date">' + escapeHtml(dateFr) + '</span></div>'
+          +   '<h3>' + escapeHtml(a.titre) + '</h3>'
+          +   '<p>' + escapeHtml(a.texte) + '</p>'
+          +   (a.action ? '<button class="ann-cta" type="button" data-action="1">'
+                        + escapeHtml(a.action.label) + ' <i class="fa-solid fa-arrow-right"></i></button>' : '')
+          + '</div>';
+
+        const cta = boite.querySelector('[data-action]');
+        if (cta) cta.onclick = () => {
+            const act = a.action;
+            annFermer();
+            if (act.panel) switchPanel(act.panel);
+            else if (act.href) window.open(act.href, '_blank', 'noopener');
+        };
+
+        // Pastilles de navigation
+        const piste = document.getElementById('ann-points');
+        piste.innerHTML = annVues.map((_, i) =>
+            '<button type="button" class="ann-point' + (i === annIndex ? ' on' : '') + '"'
+          + ' data-i="' + i + '" aria-label="Annonce ' + (i + 1) + '"></button>').join('');
+        piste.querySelectorAll('.ann-point').forEach(p => {
+            p.onclick = () => { annAller(Number(p.dataset.i), true); };
+        });
+
+        const compteur = document.getElementById('ann-compteur');
+        if (compteur) compteur.textContent = (annIndex + 1) + ' / ' + annVues.length;
+
+        // La barre de progression repart à chaque annonce
+        const barre = document.getElementById('ann-barre');
+        if (barre) {
+            barre.style.animation = 'none';
+            void barre.offsetWidth;                       // force le redémarrage
+            barre.style.animation = annVues.length > 1 && !annEnPause
+                ? 'annBarre ' + ANNONCE_DUREE + 'ms linear forwards' : 'none';
+        }
+    }
+
+    function annAller(i, manuel) {
+        annIndex = (i + annVues.length) % annVues.length;
+        annPeindre();
+        if (manuel) annRelancer();
+    }
+
+    function annRelancer() {
+        clearTimeout(annMinuteur);
+        if (annVues.length < 2 || annEnPause) return;
+        annMinuteur = setTimeout(() => annAller(annIndex + 1), ANNONCE_DUREE);
+    }
+
+    function annOuvrir(toutes) {
+        const lues = annLues();
+        annVues = toutes ? KEEPO_ANNONCES.slice()
+                         : KEEPO_ANNONCES.filter(a => !lues.includes(a.id));
+        if (!annVues.length) {
+            showToast('info', 'Rien de neuf', 'Vous êtes à jour sur les nouveautés KEEPO.');
+            return;
+        }
+        annIndex = 0; annEnPause = false;
+        const fond = document.getElementById('ann-fond');
+        fond.classList.add('ouvert');
+        annPeindre();
+        annRelancer();
+        document.getElementById('ann-fermer')?.focus();
+    }
+
+    function annFermer() {
+        clearTimeout(annMinuteur);
+        // Tout ce qui a été présenté est considéré comme vu : on ne represente
+        // pas la même annonce à chaque connexion.
+        annMarquerLues(annVues.map(a => a.id));
+        document.getElementById('ann-fond')?.classList.remove('ouvert');
+    }
+
+    // Affichage à l'arrivée : uniquement s'il y a du neuf, et jamais par-dessus
+    // la prise en main — un nouveau commerçant a autre chose à faire.
+    function annAuDemarrage() {
+        annRafraichirPastille();
+        const enTuto = document.getElementById('view-onboarding')?.classList.contains('active');
+        if (enTuto) return;
+        const lues = annLues();
+        if (!KEEPO_ANNONCES.some(a => !lues.includes(a.id))) return;
+        setTimeout(() => annOuvrir(false), 900);   // on laisse le tableau de bord s'afficher
+    }
+
+
+    // Commandes de la fenêtre d'annonces.
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('ann-fermer')?.addEventListener('click', annFermer);
+        document.getElementById('ann-prec')?.addEventListener('click', () => annAller(annIndex - 1, true));
+        document.getElementById('ann-suiv')?.addEventListener('click', () => annAller(annIndex + 1, true));
+        // Cliquer à côté ferme, comme partout ailleurs.
+        document.getElementById('ann-fond')?.addEventListener('click', function (e) {
+            if (e.target === this) annFermer();
+        });
+        // Le survol suspend le défilement : on ne veut pas que ça change
+        // pendant qu'on lit.
+        const carte = document.querySelector('.ann-carte');
+        if (carte) {
+            carte.addEventListener('mouseenter', function () {
+                annEnPause = true; clearTimeout(annMinuteur);
+                const b = document.getElementById('ann-barre');
+                if (b) b.style.animationPlayState = 'paused';
+            });
+            carte.addEventListener('mouseleave', function () {
+                annEnPause = false;
+                const b = document.getElementById('ann-barre');
+                if (b) b.style.animationPlayState = 'running';
+                annRelancer();
+            });
+        }
+        document.addEventListener('keydown', function (e) {
+            if (!document.getElementById('ann-fond')?.classList.contains('ouvert')) return;
+            if (e.key === 'Escape')     annFermer();
+            if (e.key === 'ArrowRight') annAller(annIndex + 1, true);
+            if (e.key === 'ArrowLeft')  annAller(annIndex - 1, true);
+        });
+        annRafraichirPastille();
+    });
+
 
     // ─── TAB HELPER ───
     function selectTab(btn, group) {
@@ -4174,6 +4550,7 @@
 
             refreshDashboardCloudCounters();
             initAiChat();
+            annAuDemarrage();
         }
     });
 
