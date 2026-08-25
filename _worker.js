@@ -1562,6 +1562,18 @@ function melangeMail(hex, ratio) {
   return '#' + [0, 2, 4].map(i => m(i).toString(16).padStart(2, '0')).join('');
 }
 
+// « de » + nom du commerce : la langue veut une contraction quand le nom
+// commence par un article. « de Le Bistrot » se dit « du Bistrot ».
+function deCommerce(nom) {
+  const n = String(nom || '').trim();
+  if (/^les\s+/i.test(n))  return 'des ' + n.slice(4);
+  if (/^le\s+/i.test(n))   return 'du '  + n.slice(3);
+  if (/^la\s+/i.test(n))   return 'de la ' + n.slice(3);
+  if (/^l['’]/i.test(n))    return "de " + n;
+  if (/^[aeiouâàéèêîôûhAEIOUÂÀÉÈÊÎÔÛH]/.test(n)) return 'd’' + n;
+  return 'de ' + n;
+}
+
 function paragraphesMail(texte) {
   return String(texte).split(/\n\n+/)
     .map(p => `<p style="margin:0 0 14px 0;">${linkifyMail(escapeHtmlMail(p)).replace(/\n/g, '<br>')}</p>`)
@@ -1652,8 +1664,8 @@ function buildEmailMerchant({ bodyText, merchantName, merchantId, merchantColor,
   </td></tr>`;
 
   const pied = `<tr><td style="padding:20px 40px 26px;background:#FAFAFB;border-top:1px solid #EFEFF4;text-align:center;font-family:${MAIL_POLICE};font-size:11.5px;line-height:1.65;color:#9A9AA6;">
-    Vous recevez ce message parce que vous êtes membre du programme de fidélité de
-    <strong style="color:#6B6B7B;">${nom}</strong>.<br>
+    Vous recevez ce message parce que vous êtes membre du programme de fidélité
+    <strong style="color:#6B6B7B;">${escapeHtmlMail(deCommerce(merchantName || 'votre commerce'))}</strong>.<br>
     <span style="color:#B4B4BE;">Envoyé avec <a href="https://keepo.eu" style="color:#B4B4BE;text-decoration:none;">KEEPO</a></span>
   </td></tr>`;
 

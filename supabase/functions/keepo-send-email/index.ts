@@ -69,6 +69,18 @@ const MAIL_POLICE = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto," +
 
 // Une couleur venant de la base ne doit jamais atterrir telle quelle dans un
 // attribut de style : on n'accepte que la notation hexadécimale.
+// « de » + nom du commerce : la langue veut une contraction quand le nom
+// commence par un article. « de Le Bistrot » se dit « du Bistrot ».
+function deCommerce(nom: string): string {
+  const n = String(nom || '').trim();
+  if (/^less+/i.test(n)) return 'des ' + n.slice(4);
+  if (/^les+/i.test(n))  return 'du ' + n.slice(3);
+  if (/^las+/i.test(n))  return 'de la ' + n.slice(3);
+  if (/^l['’]/i.test(n)) return 'de ' + n;
+  if (/^[aeiouâàéèêîôûhAEIOUÂÀÉÈÊÎÔÛH]/.test(n)) return 'd’' + n;
+  return 'de ' + n;
+}
+
 function couleurMail(c: string | null | undefined, defaut: string): string {
   return /^#[0-9a-fA-F]{6}$/.test(String(c ?? '')) ? String(c) : defaut;
 }
@@ -118,8 +130,8 @@ function buildEmailHtml(
       ${bodyHtml}
     </td></tr>
     <tr><td style="padding:20px 40px 26px;background:#FAFAFB;border-top:1px solid #EFEFF4;text-align:center;font-family:${MAIL_POLICE};font-size:11.5px;line-height:1.65;color:#9A9AA6;">
-      Vous recevez ce message parce que vous êtes membre du programme de fidélité de
-      <strong style="color:#6B6B7B;">${nom}</strong>.<br>
+      Vous recevez ce message parce que vous êtes membre du programme de fidélité
+      <strong style="color:#6B6B7B;">${deCommerce(nom)}</strong>.<br>
       <span style="color:#B4B4BE;">Envoyé avec <a href="https://keepo.eu" style="color:#B4B4BE;text-decoration:none;">KEEPO</a></span>
     </td></tr>
   </table>
