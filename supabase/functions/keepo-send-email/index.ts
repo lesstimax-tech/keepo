@@ -39,6 +39,14 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // de test Resend (onboarding@resend.dev) — utile pour valider le pipeline.
 const FROM_EMAIL       = Deno.env.get('RESEND_FROM') ?? 'KEEPO <onboarding@resend.dev>';
 
+// Reprend l'adresse configurée mais remplace le nom affiché par celui du
+// commerce : « Le Bistrot de Marie <contact@keepo.eu> ».
+function expediteurCommercant(enseigne: string): string {
+  const adresse = FROM_EMAIL.match(/<([^>]+)>/)?.[1] ?? FROM_EMAIL;
+  const nom = String(enseigne || 'KEEPO').replace(/["<>\r\n]/g, '').trim() || 'KEEPO';
+  return `${nom} <${adresse}>`;
+}
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -56,48 +64,67 @@ function textToHtml(text: string): string {
     .join('\n');
 }
 
-function buildEmailHtml(bodyText: string, merchantName: string): string {
+const MAIL_POLICE = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto," +
+  "'Helvetica Neue',Helvetica,Arial,sans-serif";
+
+// Une couleur venant de la base ne doit jamais atterrir telle quelle dans un
+// attribut de style : on n'accepte que la notation hexadécimale.
+function couleurMail(c: string | null | undefined, defaut: string): string {
+  return /^#[0-9a-fA-F]{6}$/.test(String(c ?? '')) ? String(c) : defaut;
+}
+// Éclaircit une couleur pour en faire un fond de bandeau lisible.
+function melangeMail(hex: string, ratio: number): string {
+  const h = hex.replace('#', '');
+  const m = (i: number) =>
+    Math.round(parseInt(h.substr(i, 2), 16) * (1 - ratio) + 255 * ratio);
+  return '#' + [0, 2, 4].map(i => m(i).toString(16).padStart(2, '0')).join('');
+}
+
+// Le client reçoit un message de SON commerçant : c'est sa marque qui doit
+// s'afficher — son logo, son nom, sa couleur. KEEPO ne prend qu'une ligne
+// en pied de page.
+function buildEmailHtml(
+  bodyText: string,
+  merchantName: string,
+  merchantId?: string,
+  merchantColor?: string,
+): string {
   const bodyHtml = textToHtml(bodyText);
+  const nom      = merchantName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const accent   = couleurMail(merchantColor, '#4B45A6');
+  const bandeau  = melangeMail(accent, 0.90);
+  const logo     = merchantId
+    ? `https://keepo.eu/logo/${encodeURIComponent(merchantId)}`
+    : 'https://keepo.eu/img/logo.png';
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Message de ${merchantName}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Message de ${nom}</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f7;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f7;padding:32px 16px;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" border="0"
-             style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
-        <!-- Header -->
-        <tr>
-          <td style="background:linear-gradient(135deg,#7c3aed 0%,#00e8cc 100%);padding:28px 32px;text-align:center;">
-            <div style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;font-family:Arial,sans-serif;">
-              KEEPO
-            </div>
-            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:4px;letter-spacing:0.5px;">
-              PROGRAMME DE FIDÉLITÉ DIGITAL
-            </div>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr>
-          <td style="padding:32px 36px;color:#333333;font-size:15px;line-height:1.7;">
-            ${bodyHtml}
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="padding:16px 36px 24px;background:#f8f8fb;font-size:11px;color:#aaaaaa;text-align:center;border-top:1px solid #eeeeee;">
-            Vous recevez cet e-mail car vous êtes membre du programme de fidélité
-            <strong style="color:#888888;">${merchantName}</strong> via KEEPO.<br>
-            <span style="color:#cccccc;">KEEPO — Plateforme de fidélité digitale française</span>
-          </td>
-        </tr>
-      </table>
+<body style="margin:0;padding:0;background:#F2F2F6;font-family:${MAIL_POLICE};-webkit-font-smoothing:antialiased;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F2F2F6;padding:36px 14px;">
+<tr><td align="center">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#FFFFFF;border-radius:20px;overflow:hidden;border:1px solid #E9E9EF;">
+    <tr><td align="center" bgcolor="${bandeau}" style="background:${bandeau};padding:36px 32px 30px;border-bottom:3px solid ${accent};">
+      <img src="${logo}" width="76" height="76" alt="${nom}" style="display:block;margin:0 auto 16px;border-radius:18px;border:0;outline:none;background:#FFFFFF;">
+      <div style="font-family:${MAIL_POLICE};font-size:27px;line-height:1.2;font-weight:700;color:#14141B;letter-spacing:-0.6px;">${nom}</div>
+      <div style="font-family:${MAIL_POLICE};font-size:11.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:${accent};margin-top:8px;">Votre carte de fidélité</div>
+    </td></tr>
+    <tr><td style="padding:34px 40px 30px;color:#33333D;font-size:15.5px;line-height:1.72;font-family:${MAIL_POLICE};">
+      ${bodyHtml}
+    </td></tr>
+    <tr><td style="padding:20px 40px 26px;background:#FAFAFB;border-top:1px solid #EFEFF4;text-align:center;font-family:${MAIL_POLICE};font-size:11.5px;line-height:1.65;color:#9A9AA6;">
+      Vous recevez ce message parce que vous êtes membre du programme de fidélité de
+      <strong style="color:#6B6B7B;">${nom}</strong>.<br>
+      <span style="color:#B4B4BE;">Envoyé avec <a href="https://keepo.eu" style="color:#B4B4BE;text-decoration:none;">KEEPO</a></span>
     </td></tr>
   </table>
+</td></tr>
+</table>
 </body>
 </html>`;
 }
@@ -140,6 +167,14 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
+    // Sa couleur de marque, pour habiller l en-tete du message.
+    let merchant_color: string | null = null;
+    try {
+      const { data: carte } = await supabase.from('merchant_cards')
+        .select('color').eq('merchant_id', merchant_id).maybeSingle();
+      merchant_color = carte?.color ?? null;
+    } catch (_) { /* sans couleur, le gabarit prend le violet KEEPO */ }
+
     let sent = 0;
     let failed = 0;
     const errors: string[] = [];
@@ -149,7 +184,7 @@ Deno.serve(async (req) => {
       const enseigne      = String(merchant_name || 'votre enseigne');
       const finalSubject  = subjectTemplate.replace(/\[Client\]/gi, clientName).replace(/\[Enseigne\]/gi, enseigne);
       const finalBody     = body_template.replace(/\[Client\]/gi, clientName).replace(/\[Enseigne\]/gi, enseigne);
-      const htmlBody      = buildEmailHtml(finalBody, enseigne);
+      const htmlBody      = buildEmailHtml(finalBody, enseigne, merchant_id, merchant_color ?? undefined);
 
       const resendRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -158,7 +193,8 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from:    FROM_EMAIL,
+          // Le client doit voir le nom de SON commerce dans sa boîte, pas KEEPO.
+          from:    expediteurCommercant(enseigne),
           to:      [recipient.email],
           subject: finalSubject,
           html:    htmlBody,

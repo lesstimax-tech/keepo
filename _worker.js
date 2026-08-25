@@ -1518,59 +1518,158 @@ function merchantSender(merchantName, env) {
   return `${safe} <${resendFromAddress(env)}>`;
 }
 
-// ── Gabarit e-mail aux couleurs du commerce (logo + nom) ──
+/* ════════════════════════════════════════════════════════════════
+   GABARITS D'E-MAIL
+
+   Deux identités, volontairement distinctes :
+
+   • KEEPO  — messages de service (code, mot de passe, confirmation).
+     C'est nous qui écrivons : logo KEEPO, dégradé de la marque.
+
+   • COMMERÇANT — messages envoyés à SES clients. C'est lui qui écrit :
+     son nom en grand, son logo, SA couleur. KEEPO n'apparaît qu'en une
+     ligne discrète en pied, comme il se doit.
+
+   Contraintes du courriel, respectées ici : tableaux et non flexbox,
+   styles en ligne et non feuille externe, aucune police téléchargée
+   (Gmail les supprime) — on s'appuie sur la pile système, bien plus
+   fine qu'Arial sur tous les appareils modernes.
+   ════════════════════════════════════════════════════════════════ */
+
+const MAIL_POLICE = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,"
+                  + "'Helvetica Neue',Helvetica,Arial,sans-serif";
+
 function escapeHtmlMail(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 function linkifyMail(escaped) {
   return escaped.replace(/(https?:\/\/[^\s<]+)/g,
-    '<a href="$1" style="color:#0E7C8C;font-weight:bold;">$1</a>');
+    '<a href="$1" style="color:#4B45A6;text-decoration:underline;">$1</a>');
 }
-function buildBrandedEmailHtml({ bodyText, merchantName, merchantId, ctaUrl, ctaLabel }) {
-  const safeName = escapeHtmlMail(merchantName || 'Votre commerce');
-  const logoUrl  = `https://keepo.eu/logo/${merchantId}`;
-  const htmlBody = String(bodyText).split(/\n\n+/)
-    .map(p => `<p style="margin:0 0 12px 0;">${linkifyMail(escapeHtmlMail(p)).replace(/\n/g, '<br>')}</p>`)
+
+// Une couleur venant de la base ne doit jamais atterrir telle quelle dans un
+// attribut de style : on n'accepte que la notation hexadécimale.
+function couleurMail(c, defaut) {
+  return /^#[0-9a-fA-F]{6}$/.test(String(c || '')) ? String(c) : defaut;
+}
+
+// Éclaircit une couleur pour en faire un fond de bandeau lisible.
+function melangeMail(hex, ratio) {
+  const h = String(hex).replace('#', '');
+  const m = (i) => Math.round(parseInt(h.substr(i, 2), 16) * (1 - ratio) + 255 * ratio);
+  return '#' + [0, 2, 4].map(i => m(i).toString(16).padStart(2, '0')).join('');
+}
+
+function paragraphesMail(texte) {
+  return String(texte).split(/\n\n+/)
+    .map(p => `<p style="margin:0 0 14px 0;">${linkifyMail(escapeHtmlMail(p)).replace(/\n/g, '<br>')}</p>`)
     .join('\n');
-  const ctaBlock = ctaUrl
-    ? `<table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:8px auto 18px;"><tr><td style="border-radius:50px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);background-color:#5B3AA0;">
-         <a href="${ctaUrl}" style="display:inline-block;padding:14px 34px;color:#ffffff;font-weight:bold;font-size:15px;text-decoration:none;border-radius:50px;">${escapeHtmlMail(ctaLabel || 'Découvrir')}</a>
-       </td></tr></table>`
-    : '';
+}
+
+function boutonMail(url, label, couleur) {
+  if (!url) return '';
+  return `<table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:22px auto 6px;">
+  <tr><td align="center" bgcolor="${couleur}" style="border-radius:12px;">
+    <a href="${url}" style="display:inline-block;padding:15px 34px;color:#ffffff;font-family:${MAIL_POLICE};font-size:15.5px;font-weight:600;text-decoration:none;border-radius:12px;">${escapeHtmlMail(label)}</a>
+  </td></tr></table>`;
+}
+
+/* Coquille commune : fond, carte centrée, largeur maîtrisée. */
+function coquilleMail({ titre, entete, corps, pied }) {
   return `<!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F4F4F8;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F4F8;padding:32px 16px;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" border="0"
-             style="background:#ffffff;border-radius:18px;overflow:hidden;max-width:600px;box-shadow:0 4px 24px rgba(20,20,27,0.07);">
-        <tr>
-          <td style="padding:30px 36px 22px;text-align:center;border-bottom:1px solid #EFEFF4;">
-            <img src="${logoUrl}" width="62" height="62" alt="${safeName}"
-                 style="border-radius:16px;display:inline-block;object-fit:cover;">
-            <div style="font-size:22px;font-weight:900;color:#14141B;margin-top:12px;letter-spacing:-0.3px;">${safeName}</div>
-            <div style="color:#8C8A9E;font-size:11px;margin-top:3px;letter-spacing:1px;text-transform:uppercase;">Programme de fidélité</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:30px 36px 18px;color:#34333F;font-size:15px;line-height:1.7;">
-            ${htmlBody}
-            ${ctaBlock}
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:16px 36px 22px;background:#FAFAFC;font-size:11px;color:#A6A4B2;text-align:center;border-top:1px solid #EFEFF4;">
-            Vous recevez cet e-mail car vous êtes membre du programme de fidélité de
-            <strong style="color:#6B6A78;">${safeName}</strong>, propulsé par <a href="https://keepo.eu" style="color:#0E7C8C;text-decoration:none;font-weight:bold;">KEEPO</a>.
-          </td>
-        </tr>
-      </table>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>${escapeHtmlMail(titre)}</title>
+</head>
+<body style="margin:0;padding:0;background:#F2F2F6;font-family:${MAIL_POLICE};-webkit-font-smoothing:antialiased;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtmlMail(titre)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F2F2F6;padding:36px 14px;">
+<tr><td align="center">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#FFFFFF;border-radius:20px;overflow:hidden;border:1px solid #E9E9EF;">
+    ${entete}
+    <tr><td style="padding:34px 40px 30px;color:#33333D;font-size:15.5px;line-height:1.72;font-family:${MAIL_POLICE};">
+      ${corps}
     </td></tr>
+    ${pied}
   </table>
+</td></tr>
+</table>
 </body>
 </html>`;
 }
+
+/* ── Message de KEEPO : code, mot de passe, confirmation ──
+   Ici, la marque assume : logo et dégradé du logo. */
+function buildEmailKeepo({ titre, bodyText, ctaUrl, ctaLabel, note }) {
+  const entete = `<tr><td align="center" style="padding:38px 32px 26px;background:#FFFFFF;">
+    <img src="https://keepo.eu/img/logo.png" width="60" height="60" alt="KEEPO" style="display:block;border:0;outline:none;border-radius:15px;">
+  </td></tr>
+  <tr><td style="padding:0;line-height:0;font-size:0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td height="3" bgcolor="#4B45A6" style="height:3px;line-height:3px;font-size:0;background:#4B45A6;background-image:linear-gradient(90deg,#5A32A0 0%,#3F63A4 52%,#1FA5A8 100%);">&nbsp;</td></tr>
+    </table>
+  </td></tr>
+  ${titre ? `<tr><td style="padding:30px 40px 0;">
+    <h1 style="margin:0;font-family:${MAIL_POLICE};font-size:23px;line-height:1.3;font-weight:700;color:#0D0D11;letter-spacing:-0.4px;">${escapeHtmlMail(titre)}</h1>
+  </td></tr>` : ''}`;
+
+  const pied = `<tr><td style="padding:20px 40px 26px;background:#FAFAFB;border-top:1px solid #EFEFF4;text-align:center;font-family:${MAIL_POLICE};font-size:12px;line-height:1.6;color:#8E8E98;">
+    ${note ? escapeHtmlMail(note) + '<br><br>' : ''}
+    <a href="https://keepo.eu" style="color:#4B45A6;text-decoration:none;font-weight:600;">KEEPO</a>
+    &nbsp;·&nbsp; Le programme de fidélité des commerces de proximité
+  </td></tr>`;
+
+  return coquilleMail({
+    titre: titre || 'KEEPO',
+    entete,
+    corps: paragraphesMail(bodyText) + boutonMail(ctaUrl, ctaLabel || 'Continuer', '#4B45A6'),
+    pied,
+  });
+}
+
+/* ── Message d'un commerçant à ses clients ──
+   C'est SA marque : son logo, son nom en grand, sa couleur. KEEPO se
+   contente d'une mention en pied — le client est chez son commerçant. */
+function buildEmailMerchant({ bodyText, merchantName, merchantId, merchantColor, ctaUrl, ctaLabel }) {
+  const nom     = escapeHtmlMail(merchantName || 'Votre commerce');
+  const accent  = couleurMail(merchantColor, '#4B45A6');
+  const bandeau = melangeMail(accent, 0.90);
+  const logo    = `https://keepo.eu/logo/${encodeURIComponent(merchantId)}`;
+
+  const entete = `<tr><td style="padding:0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${bandeau}" style="background:${bandeau};">
+      <tr><td align="center" style="padding:36px 32px 30px;border-bottom:3px solid ${accent};">
+        <img src="${logo}" width="76" height="76" alt="${nom}" style="display:block;margin:0 auto 16px;border-radius:18px;border:0;outline:none;background:#FFFFFF;">
+        <div style="font-family:${MAIL_POLICE};font-size:27px;line-height:1.2;font-weight:700;color:#14141B;letter-spacing:-0.6px;">${nom}</div>
+        <div style="font-family:${MAIL_POLICE};font-size:11.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:${accent};margin-top:8px;">Votre carte de fidélité</div>
+      </td></tr>
+    </table>
+  </td></tr>`;
+
+  const pied = `<tr><td style="padding:20px 40px 26px;background:#FAFAFB;border-top:1px solid #EFEFF4;text-align:center;font-family:${MAIL_POLICE};font-size:11.5px;line-height:1.65;color:#9A9AA6;">
+    Vous recevez ce message parce que vous êtes membre du programme de fidélité de
+    <strong style="color:#6B6B7B;">${nom}</strong>.<br>
+    <span style="color:#B4B4BE;">Envoyé avec <a href="https://keepo.eu" style="color:#B4B4BE;text-decoration:none;">KEEPO</a></span>
+  </td></tr>`;
+
+  return coquilleMail({
+    titre: `Message de ${merchantName || 'votre commerce'}`,
+    entete,
+    corps: paragraphesMail(bodyText) + boutonMail(ctaUrl, ctaLabel, accent),
+    pied,
+  });
+}
+
+// Conservé pour les appels existants : redirige vers le gabarit commerçant.
+function buildBrandedEmailHtml(opts) {
+  return buildEmailMerchant(opts);
+}
+
 
 async function handleSendCampaign(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
@@ -1653,11 +1752,13 @@ async function handleSendCampaign(request, env) {
 
   // ── 4. Nom du commerce ──
   const mcRes = await fetch(
-    `${SUPA_URL}/rest/v1/merchant_cards?merchant_id=eq.${merchantId}&select=title`,
+    `${SUPA_URL}/rest/v1/merchant_cards?merchant_id=eq.${merchantId}&select=title,color`,
     { headers: supaHeaders }
   );
   const mcData = mcRes.ok ? await mcRes.json() : [];
   const merchantName = mcData[0]?.title || 'Votre commerce';
+  // Sa couleur de marque : c'est SON message, pas celui de KEEPO.
+  const merchantColor = mcData[0]?.color || null;
 
   // ── 5. Envoi via Resend ──
   let sent = 0, failed = 0;
@@ -1680,7 +1781,7 @@ async function handleSendCampaign(request, env) {
           to      : [profile.email],
           subject,
           text    : personalBody,
-          html    : buildBrandedEmailHtml({ bodyText: personalBody, merchantName, merchantId }),
+          html    : buildEmailMerchant({ bodyText: personalBody, merchantName, merchantId, merchantColor }),
         })
       });
       if (r.ok) {
