@@ -6561,6 +6561,10 @@
         try { if (typeof loadRewardsFromDB === 'function') loadRewardsFromDB(); } catch (e) {}
         try { if (typeof loadSettingsFromCard === 'function') loadSettingsFromCard(); } catch (e) {}
         try { if (typeof refreshDashboardCloudCounters === 'function') refreshDashboardCloudCounters(); } catch (e) {}
+        // L assistant touche desormais a toutes les sections : on recharge
+        // celles qui sont chargees, sans se soucier de l ecran affiche.
+        ['loadEvents','loadCashiers','loadBoutiques','loadNotificationsFromDB']
+            .forEach(function (fn) { try { if (typeof window[fn] === 'function') window[fn](); } catch (e) {} });
         if (typeof showToast === 'function' && actions && actions.length) {
             showToast('success', 'Assistant', actions[0].libelle);
         }

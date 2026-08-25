@@ -329,92 +329,121 @@ function extractJson(text) {
 
 // ──────────── Handlers ────────────
 
-// Diagnostic de l'IA. Réservé au commerçant connecté : la réponse révèle la
-// configuration du service, elle n'a rien à faire en accès libre. Elle ne
-// renvoie JAMAIS la clé, seulement sa présence et sa longueur.
-// Assistant des pages publiques. Pas de compte requis — c'est le but : un
-// visiteur doit pouvoir poser ses questions avant de s'inscrire. En
-// contrepartie, la limite est posée sur l'adresse IP et la conversation est
-// bornée, pour que ce point ouvert ne devienne pas un robinet à dépenses.
 // ════════════════════════════════════════════════════════════════
 //  OUTILS DE L'ASSISTANT COMMERÇANT
-//  L'assistant ne se contente plus d'expliquer : il agit.
+//  Il couvre chaque section du tableau de bord : récompenses, événements
+//  multiplicateurs, caissiers, boutiques, automatisations e-mail, réglages
+//  du programme, apparence de la carte, statistiques.
 //
-//  Principe de sécurité : toutes les écritures passent par Supabase avec
-//  LE JETON DU COMMERÇANT, jamais avec la clé de service. Le RLS s'applique
-//  donc normalement — l'assistant ne peut rien faire que le commerçant ne
-//  puisse faire lui-même, et jamais sur le compte d'un autre.
+//  SÉCURITÉ — toutes les requêtes passent par Supabase avec LE JETON DU
+//  COMMERÇANT, jamais avec la clé de service. Le RLS reste donc la seule
+//  autorité : l'assistant ne peut rien faire que le commerçant ne puisse
+//  faire lui-même, ni toucher au compte d'un autre. Les écritures sont en
+//  plus filtrées sur merchant_id, ceinture et bretelles.
 //
-//  Ne sont volontairement PAS exposés : suppression de récompense, envoi de
-//  campagne, suppression de compte. Irréversible ou tourné vers l'extérieur :
-//  cela reste au commerçant, à la main.
+//  Restent hors de portée, volontairement : envoyer une campagne à toute la
+//  base (irréversible et tourné vers l'extérieur), supprimer le compte,
+//  toucher à l'abonnement Stripe. Cela se fait à la main.
+//
+//  Les suppressions exigent un argument `confirme` que le modèle ne doit
+//  poser qu'après un accord explicite — le prompt le lui impose.
 // ════════════════════════════════════════════════════════════════
 
+const OUT = (name, description, props, required) => ({
+  name, description,
+  parameters: { type: 'OBJECT', properties: props || {}, required: required || [] },
+});
+const S_ = d => ({ type: 'STRING',  description: d });
+const I_ = d => ({ type: 'INTEGER', description: d });
+const N_ = d => ({ type: 'NUMBER',  description: d });
+const B_ = d => ({ type: 'BOOLEAN', description: d });
+const CONFIRME = { confirme: B_("Mettre à true UNIQUEMENT après un accord explicite de l'utilisateur.") };
+
 const OUTILS_COMMERCANT = [
-  {
-    name: 'lister_recompenses',
-    description: "Liste les récompenses du commerçant, avec leur identifiant et le nombre de points requis. À appeler avant toute modification, pour connaître les identifiants.",
-    parameters: { type: 'OBJECT', properties: {} },
-  },
-  {
-    name: 'creer_recompense',
-    description: "Crée une nouvelle récompense. Demander le nom et le nombre de points si l'utilisateur ne les a pas donnés.",
-    parameters: {
-      type: 'OBJECT',
-      properties: {
-        nom          : { type: 'STRING',  description: "Nom visible par le client, ex. « Café offert »" },
-        points_requis: { type: 'INTEGER', description: 'Points nécessaires pour obtenir la récompense (entier positif)' },
-      },
-      required: ['nom', 'points_requis'],
-    },
-  },
-  {
-    name: 'modifier_recompense',
-    description: "Modifie le nom ou le coût d'une récompense existante. Utiliser lister_recompenses avant, pour obtenir l'identifiant.",
-    parameters: {
-      type: 'OBJECT',
-      properties: {
-        id           : { type: 'INTEGER', description: 'Identifiant de la récompense' },
-        nom          : { type: 'STRING',  description: 'Nouveau nom (facultatif)' },
-        points_requis: { type: 'INTEGER', description: 'Nouveau coût en points (facultatif)' },
-      },
-      required: ['id'],
-    },
-  },
-  {
-    name: 'lire_programme',
-    description: "Lit les réglages du programme de fidélité : nom de l'enseigne, taux de points par euro, mode (points ou tampons), offre souscrite.",
-    parameters: { type: 'OBJECT', properties: {} },
-  },
-  {
-    name: 'regler_taux_points',
-    description: "Règle combien de points le client gagne par euro dépensé. Exemple : 0.1 signifie 1 point pour 10 €.",
-    parameters: {
-      type: 'OBJECT',
-      properties: {
-        points_par_euro: { type: 'NUMBER', description: 'Points gagnés par euro dépensé, entre 0.01 et 100' },
-      },
-      required: ['points_par_euro'],
-    },
-  },
-  {
-    name: 'basculer_mode',
-    description: "Bascule le programme entre le cumul de points et la carte à tampons.",
-    parameters: {
-      type: 'OBJECT',
-      properties: {
-        mode      : { type: 'STRING',  description: "« points » ou « tampons »" },
-        nb_tampons: { type: 'INTEGER', description: 'Nombre de tampons pour une carte pleine (mode tampons uniquement)' },
-        recompense: { type: 'STRING',  description: 'Récompense obtenue une fois la carte pleine (mode tampons uniquement)' },
-      },
-      required: ['mode'],
-    },
-  },
-  {
-    name: 'statistiques',
-    description: "Donne le nombre de membres du programme et la capacité restante de l'offre.",
-    parameters: { type: 'OBJECT', properties: {} },
-  },
+  // ── Récompenses ──
+  OUT('lister_recompenses', "Liste les récompenses avec leur identifiant et leur coût en points. À appeler avant toute modification ou suppression."),
+  OUT('creer_recompense', "Crée une récompense.",
+      { nom: S_('Nom vu par le client, ex. « Café offert »'), points_requis: I_('Points nécessaires, entier positif') },
+      ['nom', 'points_requis']),
+  OUT('modifier_recompense', "Change le nom ou le coût d'une récompense.",
+      { id: I_('Identifiant'), nom: S_('Nouveau nom'), points_requis: I_('Nouveau coût') }, ['id']),
+  OUT('supprimer_recompense', "Supprime définitivement une récompense.",
+      Object.assign({ id: I_('Identifiant') }, CONFIRME), ['id']),
+
+  // ── Événements multiplicateurs ──
+  OUT('lister_evenements', "Liste les événements multiplicateurs (périodes où les points comptent double, triple ou quintuple)."),
+  OUT('creer_evenement', "Crée un événement multiplicateur sur une période.",
+      { nom: S_('Nom, ex. « Week-end double points »'),
+        multiplicateur: I_('2, 3 ou 5 — aucune autre valeur'),
+        debut: S_('Date de début, format AAAA-MM-JJ'),
+        fin: S_('Date de fin, format AAAA-MM-JJ'),
+        prevenir_clients: B_('Prévenir les clients par e-mail') },
+      ['nom', 'multiplicateur', 'debut', 'fin']),
+  OUT('supprimer_evenement', "Supprime un événement multiplicateur.",
+      Object.assign({ id: I_('Identifiant') }, CONFIRME), ['id']),
+
+  // ── Caissiers ──
+  OUT('lister_caissiers', "Liste les caissiers, leur rôle et s'ils sont actifs. Les codes PIN ne sont jamais lisibles."),
+  OUT('creer_caissier', "Crée un compte caissier pour le mode caisse.",
+      { nom: S_('Prénom ou nom du caissier'), pin: S_('Code PIN de 4 à 6 chiffres') },
+      ['nom', 'pin']),
+  OUT('modifier_caissier', "Renomme un caissier, change son PIN, ou l'active/désactive.",
+      { id: I_('Identifiant'), nom: S_('Nouveau nom'), pin: S_('Nouveau PIN, 4 à 6 chiffres'),
+        actif: B_('Actif ou non') }, ['id']),
+  OUT('supprimer_caissier', "Supprime un compte caissier.",
+      Object.assign({ id: I_('Identifiant') }, CONFIRME), ['id']),
+
+  // ── Boutiques ──
+  OUT('lister_boutiques', "Liste les points de vente du commerce."),
+  OUT('creer_boutique', "Ajoute un point de vente.",
+      { nom: S_('Nom de la boutique'), adresse: S_('Adresse postale') }, ['nom']),
+  OUT('modifier_boutique', "Modifie un point de vente.",
+      { id: S_('Identifiant (UUID)'), nom: S_('Nouveau nom'), adresse: S_('Nouvelle adresse'),
+        active: B_('Active ou non') }, ['id']),
+  OUT('supprimer_boutique', "Supprime un point de vente.",
+      Object.assign({ id: S_('Identifiant (UUID)') }, CONFIRME), ['id']),
+
+  // ── Automatisations e-mail ──
+  OUT('lister_automations', "Liste les e-mails automatiques configurés."),
+  OUT('creer_automation', "Crée un e-mail automatique. Il part tout seul selon son déclencheur.",
+      { type: S_("« relance », « avis », « offre » ou « custom »"),
+        sujet: S_("Objet de l'e-mail"),
+        corps: S_('Contenu du message'),
+        jours_apres: I_('Envoyer N jours après la dernière visite (déclencheur par délai)') },
+      ['type', 'sujet', 'corps']),
+  OUT('activer_automation', "Active ou met en pause un e-mail automatique.",
+      { id: I_('Identifiant'), active: B_('true pour activer, false pour mettre en pause') },
+      ['id', 'active']),
+  OUT('supprimer_automation', "Supprime un e-mail automatique.",
+      Object.assign({ id: I_('Identifiant') }, CONFIRME), ['id']),
+
+  // ── Réglages ──
+  OUT('lire_reglages', "Lit tous les réglages : enseigne, adresse, taux de points, mode (points ou tampons), bonus, niveaux VIP, roue de la fortune, offre souscrite."),
+  OUT('regler_programme', "Règle le fonctionnement du programme de fidélité.",
+      { points_par_euro: N_('Points gagnés par euro dépensé, entre 0.01 et 100'),
+        mode: S_("« points » ou « tampons »"),
+        nb_tampons: I_('Tampons pour une carte pleine, 2 à 50'),
+        recompense_tampons: S_('Récompense une fois la carte pleine') }),
+  OUT('regler_enseigne', "Change le nom affiché du commerce ou son adresse.",
+      { nom: S_("Nom de l'enseigne"), adresse: S_('Adresse postale') }),
+  OUT('regler_bonus', "Règle les points offerts au parrainage et à l'anniversaire.",
+      { parrainage: I_('Points offerts au parrain et au filleul, 0 à 10000'),
+        anniversaire: I_("Points offerts le jour de l'anniversaire, 0 à 10000") }),
+  OUT('regler_vip', "Règle les niveaux VIP : à partir de combien de points cumulés, et avec quel multiplicateur.",
+      { seuil_silver: I_('Points cumulés pour Silver'), multiplicateur_silver: N_('Ex. 1.2'),
+        seuil_gold: I_('Points cumulés pour Gold'),   multiplicateur_gold: N_('Ex. 1.5') }),
+  OUT('regler_roue', "Active la roue de la fortune et règle le nombre de visites nécessaires.",
+      { activee: B_('Activer ou désactiver'), visites_requises: I_('Visites entre deux tours, 1 à 100') }),
+  OUT('regler_couleurs_carte', "Change les couleurs de la carte de fidélité vue par les clients.",
+      { degrade_debut: S_('Couleur de début du dégradé, format #RRGGBB'),
+        degrade_fin:   S_('Couleur de fin du dégradé, format #RRGGBB'),
+        accent:        S_("Couleur d'accent (points, barre, badges)"),
+        texte:         S_('Couleur du nom du commerce') }),
+
+  // ── Données ──
+  OUT('statistiques', "Nombre de membres, capacité restante de l'offre, points en circulation."),
+  OUT('historique_recent', "Dernières transactions : points crédités ou dépensés.",
+      { limite: I_('Nombre de lignes, 1 à 50') }),
 ];
 
 // Appel Supabase au nom du commerçant connecté. Le jeton porte son identité :
@@ -439,128 +468,366 @@ async function supaAuNomDe(env, token, chemin, opts) {
   return { ok: res.ok, statut: res.status, data };
 }
 
-// Exécute un outil demandé par le modèle. Renvoie ce qui sera relu par le
-// modèle, plus un résumé destiné à l'interface (ce que le commerçant verra).
+/* ── Validation des entrées ──────────────────────────────────────
+   Le modèle peut se tromper de type ou d'échelle. On valide ici plutôt
+   que de laisser passer une valeur absurde jusqu'à la base. */
+const _txt = (v, max) => String(v == null ? '' : v).trim().slice(0, max || 120);
+const _ent = (v, min, max) => { const n = Math.round(Number(v)); return isFinite(n) && n >= min && n <= max ? n : null; };
+const _nb  = (v, min, max) => { const n = Number(v);             return isFinite(n) && n >= min && n <= max ? n : null; };
+const _date = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? String(v) : null;
+const _couleur = v => /^#[0-9a-fA-F]{6}$/.test(String(v || '')) ? String(v) : null;
+
+async function _sha256Hex(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s)));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+const _ko = (msg, detail) => ({ donnees: detail ? { erreur: msg, detail: String(detail).slice(0, 200) } : { erreur: msg } });
+const _ok = (donnees, libelle, type) => ({ donnees: Object.assign({ succes: true }, donnees),
+                                           action: libelle ? { type: type || 'reglage', libelle } : undefined });
+
 async function executerOutil(nom, args, ctx) {
   const { env, token, merchantId } = ctx;
   const a = args || {};
+  const lire  = chemin => supaAuNomDe(env, token, chemin);
+  const ecrire = (chemin, method, body) => supaAuNomDe(env, token, chemin, { method, body });
+  const carte = patch => ecrire(`merchant_cards?merchant_id=eq.${merchantId}`, 'PATCH', patch);
+
+  // Suppression générique : même garde-fou partout.
+  async function supprimer(table, id, quoi, idBrut) {
+    if (a.confirme !== true) {
+      return { donnees: { besoin_confirmation: true,
+               message: `Demande d'abord à l'utilisateur de confirmer la suppression de ${quoi}, puis rappelle cet outil avec confirme=true.` } };
+    }
+    const r = await ecrire(`${table}?id=eq.${idBrut}&merchant_id=eq.${merchantId}`, 'DELETE');
+    if (!r.ok) return _ko('Suppression refusée', r.data);
+    if (!r.data || !r.data.length) return _ko(`Aucun élément de ce commerce ne porte l'identifiant ${id}.`);
+    return _ok({}, `${quoi} supprimé${quoi.endsWith('e') ? 'e' : ''}`, 'suppression');
+  }
 
   try {
+    /* ═══ RÉCOMPENSES ═══ */
     if (nom === 'lister_recompenses') {
-      const r = await supaAuNomDe(env, token,
-        `rewards?merchant_id=eq.${merchantId}&select=id,name,points_required&order=points_required.asc`);
-      if (!r.ok) return { donnees: { erreur: 'Lecture impossible' } };
-      return { donnees: { recompenses: r.data || [] } };
+      const r = await lire(`rewards?merchant_id=eq.${merchantId}&select=id,name,points_required&order=points_required.asc`);
+      return r.ok ? { donnees: { recompenses: r.data || [] } } : _ko('Lecture impossible');
     }
-
     if (nom === 'creer_recompense') {
-      const points = Math.round(Number(a.points_requis));
-      const titre  = String(a.nom || '').trim().slice(0, 80);
-      if (!titre)                       return { donnees: { erreur: 'Nom manquant' } };
-      if (!isFinite(points) || points < 1)
-        return { donnees: { erreur: 'Le nombre de points doit être un entier supérieur à zéro.' } };
-
-      const r = await supaAuNomDe(env, token, 'rewards', {
-        method: 'POST',
-        body  : { merchant_id: merchantId, name: titre, points_required: points },
-      });
-      if (!r.ok) return { donnees: { erreur: 'Création refusée', detail: String(r.data).slice(0, 200) } };
-      const cree = Array.isArray(r.data) ? r.data[0] : r.data;
-      return {
-        donnees: { succes: true, recompense: cree },
-        action : { type: 'creation', libelle: `Récompense « ${titre} » créée à ${points} points` },
-      };
+      const titre = _txt(a.nom, 80), pts = _ent(a.points_requis, 1, 1000000);
+      if (!titre) return _ko('Nom manquant');
+      if (pts === null) return _ko('Le nombre de points doit être un entier supérieur à zéro.');
+      const r = await ecrire('rewards', 'POST', { merchant_id: merchantId, name: titre, points_required: pts });
+      if (!r.ok) return _ko('Création refusée', r.data);
+      return _ok({ recompense: (r.data || [])[0] }, `Récompense « ${titre} » créée à ${pts} points`, 'creation');
     }
-
     if (nom === 'modifier_recompense') {
-      const id = Math.round(Number(a.id));
-      if (!isFinite(id)) return { donnees: { erreur: 'Identifiant invalide' } };
+      const id = _ent(a.id, 1, 1e12); if (id === null) return _ko('Identifiant invalide');
       const patch = {};
-      if (a.nom !== undefined && String(a.nom).trim()) patch.name = String(a.nom).trim().slice(0, 80);
+      if (_txt(a.nom, 80)) patch.name = _txt(a.nom, 80);
       if (a.points_requis !== undefined) {
-        const p = Math.round(Number(a.points_requis));
-        if (!isFinite(p) || p < 1) return { donnees: { erreur: 'Points invalides' } };
-        patch.points_required = p;
+        const p = _ent(a.points_requis, 1, 1000000);
+        if (p === null) return _ko('Points invalides'); patch.points_required = p;
       }
-      if (Object.keys(patch).length === 0) return { donnees: { erreur: 'Rien à modifier' } };
-
-      const r = await supaAuNomDe(env, token,
-        `rewards?id=eq.${id}&merchant_id=eq.${merchantId}`, { method: 'PATCH', body: patch });
-      if (!r.ok)              return { donnees: { erreur: 'Modification refusée', detail: String(r.data).slice(0, 200) } };
-      if (!r.data || !r.data.length)
-        return { donnees: { erreur: "Aucune récompense de ce commerce ne porte cet identifiant." } };
-      const maj = r.data[0];
-      return {
-        donnees: { succes: true, recompense: maj },
-        action : { type: 'modification', libelle: `Récompense « ${maj.name} » mise à jour (${maj.points_required} points)` },
-      };
+      if (!Object.keys(patch).length) return _ko('Rien à modifier');
+      const r = await ecrire(`rewards?id=eq.${id}&merchant_id=eq.${merchantId}`, 'PATCH', patch);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      if (!r.data?.length) return _ko("Aucune récompense de ce commerce ne porte cet identifiant.");
+      const m = r.data[0];
+      return _ok({ recompense: m }, `Récompense « ${m.name} » mise à jour (${m.points_required} points)`, 'modification');
+    }
+    if (nom === 'supprimer_recompense') {
+      const id = _ent(a.id, 1, 1e12); if (id === null) return _ko('Identifiant invalide');
+      return supprimer('rewards', id, 'La récompense', id);
     }
 
-    if (nom === 'lire_programme') {
-      const r = await supaAuNomDe(env, token,
-        `merchant_cards?merchant_id=eq.${merchantId}&select=title,points_per_euro,plan,loyalty_mode,stamps_required,stamp_reward`);
-      // loyalty_mode peut ne pas exister si la migration n'a pas été jouée :
-      // on retente alors sans ces colonnes plutôt que de renvoyer une erreur.
+    /* ═══ ÉVÉNEMENTS ═══ */
+    if (nom === 'lister_evenements') {
+      const r = await lire(`events?merchant_id=eq.${merchantId}&select=id,name,multiplier,starts_at,ends_at&order=starts_at.desc`);
+      return r.ok ? { donnees: { evenements: r.data || [] } } : _ko('Lecture impossible');
+    }
+    if (nom === 'creer_evenement') {
+      const titre = _txt(a.nom, 80);
+      const mult  = _ent(a.multiplicateur, 2, 5);
+      const d1 = _date(a.debut), d2 = _date(a.fin);
+      if (!titre) return _ko('Nom manquant');
+      if (mult !== 2 && mult !== 3 && mult !== 5) return _ko('Le multiplicateur doit valoir 2, 3 ou 5.');
+      if (!d1 || !d2) return _ko('Dates attendues au format AAAA-MM-JJ.');
+      if (d2 < d1) return _ko('La date de fin précède la date de début.');
+      const r = await ecrire('events', 'POST', { merchant_id: merchantId, name: titre, multiplier: mult,
+                                                 starts_at: d1, ends_at: d2, notify_clients: a.prevenir_clients === true });
+      if (!r.ok) return _ko('Création refusée', r.data);
+      return _ok({ evenement: (r.data || [])[0] }, `Événement « ${titre} » ×${mult} du ${d1} au ${d2}`, 'creation');
+    }
+    if (nom === 'supprimer_evenement') {
+      const id = _ent(a.id, 1, 1e12); if (id === null) return _ko('Identifiant invalide');
+      return supprimer('events', id, "L'événement", id);
+    }
+
+    /* ═══ CAISSIERS ═══ */
+    if (nom === 'lister_caissiers') {
+      const r = await lire(`cashiers?merchant_id=eq.${merchantId}&select=id,name,role,active&order=name.asc`);
+      return r.ok ? { donnees: { caissiers: r.data || [] } } : _ko('Lecture impossible');
+    }
+    if (nom === 'creer_caissier') {
+      const titre = _txt(a.nom, 60);
+      const pin   = _txt(a.pin, 6);
+      if (!titre) return _ko('Nom manquant');
+      if (!/^\d{4,6}$/.test(pin)) return _ko('Le PIN doit comporter 4 à 6 chiffres.');
+      const r = await ecrire('cashiers', 'POST', { merchant_id: merchantId, name: titre,
+                                                   pin_hash: await _sha256Hex(pin), role: 'cashier', active: true });
+      if (!r.ok) return _ko('Création refusée', r.data);
+      return _ok({ caissier: { nom: titre } }, `Caissier « ${titre} » créé — il se connecte sur /caisse avec son PIN`, 'creation');
+    }
+    if (nom === 'modifier_caissier') {
+      const id = _ent(a.id, 1, 1e12); if (id === null) return _ko('Identifiant invalide');
+      const patch = {};
+      if (_txt(a.nom, 60)) patch.name = _txt(a.nom, 60);
+      if (a.actif !== undefined) patch.active = a.actif === true;
+      if (a.pin !== undefined) {
+        const pin = _txt(a.pin, 6);
+        if (!/^\d{4,6}$/.test(pin)) return _ko('Le PIN doit comporter 4 à 6 chiffres.');
+        patch.pin_hash = await _sha256Hex(pin);
+      }
+      if (!Object.keys(patch).length) return _ko('Rien à modifier');
+      const r = await ecrire(`cashiers?id=eq.${id}&merchant_id=eq.${merchantId}`, 'PATCH', patch);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      if (!r.data?.length) return _ko('Aucun caissier de ce commerce ne porte cet identifiant.');
+      return _ok({ caissier: { id, nom: r.data[0].name } }, `Caissier « ${r.data[0].name} » mis à jour`, 'modification');
+    }
+    if (nom === 'supprimer_caissier') {
+      const id = _ent(a.id, 1, 1e12); if (id === null) return _ko('Identifiant invalide');
+      return supprimer('cashiers', id, 'Le caissier', id);
+    }
+
+    /* ═══ BOUTIQUES ═══ */
+    if (nom === 'lister_boutiques') {
+      const r = await lire(`boutiques?merchant_id=eq.${merchantId}&select=id,name,address,is_active&order=name.asc`);
+      return r.ok ? { donnees: { boutiques: r.data || [] } } : _ko('Lecture impossible');
+    }
+    if (nom === 'creer_boutique') {
+      const titre = _txt(a.nom, 80); if (!titre) return _ko('Nom manquant');
+      const r = await ecrire('boutiques', 'POST', { merchant_id: merchantId, name: titre,
+                                                    address: _txt(a.adresse, 200) || null, is_active: true });
+      if (!r.ok) return _ko('Création refusée', r.data);
+      return _ok({ boutique: (r.data || [])[0] }, `Boutique « ${titre} » ajoutée`, 'creation');
+    }
+    if (nom === 'modifier_boutique') {
+      const id = _txt(a.id, 40);
+      if (!/^[0-9a-fA-F-]{36}$/.test(id)) return _ko('Identifiant invalide');
+      const patch = {};
+      if (_txt(a.nom, 80)) patch.name = _txt(a.nom, 80);
+      if (a.adresse !== undefined) patch.address = _txt(a.adresse, 200) || null;
+      if (a.active !== undefined) patch.is_active = a.active === true;
+      if (!Object.keys(patch).length) return _ko('Rien à modifier');
+      const r = await ecrire(`boutiques?id=eq.${id}&merchant_id=eq.${merchantId}`, 'PATCH', patch);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      if (!r.data?.length) return _ko('Aucune boutique de ce commerce ne porte cet identifiant.');
+      return _ok({ boutique: r.data[0] }, `Boutique « ${r.data[0].name} » mise à jour`, 'modification');
+    }
+    if (nom === 'supprimer_boutique') {
+      const id = _txt(a.id, 40);
+      if (!/^[0-9a-fA-F-]{36}$/.test(id)) return _ko('Identifiant invalide');
+      return supprimer('boutiques', id, 'La boutique', id);
+    }
+
+    /* ═══ AUTOMATISATIONS E-MAIL ═══ */
+    if (nom === 'lister_automations') {
+      const r = await lire(`notification_automations?merchant_id=eq.${merchantId}&select=id,type,subject,active,trigger_days&order=id.desc`);
+      return r.ok ? { donnees: { automations: r.data || [] } } : _ko('Lecture impossible');
+    }
+    if (nom === 'creer_automation') {
+      const type = ['relance', 'avis', 'offre', 'custom'].includes(_txt(a.type, 12)) ? _txt(a.type, 12) : null;
+      const sujet = _txt(a.sujet, 140), corps = _txt(a.corps, 4000);
+      if (!type)  return _ko("Type attendu : relance, avis, offre ou custom.");
+      if (!sujet) return _ko("Objet de l'e-mail manquant");
+      if (!corps) return _ko('Contenu du message manquant');
+      const body = { merchant_id: merchantId, type, subject: sujet, body: corps, active: true };
+      const j = _ent(a.jours_apres, 1, 365);
+      if (j !== null) { body.trigger_days = j; body.trigger_mode = 'delay'; body.delay_val = j; body.delay_unit = 'd'; }
+      const r = await ecrire('notification_automations', 'POST', body);
+      if (!r.ok) return _ko('Création refusée', r.data);
+      return _ok({ automation: (r.data || [])[0] },
+                 `E-mail automatique « ${sujet} » créé${j !== null ? ` (${j} jours après la visite)` : ''}`, 'creation');
+    }
+    if (nom === 'activer_automation') {
+      const id = _ent(a.id, 1, 1e12); if (id === null) return _ko('Identifiant invalide');
+      const r = await ecrire(`notification_automations?id=eq.${id}&merchant_id=eq.${merchantId}`, 'PATCH',
+                             { active: a.active === true });
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      if (!r.data?.length) return _ko('Aucun e-mail automatique de ce commerce ne porte cet identifiant.');
+      return _ok({}, `E-mail « ${r.data[0].subject} » ${a.active === true ? 'activé' : 'mis en pause'}`, 'modification');
+    }
+    if (nom === 'supprimer_automation') {
+      const id = _ent(a.id, 1, 1e12); if (id === null) return _ko('Identifiant invalide');
+      return supprimer('notification_automations', id, "L'e-mail automatique", id);
+    }
+
+    /* ═══ RÉGLAGES ═══ */
+    if (nom === 'lire_reglages') {
+      const champs = 'title,address,points_per_euro,plan,loyalty_mode,stamps_required,stamp_reward,'
+                   + 'referral_bonus,birthday_bonus,tier_silver_threshold,tier_silver_multiplier,'
+                   + 'tier_gold_threshold,tier_gold_multiplier,wheel_enabled,wheel_visits_required';
+      let r = await lire(`merchant_cards?merchant_id=eq.${merchantId}&select=${champs}`);
       if (!r.ok) {
-        const b = await supaAuNomDe(env, token,
-          `merchant_cards?merchant_id=eq.${merchantId}&select=title,points_per_euro,plan`);
-        if (!b.ok) return { donnees: { erreur: 'Lecture impossible' } };
-        return { donnees: { programme: (b.data || [])[0] || {}, mode_tampons_indisponible: true } };
+        // Certaines colonnes viennent de migrations : on retombe sur l'essentiel
+        // plutôt que de ne rien renvoyer du tout.
+        r = await lire(`merchant_cards?merchant_id=eq.${merchantId}&select=title,address,points_per_euro,plan`);
+        if (!r.ok) return _ko('Lecture impossible');
+        return { donnees: { reglages: (r.data || [])[0] || {}, colonnes_avancees_absentes: true } };
       }
-      return { donnees: { programme: (r.data || [])[0] || {} } };
+      return { donnees: { reglages: (r.data || [])[0] || {} } };
+    }
+    if (nom === 'regler_programme') {
+      const patch = {};
+      if (a.points_par_euro !== undefined) {
+        const t = _nb(a.points_par_euro, 0.01, 100);
+        if (t === null) return _ko('Le taux doit être compris entre 0.01 et 100.');
+        patch.points_per_euro = t;
+      }
+      if (a.mode !== undefined) {
+        patch.loyalty_mode = String(a.mode).toLowerCase().includes('tampon') ? 'stamps' : 'points';
+        if (patch.loyalty_mode === 'stamps') {
+          const n = _ent(a.nb_tampons, 2, 50);
+          patch.stamps_required = n === null ? 10 : n;
+          if (a.recompense_tampons) patch.stamp_reward = _txt(a.recompense_tampons, 80);
+        }
+      } else if (a.nb_tampons !== undefined) {
+        const n = _ent(a.nb_tampons, 2, 50);
+        if (n === null) return _ko('Le nombre de tampons doit être compris entre 2 et 50.');
+        patch.stamps_required = n;
+      }
+      if (!Object.keys(patch).length) return _ko('Aucun réglage fourni');
+      const r = await carte(patch);
+      if (!r.ok) return _ko("Réglage refusé — certaines colonnes exigent la migration du mode tampons.", r.data);
+      const dit = [];
+      if (patch.points_per_euro) dit.push(`taux à ${patch.points_per_euro} point(s) par euro`);
+      if (patch.loyalty_mode)    dit.push(patch.loyalty_mode === 'stamps'
+                                   ? `carte à ${patch.stamps_required} tampons` : 'cumul de points');
+      else if (patch.stamps_required) dit.push(`${patch.stamps_required} tampons par carte`);
+      return _ok({ applique: patch }, 'Programme réglé : ' + dit.join(', '));
+    }
+    if (nom === 'regler_enseigne') {
+      const patch = {};
+      if (_txt(a.nom, 80))     patch.title = _txt(a.nom, 80);
+      if (a.adresse !== undefined) patch.address = _txt(a.adresse, 200) || null;
+      if (!Object.keys(patch).length) return _ko('Rien à modifier');
+      const r = await carte(patch);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      return _ok({ applique: patch },
+                 patch.title ? `Enseigne renommée « ${patch.title} »` : 'Adresse mise à jour');
+    }
+    if (nom === 'regler_bonus') {
+      const patch = {};
+      if (a.parrainage !== undefined) {
+        const v = _ent(a.parrainage, 0, 10000);
+        if (v === null) return _ko('Bonus de parrainage hors limites (0 à 10000).'); patch.referral_bonus = v;
+      }
+      if (a.anniversaire !== undefined) {
+        const v = _ent(a.anniversaire, 0, 10000);
+        if (v === null) return _ko('Bonus anniversaire hors limites (0 à 10000).'); patch.birthday_bonus = v;
+      }
+      if (!Object.keys(patch).length) return _ko('Aucun bonus fourni');
+      const r = await carte(patch);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      const dit = [];
+      if (patch.referral_bonus !== undefined) dit.push(`parrainage ${patch.referral_bonus} pts`);
+      if (patch.birthday_bonus !== undefined) dit.push(`anniversaire ${patch.birthday_bonus} pts`);
+      return _ok({ applique: patch }, 'Bonus réglés : ' + dit.join(', '));
+    }
+    if (nom === 'regler_vip') {
+      const patch = {};
+      const paires = [['seuil_silver', 'tier_silver_threshold', 1, 1000000],
+                      ['seuil_gold',   'tier_gold_threshold',   1, 1000000]];
+      for (const [cle, col, min, max] of paires) {
+        if (a[cle] !== undefined) {
+          const v = _ent(a[cle], min, max);
+          if (v === null) return _ko(`Valeur invalide pour ${cle}.`); patch[col] = v;
+        }
+      }
+      for (const [cle, col] of [['multiplicateur_silver', 'tier_silver_multiplier'],
+                                ['multiplicateur_gold',   'tier_gold_multiplier']]) {
+        if (a[cle] !== undefined) {
+          const v = _nb(a[cle], 1, 10);
+          if (v === null) return _ko(`Le multiplicateur ${cle} doit être compris entre 1 et 10.`); patch[col] = v;
+        }
+      }
+      if (!Object.keys(patch).length) return _ko('Aucun réglage VIP fourni');
+      if (patch.tier_gold_threshold !== undefined && patch.tier_silver_threshold !== undefined
+          && patch.tier_gold_threshold <= patch.tier_silver_threshold) {
+        return _ko('Le seuil Gold doit être supérieur au seuil Silver.');
+      }
+      const r = await carte(patch);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      return _ok({ applique: patch }, 'Niveaux VIP mis à jour');
+    }
+    if (nom === 'regler_roue') {
+      const patch = {};
+      if (a.activee !== undefined) patch.wheel_enabled = a.activee === true;
+      if (a.visites_requises !== undefined) {
+        const v = _ent(a.visites_requises, 1, 100);
+        if (v === null) return _ko('Le nombre de visites doit être compris entre 1 et 100.');
+        patch.wheel_visits_required = v;
+      }
+      if (!Object.keys(patch).length) return _ko('Aucun réglage fourni');
+      const r = await carte(patch);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      return _ok({ applique: patch },
+                 patch.wheel_enabled === false ? 'Roue de la fortune désactivée'
+                 : `Roue de la fortune active${patch.wheel_visits_required ? ` — 1 tour toutes les ${patch.wheel_visits_required} visites` : ''}`);
+    }
+    if (nom === 'regler_couleurs_carte') {
+      const cols = { degrade_debut: 'grad1', degrade_fin: 'grad2', accent: 'borderColor', texte: 'txtColor' };
+      const patchStudio = {};
+      for (const [cle, champ] of Object.entries(cols)) {
+        if (a[cle] !== undefined) {
+          const c = _couleur(a[cle]);
+          if (!c) return _ko(`Couleur invalide pour ${cle} — format attendu #RRGGBB.`);
+          patchStudio[champ] = c;
+        }
+      }
+      if (!Object.keys(patchStudio).length) return _ko('Aucune couleur fournie');
+
+      // Le Studio stocke tout son habillage dans un seul champ JSON : on le relit
+      // pour ne modifier que les couleurs et préserver le reste du design.
+      const cur = await lire(`merchant_cards?merchant_id=eq.${merchantId}&select=studio_json`);
+      let design = {};
+      try { design = JSON.parse((cur.data || [])[0]?.studio_json || '{}') || {}; } catch (_) { design = {}; }
+      Object.assign(design, patchStudio);
+      if (patchStudio.grad1 || patchStudio.grad2) design.bgType = 'gradient';
+
+      const body = { studio_json: JSON.stringify(design) };
+      if (patchStudio.borderColor) body.color = patchStudio.borderColor;
+      const r = await carte(body);
+      if (!r.ok) return _ko('Modification refusée', r.data);
+      return _ok({ applique: patchStudio }, 'Couleurs de la carte mises à jour', 'modification');
     }
 
-    if (nom === 'regler_taux_points') {
-      const taux = Number(a.points_par_euro);
-      if (!isFinite(taux) || taux <= 0 || taux > 100)
-        return { donnees: { erreur: 'Le taux doit être compris entre 0.01 et 100.' } };
-      const r = await supaAuNomDe(env, token, `merchant_cards?merchant_id=eq.${merchantId}`,
-        { method: 'PATCH', body: { points_per_euro: taux } });
-      if (!r.ok) return { donnees: { erreur: 'Modification refusée', detail: String(r.data).slice(0, 200) } };
-      return {
-        donnees: { succes: true, points_par_euro: taux },
-        action : { type: 'reglage', libelle: `Taux réglé à ${taux} point(s) par euro` },
-      };
-    }
-
-    if (nom === 'basculer_mode') {
-      const mode = String(a.mode || '').toLowerCase().indexOf('tampon') >= 0 ? 'stamps' : 'points';
-      const patch = { loyalty_mode: mode };
-      if (mode === 'stamps') {
-        const n = Math.round(Number(a.nb_tampons));
-        patch.stamps_required = (isFinite(n) && n >= 2 && n <= 50) ? n : 10;
-        if (a.recompense) patch.stamp_reward = String(a.recompense).trim().slice(0, 80);
-      }
-      const r = await supaAuNomDe(env, token, `merchant_cards?merchant_id=eq.${merchantId}`,
-        { method: 'PATCH', body: patch });
-      if (!r.ok) {
-        return { donnees: { erreur: "Le mode tampons n'est pas encore activé sur cette base.",
-                            detail: 'Migration loyalty_mode / stamps_required à jouer.' } };
-      }
-      return {
-        donnees: { succes: true, mode },
-        action : { type: 'reglage',
-                   libelle: mode === 'stamps'
-                     ? `Programme basculé en carte à tampons (${patch.stamps_required} tampons)`
-                     : 'Programme basculé en cumul de points' },
-      };
-    }
-
+    /* ═══ DONNÉES ═══ */
     if (nom === 'statistiques') {
-      const m = await supaAuNomDe(env, token,
-        `loyalty_balances?merchant_id=eq.${merchantId}&hidden_at=is.null&select=points_balance`);
-      const membres = m.ok && Array.isArray(m.data) ? m.data.length : 0;
+      const m = await lire(`loyalty_balances?merchant_id=eq.${merchantId}&hidden_at=is.null&select=points_balance`);
+      const lignes = (m.ok && Array.isArray(m.data)) ? m.data : [];
       const u = await supaAuNomDe(env, token, 'rpc/my_member_usage', { method: 'POST', body: {} });
       const cap = (u.ok && Array.isArray(u.data) && u.data[0]) ? u.data[0].max_members : null;
-      return { donnees: { membres, capacite: cap === null ? 'illimitée' : cap } };
+      return { donnees: {
+        membres: lignes.length,
+        points_en_circulation: lignes.reduce((s, l) => s + (l.points_balance || 0), 0),
+        capacite: cap === null ? 'illimitée' : cap,
+        places_restantes: cap === null ? 'illimitées' : Math.max(cap - lignes.length, 0),
+      } };
+    }
+    if (nom === 'historique_recent') {
+      const n = _ent(a.limite, 1, 50) || 10;
+      const r = await lire(`transactions?merchant_id=eq.${merchantId}`
+                         + `&select=created_at,amount,points_changed,type&order=created_at.desc&limit=${n}`);
+      return r.ok ? { donnees: { transactions: r.data || [] } } : _ko('Lecture impossible');
     }
 
-    return { donnees: { erreur: 'Outil inconnu' } };
+    return _ko('Outil inconnu');
 
   } catch (err) {
-    return { donnees: { erreur: 'Échec de l\'outil', detail: String(err).slice(0, 200) } };
+    return _ko("Échec de l'outil", err);
   }
 }
+
 
 
 async function handlePublicChat(request, env) {
@@ -699,15 +966,27 @@ async function handleAiChat(request, env) {
     : SUPPORT_MERCHANT_PROMPT) + `
 
 --- TU PEUX AGIR ---
-Tu disposes d'outils qui modifient réellement le compte du commerçant. Quand il
-demande une action que tu sais faire, FAIS-LA — ne te contente pas d'expliquer
-où cliquer. Puis confirme en une phrase ce qui a été fait.
-- Il ne manque qu'un paramètre ? Demande-le, brièvement, au lieu d'inventer.
-- Avant de modifier une récompense, liste-les pour retrouver son identifiant.
-- Tu ne peux PAS supprimer de récompense, envoyer une campagne ni supprimer un
-  compte : dis-le franchement et indique où le faire à la main.
-- Un outil renvoie une erreur ? Explique-la simplement, n'affirme jamais qu'une
-  action a réussi si ce n'est pas le cas.`;
+Tu disposes d'outils qui modifient réellement le compte du commerçant, dans
+toutes les sections : récompenses, événements multiplicateurs, caissiers,
+boutiques, e-mails automatiques, réglages du programme, bonus, niveaux VIP,
+roue de la fortune, couleurs de la carte, statistiques.
+
+Quand il demande quelque chose que tu sais faire, FAIS-LE — ne décris pas où
+cliquer. Puis confirme en une phrase ce qui a été fait.
+
+RÈGLES :
+- Il manque un paramètre ? Demande-le brièvement, n'invente jamais de valeur.
+- Avant de modifier ou supprimer, liste d'abord pour retrouver le bon
+  identifiant. Ne devine jamais un identifiant.
+- SUPPRESSION : n'appelle jamais un outil de suppression avec confirme=true
+  du premier coup. Appelle-le sans, expose ce qui va disparaître, attends un
+  « oui » explicite de l'utilisateur, et seulement alors rappelle-le avec
+  confirme=true. Ne considère jamais une demande initiale comme un accord.
+- Tu ne peux PAS envoyer de campagne à toute la base, supprimer le compte ni
+  toucher à l'abonnement. Dis-le franchement et indique où le faire à la main.
+- Un outil renvoie une erreur ? Explique-la simplement. N'affirme jamais
+  qu'une action a réussi si ce n'est pas le cas.
+- Après plusieurs modifications, récapitule brièvement l'ensemble.`;
 
   const contents = messages.map(m => ({
     role  : (m.role === 'model' || m.role === 'assistant') ? 'model' : 'user',
@@ -719,10 +998,11 @@ où cliquer. Puis confirme en une phrase ce qui a été fait.
 
   let r = await callGemini(env, { systemPrompt: fullSystem, contents, tools: OUTILS_COMMERCANT });
 
-  // Le modèle peut enchaîner : lister, puis modifier, puis conclure. On borne
-  // à quatre tours — au-delà c'est qu'il tourne en rond, et chaque tour coûte.
+  // Le modèle enchaîne souvent : lire les réglages, lister, agir, conclure.
+  // Six tours laissent la place à une demande composée sans boucler sans fin —
+  // chaque tour est un appel facturé.
   let tours = 0;
-  while (!r.error && r.appels && r.appels.length && tours < 4) {
+  while (!r.error && r.appels && r.appels.length && tours < 6) {
     tours++;
     contents.push({ role: 'model', parts: r.parts });
 
