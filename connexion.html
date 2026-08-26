@@ -490,8 +490,16 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (_) {}
 
-    // ?tab=register pour arriver directement sur l'inscription
-    if (new URLSearchParams(window.location.search).get('tab') === 'register') switchTab('register');
+    // ?tab=register pour arriver directement sur l'inscription, et
+    // ?role=commercant pour pre-selectionner le bon profil : le trafic
+    // publicitaire arrive de la page commercants, il ne doit pas avoir a
+    // recliquer sur ce qui est deja connu.
+    {
+        const q = new URLSearchParams(window.location.search);
+        if (q.get('tab') === 'register') switchTab('register');
+        const role = q.get('role');
+        if (role === 'commercant' || role === 'client') setRole(role);
+    }
 
     // ?ref=CODE : code de parrainage commerçant, mémorisé jusqu'à l'inscription
     try {

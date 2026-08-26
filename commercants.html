@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KEEPO pour les commerçants — la fidélité qui vous dit qui revient</title>
+<meta name="description" content="La carte de fidélité de vos clients, à vos couleurs, dans leur téléphone. Rien à installer pour eux. 14 jours d'essai, sans engagement, à partir de 49 € HT/mois.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://keepo.eu/commercants">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/keepo-card.css">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   KEEPO — Page d'arrivée des campagnes commerçants.
+   Palette « Clarté » et jeu de variables repris de index.html : cette
+   page doit être indiscernable du reste du site quand on y navigue.
+   Une seule action possible ici — démarrer l'essai. Aucun lien de
+   navigation ne détourne le visiteur avant qu'il ait choisi.
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --ink:#0D0D11; --ink-2:#33333D; --muted:#61616B; --faint:#8E8E98;
+  --paper:#FFFFFF; --bg:#FAFAFB; --bg-2:#F4F5F8; --card:#FFFFFF;
+  --line:#EAEAEF; --line-2:#DDDDE4;
+  --acc:#4B45A6; --acc-ink:#3B3689; --acc-2:#1FA5A8;
+  --acc-soft:#F0EFFA; --acc-line:rgba(75,69,166,.22);
+  --grad:linear-gradient(135deg,#5A32A0 0%,#3F63A4 52%,#1FA5A8 100%);
+  --grad-soft:linear-gradient(135deg,rgba(90,50,160,.10),rgba(31,165,168,.10));
+  --ok:#0E9F6E;
+  --shadow-sm:0 2px 4px rgba(13,13,17,.04),0 1px 2px rgba(13,13,17,.05);
+  --shadow-md:0 18px 40px -24px rgba(13,13,17,.28),0 2px 6px rgba(13,13,17,.04);
+  --shadow-lg:0 40px 80px -40px rgba(13,13,17,.40),0 2px 8px rgba(13,13,17,.05);
+  --r:9px; --r-sm:6px; --r-lg:14px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --font-d:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--font-d); font-size:16.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit; text-decoration:none}
+:focus-visible{outline:2px solid var(--acc); outline-offset:3px; border-radius:4px}
+.wrap{max-width:1080px; margin:0 auto; padding:0 24px}
+.grad{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+
+h1,h2,h3{letter-spacing:-.035em; text-wrap:balance; margin:0}
+h1{font-size:clamp(34px,5.6vw,58px); font-weight:800; line-height:1.04}
+h2{font-size:clamp(26px,3.6vw,38px); font-weight:750; line-height:1.1}
+h3{font-size:19px; font-weight:650; letter-spacing:-.02em}
+p{margin:0; color:var(--ink-2)}
+
+.eyebrow{
+  font-size:11.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--acc); margin-bottom:16px;
+}
+
+/* ── Barre du haut : le strict minimum, aucune fuite ── */
+header{
+  position:sticky; top:0; z-index:50; background:rgba(250,250,251,.86);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+header .wrap{display:flex; align-items:center; justify-content:space-between; height:62px}
+.logo{display:inline-flex; align-items:center}
+.logo img{height:26px; width:auto; display:block}
+.lien-discret{font-size:14px; font-weight:500; color:var(--muted)}
+.lien-discret:hover{color:var(--acc)}
+
+/* ── Boutons ── */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  font-family:var(--font-d); font-size:15.5px; font-weight:600; cursor:pointer;
+  padding:14px 26px; border-radius:var(--r); border:1px solid transparent;
+  transition:transform .3s var(--ease), box-shadow .3s var(--ease), background .2s;
+}
+.btn-grad{background:var(--grad); color:#fff; box-shadow:0 14px 30px -16px rgba(75,69,166,.65)}
+.btn-grad:hover{transform:translateY(-2px); box-shadow:0 20px 40px -18px rgba(75,69,166,.75)}
+.btn-ligne{background:var(--paper); color:var(--ink); border-color:var(--line-2); box-shadow:var(--shadow-sm)}
+.btn-ligne:hover{border-color:var(--acc-line); color:var(--acc)}
+.btn-lg{font-size:16.5px; padding:17px 34px}
+.sous-cta{font-size:13.5px; color:var(--muted); margin-top:14px}
+.sous-cta b{color:var(--ink-2); font-weight:600}
+
+/* ── Hero ── */
+.hero{padding:74px 0 68px; position:relative; overflow:hidden}
+.hero::before{
+  content:""; position:absolute; inset:-40% 30% 40% -20%; pointer-events:none;
+  background:radial-gradient(closest-side,rgba(90,50,160,.10),transparent 72%);
+}
+.hero .wrap{display:grid; grid-template-columns:1.15fr .85fr; gap:56px; align-items:center; position:relative}
+.hero p.accroche{font-size:19px; margin-top:22px; max-width:52ch}
+.hero .actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:32px}
+.vitrine{display:flex; justify-content:center}
+.vitrine .telephone{
+  width:100%; max-width:330px; padding:18px; border-radius:26px;
+  background:var(--paper); border:1px solid var(--line);
+  box-shadow:var(--shadow-lg);
+}
+.vitrine .legende{
+  text-align:center; font-size:12.5px; color:var(--faint);
+  margin-top:14px; letter-spacing:.01em;
+}
+@media (max-width:880px){
+  .hero{padding:48px 0 52px}
+  .hero .wrap{grid-template-columns:1fr; gap:40px}
+  .vitrine{order:-1}
+}
+
+/* ── Sections ── */
+section.bloc{padding:72px 0; border-top:1px solid var(--line)}
+section.bloc.pale{background:var(--bg-2)}
+.entete{max-width:60ch; margin-bottom:44px}
+.entete p{margin-top:14px; font-size:17px}
+
+/* ── Les trois gestes : une séquence, donc numérotée ── */
+.gestes{display:grid; gap:22px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.geste{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:26px 24px; box-shadow:var(--shadow-sm);
+}
+.geste .n{
+  font-size:12px; font-weight:700; letter-spacing:.1em; color:var(--acc);
+  font-variant-numeric:tabular-nums; display:block; margin-bottom:12px;
+}
+.geste h3{margin-bottom:9px}
+.geste p{font-size:15.5px; color:var(--muted)}
+
+/* ── Ce qu'on découvre ── */
+.savoirs{display:grid; gap:0; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.savoir{padding:24px 26px 24px 0; border-top:1px solid var(--line-2)}
+.savoir:first-child{border-top-color:var(--ink)}
+.savoir b{display:block; font-size:17px; font-weight:650; letter-spacing:-.02em; margin-bottom:7px}
+.savoir span{font-size:15px; color:var(--muted)}
+.mention{
+  margin-top:30px; font-size:14px; color:var(--faint);
+  padding-left:15px; border-left:2px solid var(--line-2);
+}
+
+/* ── Tarifs ── */
+.tarifs{display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); align-items:start}
+.tarif{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:28px 26px; box-shadow:var(--shadow-sm); position:relative;
+}
+.tarif.phare{border-color:var(--acc-line); box-shadow:var(--shadow-md)}
+.tarif .nom{font-size:13px; font-weight:650; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.tarif.phare .nom{color:var(--acc)}
+.tarif .prix{
+  font-size:40px; font-weight:800; letter-spacing:-.045em; margin:12px 0 2px;
+  font-variant-numeric:tabular-nums;
+}
+.tarif .prix small{font-size:15px; font-weight:500; color:var(--muted); letter-spacing:-.01em}
+.tarif .an{font-size:13.5px; color:var(--faint)}
+.tarif ul{list-style:none; margin:20px 0 0; padding:0; display:flex; flex-direction:column; gap:10px}
+.tarif li{font-size:15px; color:var(--ink-2); padding-left:24px; position:relative}
+.tarif li::before{
+  content:"✓"; position:absolute; left:0; top:0; color:var(--acc-2);
+  font-weight:700; font-size:14px;
+}
+.encart-essai{
+  margin-top:26px; background:var(--acc-soft); border-radius:var(--r-lg);
+  padding:22px 24px; font-size:15.5px; color:var(--ink-2);
+}
+.encart-essai b{color:var(--ink); font-weight:650}
+
+/* ── Franchise ── */
+.franchise{
+  background:var(--card); border:1px solid var(--line); border-left:3px solid var(--acc);
+  border-radius:var(--r-lg); padding:30px 32px; max-width:70ch;
+}
+.franchise h2{font-size:25px; margin-bottom:14px}
+.franchise p + p{margin-top:14px}
+
+/* ── Questions ── */
+.questions{max-width:70ch}
+details{border-bottom:1px solid var(--line); padding:18px 0}
+summary{
+  cursor:pointer; font-size:17px; font-weight:600; letter-spacing:-.018em;
+  list-style:none; display:flex; justify-content:space-between; gap:18px; align-items:baseline;
+}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+"; color:var(--acc); font-weight:600; font-size:19px; flex-shrink:0}
+details[open] summary::after{content:"–"}
+details p{margin-top:12px; font-size:15.5px; color:var(--muted)}
+
+/* ── Clôture ── */
+.cloture{padding:78px 0; text-align:center; background:var(--bg-2); border-top:1px solid var(--line)}
+.cloture h2{margin-bottom:16px}
+.cloture p{max-width:50ch; margin:0 auto; font-size:17px}
+.cloture .btn{margin-top:30px}
+
+footer{border-top:1px solid var(--line); padding:34px 0; text-align:center; font-size:13.5px; color:var(--faint)}
+.pieds{display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-bottom:12px}
+.pieds a:hover{color:var(--acc)}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{animation:none !important; transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a href="/" class="logo" aria-label="Accueil KEEPO"><img src="img/logo.png" alt="KEEPO" width="26" height="26"></a>
+    <a href="/connexion" class="lien-discret">J'ai déjà un compte</a>
+  </div>
+</header>
+
+<!-- ═══════════ HERO — même question que la publicité ═══════════ -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Pour les commerces de proximité</div>
+      <h1>Ce matin, combien de vos clients étaient <span class="grad">déjà venus</span> ?</h1>
+      <p class="accroche">
+        Votre carte à tampons ne vous le dira jamais. KEEPO la remet dans le téléphone
+        de vos clients — à vos couleurs — et vous dit enfin qui revient, qui a décroché,
+        et à quelle heure vous avez du monde.
+      </p>
+      <div class="actions">
+        <a href="/connexion?tab=register&amp;role=commercant" class="btn btn-grad btn-lg" data-cta>
+          Démarrer mes 14 jours d'essai
+        </a>
+        <a href="/demo" class="btn btn-ligne btn-lg">Voir une carte en vrai</a>
+      </div>
+      <div class="sous-cta">
+        <b>Sans engagement</b> · Résiliable en un clic · Aucun frais d'installation
+      </div>
+    </div>
+
+    <div class="vitrine">
+      <div>
+        <div class="telephone" id="vitrine-carte"></div>
+        <div class="legende">La carte telle que vos clients la voient</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ LES TROIS GESTES ═══════════ -->
+<section class="bloc pale">
+  <div class="wrap">
+    <div class="entete">
+      <h2>Trois gestes, et c'est tout</h2>
+      <p>Rien à installer, ni pour vous ni pour vos clients. Tout passe par le navigateur.</p>
+    </div>
+    <div class="gestes">
+      <div class="geste">
+        <span class="n">01</span>
+        <h3>Ils scannent votre QR code</h3>
+        <p>Posé sur votre comptoir. Leur carte apparaît dans leur téléphone. Aucune application à télécharger, aucun compte à créer sur un store.</p>
+      </div>
+      <div class="geste">
+        <span class="n">02</span>
+        <h3>Vous scannez leur code</h3>
+        <p>À chaque passage, deux secondes, pendant que vous rendez la monnaie. Les points ou les tampons tombent tout seuls.</p>
+      </div>
+      <div class="geste">
+        <span class="n">03</span>
+        <h3>Ils annoncent six caractères</h3>
+        <p>Quand la récompense est atteinte, ils vous donnent un code, vous le validez, et l'historique reste attaché à leur fiche.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CE QU'ON DÉCOUVRE ═══════════ -->
+<section class="bloc">
+  <div class="wrap">
+    <div class="entete">
+      <h2>Ce que vous saurez demain et que vous ignorez aujourd'hui</h2>
+      <p>Une carte en carton ne remonte aucune information. C'est la seule vraie différence.</p>
+    </div>
+    <div class="savoirs">
+      <div class="savoir">
+        <b>Combien de clients sont revenus</b>
+        <span>Cette semaine, ce mois-ci, comparé au mois dernier. Le chiffre que personne ne connaît.</span>
+      </div>
+      <div class="savoir">
+        <b>Qui n'est pas repassé</b>
+        <span>Nommément, avec la date de sa dernière visite. Vous pouvez le relancer avant qu'il soit parti pour de bon.</span>
+      </div>
+      <div class="savoir">
+        <b>Vos heures de pointe réelles</b>
+        <span>Jour par jour, créneau par créneau. De quoi ajuster la production et les plannings.</span>
+      </div>
+      <div class="savoir">
+        <b>Ce que vos clients viennent chercher</b>
+        <span>Quelles récompenses sont réclamées, lesquelles ne bougent pas. Vous arrêtez de deviner.</span>
+      </div>
+    </div>
+    <p class="mention">
+      L'analytique détaillée, l'assistant de rédaction et le mode caisse sur tablette
+      font partie de la formule Pro Scale. Les 14 jours d'essai vous les donnent tous.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════ TARIFS ═══════════ -->
+<section class="bloc pale">
+  <div class="wrap">
+    <div class="entete">
+      <h2>Un prix, tout compris</h2>
+      <p>Pas de commission sur votre chiffre d'affaires, pas de frais d'installation, pas de durée minimum.</p>
+    </div>
+    <div class="tarifs">
+      <div class="tarif">
+        <div class="nom">Essentiel</div>
+        <div class="prix">49 €<small> HT / mois</small></div>
+        <div class="an">ou 499 € HT à l'année — 15 % de moins</div>
+        <ul>
+          <li>Jusqu'à 150 clients fidèles</li>
+          <li>Carte à vos couleurs et à votre logo</li>
+          <li>Points ou tampons, au choix</li>
+          <li>Notifications par e-mail à votre nom</li>
+          <li>Un compte caissier</li>
+        </ul>
+      </div>
+      <div class="tarif phare">
+        <div class="nom">Pro Scale</div>
+        <div class="prix">99 €<small> HT / mois</small></div>
+        <div class="an">ou 890 € HT à l'année — environ trois mois offerts</div>
+        <ul>
+          <li>Clients fidèles illimités</li>
+          <li>Analytique avancée et prévision d'affluence</li>
+          <li>Assistant de rédaction de vos e-mails</li>
+          <li>Mode caisse tablette, caissiers illimités</li>
+          <li>Programme VIP, roue, cartes cadeaux</li>
+          <li>Export de vos données, support sous 4 h ouvrées</li>
+        </ul>
+      </div>
+    </div>
+    <div class="encart-essai">
+      <b>L'essai de 14 jours se fait en formule Pro Scale.</b> Vous testez tout,
+      vous choisissez ensuite. Et vous résiliez en un clic depuis votre tableau de bord,
+      sans lettre ni coup de fil.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FRANCHISE ═══════════ -->
+<section class="bloc">
+  <div class="wrap">
+    <div class="franchise">
+      <h2>KEEPO est jeune, et nous préférons le dire</h2>
+      <p>
+        Vous ne trouverez sur cette page ni témoignage, ni pourcentage d'augmentation
+        de chiffre d'affaires. Nous n'avons pas encore assez de recul pour avancer
+        ces chiffres honnêtement, et nous n'allons pas les inventer.
+      </p>
+      <p>
+        Ce que nous pouvons vous proposer&nbsp;: quatorze jours pour regarder
+        <strong>vos</strong> chiffres. Si vous ne voyez rien changer, vous arrêtez
+        et vous n'aurez rien payé.
+      </p>
+      <p>
+        En attendant, entrer maintenant a un avantage réel&nbsp;: vous parlez
+        directement aux personnes qui construisent l'outil, et ce que vous demandez
+        peut encore changer ce qu'il devient.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ QUESTIONS ═══════════ -->
+<section class="bloc pale">
+  <div class="wrap">
+    <div class="entete">
+      <h2>Les questions qu'on nous pose</h2>
+    </div>
+    <div class="questions">
+      <details>
+        <summary>Mes clients doivent-ils installer une application&nbsp;?</summary>
+        <p>Non. Ils scannent votre QR code, leur carte s'affiche dans leur navigateur, et ils peuvent l'ajouter à leur écran d'accueil ou à Google Wallet s'ils le souhaitent. Rien à télécharger, aucun compte à créer sur un store.</p>
+      </details>
+      <details>
+        <summary>Mes clients sont âgés, est-ce que ça va les perdre&nbsp;?</summary>
+        <p>C'est plus simple qu'un menu de restaurant en QR code. Et rien ne vous oblige à arrêter le carton du jour au lendemain&nbsp;: les deux peuvent tourner en parallèle le temps que tout le monde bascule.</p>
+      </details>
+      <details>
+        <summary>Combien de temps pour être opérationnel&nbsp;?</summary>
+        <p>Une dizaine de minutes. Un guide de prise en main vous fait créer votre carte, choisir entre points et tampons, régler votre première récompense et imprimer votre QR code. Vous pouvez le rejouer plus tard sans rien perdre de vos réglages.</p>
+      </details>
+      <details>
+        <summary>À qui appartiennent les données de mes clients&nbsp;?</summary>
+        <p>À vous. Elles sont hébergées en Europe et traitées conformément au RGPD. Vous pouvez les exporter quand vous voulez, et si vous partez un jour, vous partez avec votre fichier.</p>
+      </details>
+      <details>
+        <summary>Je n'ai pas de tablette ni de caisse connectée.</summary>
+        <p>Ce n'est pas nécessaire. Tout fonctionne depuis un navigateur, sur l'ordinateur ou le téléphone que vous avez déjà. Si vous consultez vos e-mails dessus, vous pouvez faire tourner KEEPO dessus.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CLÔTURE ═══════════ -->
+<section class="cloture">
+  <div class="wrap">
+    <h2>Quatorze jours pour voir vos propres chiffres</h2>
+    <p>Créez votre carte maintenant. Elle sera à vos couleurs, avec votre logo, et prête à être scannée avant la fin de votre pause.</p>
+    <a href="/connexion?tab=register&amp;role=commercant" class="btn btn-grad btn-lg" data-cta>
+      Démarrer mes 14 jours d'essai
+    </a>
+    <div class="sous-cta"><b>Sans engagement</b> · Résiliable en un clic · Aucun frais d'installation</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="pieds">
+      <a href="/">Accueil</a>
+      <a href="/demo">Démo</a>
+      <a href="/connexion">Connexion</a>
+      <a href="/cgu-cgv">CGU / CGV</a>
+      <a href="/confidentialite">Confidentialité</a>
+      <a href="/mentions-legales">Mentions légales</a>
+      <a href="mailto:contact@keepo.eu">contact@keepo.eu</a>
+    </div>
+    <div>© 2026 KEEPO · Programme de fidélité digital pour les commerces de proximité</div>
+  </div>
+</footer>
+
+<script src="js/keepo-card.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* La vitrine montre le vrai composant du tableau de bord client, pas une
+     image : ce que le commerçant voit ici est exactement ce que ses clients
+     auront sous les yeux. */
+  var boite = document.getElementById("vitrine-carte");
+  if (boite && window.KeepoCard) {
+    boite.innerHTML = KeepoCard.render({
+      accent:      "#4B45A6",
+      shopName:    "Boulangerie Saint-Michel",
+      stampMode:   true,
+      stampGoal:   10,
+      stampReward: "Une viennoiserie offerte",
+      points:      7,
+      goal:        10,
+      animate:     true
+    });
+  }
+
+  /* Les paramètres de campagne doivent survivre au passage vers l'inscription,
+     sans quoi il devient impossible de savoir quelle annonce a produit quoi. */
+  var entrants = new URLSearchParams(location.search);
+  var garder = [];
+  entrants.forEach(function (v, k) {
+    if (k.indexOf("utm_") === 0 || k === "ref" || k === "gclid" || k === "fbclid") {
+      garder.push([k, v]);
+    }
+  });
+  if (garder.length) {
+    document.querySelectorAll("a[data-cta]").forEach(function (a) {
+      var u = new URL(a.getAttribute("href"), location.origin);
+      garder.forEach(function (p) { u.searchParams.set(p[0], p[1]); });
+      a.setAttribute("href", u.pathname + u.search);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
