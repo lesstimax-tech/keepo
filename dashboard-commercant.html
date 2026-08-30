@@ -4182,6 +4182,8 @@
        ANNONCES — ce qui s'affiche à l'arrivée du commerçant.
 
        POUR EN AJOUTER UNE : une entrée en tête de KEEPO_ANNONCES, avec un
+       visuel dans img/notifications/ (NotifN.png, 16:9) et le champ image ;
+       le champ illus reste comme repli si le fichier venait à manquer. Un
        `id` jamais réutilisé. Les commerçants qui ne l'ont pas encore vue la
        verront à leur prochaine connexion ; les autres ne sont pas dérangés.
 
@@ -4191,6 +4193,7 @@
     const KEEPO_ANNONCES = [
         {
             id: 'parrainage-commercants-2026-08',
+            image: 'img/notifications/Notif1.png',
             date: '2026-08-26',
             tag: 'Rappel',
             illus: 'parrainage',
@@ -4200,6 +4203,7 @@
         },
         {
             id: 'assistant-agit-2026-08',
+            image: 'img/notifications/Notif2.png',
             date: '2026-08-25',
             tag: 'Nouveau',
             illus: 'ia',
@@ -4210,6 +4214,7 @@
         },
         {
             id: 'carte-decouverte-2026-08',
+            image: 'img/notifications/Notif3.png',
             date: '2026-08-25',
             tag: 'Nouveau',
             illus: 'localisation',
@@ -4221,6 +4226,7 @@
         },
         {
             id: 'parrainage-rappel-2026-08',
+            image: 'img/notifications/Notif4.png',
             date: '2026-08-20',
             tag: 'Rappel',
             illus: 'parrainage',
@@ -4232,6 +4238,7 @@
         },
         {
             id: 'studio-tampons-2026-08',
+            image: 'img/notifications/Notif5.png',
             date: '2026-08-18',
             tag: 'Amélioration',
             illus: 'carte',
@@ -4336,6 +4343,13 @@
           +   (a.action ? '<button class="ann-cta" type="button" data-action="1">'
                         + escapeHtml(a.action.label) + ' <i class="fa-solid fa-arrow-right"></i></button>' : '')
           + '</div>';
+
+        /* Tant qu'un visuel n'est pas produit, on revient à l'illustration
+           dessinée : mieux vaut une forme sobre qu'une image cassée. */
+        const vignette = boite.querySelector('.ann-illus img');
+        if (vignette) vignette.addEventListener('error', function () {
+            this.parentElement.innerHTML = ILLUSTRATIONS[a.illus] || ILLUSTRATIONS.nouveau;
+        }, { once: true });
 
         const cta = boite.querySelector('[data-action]');
         if (cta) cta.onclick = () => {

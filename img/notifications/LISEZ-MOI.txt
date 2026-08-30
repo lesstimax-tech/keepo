@@ -1,0 +1,108 @@
+VISUELS DES NOTIFICATIONS COMMERÇANT
+====================================
+
+Les images de ce dossier s'affichent en tête de la fenêtre d'annonces du
+tableau de bord commerçant.
+
+
+NOMMAGE
+-------
+Notif1.png, Notif2.png, Notif3.png… Le numéro est déclaré dans le champ
+« image » de l'annonce, dans dashboard-commercant.html (KEEPO_ANNONCES).
+
+Correspondance actuelle :
+
+  Notif1  Un confrère parrainé, un mois offert
+  Notif2  L'assistant fait le travail à votre place
+  Notif3  Vos voisins peuvent vous trouver
+  Notif4  Vos clients peuvent vous en amener d'autres
+  Notif5  La carte à tampons est arrivée dans le Studio
+
+
+FORMAT
+------
+  Rapport      16:9
+  Poids        moins de 200 Ko (convertir en WebP si besoin)
+  Cadrage      l'image est recadrée en bandeau large : le sujet doit être
+               au centre, avec de la marge en haut et en bas
+  Interdits    aucun texte, aucun visage, aucun logo
+
+
+SI UNE IMAGE MANQUE
+-------------------
+L'illustration vectorielle d'origine reprend sa place automatiquement.
+Le tableau de bord ne montre jamais d'image cassée.
+
+
+═══════════════════════════════════════════════════════════════════════
+DIRECTION ARTISTIQUE — à envoyer UNE SEULE FOIS en début de conversation
+═══════════════════════════════════════════════════════════════════════
+
+Tu es directeur artistique pour KEEPO, un logiciel français de cartes de
+fidélité destiné aux commerces de proximité. Je vais te demander une série
+d'illustrations qui doivent former un ensemble cohérent.
+
+Direction à respecter pour toutes, sans exception :
+
+- Format 16:9, sujet centré, marge généreuse en haut et en bas car l'image
+  sera recadrée en bandeau large.
+- Fond sombre, presque noir (#0B0B11), uniforme.
+- Palette unique : violet #5A32A0, bleu #3F63A4, turquoise #1FA5A8.
+  Aucune autre couleur, sauf du blanc cassé très ponctuel.
+- Style : abstrait et géométrique. Formes simples, dégradés doux, halos
+  lumineux discrets. Pensez « schéma élégant », pas « illustration ».
+- Beaucoup de vide. Trois ou quatre éléments maximum par image.
+- Aucun texte, aucun mot, aucun chiffre, aucune lettre.
+- Aucun visage, aucun personnage, aucune main.
+- Aucun logo, aucune marque, aucune interface de logiciel.
+- Pas de style 3D brillant, pas de rendu type banque d'images.
+
+Réponds simplement « compris » et attends ma première demande.
+
+
+═══════════════════════════════════════════════════════════════════════
+LES CINQ DEMANDES — une par message, dans l'ordre
+═══════════════════════════════════════════════════════════════════════
+
+--- Notif1 — le parrainage entre commerçants ---
+Une illustration : deux formes arrondies identiques, côte à côte, reliées
+par un trait lumineux en dégradé violet vers turquoise. De la seconde forme
+part un léger halo, comme si elle venait de s'allumer. L'idée : quelqu'un
+en amène un autre, et les deux en profitent.
+
+--- Notif2 — l'assistant qui agit ---
+Une illustration : une constellation de petits points lumineux turquoise
+qui convergent vers une forme unique au centre, laquelle rayonne doucement.
+L'idée : des demandes éparses qui se transforment en une action accomplie.
+
+--- Notif3 — être trouvé par ses voisins ---
+Une illustration : une pastille lumineuse au centre, entourée de deux ou
+trois cercles concentriques très fins qui s'élargissent et s'estompent,
+comme une onde. Quelques points plus petits et plus pâles autour, à des
+distances irrégulières. L'idée : un commerce qui devient visible dans son
+quartier.
+
+--- Notif4 — le parrainage entre clients ---
+Une illustration : un point lumineux d'où partent trois traits fins et
+courbes vers trois autres points plus petits, en éventail. Dégradé violet
+au départ, turquoise à l'arrivée. L'idée : une recommandation qui se
+propage.
+
+--- Notif5 — la carte à tampons dans le Studio ---
+Une illustration : une rangée de huit cercles alignés, dont cinq remplis
+d'un dégradé violet vers turquoise et trois restés en simple contour fin.
+Au-dessus, un rectangle arrondi très épuré suggérant une carte. L'idée :
+une carte de fidélité à tampons qu'on personnalise.
+
+
+═══════════════════════════════════════════════════════════════════════
+POUR UNE NOUVELLE ANNONCE
+═══════════════════════════════════════════════════════════════════════
+
+Reprenez la conversation épinglée et demandez simplement :
+
+  « Même direction artistique. Une illustration : [décrire la forme et
+    l'idée en deux phrases]. »
+
+Enregistrez le fichier sous NotifN.png dans ce dossier, puis ajoutez le
+champ image dans l'annonce correspondante.
