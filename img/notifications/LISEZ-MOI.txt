@@ -7,7 +7,7 @@ tableau de bord commerçant.
 
 NOMMAGE
 -------
-Notif1.png, Notif2.png, Notif3.png… Le numéro est déclaré dans le champ
+Notif1.jpg, Notif2.jpg, Notif3.jpg… Le numéro est déclaré dans le champ
 « image » de l'annonce, dans dashboard-commercant.html (KEEPO_ANNONCES).
 
 Correspondance actuelle :
@@ -21,11 +21,23 @@ Correspondance actuelle :
 
 FORMAT
 ------
+
+  Extension    .jpg  (Chrome sous Windows enregistre souvent en .jfif :
+               c'est du JPEG, il suffit de renommer l'extension)
+
   Rapport      16:9
   Poids        moins de 200 Ko (convertir en WebP si besoin)
   Cadrage      l'image est recadrée en bandeau large : le sujet doit être
                au centre, avec de la marge en haut et en bas
   Interdits    aucun texte, aucun visage, aucun logo
+
+
+RENOMMER LES .jfif D'UN COUP
+---------------------------
+
+  Dans un terminal, depuis ce dossier :
+
+    for f in *.jfif; do mv -- "$f" "${f%.jfif}.jpg"; done
 
 
 SI UNE IMAGE MANQUE
@@ -104,5 +116,5 @@ Reprenez la conversation épinglée et demandez simplement :
   « Même direction artistique. Une illustration : [décrire la forme et
     l'idée en deux phrases]. »
 
-Enregistrez le fichier sous NotifN.png dans ce dossier, puis ajoutez le
+Enregistrez le fichier sous NotifN.jpg dans ce dossier, puis ajoutez le
 champ image dans l'annonce correspondante.
