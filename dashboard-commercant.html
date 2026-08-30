@@ -3352,13 +3352,43 @@
            ══════════════════════════════════════════════════════════════ */
         .ob { max-width: 620px; margin: 0 auto; padding: 8px 0 40px; }
 
+        /* ── Dépôt du logo ── */
+        .ob-logo-zone { display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 30px 20px; border-radius: 16px; cursor: pointer; text-align: center;
+            border: 2px dashed var(--glass-border); background: var(--bg-card-hover);
+            transition: border-color .25s var(--ease), background .25s; }
+        .ob-logo-zone:hover, .ob-logo-zone.survol { border-color: var(--primary-accent);
+            background: var(--bg-card); }
+        .ob-logo-zone i { font-size: 24px; color: var(--primary-accent); margin-bottom: 6px; }
+        .ob-logo-zone b { font-size: 15px; font-weight: 650; color: var(--text-main); }
+        .ob-logo-zone span { font-size: 13px; color: var(--text-muted); }
+        /* Le logo retenu, avec de quoi le retirer sans rouvrir le sélecteur. */
+        .ob-logo-vu { display: none; align-items: center; gap: 16px; padding: 16px 18px;
+            border-radius: 16px; border: 1px solid var(--glass-border); background: var(--bg-card-hover); }
+        .ob-logo-vu.on { display: flex; }
+        .ob-logo-vu img { width: 62px; height: 62px; object-fit: contain; flex-shrink: 0;
+            border-radius: 12px; background: #fff; padding: 6px; }
+        .ob-logo-vu .t { flex: 1; min-width: 0; font-size: 14px; color: var(--text-sub); line-height: 1.5; }
+        .ob-logo-vu .t b { display: block; color: var(--text-main); font-size: 15px;
+            font-weight: 650; margin-bottom: 2px; }
+        .ob-logo-vu button { flex-shrink: 0; background: none; cursor: pointer;
+            border: 1px solid var(--glass-border); color: var(--text-muted);
+            border-radius: 9px; padding: 8px 12px; font-size: 12.5px; font-family: Inter, sans-serif;
+            transition: color .2s, border-color .2s; }
+        .ob-logo-vu button:hover { color: #E5484D; border-color: rgba(229,72,77,.4); }
+        /* Sauter l'étape doit rester une sortie franche, pas un lien caché. */
+        .ob-sauter { display: block; width: 100%; margin-top: 12px; background: none; border: none;
+            cursor: pointer; font-family: Inter, sans-serif; font-size: 13.5px; font-weight: 550;
+            color: var(--text-muted); padding: 10px; border-radius: 10px; transition: color .2s, background .2s; }
+        .ob-sauter:hover { color: var(--text-main); background: var(--bg-card-hover); }
+
         /* ── Fil de progression ── */
         .ob-track { display: flex; align-items: flex-start; justify-content: space-between;
             max-width: 460px; margin: 0 auto 42px; position: relative; }
         .ob-track::before { content: ""; position: absolute; top: 17px; left: 12%; right: 12%;
             height: 2px; background: var(--glass-border); border-radius: 2px; }
         .ob-track::after { content: ""; position: absolute; top: 17px; left: 12%;
-            width: calc((var(--ob-progress, 0) / 3) * 76%); height: 2px; border-radius: 2px;
+            width: calc((var(--ob-progress, 0) / 4) * 76%); height: 2px; border-radius: 2px;
             background: var(--grad); transition: width .55s var(--ease); }
         .ob-st { position: relative; z-index: 1; display: flex; flex-direction: column;
             align-items: center; gap: 8px; flex: 1; }
@@ -3531,15 +3561,16 @@
             <!-- ── Fil de progression ── -->
             <div class="ob-track" id="ob-track" style="--ob-progress:0;">
                 <div class="ob-st on" id="obt-1"><i><span>1</span></i><b>Votre carte</b></div>
-                <div class="ob-st"    id="obt-2"><i><span>2</span></i><b>Récompense</b></div>
-                <div class="ob-st"    id="obt-3"><i><span>3</span></i><b>Au comptoir</b></div>
-                <div class="ob-st"    id="obt-4"><i><span>4</span></i><b>C'est parti</b></div>
+                <div class="ob-st"    id="obt-2"><i><span>2</span></i><b>Votre logo</b></div>
+                <div class="ob-st"    id="obt-3"><i><span>3</span></i><b>Récompense</b></div>
+                <div class="ob-st"    id="obt-4"><i><span>4</span></i><b>Au comptoir</b></div>
+                <div class="ob-st"    id="obt-5"><i><span>5</span></i><b>C'est parti</b></div>
             </div>
 
             <!-- ══════ 1 · La carte ══════ -->
             <div class="ob-p on" id="onboard-step-1">
                 <div class="ob-h">
-                    <span class="ob-kicker">Étape 1 sur 4</span>
+                    <span class="ob-kicker">Étape 1 sur 5</span>
                     <h2>Créons la carte de vos clients</h2>
                     <p>Elle remplace la carte papier. Vos clients l'obtiennent en scannant
                        un QR&nbsp;Code — sans rien installer.</p>
@@ -3609,9 +3640,52 @@
             </div>
 
             <!-- ══════ 2 · La récompense ══════ -->
+            <!-- ══════ 2 · Votre logo ══════ -->
             <div class="ob-p" id="onboard-step-2">
                 <div class="ob-h">
-                    <span class="ob-kicker">Étape 2 sur 4</span>
+                    <span class="ob-kicker">Étape 2 sur 5</span>
+                    <h2>Ajoutez votre logo</h2>
+                    <p>C'est ce qui fait que la carte devient la vôtre et non celle de KEEPO.
+                       Vos clients la reconnaîtront d'un coup d'œil dans leur téléphone.</p>
+                </div>
+
+                <div class="ob-card">
+                    <label class="ob-logo-zone" id="ob-logo-zone" for="ob-logo-file">
+                        <i class="fa-solid fa-image"></i>
+                        <b>Choisir une image</b>
+                        <span>PNG, JPG ou SVG — 4 Mo maximum. Un fond transparent rend mieux.</span>
+                    </label>
+                    <input type="file" id="ob-logo-file" accept="image/*" hidden
+                           onchange="obLogoChoisi(event)">
+
+                    <div class="ob-logo-vu" id="ob-logo-vu">
+                        <img id="ob-logo-img" alt="">
+                        <div class="t"><b>Logo ajouté</b>Il apparaît déjà sur l'aperçu de votre carte.</div>
+                        <button type="button" onclick="obLogoRetirer()">Retirer</button>
+                    </div>
+
+                    <div class="ob-note" style="margin-top:16px;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Pas de logo sous la main&nbsp;? Passez cette étape&nbsp;: la carte
+                              affichera l'initiale de votre enseigne, et vous pourrez l'ajouter
+                              plus tard depuis le Studio.</span>
+                    </div>
+                </div>
+
+                <button class="ob-go" onclick="obLogoContinuer()">
+                    Continuer &nbsp;<i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button class="ob-sauter" type="button" onclick="obLogoPasser()">
+                    Je n'ai pas de logo pour l'instant
+                </button>
+                <button class="ob-back" onclick="obGoToStep(1)">
+                    <i class="fa-solid fa-arrow-left"></i> &nbsp;Retour
+                </button>
+            </div>
+
+            <div class="ob-p" id="onboard-step-3">
+                <div class="ob-h">
+                    <span class="ob-kicker">Étape 3 sur 5</span>
                     <h2>Qu'offrez-vous à vos fidèles&nbsp;?</h2>
                     <p>C'est le moteur du programme. Une récompense atteignable donne envie de revenir&nbsp;;
                        trop lointaine, elle décourage.</p>
@@ -3655,16 +3729,16 @@
                 <button class="ob-go" onclick="obStep2Submit()">
                     Continuer &nbsp;<i class="fa-solid fa-arrow-right"></i>
                 </button>
-                <button class="ob-back" onclick="obGoToStep(1)">
+                <button class="ob-back" onclick="obGoToStep(2)">
                     <i class="fa-solid fa-arrow-left"></i> &nbsp;Retour
                 </button>
             </div>
 
             <!-- ══════ 3 · Au comptoir ══════ -->
-            <div class="ob-p" id="onboard-step-3">
+            <div class="ob-p" id="onboard-step-4">
                 <div class="ob-h">
                     <div class="ob-hero"><i class="fa-solid fa-store"></i></div>
-                    <span class="ob-kicker">Étape 3 sur 4</span>
+                    <span class="ob-kicker">Étape 4 sur 5</span>
                     <h2>Trois gestes, tous les jours</h2>
                     <p>Votre programme «&nbsp;<span id="ob-success-name">—</span>&nbsp;» est actif.
                        Voici tout ce qu'il y a à retenir.</p>
@@ -3706,19 +3780,19 @@
                           Beaucoup de commerçants le glissent dans un porte-menu près de la caisse.</span>
                 </div>
 
-                <button class="ob-go" onclick="obGoToStep(4)" style="margin-top:16px;">
+                <button class="ob-go" onclick="obGoToStep(5)" style="margin-top:16px;">
                     J'ai compris &nbsp;<i class="fa-solid fa-arrow-right"></i>
                 </button>
-                <button class="ob-back" onclick="obGoToStep(2)">
+                <button class="ob-back" onclick="obGoToStep(3)">
                     <i class="fa-solid fa-arrow-left"></i> &nbsp;Retour
                 </button>
             </div>
 
             <!-- ══════ 4 · C'est parti ══════ -->
-            <div class="ob-p" id="onboard-step-4">
+            <div class="ob-p" id="onboard-step-5">
                 <div class="ob-h">
                     <div class="ob-hero"><i class="fa-solid fa-rocket"></i></div>
-                    <span class="ob-kicker">Étape 4 sur 4</span>
+                    <span class="ob-kicker">Étape 5 sur 5</span>
                     <h2>Vous êtes prêt&nbsp;!</h2>
                     <p>Voici vos deux liens. Le premier est pour vos clients, le second pour votre équipe.</p>
                 </div>
@@ -3793,7 +3867,7 @@
                 <button class="ob-go" onclick="obFinish('view-scan')" style="margin-top:16px;">
                     <i class="fa-solid fa-bolt"></i> &nbsp;Scanner mon premier client
                 </button>
-                <button class="ob-back" onclick="obGoToStep(3)">
+                <button class="ob-back" onclick="obGoToStep(4)">
                     <i class="fa-solid fa-arrow-left"></i> &nbsp;Retour
                 </button>
             </div>
@@ -6550,6 +6624,7 @@
             goal     : cout,
             stampMode: obMode === 'stamps',
             stampGoal: obMode === 'stamps' ? cout : 10,
+            logoUrl  : obLogoBase64 || '',
             showRewardsBtn: obMode !== 'stamps',
             animate  : false,
         });
@@ -6569,8 +6644,99 @@
         if (document.getElementById('ob-carte')) obPeindreCarte();
     });
 
+    /* Le logo choisi pendant la prise en main, en base64 comme dans le Studio. */
+    let obLogoBase64 = null;
+
+    function obLogoChoisi(e) {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        if (f.size > 4 * 1024 * 1024) {
+            showToast('warning', 'Image trop lourde', 'Choisissez un logo de moins de 4 Mo.');
+            e.target.value = ''; return;
+        }
+        const rd = new FileReader();
+        rd.onload = ev => {
+            const img = new Image();
+            /* On réduit à 320 px : au-delà, on alourdit la base pour rien,
+               le logo ne s'affiche jamais plus grand qu'une pastille. */
+            img.onload = () => {
+                const max = 320, k = Math.min(1, max / Math.max(img.width, img.height));
+                const cv = document.createElement('canvas');
+                cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+                cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+                obLogoAppliquer(cv.toDataURL('image/png'));   // le PNG garde la transparence
+            };
+            img.onerror = () => obLogoAppliquer(ev.target.result);
+            img.src = ev.target.result;
+        };
+        rd.readAsDataURL(f);
+        e.target.value = '';
+    }
+
+    function obLogoAppliquer(donnees) {
+        obLogoBase64 = donnees;
+        document.getElementById('ob-logo-img').src = donnees;
+        document.getElementById('ob-logo-vu').classList.add('on');
+        document.getElementById('ob-logo-zone').style.display = 'none';
+        obPeindreCarte();
+        showToast('success', 'Logo ajouté', 'Il apparaît dès maintenant sur votre carte.');
+    }
+
+    /* Même pose, mais sans message : au rejeu, le logo n'est pas un ajout. */
+    function obLogoAppliquerSilencieux(donnees) {
+        obLogoBase64 = donnees;
+        document.getElementById('ob-logo-img').src = donnees;
+        document.getElementById('ob-logo-vu').classList.add('on');
+        document.getElementById('ob-logo-zone').style.display = 'none';
+    }
+
+    function obLogoRetirer() {
+        obLogoBase64 = null;
+        document.getElementById('ob-logo-vu').classList.remove('on');
+        document.getElementById('ob-logo-zone').style.display = '';
+        obPeindreCarte();
+    }
+
+    /* Enregistre le logo sans écraser le reste du design : on repart de ce
+       qui existe en base, faute de quoi un commerçant qui a déjà personnalisé
+       sa carte la perdrait en rejouant la prise en main. */
+    async function obLogoEnregistrer() {
+        if (!obLogoBase64 || !currentMerchantId) return;
+        let design = {};
+        try {
+            const { data } = await supabaseClient.from('merchant_cards')
+                .select('studio_json').eq('merchant_id', currentMerchantId).maybeSingle();
+            if (data && data.studio_json) design = JSON.parse(data.studio_json);
+        } catch (e) { /* on retombe sur la copie locale */ }
+        if (!design || typeof design !== 'object') design = {};
+        if (!Object.keys(design).length) {
+            try { design = JSON.parse(localStorage.getItem(`KEEPO_studio_${currentMerchantId}`) || '{}'); }
+            catch (e) { design = {}; }
+        }
+        design.logo = obLogoBase64;
+        if (!design.logoSize) design.logoSize = 44;
+
+        const json = JSON.stringify(design);
+        try { localStorage.setItem(`KEEPO_studio_${currentMerchantId}`, json); } catch (e) {}
+        if (typeof currentStudioLogoBase64 !== 'undefined') currentStudioLogoBase64 = obLogoBase64;
+
+        const { error } = await supabaseClient.from('merchant_cards')
+            .upsert({ merchant_id: currentMerchantId, studio_json: json }, { onConflict: 'merchant_id' });
+        if (error) showToast('warning', 'Logo non synchronisé',
+                             "Il est gardé sur cet appareil ; réessayez depuis le Studio.");
+    }
+
+    async function obLogoContinuer() {
+        if (!obLogoBase64) { obLogoPasser(); return; }
+        await obLogoEnregistrer();
+        obGoToStep(3);
+    }
+
+    /* Sauter est un choix légitime, pas un échec : aucun avertissement. */
+    function obLogoPasser() { obGoToStep(3); }
+
     function obGoToStep(n) {
-        [1, 2, 3, 4].forEach(i => {
+        [1, 2, 3, 4, 5].forEach(i => {
             document.getElementById(`onboard-step-${i}`).classList.toggle('on', i === n);
             const st = document.getElementById(`obt-${i}`);
             st.classList.toggle('on', i === n);
@@ -6741,7 +6907,7 @@
         const wa = document.getElementById('ob-whatsapp-btn');
         if (wa) wa.href = `https://wa.me/?text=${msg}`;
 
-        obGoToStep(3);
+        obGoToStep(4);
     }
 
     function obCopyLink(inputId, msg) {
@@ -7697,7 +7863,7 @@
 
         try {
             const { data: carte } = await supabaseClient.from('merchant_cards')
-                .select('title,color,address,latitude,longitude,points_per_euro,loyalty_mode,stamps_required')
+                .select('title,color,address,latitude,longitude,points_per_euro,loyalty_mode,stamps_required,studio_json')
                 .eq('merchant_id', currentMerchantId).maybeSingle();
 
             if (carte) {
@@ -7736,6 +7902,16 @@
                     const c = document.getElementById('ob-reward-pts');
                     if (c) c.value = carte.stamps_required;
                 }
+            }
+
+            // Le logo déjà choisi revient lui aussi : rejouer la prise en
+            // main ne doit jamais donner l'impression d'avoir tout perdu.
+            obLogoRetirer();
+            if (carte && carte.studio_json) {
+                try {
+                    const d = JSON.parse(carte.studio_json);
+                    if (d && d.logo) obLogoAppliquerSilencieux(d.logo);
+                } catch (e) { /* design illisible : on repart sans logo */ }
             }
 
             // La première récompense, s'il y en a une : on la modifiera plutôt
