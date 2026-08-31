@@ -536,6 +536,22 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   .hero-ctas .btn,.final-ctas .btn{flex:1 1 auto;justify-content:center}
   .faq summary{padding:18px}
   .wrap{padding:0 20px}
+
+  /* Le pied de page aligne douze liens : à 32 px de haut, on en manque
+     régulièrement une au doigt. On les porte à 44 px sans les espacer
+     davantage, la marge venant du remplissage. */
+  .foot-col a{padding:12px 0}
+  .bill-toggle button{padding:14px 20px}
+
+  /* Le logo garde sa taille : c'est sa zone tactile qu'on élargit, avec un
+     pseudo-élément — un remplissage aurait fait grandir l'en-tête. */
+  .logo{position:relative}
+  .logo::after{content:"";position:absolute;inset:-11px -10px}
+
+  /* Deux réflexes de lecture au pouce : jamais de mot coupé en travers,
+     et un titre qui ne se scinde pas n'importe où. */
+  h1,h2,h3{overflow-wrap:break-word}
+  .hero-sub,.sec-head p{text-wrap:pretty}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition-duration:.01ms!important}
