@@ -286,6 +286,30 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
   .form-pane{padding:74px 18px 40px}
   .auth-card{padding:28px 22px 24px}
 }
+@media(max-width:560px){
+  /* Safari zoome automatiquement des qu'un champ fait moins de 16 px, et
+     l'utilisateur doit ensuite repincer pour revoir la page. Sur un ecran
+     de connexion, c'est la premiere impression qui en patit. */
+  .form-group input, input, select, textarea{font-size:16px}
+
+  /* Les deux onglets sont la commande principale de la page : ils passent
+     sous le seuil des 44 px du doigt. */
+  .tab-btn{padding:13px 12px}
+  .toggle-password{width:44px;height:44px}
+  /* Une hauteur minimale plutot qu un remplissage : la pastille garde
+     ses proportions et atteint le seuil du doigt. */
+  a.back-link{min-height:44px; padding:8px 16px}
+  /* Le logo garde sa taille : sa zone tactile s elargit par un
+     pseudo-element, sans deplacer quoi que ce soit. */
+  .mobile-logo a, .bp-logo a{position:relative;display:inline-block}
+  .mobile-logo a::after, .bp-logo a::after{content:"";position:absolute;inset:-13px -14px}
+  /* Liens de service : petits par nature, mais tapables. */
+  .mini-link, .switch-hint a{display:inline-block; padding:13px 6px}
+
+  /* Rien ne deborde aujourd'hui, mais un futur ajout large ne fera pas
+     deriver la page. */
+  body{overflow-x:clip}
+}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }

@@ -268,6 +268,18 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   .nav .btn-grad{padding:14px 20px}
   .bill-toggle button{padding:15px 18px}
 }
+@media (max-width:560px){
+  /* Six liens de pied de page a 22 px : on double leur hauteur tactile
+     sans les eloigner davantage, la marge venant du remplissage. */
+  .foot-links a{padding:12px 6px}
+  .final-foot a{padding:13px 4px;display:inline-block}
+  /* Le logo garde sa taille : c'est sa zone qu'on elargit, par un
+     pseudo-element — un remplissage aurait fait grandir l'en-tete. */
+  .logo{position:relative}
+  .logo::after{content:"";position:absolute;inset:-8px -10px}
+  /* Un mot long ne doit jamais depasser du cadre sur un petit ecran. */
+  h1,h2,h3{overflow-wrap:break-word}
+}
 @media (max-width:420px){
   .wrap{padding:0 18px}
   .price-box{padding:32px 22px}
