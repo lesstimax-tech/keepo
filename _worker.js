@@ -1233,9 +1233,14 @@ async function handleStripeCheckout(request, env) {
   const auth = await requireMerchant(request, env, merchantId);
   if (auth.error) return auth.error;
 
-  const chosenPlan    = plan === 'essentiel' ? 'essentiel' : 'pro';
+  // Trois formules : smart, essentiel, pro. Tout ce qui n'est pas reconnu
+  // retombe sur pro, comme avant.
+  const chosenPlan    = plan === 'smart' ? 'smart'
+                      : plan === 'essentiel' ? 'essentiel' : 'pro';
   const chosenBilling = billing === 'year' ? 'year' : 'month';
   const PRICE_MATRIX = {
+    'smart:month'    : env.STRIPE_SMART_PRICE_ID,
+    'smart:year'     : env.STRIPE_SMART_YEAR_PRICE_ID,
     'essentiel:month': env.STRIPE_ESSENTIEL_PRICE_ID,
     'essentiel:year' : env.STRIPE_ESSENTIEL_YEAR_PRICE_ID,
     'pro:month'      : env.STRIPE_PRO_PRICE_ID,
@@ -1376,7 +1381,10 @@ async function handleStripeWebhook(request, env) {
       const renewsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
       // Le plan acheté voyage dans les métadonnées de la session (cf. handleStripeCheckout).
       // NB : la base utilise 'essential' (orthographe du check constraint), pas 'essentiel'.
-      const paidPlan = session?.metadata?.plan === 'essentiel' ? 'essential' : 'pro scale';
+      const vendu = session?.metadata?.plan;
+      const paidPlan = vendu === 'smart'     ? 'smart'
+                     : vendu === 'essentiel' ? 'essential'
+                     : 'pro scale';
 
       // Si l'abonnement démarre par un essai, on mémorise sa vraie date de fin
       // (badge « Essai Pro · X j restants » côté dashboard).
@@ -1699,6 +1707,24 @@ async function handleSendCampaign(request, env) {
   // Anti-spam / anti-abus : limite les envois de campagne par commerçant.
   const rlC = await rateLimit(env, 'CAMPAIGN_LIMITER', merchantId);
   if (rlC) return rlC;
+
+  const SUPA0 = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  // Les campagnes commencent à Essentiel : c'est le seul coût variable de
+  // KEEPO, et le refus doit être ici — une vérification faite seulement dans
+  // le navigateur ne protège rien.
+  if (env.SUPABASE_SERVICE_ROLE) {
+    try {
+      const pr = await fetch(`${SUPA0}/rest/v1/profiles?id=eq.${merchantId}&select=plan`, {
+        headers: { apikey: env.SUPABASE_SERVICE_ROLE,
+                   Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE}` }
+      });
+      const [profil] = pr.ok ? await pr.json() : [];
+      if (profil && String(profil.plan || '').toLowerCase() === 'smart') {
+        return json({ error: 'Les campagnes e-mail sont incluses à partir de la formule Essentiel.',
+                      plan: 'smart', upgrade: true }, 403);
+      }
+    } catch (e) { /* le doute profite au commerçant : on laisse passer */ }
+  }
 
   const RESEND_KEY = env.RESEND_API_KEY;
   if (!RESEND_KEY) return json({ error: 'RESEND_API_KEY non configuré dans wrangler' }, 500);

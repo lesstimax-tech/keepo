@@ -5809,14 +5809,19 @@
         if (mBtn) mBtn.style.cssText = gateBilling === 'month' ? on : off;
         if (yBtn) yBtn.style.cssText = gateBilling === 'year'  ? on : off;
         const sub = '<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">';
+        const smaP = document.getElementById('gate-smart-price'), smaN = document.getElementById('gate-smart-note');
         const essP = document.getElementById('gate-ess-price'), essN = document.getElementById('gate-ess-note');
         const proP = document.getElementById('gate-pro-price'), proN = document.getElementById('gate-pro-note');
         if (gateBilling === 'year') {
+            if (smaP) smaP.innerHTML = '249€' + sub + '/an</span>';
+            if (smaN) smaN.textContent = '-15% · soit 20,75 €/mois';
             if (essP) essP.innerHTML = '499€' + sub + '/an</span>';
             if (essN) essN.textContent = '-15% · soit 41,60 €/mois';
             if (proP) proP.innerHTML = '890€' + sub + '/an</span>';
             if (proN) proN.textContent = '-25% · ≈ 3 mois offerts';
         } else {
+            if (smaP) smaP.innerHTML = '24,90€' + sub + '/mois</span>';
+            if (smaN) smaN.textContent = '';
             if (essP) essP.innerHTML = '49€' + sub + '/mois</span>';
             if (essN) essN.textContent = '';
             if (proP) proP.innerHTML = '99€' + sub + '/mois</span>';
@@ -5838,7 +5843,14 @@
                 <button id="gate-bill-month" onclick="setGateBilling('month')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;">Mensuel</button>
                 <button id="gate-bill-year" onclick="setGateBilling('year')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:none;color:var(--text-muted,#6B6A78);">Annuel · jusqu'à -25%</button>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:620px;margin:0 auto;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;max-width:900px;margin:0 auto;">
+                <div style="background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:20px;padding:26px 22px;text-align:left;">
+                    <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Smart</div>
+                    <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-smart-price">24,90€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
+                    <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-smart-note"></div>
+                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">50 clients actifs · scanner QR · tableau de bord</div>
+                    <button onclick="startStripeUpgrade('smart', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Smart</button>
+                </div>
                 <div style="background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:20px;padding:26px 22px;text-align:left;">
                     <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Essentiel</div>
                     <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-ess-price">49€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
@@ -5855,7 +5867,7 @@
                     <button onclick="startStripeUpgrade('pro', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Pro gratuitement</button>
                 </div>
             </div>
-            <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:20px;">🔒 Paiement sécurisé Stripe · 14 jours d'essai inclus dans les deux formules</p>
+            <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:20px;">🔒 Paiement sécurisé Stripe · 14 jours d'essai inclus dans les trois formules</p>
             <button onclick="handleLogout()" style="background:none;border:none;color:var(--text-muted,#6B6A78);font-size:12px;margin-top:14px;cursor:pointer;text-decoration:underline;font-family:inherit;">Se déconnecter</button>
         </div>`;
         document.body.appendChild(ov);
@@ -8771,7 +8783,8 @@
                 body: JSON.stringify({
                     merchantId: currentMerchantId,
                     merchantEmail: email,
-                    plan: plan === 'essentiel' ? 'essentiel' : 'pro',
+                    plan: plan === 'smart' ? 'smart'
+                        : plan === 'essentiel' ? 'essentiel' : 'pro',
                     billing: billing === 'year' ? 'year' : 'month',
                     returnUrl: window.location.origin + '/dashboard-commercant'
                 })
@@ -9206,6 +9219,13 @@
     }
 
     async function sendManualCampaign() {
+        // La formule Smart n'inclut pas les campagnes : on le dit ici plutot
+        // que de laisser le commercant rediger pour rien.
+        if (String(activeMerchantPlan || '').toLowerCase() === 'smart') {
+            showToast('warning', 'Formule Smart',
+                      'Les campagnes e-mail commencent a la formule Essentiel.');
+            return;
+        }
         const subject   = document.getElementById('campaign-subject')?.value?.trim();
         const emailBody = document.getElementById('campaign-body')?.value?.trim();
         if (!subject) { showToast('warning', 'Objet manquant', 'Renseignez l\'objet de l\'email.'); return; }

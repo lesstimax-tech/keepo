@@ -388,7 +388,7 @@ p{margin:0}
   transition:background .25s var(--ease),color .25s var(--ease)}
 .bill-toggle button.on{background:var(--ink);color:#fff}
 .bill-toggle .save{font-size:11.5px;color:var(--acc);margin-left:5px;font-weight:600}
-.price-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;max-width:820px;margin:0 auto}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1080px;margin:0 auto}
 .plan{background:rgba(255,255,255,.96);border:1px solid var(--line-2);border-radius:var(--r-lg);
   padding:32px 28px;position:relative;display:flex;flex-direction:column;
   transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
@@ -510,6 +510,9 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 #scrollbar{position:fixed;top:0;left:0;height:2.5px;width:0;background:var(--grad);z-index:200}
 
 /* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width:1040px) and (min-width:961px){
+  .price-grid{grid-template-columns:repeat(2,1fr)}
+}
 @media (max-width:960px){
   .hero-grid{grid-template-columns:1fr;gap:52px}
   .hero-visual{order:-1}
@@ -887,15 +890,31 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 
     <div class="price-grid">
       <article class="plan rv d1">
+        <h3>Smart</h3>
+        <p class="for">Pour démarrer sans y réfléchir à deux fois</p>
+        <div class="price-row"><span class="price" id="p-smart">24,90€</span><span class="per" id="per-smart">/mois</span></div>
+        <p class="bill-note" id="note-smart">Facturation mensuelle, sans engagement</p>
+        <ul>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Jusqu'à <b>50 clients actifs</b></span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Points <b>et</b> cartes à tampons</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Scanner QR sur votre smartphone</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Carte à vos couleurs et votre logo</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>QR de comptoir HD inclus</span></li>
+        </ul>
+        <a href="connexion.html" class="btn btn-ghost">Démarrer avec Smart</a>
+        <p class="plan-foot">14 jours d'essai · 0&nbsp;€ aujourd'hui</p>
+      </article>
+      <article class="plan rv d2">
         <h3>Essentiel</h3>
         <p class="for">Pour lancer la fidélité dans votre boutique</p>
         <div class="price-row"><span class="price" id="p-ess">49€</span><span class="per" id="per-ess">/mois</span></div>
         <p class="bill-note" id="note-ess">Facturation mensuelle, sans engagement</p>
         <ul>
-          <li><svg class="icon"><use href="#i-check"/></svg><span>Jusqu'à 150 clients actifs</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Jusqu'à <b>150 clients actifs</b></span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>Points <b>et</b> cartes à tampons</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>Scanner QR sur votre smartphone</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>Tableau de bord &amp; fichier client</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span><b>Campagnes e-mail</b> vers vos clients</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>QR de comptoir HD inclus</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>Passage en Pro en 1 clic</span></li>
         </ul>
@@ -903,7 +922,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         <p class="plan-foot">14 jours d'essai · 0&nbsp;€ aujourd'hui</p>
       </article>
 
-      <article class="plan hot rv d2">
+      <article class="plan hot rv d3">
         <div class="plan-pop">⭐ Recommandé par les commerçants</div>
         <h3>KEEPO Pro</h3>
         <p class="for">Pour faire revenir vos clients en automatique</p>
@@ -1099,13 +1118,18 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   /* Toggle Mensuel / Annuel (affichage uniquement) */
   var bm = document.getElementById("bm"), by = document.getElementById("by");
   var P = {
-    month: { ess:"49€", essPer:"/mois", essNote:"Facturation mensuelle, sans engagement",
+    month: { smart:"24,90€", smartPer:"/mois", smartNote:"Facturation mensuelle, sans engagement",
+             ess:"49€", essPer:"/mois", essNote:"Facturation mensuelle, sans engagement",
              pro:"99€", proPer:"/mois", proNote:"Facturation mensuelle, sans engagement" },
-    year:  { ess:"41,60€", essPer:"/mois", essNote:"Facturé 499€ par an · −15%",
+    year:  { smart:"20,75€", smartPer:"/mois", smartNote:"Facturé 249€ par an · −15%",
+             ess:"41,60€", essPer:"/mois", essNote:"Facturé 499€ par an · −15%",
              pro:"74,20€", proPer:"/mois", proNote:"Facturé 890€ par an · −25% ≈ 3 mois offerts" }
   };
   function setBill(mode){
     var p = P[mode];
+    document.getElementById("p-smart").textContent  = p.smart;
+    document.getElementById("per-smart").textContent = p.smartPer;
+    document.getElementById("note-smart").textContent = p.smartNote;
     document.getElementById("p-ess").textContent  = p.ess;
     document.getElementById("per-ess").textContent = p.essPer;
     document.getElementById("note-ess").textContent = p.essNote;

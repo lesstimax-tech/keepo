@@ -1493,3 +1493,44 @@ $usage$;
 
 revoke all on function public.my_member_usage() from public;
 grant execute on function public.my_member_usage() to authenticated;
+
+
+-- ═══════════════════════════════════════════════════════════════════
+-- KEEPO Smart — l'entrée de gamme : 50 membres, pas de campagnes.
+-- Le plafond est le seul curseur : il se comprend sans explication, et
+-- un commerce qui marche le dépasse de lui-même en quelques semaines.
+-- ═══════════════════════════════════════════════════════════════════
+
+alter table public.profiles drop constraint if exists profiles_plan_check;
+alter table public.profiles add constraint profiles_plan_check
+  check (plan in ('essential', 'smart', 'pro', 'pro scale'));
+
+create or replace function public.merchant_member_limit(p_plan text)
+returns int
+language sql
+immutable
+as $limite$
+  select case lower(coalesce(p_plan, 'essential'))
+           when 'smart'     then 50
+           when 'essential' then 150
+           when 'essentiel' then 150
+           else null                      -- pro, pro scale : illimité
+         end;
+$limite$;
+
+-- Les campagnes e-mail sont le seul coût variable de KEEPO : elles
+-- commencent à Essentiel. Le refus se fait aussi côté serveur, car une
+-- vérification faite seulement dans le navigateur ne protège rien.
+create or replace function public.peut_envoyer_campagne(p_merchant uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $campagne$
+  select lower(coalesce(plan, 'essential')) <> 'smart'
+  from public.profiles where id = p_merchant;
+$campagne$;
+
+revoke all on function public.peut_envoyer_campagne(uuid) from public;
+grant execute on function public.peut_envoyer_campagne(uuid) to authenticated, service_role;
