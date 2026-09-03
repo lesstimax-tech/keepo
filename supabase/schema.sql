@@ -10,7 +10,10 @@ create table if not exists public.profiles (
   name       text not null default 'Utilisateur',
   email      text,
   role       text not null default 'client' check (role in ('client', 'commercant')),
-  plan       text not null default 'essential' check (plan in ('essential', 'pro', 'pro scale')),
+  -- 'client' fait partie des valeurs legitimes : cette table porte aussi
+  -- les comptes clients, qui ne souscrivent aucune formule commercante.
+  plan       text not null default 'essential'
+             check (plan in ('client', 'smart', 'essential', 'pro', 'pro scale')),
   created_at timestamptz default now()
 );
 
@@ -1501,9 +1504,14 @@ grant execute on function public.my_member_usage() to authenticated;
 -- un commerce qui marche le dépasse de lui-même en quelques semaines.
 -- ═══════════════════════════════════════════════════════════════════
 
+-- Une seule ecriture par formule : 'PRO' et 'pro' cohabitaient.
+update public.profiles set plan = lower(plan) where plan <> lower(plan);
+
+-- 'client' doit figurer dans la liste : sans lui, la contrainte est
+-- rejetee par les comptes clients deja presents.
 alter table public.profiles drop constraint if exists profiles_plan_check;
 alter table public.profiles add constraint profiles_plan_check
-  check (plan in ('essential', 'smart', 'pro', 'pro scale'));
+  check (plan in ('client', 'smart', 'essential', 'pro', 'pro scale'));
 
 create or replace function public.merchant_member_limit(p_plan text)
 returns int
