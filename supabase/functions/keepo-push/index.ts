@@ -15,6 +15,9 @@
 //    POST { client_ids?: string[], merchant_id?: string,
 //           title: string, body: string, url?: string }
 //
+//  merchant_id sert deux fois : à viser tous les clients du commerce quand
+//  client_ids est absent, et à habiller la notification de son logo.
+//
 //  Réponse : { sent, failed, total, cleaned }
 //  Les abonnements expirés (404/410) sont supprimés automatiquement.
 // ════════════════════════════════════════════════════════════════
@@ -87,10 +90,18 @@ Deno.serve(async (req) => {
 
   if (!subs?.length) return json({ sent: 0, failed: 0, total: 0, cleaned: 0 });
 
+  // Le logo du commerce plutôt que le nôtre. L'endpoint /logo/<id> retombe
+  // seul sur l'icône KEEPO quand le commerçant n'en a pas téléversé, donc
+  // aucune notification ne se retrouve sans image.
+  const marque = typeof merchant_id === 'string' && merchant_id
+    ? `https://keepo.eu/logo/${encodeURIComponent(merchant_id)}`
+    : null;
+
   const payload = JSON.stringify({
     title: String(title).slice(0, 120),
     body:  String(msgBody).slice(0, 300),
     url:   url || '/dashboard-client',
+    ...(marque ? { icon: marque, tag: `keepo-${merchant_id}` } : {}),
   });
 
   let sent = 0, failed = 0;

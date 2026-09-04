@@ -37,8 +37,13 @@ self.addEventListener('push', e => {
     const title   = data.title || 'KEEPO 🎉';
     const options = {
         body   : data.body  || 'Vous avez une mise à jour sur votre carte de fidélité.',
-        icon   : '/img/icon-192.png',
+        // L'icône est celle du commerce : sur l'écran verrouillé, le client
+        // doit reconnaître SA boulangerie. Le badge reste le nôtre — Android
+        // le réduit à une silhouette monochrome, où un logo tournerait au pâté.
+        icon   : data.icon  || '/img/icon-192.png',
         badge  : '/img/icon-192.png',
+        // Une étiquette par commerce : sans elle, deux commerces se
+        // remplaceraient l'un l'autre dans le centre de notifications.
         tag    : data.tag   || 'KEEPO-notif',
         data   : { url: data.url || '/dashboard-client' },
         vibrate: [100, 50, 100],

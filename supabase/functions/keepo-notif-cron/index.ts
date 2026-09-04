@@ -176,6 +176,7 @@ async function sendAndLog(
 // à l'e-mail personnalisé). keepo-push ne touche que les clients abonnés.
 async function pushToClients(
   clientIds: string[],
+  merchantId: string,
   merchantName: string,
   subject: string,
 ): Promise<void> {
@@ -193,7 +194,10 @@ async function pushToClients(
         'Content-Type':  'application/json',
       },
       body: JSON.stringify({
-        client_ids: clientIds,
+        client_ids:  clientIds,
+        // Les destinataires restent ceux de client_ids ; merchant_id ne sert
+        // ici qu'à habiller la notification du logo du commerce.
+        merchant_id: merchantId,
         title: merchantName,
         body:  cleanBody,
         url:   '/dashboard-client',
@@ -254,7 +258,7 @@ async function processRelance(supabase: SupabaseClient, auto: any, merchantName:
       { email: client.email, name: client.name, client_id: client.id },
       auto.subject, auto.body);
   }
-  await pushToClients(toNotify.map((c: any) => c.id), merchantName, auto.subject);
+  await pushToClients(toNotify.map((c: any) => c.id), auto.merchant_id, merchantName, auto.subject);
 }
 
 // ─── AVIS : N minutes APRÈS un achat ──────────────────────────
@@ -302,7 +306,7 @@ async function processAvis(supabase: SupabaseClient, auto: any, merchantName: st
       auto.subject, auto.body,
       { ctaLabel: '⭐ Laisser mon avis sur Google' });
   }
-  await pushToClients(toNotify, merchantName, auto.subject);
+  await pushToClients(toNotify, auto.merchant_id, merchantName, auto.subject);
 }
 
 // ─── OFFRE : entre date_start et date_end (envoi unique/client) ─
@@ -328,7 +332,7 @@ async function processOffre(supabase: SupabaseClient, auto: any, merchantName: s
       { email: client.email, name: client.name, client_id: client.id },
       auto.subject, auto.body);
   }
-  await pushToClients(toNotify.map((c: any) => c.id), merchantName, auto.subject);
+  await pushToClients(toNotify.map((c: any) => c.id), auto.merchant_id, merchantName, auto.subject);
 }
 
 // ─── CUSTOM : envoi unique selon le mode ──────────────────────
@@ -356,7 +360,7 @@ async function processCustom(supabase: SupabaseClient, auto: any, merchantName: 
       { email: client.email, name: client.name, client_id: client.id },
       auto.subject, auto.body);
   }
-  await pushToClients(clients.map((c: any) => c.id), merchantName, auto.subject);
+  await pushToClients(clients.map((c: any) => c.id), auto.merchant_id, merchantName, auto.subject);
 }
 
 // ─── Boucle principale ────────────────────────────────────────

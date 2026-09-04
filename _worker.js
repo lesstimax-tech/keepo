@@ -1854,12 +1854,26 @@ async function handleMerchantLogo(request, env, url) {
   if (!SUPA_KEY) return fallback();
 
   try {
-    const res = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&select=avatar_url`, {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
-    });
+    const entetes = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` };
+    const motif   = /^data:(image\/[a-z+.-]+);base64,(.+)$/i;
+
+    // 1) L'avatar du profil, réglé depuis les paramètres du compte.
+    const res  = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&select=avatar_url`, { headers: entetes });
     const rows = res.ok ? await res.json() : [];
-    const dataUrl = rows[0]?.avatar_url || '';
-    const m = dataUrl.match(/^data:(image\/[a-z+.-]+);base64,(.+)$/i);
+    let m = String(rows[0]?.avatar_url || '').match(motif);
+
+    // 2) Sinon le logo de la carte. C'est celui que la prise en main fait
+    //    téléverser : bien souvent le seul que le commerçant ait donné.
+    //    Sans ce repli, ses e-mails et ses notifications push portent
+    //    notre icône plutôt que sa marque.
+    if (!m) {
+      const res2  = await fetch(`${SUPA_URL}/rest/v1/merchant_cards?merchant_id=eq.${merchantId}&select=studio_json`, { headers: entetes });
+      const rows2 = res2.ok ? await res2.json() : [];
+      try {
+        const design = rows2[0]?.studio_json ? JSON.parse(rows2[0].studio_json) : null;
+        m = String(design?.logo || '').match(motif);
+      } catch { /* studio_json illisible : on garde le repli */ }
+    }
     if (!m) return fallback();
 
     const bin = atob(m[2]);
