@@ -645,6 +645,87 @@
         .ann-illus svg { width: 190px; height: 140px; display: block;
             animation: annIllus .6s var(--ease) both .1s; }
         .ann-illus img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* ── Films d'annonce ──────────────────────────────────────
+           Des scènes vectorielles animées, pleine largeur, dans la
+           lignée des visuels : fond presque noir, violet, bleu,
+           turquoise. Quelques kilo-octets, rien à déployer, net sur
+           tout écran, et disponibles hors ligne. */
+        .ann-illus svg.ann-film { width: 100%; height: 100%; }
+
+        @keyframes kf-parcours {
+            0%        { transform: translateX(0);     opacity: 0; }
+            10%       { opacity: 1; }
+            52%       { transform: translateX(108px); opacity: 1; }
+            60%, 100% { transform: translateX(108px); opacity: 0; }
+        }
+        @keyframes kf-eclat {
+            0%, 50% { opacity: 0;   transform: scale(.55); }
+            62%     { opacity: .30; transform: scale(1); }
+            100%    { opacity: 0;   transform: scale(1.4); }
+        }
+        @keyframes kf-reveil {
+            0%, 50% { opacity: .35; }
+            62%     { opacity: 1; }
+            100%    { opacity: .35; }
+        }
+        @keyframes kf-converge {
+            0%        { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+            18%       { opacity: 1; }
+            66%       { transform: translate(0, 0); opacity: 1; }
+            76%, 100% { transform: translate(0, 0); opacity: 0; }
+        }
+        @keyframes kf-noyau {
+            0%, 58% { transform: scale(1);    opacity: .8; }
+            72%     { transform: scale(1.16); opacity: 1; }
+            100%    { transform: scale(1);    opacity: .8; }
+        }
+        @keyframes kf-onde {
+            0%   { transform: scale(.3); opacity: .6; }
+            100% { transform: scale(2.7); opacity: 0; }
+        }
+        @keyframes kf-trace {
+            0%   { stroke-dashoffset: 100; opacity: .95; }
+            46%  { stroke-dashoffset: 0;   opacity: .95; }
+            84%  { stroke-dashoffset: 0;   opacity: .95; }
+            100% { stroke-dashoffset: 0;   opacity: 0; }
+        }
+        @keyframes kf-cible {
+            0%, 42%   { opacity: 0; transform: scale(.4); }
+            54%       { opacity: 1; transform: scale(1.2); }
+            62%, 84%  { opacity: 1; transform: scale(1); }
+            100%      { opacity: 0; transform: scale(1); }
+        }
+        @keyframes kf-tampon {
+            0%, 4%    { opacity: 0; transform: scale(.3); }
+            13%       { opacity: 1; transform: scale(1.15); }
+            19%, 86%  { opacity: 1; transform: scale(1); }
+            100%      { opacity: 0; transform: scale(1); }
+        }
+        @keyframes kf-respire {
+            0%, 100% { opacity: .5; }
+            50%      { opacity: .9; }
+        }
+
+        .ann-film [class^="fx-"] { transform-box: fill-box; transform-origin: center; }
+        .fx-parcours { transform-box: view-box; animation: kf-parcours 4.2s ease-in-out infinite; }
+        .fx-eclat    { animation: kf-eclat    4.2s ease-out    infinite; }
+        .fx-reveil   { animation: kf-reveil   4.2s ease-in-out infinite; }
+        .fx-converge { transform-box: view-box; animation: kf-converge 4.4s ease-in-out infinite var(--d, 0s); }
+        .fx-noyau    { animation: kf-noyau    4.4s ease-in-out infinite; }
+        .fx-onde     { animation: kf-onde     3.6s ease-out    infinite var(--d, 0s); }
+        .fx-trace    { transform-box: view-box; animation: kf-trace 4s ease-in-out infinite var(--d, 0s); }
+        .fx-cible    { animation: kf-cible    4s ease-out      infinite var(--d, 0s); }
+        .fx-tampon   { animation: kf-tampon   5s ease-out      infinite var(--d, 0s); }
+        .fx-respire  { animation: kf-respire  5s ease-in-out   infinite; }
+
+        /* Une animation qui tourne en boucle peut gêner, voire rendre malade.
+           Quand le système le signale, la scène se fige à son état plein. */
+        @media (prefers-reduced-motion: reduce) {
+            .ann-film [class^="fx-"] { animation: none !important; opacity: 1 !important; }
+            .fx-trace { stroke-dashoffset: 0 !important; }
+            .fx-parcours, .fx-onde { opacity: 0 !important; }
+        }
         @keyframes annIllus { from { opacity: 0; transform: scale(.86) translateY(10px); } }
 
         .ann-corps { padding: 24px 26px 22px; }
@@ -4258,17 +4339,21 @@
        ANNONCES — ce qui s'affiche à l'arrivée du commerçant.
 
        POUR EN AJOUTER UNE : une entrée en tête de KEEPO_ANNONCES, avec un
-       visuel dans img/notifications/ (NotifN.png, 16:9) et le champ image ;
-       le champ illus reste comme repli si le fichier venait à manquer. Un
        `id` jamais réutilisé. Les commerçants qui ne l'ont pas encore vue la
        verront à leur prochaine connexion ; les autres ne sont pas dérangés.
 
-       Champs : id, date, tag, illus (voir ILLUSTRATIONS), titre, texte,
-       et action facultative { label, panel } ou { label, href }.
+       Le visuel se choisit dans cet ordre : film (une scène animée de FILMS),
+       sinon image (un fichier de img/notifications/, 16:9), sinon illus (une
+       illustration fixe de ILLUSTRATIONS). Retirer la ligne « film » d'une
+       annonce rend donc la main à son image.
+
+       Champs : id, date, tag, film, image, illus, titre, texte, et action
+       facultative { label, panel } ou { label, href }.
        ═══════════════════════════════════════════════════════════════ */
     const KEEPO_ANNONCES = [
         {
             id: 'parrainage-commercants-2026-08',
+            film: 'parrainage',
             image: 'img/notifications/Notif1.jpg',
             date: '2026-08-26',
             tag: 'Rappel',
@@ -4279,6 +4364,7 @@
         },
         {
             id: 'assistant-agit-2026-08',
+            film: 'ia',
             image: 'img/notifications/Notif2.jpg',
             date: '2026-08-25',
             tag: 'Nouveau',
@@ -4290,6 +4376,7 @@
         },
         {
             id: 'carte-decouverte-2026-08',
+            film: 'localisation',
             image: 'img/notifications/Notif3.jpg',
             date: '2026-08-25',
             tag: 'Nouveau',
@@ -4302,6 +4389,7 @@
         },
         {
             id: 'parrainage-rappel-2026-08',
+            film: 'parrainage-client',
             image: 'img/notifications/Notif4.jpg',
             date: '2026-08-20',
             tag: 'Rappel',
@@ -4314,6 +4402,7 @@
         },
         {
             id: 'studio-tampons-2026-08',
+            film: 'carte',
             image: 'img/notifications/Notif5.jpg',
             date: '2026-08-18',
             tag: 'Amélioration',
@@ -4370,6 +4459,27 @@
           + '<stop stop-color="#5A32A0"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs></svg>',
     };
 
+    /* Films d'annonce : ce que N26 obtient avec une bibliothèque d'animation,
+       en vectoriel écrit à la main. Quelques kilo-octets par scène, net sur
+       tout écran, disponible hors ligne, et figé si le système demande à
+       réduire les animations. */
+    const FILMS = {
+        'parrainage':
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-parr" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><line x1="178" y1="84" x2="282" y2="84" stroke="url(#fg-parr)" stroke-width="2" opacity=".3"/><circle class="fx-eclat" cx="310" cy="84" r="44" fill="#1FA5A8" opacity="0"/><rect x="126" y="58" width="52" height="52" rx="17" fill="url(#fg-parr)"/><rect class="fx-reveil" x="282" y="58" width="52" height="52" rx="17" fill="url(#fg-parr)" opacity=".35"/><circle class="fx-parcours" cx="178" cy="84" r="4.5" fill="#EDEDF5" opacity="0"/><circle cx="86" cy="42" r="2" fill="#3F63A4" opacity=".4"/><circle cx="378" cy="128" r="2.5" fill="#1FA5A8" opacity=".35"/></svg>',
+
+        'ia':
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-ia" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><circle class="fx-noyau" cx="230" cy="84" r="27" fill="url(#fg-ia)" opacity=".8"/><circle class="fx-noyau" cx="230" cy="84" r="44" fill="none" stroke="#1FA5A8" stroke-width="1" opacity=".18"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-142px;--dy:-52px;--d:0.00s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-104px;--dy:40px;--d:0.16s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-52px;--dy:-64px;--d:0.32s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:58px;--dy:-44px;--d:0.48s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:112px;--dy:34px;--d:0.64s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:140px;--dy:-18px;--d:0.80s"/></svg>',
+
+        'localisation':
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-loc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:0s"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:1.2s"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:2.4s"/><circle class="fx-respire" cx="128" cy="46" r="3.2" fill="#3F63A4" style="animation-delay:0.0s"/><circle class="fx-respire" cx="352" cy="58" r="2.4" fill="#3F63A4" style="animation-delay:0.4s"/><circle class="fx-respire" cx="332" cy="132" r="3.2" fill="#3F63A4" style="animation-delay:0.8s"/><circle class="fx-respire" cx="116" cy="122" r="2.4" fill="#3F63A4" style="animation-delay:1.2s"/><circle class="fx-respire" cx="176" cy="36" r="3.2" fill="#3F63A4" style="animation-delay:1.6s"/><circle cx="230" cy="86" r="10" fill="url(#fg-loc)"/></svg>',
+
+        'parrainage-client':
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-prc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><path class="fx-trace" d="M154 84 C 214 84, 236 38, 300 34" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0s"/><path class="fx-trace" d="M154 84 C 214 84, 244 84, 312 84" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0.3s"/><path class="fx-trace" d="M154 84 C 214 84, 236 130, 300 134" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0.6s"/><circle class="fx-cible" cx="300" cy="34" r="7" fill="#1FA5A8" opacity="0" style="--d:0s"/><circle class="fx-cible" cx="312" cy="84" r="7" fill="#1FA5A8" opacity="0" style="--d:0.3s"/><circle class="fx-cible" cx="300" cy="134" r="7" fill="#1FA5A8" opacity="0" style="--d:0.6s"/><circle cx="154" cy="84" r="13" fill="url(#fg-prc)"/><circle cx="154" cy="84" r="24" fill="none" stroke="#5A32A0" stroke-width="1" opacity=".3"/></svg>',
+
+        'carte':
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-crt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><rect class="fx-respire" x="150" y="30" width="160" height="38" rx="12" fill="none" stroke="url(#fg-crt)" stroke-width="1.4" opacity=".5"/><rect x="166" y="46" width="58" height="5" rx="2.5" fill="#3F63A4" opacity=".45"/><circle cx="120" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="152" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="184" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="216" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="248" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="280" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="312" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="344" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle class="fx-tampon" cx="120" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.00s"/><circle class="fx-tampon" cx="152" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.22s"/><circle class="fx-tampon" cx="184" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.44s"/><circle class="fx-tampon" cx="216" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.66s"/><circle class="fx-tampon" cx="248" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.88s"/><circle class="fx-tampon" cx="280" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.10s"/><circle class="fx-tampon" cx="312" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.32s"/><circle class="fx-tampon" cx="344" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.54s"/></svg>',
+    };
+
     const ANNONCE_DUREE = 7000;          // défilement automatique
     let annVues = [], annIndex = 0, annMinuteur = null, annEnPause = false;
 
@@ -4407,10 +4517,14 @@
         const dateFr = new Date(a.date + 'T12:00:00').toLocaleDateString('fr-FR',
                         { day: 'numeric', month: 'long', year: 'numeric' });
 
+        /* D'abord le film, puis le visuel fixe, puis l'illustration :
+           retirer la ligne « film » d'une annonce rend la main à l'image. */
+        const visuel = FILMS[a.film]
+            || (a.image ? '<img src="' + escapeHtml(a.image) + '" alt="">' : null)
+            || ILLUSTRATIONS[a.illus] || ILLUSTRATIONS.nouveau;
+
         boite.innerHTML =
-            '<div class="ann-illus">' + (a.image
-                ? '<img src="' + escapeHtml(a.image) + '" alt="">'
-                : (ILLUSTRATIONS[a.illus] || ILLUSTRATIONS.nouveau)) + '</div>'
+            '<div class="ann-illus">' + visuel + '</div>'
           + '<div class="ann-corps">'
           +   '<div class="ann-meta"><span class="ann-tag">' + escapeHtml(a.tag || 'Nouveau') + '</span>'
           +   '<span class="ann-date">' + escapeHtml(dateFr) + '</span></div>'
