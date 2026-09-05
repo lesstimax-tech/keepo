@@ -2031,6 +2031,7 @@
             <button class="nav-btn" onclick="switchPanel('view-events')">
                 <i class="fa-solid fa-bolt"></i> Événements
                 <span class="nav-badge">NEW</span>
+                <span class="nav-lock" id="nav-lock-events" title="À partir de la formule Essentiel" style="display:none;"><i class="fa-solid fa-lock"></i></span>
             </button>
             <button class="nav-btn" onclick="switchPanel('view-history')">
                 <i class="fa-solid fa-clock-rotate-left"></i> Historique
@@ -2058,9 +2059,11 @@
         <nav style="display:flex;flex-direction:column;gap:2px;">
             <button class="nav-btn" onclick="switchPanel('view-boutiques')">
                 <i class="fa-solid fa-store"></i> Mes Boutiques
+                <span class="nav-lock" id="nav-lock-boutiques" title="À partir de la formule Essentiel" style="display:none;"><i class="fa-solid fa-lock"></i></span>
             </button>
             <button class="nav-btn" onclick="switchPanel('view-caisse')">
                 <i class="fa-solid fa-cash-register"></i> Mode Caisse
+                <span class="nav-lock" id="nav-lock-caisse" title="Réservé à Pro Scale" style="display:none;"><i class="fa-solid fa-lock"></i></span>
             </button>
         </nav>
 
@@ -2818,6 +2821,9 @@
             <h2 class="panel-title">Automatisation Marketing</h2>
             <p class="panel-subtitle">Créez des e-mails automatiques pour fidéliser vos clients</p>
 
+            <!-- Tout ce qui part tout seul, en un bloc : la formule Smart le
+                 remplace par un encart, sans toucher à la campagne manuelle. -->
+            <div id="notif-auto-zone">
             <div id="notif-saved-list" style="display:none;max-width:680px;margin:0 auto 24px;"></div>
 
             <div id="notif-landing-zone" style="text-align:center;padding:48px 0;">
@@ -2962,6 +2968,8 @@
                     <button onclick="saveNotificationAutomation()" class="btn-action" style="flex:1;"><i class="fa-solid fa-check"></i> Activer l'Automation</button>
                 </div>
             </div>
+
+            </div><!-- /notif-auto-zone -->
 
             <!-- ══ CAMPAGNE MANUELLE ══ -->
             <div class="card" style="max-width:680px;margin:32px auto 0;border-color:rgba(255,77,130,0.2);">
@@ -4349,13 +4357,33 @@
        Tout ce qui dépend de la formule passe désormais par ici. */
     const FORMULES = {
         smart:     { nom: 'Smart',     classe: 'plan-smart',     icone: 'fa-seedling',
-                     membres: 50,  suivante: 'Essentiel', campagnes: false,
-                     argument: "Passez Essentiel pour tripler votre nombre de membres et ouvrir les campagnes e-mail." },
+                     membres: 50,  suivante: 'Essentiel',
+                     // Smart envoie ses campagnes à la main ; ce sont les envois
+                     // programmés, qui partent sans surveillance, qui restent fermés.
+                     automations: false,
+                     reserves: ['view-events', 'view-boutiques'],
+                     argument: "Passez Essentiel pour tripler votre nombre de membres et programmer vos envois." },
         essential: { nom: 'Essential', classe: 'plan-essential', icone: 'fa-store',
-                     membres: 150, suivante: 'Pro Scale', campagnes: true,
+                     membres: 150, suivante: 'Pro Scale',
+                     automations: true,
+                     reserves: [],
                      argument: "Débloquez l'analyse prédictive, le panier moyen et l'export CSV avec Pro Scale." },
     };
     FORMULES.essentiel = FORMULES.essential;   // les deux orthographes coexistent en base
+
+    /* Ce que l'on montre au commerçant quand il clique sur un espace fermé. */
+    const ESPACES_RESERVES = {
+        'view-events':    'Événements multiplicateurs',
+        'view-boutiques': 'Multi-boutiques',
+    };
+    const CADENAS_MENU = ['nav-lock-advanced', 'nav-lock-caisse',
+                          'nav-lock-events', 'nav-lock-boutiques'];
+    function majCadenasMenu(aVerrouiller) {
+        CADENAS_MENU.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = aVerrouiller.includes(id) ? '' : 'none';
+        });
+    }
 
     function estProScale() {
         return activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale';
@@ -5933,6 +5961,12 @@
     }
 
     function switchPanel(panelId) {
+        // Un espace fermé se dit avant d'ouvrir, pas après : sinon le
+        // commerçant découvre un panneau vide sans comprendre pourquoi.
+        if (!estProScale() && (formuleCourante().reserves || []).includes(panelId)) {
+            openUpgradeModal(ESPACES_RESERVES[panelId] || 'Fonctionnalité réservée');
+            return;
+        }
         document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
         document.getElementById(panelId).classList.add('active');
         // L'entrée de menu se déduit du panneau, jamais de ce qui a été
@@ -6078,7 +6112,7 @@
                     <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Smart</div>
                     <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-smart-price">24,90€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
                     <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-smart-note"></div>
-                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">50 clients actifs · scanner QR · tableau de bord</div>
+                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">50 clients actifs · campagnes manuelles · scanner QR</div>
                     <button onclick="startStripeUpgrade('smart', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Smart</button>
                 </div>
                 <div style="background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:20px;padding:26px 22px;text-align:left;">
@@ -6123,8 +6157,7 @@
             document.getElementById('lock-api-webhooks').outerHTML = "";
             document.getElementById('lock-marketing-pro')?.remove();
             document.getElementById('lock-caisse-mode')?.remove();
-            const navLockPro = document.getElementById('nav-lock-advanced');
-            if (navLockPro) navLockPro.style.display = 'none';
+            majCadenasMenu([]);
         } else {
             const formule = formuleCourante();
             badge.innerHTML = '<i class="fa-solid ' + formule.icone + '"></i> ' + formule.nom;
@@ -6138,20 +6171,43 @@
             if (mktLock) mktLock.innerHTML = buildLock('Programme avancé Marketing');
             const caisseLock = document.getElementById('lock-caisse-mode');
             if (caisseLock) caisseLock.innerHTML = buildLock('Mode caisse tablette');
-            const navLockPro = document.getElementById('nav-lock-advanced');
-            if (navLockPro) navLockPro.style.display = '';
+            const verrous = ['nav-lock-advanced', 'nav-lock-caisse'];
+            if (formule.reserves.includes('view-events'))    verrous.push('nav-lock-events');
+            if (formule.reserves.includes('view-boutiques')) verrous.push('nav-lock-boutiques');
+            majCadenasMenu(verrous);
 
-            // Les campagnes commencent à Essentiel. On le dit sur le bouton
-            // plutôt que d'attendre que le commerçant ait rédigé son message.
-            const btnCampagne = document.getElementById('campaign-send-btn');
-            if (btnCampagne && !formule.campagnes) {
-                btnCampagne.disabled = true;
-                btnCampagne.style.opacity = '.55';
-                btnCampagne.style.cursor = 'not-allowed';
-                btnCampagne.title = 'Les campagnes e-mail commencent à la formule Essentiel';
-                btnCampagne.innerHTML = '<i class="fa-solid fa-lock"></i> Campagnes dès la formule Essentiel';
-            }
+            if (!formule.automations) verrouillerAutomatisations();
         }
+    }
+
+    /* Smart envoie ses campagnes à la main. Ce sont les envois programmés qui
+       restent fermés : ils partent sans surveillance, et chaque envoi coûte.
+       Le bloc « Campagne Email Manuelle », lui, n'est pas touché. */
+    function verrouillerAutomatisations() {
+        const zone = document.getElementById('notif-auto-zone');
+        if (!zone) return;
+
+        const vue = document.getElementById('view-notifications');
+        const titre = vue?.querySelector('.panel-title');
+        const sous  = vue?.querySelector('.panel-subtitle');
+        if (titre) titre.textContent = 'Campagnes e-mail';
+        if (sous)  sous.textContent  = 'Écrivez à vos clients quand vous le décidez.';
+
+        zone.innerHTML =
+            '<div class="card" style="max-width:680px;margin:0 auto;text-align:center;padding:34px 26px;">'
+          +   '<div style="width:56px;height:56px;border-radius:18px;margin:0 auto 14px;display:grid;'
+          +        'place-items:center;background:rgba(14,124,140,.09);'
+          +        'border:1px solid rgba(14,124,140,.22);color:var(--secondary-accent);font-size:20px;">'
+          +     '<i class="fa-solid fa-lock"></i></div>'
+          +   '<div style="font-family:Inter,sans-serif;font-weight:800;font-size:17px;margin-bottom:9px;">'
+          +     'Les envois programmés commencent à l\'Essentiel</div>'
+          +   '<p style="color:var(--text-muted);font-size:13.5px;line-height:1.65;max-width:46ch;margin:0 auto 20px;">'
+          +     'Relances des clients inactifs, demandes d\'avis, offres datées : '
+          +     'ils partent tout seuls avec la formule Essentiel. Votre campagne '
+          +     'manuelle, juste en dessous, reste à votre disposition.</p>'
+          +   '<button class="btn-action btn-primary-gradient" style="padding:12px 26px;font-size:13.5px;" '
+          +     'onclick="openUpgradeModal(\'Envois programmés\')">Voir la formule Essentiel</button>'
+          + '</div>';
     }
 
     // ─── QR codes d'installation app (iOS / Android) ───
@@ -9576,13 +9632,6 @@
     }
 
     async function sendManualCampaign() {
-        // La formule Smart n'inclut pas les campagnes : on le dit ici plutot
-        // que de laisser le commercant rediger pour rien.
-        if (String(activeMerchantPlan || '').toLowerCase() === 'smart') {
-            showToast('warning', 'Formule Smart',
-                      'Les campagnes e-mail commencent a la formule Essentiel.');
-            return;
-        }
         const subject   = document.getElementById('campaign-subject')?.value?.trim();
         const emailBody = document.getElementById('campaign-body')?.value?.trim();
         if (!subject) { showToast('warning', 'Objet manquant', 'Renseignez l\'objet de l\'email.'); return; }

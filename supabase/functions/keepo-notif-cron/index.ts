@@ -387,9 +387,15 @@ async function runCron(supabase: SupabaseClient): Promise<{ processed: number; t
   for (const auto of automations) {
     const { data: merchant } = await supabase
       .from('profiles')
-      .select('name')
+      .select('name, plan')
       .eq('id', auto.merchant_id)
       .single();
+
+    // Les envois programmés commencent à l'Essentiel. Le refus est ici et
+    // pas seulement dans le navigateur : une automation créée avant un
+    // changement de formule continuerait sinon de partir, aux frais de KEEPO.
+    if (String(merchant?.plan ?? '').toLowerCase() === 'smart') continue;
+
     const merchantName = merchant?.name ?? 'votre enseigne';
 
     try {
