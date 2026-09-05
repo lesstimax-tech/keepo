@@ -39,6 +39,11 @@
             --bg-mid: #FFFFFF;               /* surfaces */
             --bg-card: #FFFFFF;
             --bg-card-hover: #FAFAFC;
+
+            /* Films d'annonce : un panneau très clair, et une encre profonde
+               pour la lumière qui voyage. */
+            --film-fond: #EFECFA;
+            --film-vif:  #1A1430;
             --glass-border: #EAEAF0;
             --glass-border-bright: #DCDCE6;
             --text-main: #101018;
@@ -94,6 +99,11 @@
             --bg-mid: #0E0C18;
             --bg-card: #14111F;
             --bg-card-hover: #1A1628;
+
+            /* Films d'annonce : presque noir, et un blanc cassé pour la
+               lumière qui voyage. */
+            --film-fond: #0B0B11;
+            --film-vif:  #EDEDF5;
             --glass-border: rgba(255, 255, 255, 0.08);
             --glass-border-bright: rgba(255, 255, 255, 0.16);
             --text-main: #F1EFFA;
@@ -636,12 +646,17 @@
             background: var(--grad); }
         @keyframes annBarre { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
+        /* Le bandeau est clair en thème clair : un blanc translucide y
+           disparaîtrait. La croix prend l'encre du thème. */
         .ann-fermer { position: absolute; top: 14px; right: 14px; z-index: 3;
             width: 34px; height: 34px; border-radius: 12px; cursor: pointer; border: none;
-            background: rgba(255,255,255,.22); color: #fff; display: grid; place-items: center;
+            background: rgba(17,24,39,.10); color: var(--text-main);
+            display: grid; place-items: center;
             -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
             transition: background .25s, transform .35s var(--ease); }
-        .ann-fermer:hover { background: rgba(255,255,255,.36); transform: rotate(90deg); }
+        .ann-fermer:hover { background: rgba(17,24,39,.18); transform: rotate(90deg); }
+        :root[data-theme="dark"] .ann-fermer { background: rgba(255,255,255,.22); color: #fff; }
+        :root[data-theme="dark"] .ann-fermer:hover { background: rgba(255,255,255,.36); }
 
         .ann-illus { height: 168px; display: grid; place-items: center; overflow: hidden;
             position: relative; background: var(--grad-soft); }
@@ -656,9 +671,9 @@
 
         /* ── Films d'annonce ──────────────────────────────────────
            Des scènes vectorielles animées, pleine largeur, dans la
-           lignée des visuels : fond presque noir, violet, bleu,
-           turquoise. Quelques kilo-octets, rien à déployer, net sur
-           tout écran, et disponibles hors ligne. */
+           palette de la marque : violet, bleu, turquoise. Le fond suit
+           le thème. Quelques kilo-octets, rien à déployer, net sur tout
+           écran, et disponibles hors ligne. */
         .ann-illus svg.ann-film { width: 100%; height: 100%; }
 
         @keyframes kf-parcours {
@@ -715,7 +730,13 @@
             50%      { opacity: .9; }
         }
 
-        .ann-film [class^="fx-"] { transform-box: fill-box; transform-origin: center; }
+        /* Le film suit le theme : fond presque noir en sombre, panneau
+           tres clair en clair. Les formes gardent la palette de la marque,
+           lisible sur les deux fonds. */
+        .ann-film .fm-fond { fill: var(--film-fond, #0B0B11); }
+        .ann-film .fm-vif  { fill: var(--film-vif,  #EDEDF5); }
+
+        .ann-film [class*="fx-"] { transform-box: fill-box; transform-origin: center; }
         .fx-parcours { transform-box: view-box; animation: kf-parcours 4.2s ease-in-out infinite; }
         .fx-eclat    { animation: kf-eclat    4.2s ease-out    infinite; }
         .fx-reveil   { animation: kf-reveil   4.2s ease-in-out infinite; }
@@ -730,10 +751,11 @@
         /* Une animation qui tourne en boucle peut gêner, voire rendre malade.
            Quand le système le signale, la scène se fige à son état plein. */
         @media (prefers-reduced-motion: reduce) {
-            .ann-film [class^="fx-"] { animation: none !important; opacity: 1 !important; }
+            .ann-film [class*="fx-"] { animation: none !important; opacity: 1 !important; }
             .fx-trace { stroke-dashoffset: 0 !important; }
             .fx-parcours, .fx-onde { opacity: 0 !important; }
         }
+
         @keyframes annIllus { from { opacity: 0; transform: scale(.86) translateY(10px); } }
 
         /* Toutes les annonces font exactement la même taille. Sans cela la
@@ -4503,23 +4525,23 @@
 
     /* Films d'annonce : ce que N26 obtient avec une bibliothèque d'animation,
        en vectoriel écrit à la main. Quelques kilo-octets par scène, net sur
-       tout écran, disponible hors ligne, et figé si le système demande à
-       réduire les animations. */
+       tout écran, disponible hors ligne, figé si le système demande à réduire
+       les animations, et accordé au thème clair comme au thème sombre. */
     const FILMS = {
         'parrainage':
-            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-parr" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><line x1="178" y1="84" x2="282" y2="84" stroke="url(#fg-parr)" stroke-width="2" opacity=".3"/><circle class="fx-eclat" cx="310" cy="84" r="44" fill="#1FA5A8" opacity="0"/><rect x="126" y="58" width="52" height="52" rx="17" fill="url(#fg-parr)"/><rect class="fx-reveil" x="282" y="58" width="52" height="52" rx="17" fill="url(#fg-parr)" opacity=".35"/><circle class="fx-parcours" cx="178" cy="84" r="4.5" fill="#EDEDF5" opacity="0"/><circle cx="86" cy="42" r="2" fill="#3F63A4" opacity=".4"/><circle cx="378" cy="128" r="2.5" fill="#1FA5A8" opacity=".35"/></svg>',
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-parr" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect class="fm-fond" width="460" height="168"/><line x1="178" y1="84" x2="282" y2="84" stroke="url(#fg-parr)" stroke-width="2" opacity=".3"/><circle class="fx-eclat" cx="310" cy="84" r="44" fill="#1FA5A8" opacity="0"/><rect x="126" y="58" width="52" height="52" rx="17" fill="url(#fg-parr)"/><rect class="fx-reveil" x="282" y="58" width="52" height="52" rx="17" fill="url(#fg-parr)" opacity=".35"/><circle class="fx-parcours fm-vif" cx="178" cy="84" r="4.5" opacity="0"/><circle cx="86" cy="42" r="2" fill="#3F63A4" opacity=".4"/><circle cx="378" cy="128" r="2.5" fill="#1FA5A8" opacity=".35"/></svg>',
 
         'ia':
-            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-ia" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><circle class="fx-noyau" cx="230" cy="84" r="27" fill="url(#fg-ia)" opacity=".8"/><circle class="fx-noyau" cx="230" cy="84" r="44" fill="none" stroke="#1FA5A8" stroke-width="1" opacity=".18"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-142px;--dy:-52px;--d:0.00s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-104px;--dy:40px;--d:0.16s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-52px;--dy:-64px;--d:0.32s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:58px;--dy:-44px;--d:0.48s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:112px;--dy:34px;--d:0.64s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:140px;--dy:-18px;--d:0.80s"/></svg>',
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-ia" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect class="fm-fond" width="460" height="168"/><circle class="fx-noyau" cx="230" cy="84" r="27" fill="url(#fg-ia)" opacity=".8"/><circle class="fx-noyau" cx="230" cy="84" r="44" fill="none" stroke="#1FA5A8" stroke-width="1" opacity=".18"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-142px;--dy:-52px;--d:0.00s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-104px;--dy:40px;--d:0.16s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:-52px;--dy:-64px;--d:0.32s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:58px;--dy:-44px;--d:0.48s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:112px;--dy:34px;--d:0.64s"/><circle class="fx-converge" cx="230" cy="84" r="3.6" fill="#1FA5A8" opacity="0" style="--dx:140px;--dy:-18px;--d:0.80s"/></svg>',
 
         'localisation':
-            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-loc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:0s"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:1.2s"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:2.4s"/><circle class="fx-respire" cx="128" cy="46" r="3.2" fill="#3F63A4" style="animation-delay:0.0s"/><circle class="fx-respire" cx="352" cy="58" r="2.4" fill="#3F63A4" style="animation-delay:0.4s"/><circle class="fx-respire" cx="332" cy="132" r="3.2" fill="#3F63A4" style="animation-delay:0.8s"/><circle class="fx-respire" cx="116" cy="122" r="2.4" fill="#3F63A4" style="animation-delay:1.2s"/><circle class="fx-respire" cx="176" cy="36" r="3.2" fill="#3F63A4" style="animation-delay:1.6s"/><circle cx="230" cy="86" r="10" fill="url(#fg-loc)"/></svg>',
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-loc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect class="fm-fond" width="460" height="168"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:0s"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:1.2s"/><circle class="fx-onde" cx="230" cy="86" r="22" fill="none" stroke="#1FA5A8" stroke-width="1.4" style="--d:2.4s"/><circle class="fx-respire" cx="128" cy="46" r="3.2" fill="#3F63A4" style="animation-delay:0.0s"/><circle class="fx-respire" cx="352" cy="58" r="2.4" fill="#3F63A4" style="animation-delay:0.4s"/><circle class="fx-respire" cx="332" cy="132" r="3.2" fill="#3F63A4" style="animation-delay:0.8s"/><circle class="fx-respire" cx="116" cy="122" r="2.4" fill="#3F63A4" style="animation-delay:1.2s"/><circle class="fx-respire" cx="176" cy="36" r="3.2" fill="#3F63A4" style="animation-delay:1.6s"/><circle cx="230" cy="86" r="10" fill="url(#fg-loc)"/></svg>',
 
         'parrainage-client':
-            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-prc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><path class="fx-trace" d="M154 84 C 214 84, 236 38, 300 34" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0s"/><path class="fx-trace" d="M154 84 C 214 84, 244 84, 312 84" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0.3s"/><path class="fx-trace" d="M154 84 C 214 84, 236 130, 300 134" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0.6s"/><circle class="fx-cible" cx="300" cy="34" r="7" fill="#1FA5A8" opacity="0" style="--d:0s"/><circle class="fx-cible" cx="312" cy="84" r="7" fill="#1FA5A8" opacity="0" style="--d:0.3s"/><circle class="fx-cible" cx="300" cy="134" r="7" fill="#1FA5A8" opacity="0" style="--d:0.6s"/><circle cx="154" cy="84" r="13" fill="url(#fg-prc)"/><circle cx="154" cy="84" r="24" fill="none" stroke="#5A32A0" stroke-width="1" opacity=".3"/></svg>',
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-prc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect class="fm-fond" width="460" height="168"/><path class="fx-trace" d="M154 84 C 214 84, 236 38, 300 34" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0s"/><path class="fx-trace" d="M154 84 C 214 84, 244 84, 312 84" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0.3s"/><path class="fx-trace" d="M154 84 C 214 84, 236 130, 300 134" pathLength="100" fill="none" stroke="url(#fg-prc)" stroke-width="2" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" style="--d:0.6s"/><circle class="fx-cible" cx="300" cy="34" r="7" fill="#1FA5A8" opacity="0" style="--d:0s"/><circle class="fx-cible" cx="312" cy="84" r="7" fill="#1FA5A8" opacity="0" style="--d:0.3s"/><circle class="fx-cible" cx="300" cy="134" r="7" fill="#1FA5A8" opacity="0" style="--d:0.6s"/><circle cx="154" cy="84" r="13" fill="url(#fg-prc)"/><circle cx="154" cy="84" r="24" fill="none" stroke="#5A32A0" stroke-width="1" opacity=".3"/></svg>',
 
         'carte':
-            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-crt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect width="460" height="168" fill="#0B0B11"/><rect class="fx-respire" x="150" y="30" width="160" height="38" rx="12" fill="none" stroke="url(#fg-crt)" stroke-width="1.4" opacity=".5"/><rect x="166" y="46" width="58" height="5" rx="2.5" fill="#3F63A4" opacity=".45"/><circle cx="120" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="152" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="184" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="216" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="248" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="280" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="312" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="344" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle class="fx-tampon" cx="120" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.00s"/><circle class="fx-tampon" cx="152" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.22s"/><circle class="fx-tampon" cx="184" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.44s"/><circle class="fx-tampon" cx="216" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.66s"/><circle class="fx-tampon" cx="248" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.88s"/><circle class="fx-tampon" cx="280" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.10s"/><circle class="fx-tampon" cx="312" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.32s"/><circle class="fx-tampon" cx="344" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.54s"/></svg>',
+            '<svg class="ann-film" viewBox="0 0 460 168" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true"><defs><linearGradient id="fg-crt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5A32A0"/><stop offset=".55" stop-color="#3F63A4"/><stop offset="1" stop-color="#1FA5A8"/></linearGradient></defs><rect class="fm-fond" width="460" height="168"/><rect class="fx-respire" x="150" y="30" width="160" height="38" rx="12" fill="none" stroke="url(#fg-crt)" stroke-width="1.4" opacity=".5"/><rect x="166" y="46" width="58" height="5" rx="2.5" fill="#3F63A4" opacity=".45"/><circle cx="120" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="152" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="184" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="216" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="248" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="280" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="312" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle cx="344" cy="108" r="11" fill="none" stroke="#3F63A4" stroke-width="1.4" opacity=".45"/><circle class="fx-tampon" cx="120" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.00s"/><circle class="fx-tampon" cx="152" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.22s"/><circle class="fx-tampon" cx="184" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.44s"/><circle class="fx-tampon" cx="216" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.66s"/><circle class="fx-tampon" cx="248" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:0.88s"/><circle class="fx-tampon" cx="280" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.10s"/><circle class="fx-tampon" cx="312" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.32s"/><circle class="fx-tampon" cx="344" cy="108" r="11" fill="url(#fg-crt)" opacity="0" style="--d:1.54s"/></svg>',
     };
 
     const ANNONCE_DUREE = 7000;          // défilement automatique
