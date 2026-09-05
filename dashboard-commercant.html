@@ -616,14 +616,17 @@
            La fenêtre d'accueil du commerçant : nouveautés et rappels. */
         .ann-fond { position: fixed; inset: 0; z-index: 100002; display: none;
             align-items: center; justify-content: center; padding: 20px;
-            background: rgba(13,13,17,.5); -webkit-backdrop-filter: blur(6px);
-            backdrop-filter: blur(6px); animation: annFondIn .3s var(--ease); }
+            background: rgba(13,13,17,.58); -webkit-backdrop-filter: blur(10px) saturate(115%);
+            backdrop-filter: blur(10px) saturate(115%); animation: annFondIn .3s var(--ease); }
         .ann-fond.ouvert { display: flex; }
         @keyframes annFondIn { from { opacity: 0; } }
 
         .ann-carte { position: relative; width: 100%; max-width: 460px; overflow: hidden;
             background: var(--bg-card); border: 1px solid var(--glass-border);
-            border-radius: 24px; box-shadow: 0 50px 90px -40px rgba(13,13,17,.5);
+            border-radius: 24px;
+            box-shadow: 0 2px 5px rgba(13,13,17,.05),
+                        0 22px 44px -22px rgba(13,13,17,.30),
+                        0 60px 100px -50px rgba(13,13,17,.45);
             animation: annCarteIn .5s cubic-bezier(.22,1.18,.36,1) both; }
         @keyframes annCarteIn { from { opacity: 0; transform: translateY(20px) scale(.95); } }
 
@@ -641,7 +644,12 @@
         .ann-fermer:hover { background: rgba(255,255,255,.36); transform: rotate(90deg); }
 
         .ann-illus { height: 168px; display: grid; place-items: center; overflow: hidden;
-            background: var(--grad-soft); border-bottom: 1px solid var(--glass-border); }
+            position: relative; background: var(--grad-soft); }
+        /* Un dégradé vers la couleur de la carte : la scène se dissout dans le
+           texte au lieu de s'interrompre sur une ligne. */
+        .ann-illus::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+            height: 52px; pointer-events: none;
+            background: linear-gradient(to bottom, transparent, var(--bg-card)); }
         .ann-illus svg { width: 190px; height: 140px; display: block;
             animation: annIllus .6s var(--ease) both .1s; }
         .ann-illus img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -728,26 +736,50 @@
         }
         @keyframes annIllus { from { opacity: 0; transform: scale(.86) translateY(10px); } }
 
-        .ann-corps { padding: 24px 26px 22px; }
+        .ann-corps { padding: 22px 26px 24px; }
+
+        @media (max-width: 560px) {
+            .ann-fond  { align-items: flex-end; padding: 0; }
+            .ann-carte { max-width: none; border-radius: 24px 24px 0 0;
+                         border-bottom: none; animation-name: annFeuilleIn; }
+            .ann-corps { padding: 20px 20px 22px; }
+            .ann-corps h3 { font-size: 19.5px; }
+            .ann-cta   { width: 100%; justify-content: center; padding: 14px 20px; }
+            .ann-pied  { padding: 12px 16px 16px; }
+            .ann-fleche { width: 42px; height: 42px; }
+            .ann-fermer { width: 38px; height: 38px; }
+        }
+        @keyframes annFeuilleIn { from { opacity: 0; transform: translateY(46px); } }
         .ann-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .ann-tag { font-size: 10.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
-            color: #fff; background: var(--grad); padding: 4px 11px; border-radius: 999px; }
-        .ann-date { font-size: 12px; color: var(--text-muted); }
-        .ann-corps h3 { font-family: Inter, sans-serif; font-size: 20px; font-weight: 750;
-            letter-spacing: -.025em; color: var(--text-main); margin: 0 0 10px; line-height: 1.25; }
-        .ann-corps p { font-size: 14.5px; line-height: 1.6; color: var(--text-sub); margin: 0; }
+        /* Le turquoise de la palette claire tombe à 3,9:1 sur blanc — trop peu
+           pour 10,5 px. On l'assombrit ici, et on reprend l'accent en sombre,
+           où il est déjà très lisible. */
+        .ann-tag { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+            color: #12737C; background: rgba(27,142,151,.12);
+            border: 1px solid rgba(27,142,151,.24);
+            padding: 3.5px 10px; border-radius: 999px; }
+        :root[data-theme="dark"] .ann-tag { color: var(--secondary-accent);
+            background: rgba(47,199,203,.13); border-color: rgba(47,199,203,.26); }
+        .ann-date { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .ann-corps h3 { font-family: Inter, sans-serif; font-size: 21px; font-weight: 750;
+            letter-spacing: -.028em; color: var(--text-main); margin: 0 0 9px; line-height: 1.22;
+            text-wrap: balance; }
+        .ann-corps p { font-size: 14.5px; line-height: 1.68; color: var(--text-sub); margin: 0; }
         .ann-cta { margin-top: 18px; display: inline-flex; align-items: center; gap: 9px;
             padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer;
             background: var(--grad); color: #fff; font-family: Inter, sans-serif;
             font-size: 14px; font-weight: 700;
-            box-shadow: 0 10px 22px -12px var(--primary-glow);
-            transition: transform .3s var(--ease); }
-        .ann-cta:hover { transform: translateY(-2px); }
-        .ann-cta i { font-size: 11px; }
+            box-shadow: 0 12px 26px -14px var(--primary-glow);
+            transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
+        .ann-cta:hover { transform: translateY(-2px);
+            box-shadow: 0 18px 34px -16px var(--primary-glow); }
+        .ann-cta i { font-size: 11px; transition: transform .3s var(--ease); }
+        .ann-cta:hover i { transform: translateX(3px); }
 
         .ann-pied { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            padding: 14px 22px; border-top: 1px solid var(--glass-border);
-            background: var(--bg-card-hover); }
+            padding: 13px 20px 15px; border-top: 1px solid var(--glass-border);
+            background: transparent; }
+        #ann-compteur { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
         #ann-points { display: flex; gap: 7px; }
         .ann-point { position: relative; width: 7px; height: 7px; border-radius: 99px; border: none; padding: 0;
             cursor: pointer; background: var(--glass-border-bright);
@@ -758,7 +790,7 @@
         .ann-point.on { width: 22px; background: var(--grad); }
         .ann-nav { display: flex; align-items: center; gap: 8px; }
         #ann-compteur { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-        .ann-fleche { width: 32px; height: 32px; border-radius: 10px; cursor: pointer;
+        .ann-fleche { width: 36px; height: 36px; border-radius: 11px; cursor: pointer;
             background: var(--bg-card); border: 1px solid var(--glass-border);
             color: var(--text-sub); display: grid; place-items: center; font-size: 11px;
             transition: all .25s var(--ease); }
@@ -4607,15 +4639,37 @@
         document.getElementById('ann-fond')?.classList.remove('ouvert');
     }
 
-    // Affichage à l'arrivée : uniquement s'il y a du neuf, et jamais par-dessus
-    // la prise en main — un nouveau commerçant a autre chose à faire.
+    // Affichage à l'arrivée : dès qu'il y a du neuf, et sinon au moins une
+    // fois par demi-journée. Un commerçant qui ouvre son tableau de bord dix
+    // fois dans la matinée n'est dérangé qu'une seule. Jamais par-dessus la
+    // prise en main — un nouveau commerçant a autre chose à faire.
+    const ANNONCE_RAPPEL = 12 * 60 * 60 * 1000;
+
+    function annCleOuverture() { return 'KEEPO_annonces_ouvert_' + (currentMerchantId || 'anon'); }
+
+    function annDerniereOuverture() {
+        try {
+            const t = Number(localStorage.getItem(annCleOuverture()));
+            return Number.isFinite(t) ? t : 0;
+        } catch (e) { return 0; }
+    }
+    function annNoterOuverture() {
+        try { localStorage.setItem(annCleOuverture(), String(Date.now())); } catch (e) {}
+    }
+
     function annAuDemarrage() {
         annRafraichirPastille();
         const enTuto = document.getElementById('view-onboarding')?.classList.contains('active');
         if (enTuto) return;
-        const lues = annLues();
-        if (!KEEPO_ANNONCES.some(a => !lues.includes(a.id))) return;
-        setTimeout(() => annOuvrir(false), 900);   // on laisse le tableau de bord s'afficher
+
+        const lues   = annLues();
+        const duNeuf = KEEPO_ANNONCES.some(a => !lues.includes(a.id));
+        if (!duNeuf && Date.now() - annDerniereOuverture() < ANNONCE_RAPPEL) return;
+
+        // Du neuf : on ne montre que ce qui n'a pas été vu. Rien de neuf mais
+        // douze heures passées : on repasse tout, sinon la fenêtre s'ouvrirait
+        // sur un message « rien de neuf ».
+        setTimeout(() => { annNoterOuverture(); annOuvrir(!duNeuf); }, 900);
     }
 
 
@@ -5821,13 +5875,13 @@
     function switchPanel(panelId) {
         document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
         document.getElementById(panelId).classList.add('active');
+        // L'entrée de menu se déduit du panneau, jamais de ce qui a été
+        // cliqué. Appelée depuis le bouton d'une annonce, la fonction posait
+        // « actif » sur ce bouton-là : le panneau changeait bien, mais le menu
+        // ne montrait plus aucune sélection.
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        if (event && event.currentTarget) {
-            event.currentTarget.classList.add('active');
-        } else {
-            const btn = document.querySelector(`button[onclick="switchPanel('${panelId}')"]`);
-            if (btn) btn.classList.add('active');
-        }
+        const ongletMenu = document.querySelector(`.nav-btn[onclick="switchPanel('${panelId}')"]`);
+        if (ongletMenu) ongletMenu.classList.add('active');
 
         if (panelId === 'view-qr' && !isQrCodeRendered) {
             setTimeout(() => { renderMerchantDeskQrCode(); isQrCodeRendered = true; }, 100);
