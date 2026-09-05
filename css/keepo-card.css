@@ -89,7 +89,13 @@
     font-size: 17px; font-weight: 700; line-height: 1;
     color: var(--card-accent, var(--acc));
 }
-.card-logo-chip.has-img { color: transparent; }
+/* L'initiale reste dans le balisage pour reprendre sa place si l'image
+   échoue — mais elle doit disparaître tant que l'image est là. Le second
+   sélecteur est indispensable : sans lui, la règle « carte à fond » plus
+   bas, qui pèse une classe de plus, repeint l'initiale en blanc et on la
+   voit par transparence sous le logo. */
+.card-logo-chip.has-img,
+.loyalty-card.has-bg .card-logo-chip.has-img { color: transparent; }
 .card-logo-chip img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: contain; display: block;
@@ -138,6 +144,8 @@
 .loyalty-card.has-bg .merchant-name,
 .loyalty-card.has-bg .card-points-num,
 .loyalty-card.has-bg .card-progress-labels { color: #fff; }
+/* Ne s'applique qu'à l'initiale seule : la variante .has-img est neutralisée
+   plus haut, sinon l'initiale se mélangerait au logo. */
 .loyalty-card.has-bg .card-logo-chip { color: #fff; }
 .loyalty-card.has-bg .card-points-lbl,
 .loyalty-card.has-bg .card-stamps-note,
