@@ -736,13 +736,22 @@
         }
         @keyframes annIllus { from { opacity: 0; transform: scale(.86) translateY(10px); } }
 
-        .ann-corps { padding: 22px 26px 24px; }
+        /* Toutes les annonces font exactement la même taille. Sans cela la
+           fenêtre grandissait et rétrécissait à chaque défilement — 84 px
+           d'écart entre la plus courte et la plus longue. La hauteur est
+           celle de la plus longue ; un texte plus long défilerait dans sa
+           zone plutôt que d'agrandir la carte. */
+        .ann-corps { padding: 22px 26px 24px; height: 304px;
+            display: flex; flex-direction: column; }
+        .ann-meta, .ann-corps h3 { flex: 0 0 auto; }
+        .ann-corps p { flex: 1 1 auto; min-height: 0;
+            overflow-y: auto; overscroll-behavior: contain; }
 
         @media (max-width: 560px) {
             .ann-fond  { align-items: flex-end; padding: 0; }
             .ann-carte { max-width: none; border-radius: 24px 24px 0 0;
                          border-bottom: none; animation-name: annFeuilleIn; }
-            .ann-corps { padding: 20px 20px 22px; }
+            .ann-corps { padding: 20px 20px 22px; height: 316px; }
             .ann-corps h3 { font-size: 19.5px; }
             .ann-cta   { width: 100%; justify-content: center; padding: 14px 20px; }
             .ann-pied  { padding: 12px 16px 16px; }
@@ -765,7 +774,8 @@
             letter-spacing: -.028em; color: var(--text-main); margin: 0 0 9px; line-height: 1.22;
             text-wrap: balance; }
         .ann-corps p { font-size: 14.5px; line-height: 1.68; color: var(--text-sub); margin: 0; }
-        .ann-cta { margin-top: 18px; display: inline-flex; align-items: center; gap: 9px;
+        .ann-cta { margin-top: 16px; flex: 0 0 auto; align-self: flex-start;
+            display: inline-flex; align-items: center; gap: 9px;
             padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer;
             background: var(--grad); color: #fff; font-family: Inter, sans-serif;
             font-size: 14px; font-weight: 700;
