@@ -331,6 +331,9 @@
         }
         .plan-essential { background: rgba(255, 160, 64, 0.1); color: var(--essential-color); border: 1px solid rgba(255, 160, 64, 0.25); }
         .plan-pro { background: rgba(0, 180, 216, 0.1); color: var(--pro-color); border: 1px solid rgba(0, 180, 216, 0.25); }
+        .plan-smart { background: rgba(63, 99, 164, 0.10); color: #3F63A4; border: 1px solid rgba(63, 99, 164, 0.26); }
+        :root[data-theme="dark"] .plan-smart { color: #8FB3EE; background: rgba(143, 179, 238, 0.12);
+            border-color: rgba(143, 179, 238, 0.26); }
 
         .header-notif-btn {
             width: 38px; height: 38px;
@@ -4339,6 +4342,27 @@
     let currentMerchantEmail = '';
     let currentMerchantName  = '';
     let activeMerchantPlan   = 'essential';
+
+    /* Trois formules payantes, pas deux. Smart tombait jusqu'ici dans le
+       « sinon » de Pro Scale et héritait du badge, du quota et des droits
+       d'Essentiel — c'est-à-dire de ce que le commerçant n'a pas payé.
+       Tout ce qui dépend de la formule passe désormais par ici. */
+    const FORMULES = {
+        smart:     { nom: 'Smart',     classe: 'plan-smart',     icone: 'fa-seedling',
+                     membres: 50,  suivante: 'Essentiel', campagnes: false,
+                     argument: "Passez Essentiel pour tripler votre nombre de membres et ouvrir les campagnes e-mail." },
+        essential: { nom: 'Essential', classe: 'plan-essential', icone: 'fa-store',
+                     membres: 150, suivante: 'Pro Scale', campagnes: true,
+                     argument: "Débloquez l'analyse prédictive, le panier moyen et l'export CSV avec Pro Scale." },
+    };
+    FORMULES.essentiel = FORMULES.essential;   // les deux orthographes coexistent en base
+
+    function estProScale() {
+        return activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale';
+    }
+    /* Une formule inconnue vaut Essentiel : mieux vaut ouvrir un droit de trop
+       que priver un client payant de ce qu'il a acheté. */
+    function formuleCourante() { return FORMULES[activeMerchantPlan] || FORMULES.essential; }
     let currentPointsPerEuro = 0.1; // 10€ = 1 pt par défaut
     let currentActiveClientSession = null;
     let realTimeHtml5QrScanner = null;
@@ -4779,7 +4803,7 @@
             // Les abonnés payants ont un stripe_subscription_id → jamais concernés.
             merchantTrialEndsAt  = profile?.trial_ends_at || null;
             merchantHasStripeSub = !!profile?.stripe_subscription_id;
-            if ((activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale')
+            if (estProScale()
                 && !merchantHasStripeSub && merchantTrialEndsAt
                 && new Date(merchantTrialEndsAt) <= new Date()) {
                 activeMerchantPlan = 'essential';
@@ -5775,12 +5799,16 @@
 
     // ─── TUNNEL UPGRADE ───
     function refreshUpgradeTunnel(clientCount) {
-        if (activeMerchantPlan !== 'essential') return; // Pro n'a pas besoin du tunnel
+        if (estProScale()) return;                      // Pro Scale n'a pas de quota
         const tunnel = document.getElementById('upgrade-tunnel');
         if (!tunnel) return;
 
-        const LIMIT_ESSENTIAL = 50;
-        const pct = Math.round((clientCount / LIMIT_ESSENTIAL) * 100);
+        // Le quota affiché était figé à 50 alors que l'Essentiel en annonce
+        // 150 : le tunnel alarmait dès 20 membres un commerçant qui en avait
+        // 130 devant lui. Il vient maintenant de la formule.
+        const formule = formuleCourante();
+        const LIMITE  = formule.membres;
+        const pct = Math.round((clientCount / LIMITE) * 100);
 
         // Afficher dès 40% d'utilisation
         if (pct < 40) { tunnel.style.display = 'none'; return; }
@@ -5790,16 +5818,16 @@
         const labelEl = document.getElementById('upgrade-usage-label');
         const msgEl   = document.getElementById('upgrade-tunnel-msg');
 
-        if (usageEl) usageEl.innerHTML = `${clientCount}<span style="font-size:18px;color:var(--text-muted);">/${LIMIT_ESSENTIAL}</span>`;
+        if (usageEl) usageEl.innerHTML = `${clientCount}<span style="font-size:18px;color:var(--text-muted);">/${LIMITE}</span>`;
         if (labelEl) labelEl.innerText = 'membres actifs';
 
         if (pct >= 90) {
             tunnel.style.borderColor = 'rgba(255,77,109,0.5)';
-            if (msgEl) msgEl.innerHTML = '⚠️ <strong style="color:var(--danger)">Limite presque atteinte !</strong> Au-delà de 50 membres, les nouveaux clients ne pourront plus rejoindre votre programme. Passez Pro Scale maintenant.';
+            if (msgEl) msgEl.innerHTML = `⚠️ <strong style="color:var(--danger)">Limite presque atteinte !</strong> Au-delà de ${LIMITE} membres, les nouveaux clients ne pourront plus rejoindre votre programme. Passez ${formule.suivante} maintenant.`;
         } else if (pct >= 60) {
-            if (msgEl) msgEl.innerHTML = `Vous avez utilisé <strong style="color:var(--text-main)">${pct}% de votre quota</strong> Essential. Débloquez l'illimité + l'analyse prédictive avec Pro Scale.`;
+            if (msgEl) msgEl.innerHTML = `Vous avez utilisé <strong style="color:var(--text-main)">${pct}% de votre quota</strong> ${formule.nom}. Passez ${formule.suivante} pour aller plus loin.`;
         } else {
-            if (msgEl) msgEl.innerHTML = 'Votre programme grandit 🎉 Débloquez l\'analyse prédictive, le panier moyen et l\'export CSV pour aller encore plus loin.';
+            if (msgEl) msgEl.innerHTML = 'Votre programme grandit 🎉 ' + formule.argument;
         }
     }
 
@@ -6077,7 +6105,7 @@
 
     function applySaaSPlanRestrictions() {
         const badge = document.getElementById('merchant-plan-badge');
-        if (activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale') {
+        if (estProScale()) {
             const trialing = merchantTrialEndsAt && new Date(merchantTrialEndsAt) > new Date();
             if (trialing) {
                 const daysLeft = Math.max(1, Math.ceil((new Date(merchantTrialEndsAt) - Date.now()) / 86400000));
@@ -6098,7 +6126,9 @@
             const navLockPro = document.getElementById('nav-lock-advanced');
             if (navLockPro) navLockPro.style.display = 'none';
         } else {
-            badge.innerHTML = '<i class="fa-solid fa-store"></i> Essential'; badge.className = "plan-badge plan-essential";
+            const formule = formuleCourante();
+            badge.innerHTML = '<i class="fa-solid ' + formule.icone + '"></i> ' + formule.nom;
+            badge.className = 'plan-badge ' + formule.classe;
             const buildLock = (reason) => `<div class="lock-overlay" onclick="openUpgradeModal('${reason.replace(/'/g, "\\'")}')"><i class="fa-solid fa-lock"></i><span class="lock-title">Exclusivité Pro Scale</span><span class="lock-subtitle">Cliquez pour découvrir</span><span class="lock-cta">👑 PASSER PRO</span></div>`;
             document.getElementById('lock-panier').innerHTML        = buildLock('Panier moyen fidélisé');
             document.getElementById('lock-predictive').innerHTML    = buildLock('Intelligence prédictive');
@@ -6110,6 +6140,17 @@
             if (caisseLock) caisseLock.innerHTML = buildLock('Mode caisse tablette');
             const navLockPro = document.getElementById('nav-lock-advanced');
             if (navLockPro) navLockPro.style.display = '';
+
+            // Les campagnes commencent à Essentiel. On le dit sur le bouton
+            // plutôt que d'attendre que le commerçant ait rédigé son message.
+            const btnCampagne = document.getElementById('campaign-send-btn');
+            if (btnCampagne && !formule.campagnes) {
+                btnCampagne.disabled = true;
+                btnCampagne.style.opacity = '.55';
+                btnCampagne.style.cursor = 'not-allowed';
+                btnCampagne.title = 'Les campagnes e-mail commencent à la formule Essentiel';
+                btnCampagne.innerHTML = '<i class="fa-solid fa-lock"></i> Campagnes dès la formule Essentiel';
+            }
         }
     }
 
@@ -6119,7 +6160,7 @@
         const container = document.getElementById("permanent-qr-rendering-box");
         if (!container) return;
         container.innerHTML = "";
-        const themeColor = (activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale') ? "#00b4d8" : "#fca311";
+        const themeColor = estProScale() ? "#00b4d8" : "#fca311";
         merchantDeskQrStylizer = new QRCodeStyling({
             width: 200, height: 200, type: "svg",
             // URL universelle : scannée à l'appareil photo, elle ouvre l'app
@@ -6299,7 +6340,9 @@
     }
 
     function regenerateMerchantQrUUID() {
-        if (activeMerchantPlan === 'essential') {
+        // Testé sur la formule et non sur « essential » : Smart passait au
+        // travers et régénérait un QR réservé à Pro Scale.
+        if (!estProScale()) {
             openUpgradeModal('Régénération du QR Code commerçant');
             return;
         }
@@ -8365,7 +8408,7 @@
 
     // ─── EXPORT & COUNTERS ───
     async function executeHistoryCSVExport() {
-        if (!(activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale')) {
+        if (!estProScale()) {
             openUpgradeModal('Export CSV illimité');
             return;
         }
@@ -9415,7 +9458,7 @@
 
     // Bouton bloqué : Essential → modale upgrade, Pro → toast "bientôt"
     function aiFeatureLockedClick() {
-        if (activeMerchantPlan === 'pro' || activeMerchantPlan === 'pro scale') {
+        if (estProScale()) {
             showToast('info', '⏳ Bientôt disponible',
                 'Cette fonctionnalité IA arrive dans une prochaine mise à jour. Restez connecté !');
         } else {
