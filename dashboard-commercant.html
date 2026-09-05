@@ -24,7 +24,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
-    <script src="js/keepo-card.js?v=2"></script>
+    <script src="js/keepo-card.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -6316,11 +6316,36 @@
         const design = lireDesignStudio();
         const nom    = (document.getElementById('merchant-title')?.innerText || 'Mon commerce').trim();
         const accent = /^#[0-9A-Fa-f]{3,8}$/.test(design.borderColor || '') ? design.borderColor : '#1B8E97';
-        const logo   = currentStudioLogoBase64 || design.logo || '';
+
+        /* L'affiche porte le même fond que la carte : dégradé, aplat ou
+           photo, voile et motif compris. Le calcul vient du moteur de la
+           carte, pas d'une copie qui divergerait au premier réglage ajouté. */
+        const fond = (window.KeepoCard && KeepoCard.background)
+            ? KeepoCard.background(design)
+            : { style: '', overlay: '', pattern: '', clair: true };
+        const aFond = !!fond.style;
+
+        /* L'encre suit le choix du commerçant, sauf si elle rendait l'affiche
+           illisible sur son propre fond — une affiche qu'on ne lit pas ne
+           sert à rien. */
+        const clair = (hex) => {
+            const m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
+            if (!m) return null;
+            const v = parseInt(m[1], 16);
+            return (0.2126 * ((v >> 16) & 255) + 0.7152 * ((v >> 8) & 255) + 0.0722 * (v & 255)) > 150;
+        };
+        const voulue = clair(design.txtColor) === null ? null : design.txtColor;
+        const encre  = !aFond ? '#14141B'
+                     : (voulue && clair(voulue) !== fond.clair) ? voulue
+                     : (fond.clair ? '#14141B' : '#FFFFFF');
+
+        /* Le logo, dans l'ordre du Studio : celui de la carte, puis la photo
+           de profil du commerce, puis l'initiale. La photo manquait, et
+           l'initiale s'affichait donc même pour un commerce qui en avait une. */
+        const logo = currentStudioLogoBase64 || design.logo
+                  || (typeof currentAvatarBase64 !== 'undefined' ? currentAvatarBase64 : null) || '';
         const logoOk = /^data:image\/[a-z+.\-]+;base64,[A-Za-z0-9+/=]+$/i.test(logo);
 
-        // Sans logo téléversé, l'initiale du commerce tient la place,
-        // dans la couleur de la carte. Jamais de trou blanc.
         const blocLogo = logoOk
             ? `<img class="ident-logo" src="${logo}" alt="">`
             : `<div class="ident-logo ident-initiale">${escapeHtml(nom.charAt(0).toUpperCase() || 'K')}</div>`;
@@ -6335,12 +6360,13 @@
          font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
          -webkit-font-smoothing:antialiased; }
 
-  /* Fond blanc, marges intérieures : imprimable sur n'importe quelle
-     imprimante, sans fond perdu ni cartouche vidée. */
-  .sheet { width:148mm; height:210mm; background:#fff; color:#14141B;
-           padding:15mm 13mm 11mm; display:flex; flex-direction:column;
-           align-items:center; text-align:center;
+  /* La feuille reprend le fond de la carte du commerçant. */
+  .sheet { width:148mm; height:210mm; position:relative; overflow:hidden;
+           color:${encre}; ${aFond ? fond.style : 'background:#FFFFFF;'}
            box-shadow:0 16px 44px rgba(20,20,27,.2); }
+  .contenu { position:relative; z-index:3; height:100%;
+             padding:15mm 13mm 11mm; display:flex; flex-direction:column;
+             align-items:center; text-align:center; }
 
   .ident-logo { height:20mm; max-width:62mm; object-fit:contain; display:block; }
   .ident-initiale { width:20mm; border-radius:6mm; background:${accent}; color:#fff;
@@ -6352,32 +6378,39 @@
              text-transform:uppercase; color:${accent}; }
   .offre { font-size:15pt; font-weight:700; line-height:1.35; margin:3mm 0 7mm; max-width:104mm; }
 
-  .qr { width:76mm; height:76mm; padding:5mm; border:.5mm solid #E4E4EC;
-        border-radius:5mm; background:#fff; }
+  /* Le QR garde toujours son panneau blanc : c'est ce qui le rend lisible
+     quel que soit le fond choisi. */
+  .qr { width:76mm; height:76mm; padding:5mm; border-radius:5mm;
+        background:#FFFFFF; border:.4mm solid rgba(0,0,0,.10); }
   .qr svg { display:block; width:100%; height:100%; }
 
   .action { font-size:12.5pt; font-weight:700; line-height:1.45; margin-top:6mm; }
-  .rassure { font-size:9.5pt; color:#6C6B7A; margin-top:3mm; }
+  .rassure { font-size:9.5pt; opacity:.72; margin-top:3mm; }
 
   .pied { margin-top:auto; padding-top:6mm; display:flex; align-items:center;
-          gap:2.5mm; font-size:8.5pt; color:#8B8A98; }
-  .pied img { height:6mm; width:6mm; border-radius:1.7mm; display:block; }
+          gap:2.5mm; font-size:8.5pt; opacity:.66; }
+  .pied .marque { width:6mm; height:6mm; border-radius:1.7mm; background:#FFFFFF;
+                  display:grid; place-items:center; flex-shrink:0; }
+  .pied img { width:4.8mm; height:4.8mm; display:block; }
 
   @media print { body { background:#fff; padding:0; } .sheet { box-shadow:none; } }
 </style></head>
 <body>
   <div class="sheet">
-    ${blocLogo}
-    <div class="nom">${escapeHtml(nom)}</div>
-    <div class="rule"></div>
-    <div class="eyebrow">Carte de fidélité</div>
-    <div class="offre">${escapeHtml(texteRecompenseAffiche())}</div>
-    <div class="qr">${svgStr}</div>
-    <div class="action">Scannez avec l'appareil photo<br>de votre téléphone</div>
-    <div class="rassure">Sans application à installer &nbsp;·&nbsp; sans carte à perdre</div>
-    <div class="pied">
-      <img src="${location.origin}/img/logo.png" alt="KEEPO">
-      <span>Fidélité par <b>KEEPO</b> &nbsp;·&nbsp; keepo.eu</span>
+    ${fond.overlay}${fond.pattern}
+    <div class="contenu">
+      ${blocLogo}
+      <div class="nom">${escapeHtml(nom)}</div>
+      <div class="rule"></div>
+      <div class="eyebrow">Carte de fidélité</div>
+      <div class="offre">${escapeHtml(texteRecompenseAffiche())}</div>
+      <div class="qr">${svgStr}</div>
+      <div class="action">Scannez avec l'appareil photo<br>de votre téléphone</div>
+      <div class="rassure">Sans application à installer &nbsp;·&nbsp; sans carte à perdre</div>
+      <div class="pied">
+        <span class="marque"><img src="${location.origin}/img/logo.png" alt="KEEPO"></span>
+        <span>Fidélité par <b>KEEPO</b> &nbsp;·&nbsp; keepo.eu</span>
+      </div>
     </div>
   </div>
 <script>

@@ -59,6 +59,56 @@ window.KeepoCard = (function () {
         return S.bg ? 'image' : 'none';
     }
 
+    /* Le fond d'une carte, en trois morceaux : le style à poser sur le
+       conteneur, le voile éventuel et le motif. Exporté parce que
+       l'affiche de comptoir doit peindre exactement le même fond que la
+       carte — deux définitions divergeraient au premier réglage ajouté. */
+    function background(S) {
+        S = S || {};
+        var kind = bgKind(S);
+        var style = '';
+        if (kind === 'gradient') {
+            style = 'background-image:linear-gradient(' + num(S.gradAngle, 135) + 'deg, '
+                  + css(S.grad1, '#5A32A0') + ', ' + css(S.grad2, '#1FA5A8') + ');';
+        } else if (kind === 'color') {
+            style = 'background-color:' + css(S.bg1, '#1B1533') + ';';
+        } else if (S.bg) {
+            style = 'background-image:url(' + String(S.bg).replace(/[()'"\\\s]/g, '') + ');'
+                  + 'background-size:cover;background-position:center;';
+        }
+
+        /* Voile assombrissant + flou : uniquement sur une photo de fond */
+        var overlay = '';
+        if (kind === 'image' && S.bg) {
+            var op = num(S.opacity, 50) / 100;
+            var bl = num(S.blur, 0);
+            overlay = '<div style="position:absolute;inset:0;z-index:0;pointer-events:none;'
+                    + 'border-radius:inherit;background:rgba(0,0,0,' + op + ');'
+                    + (bl ? '-webkit-backdrop-filter:blur(' + bl + 'px);backdrop-filter:blur(' + bl + 'px);' : '')
+                    + '"></div>';
+        }
+
+        var pat = patternStyle(S.pattern);
+        var pattern = pat
+            ? '<div style="position:absolute;inset:0;z-index:1;pointer-events:none;' + pat + '"></div>'
+            : '';
+
+        /* clair : le fond est-il assez lumineux pour porter du texte sombre ? */
+        var reference = kind === 'color' ? css(S.bg1, '#1B1533')
+                      : kind === 'gradient' ? css(S.grad1, '#5A32A0') : '#1B1533';
+        return { style: style, overlay: overlay, pattern: pattern,
+                 kind: kind, clair: estClair(reference) };
+    }
+
+    /* Luminance perçue : sert à choisir une encre lisible sur ce fond. */
+    function estClair(hex) {
+        var m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
+        if (!m) return false;
+        var v = parseInt(m[1], 16);
+        var r = (v >> 16) & 255, g = (v >> 8) & 255, b = v & 255;
+        return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 150;
+    }
+
     /* Une case de tampon */
     function stampCell(on, S, accent) {
         var sz  = num(S.stampSize, 21);
@@ -104,32 +154,10 @@ window.KeepoCard = (function () {
         var hasBg  = (kind === 'image' && !!S.bg) || kind === 'gradient' || kind === 'color';
 
         /* ── Fond ── */
-        var bgStyle = '';
-        if (kind === 'gradient') {
-            bgStyle = 'background-image:linear-gradient(' + num(S.gradAngle, 135) + 'deg, '
-                    + css(S.grad1, '#5A32A0') + ', ' + css(S.grad2, '#1FA5A8') + ');';
-        } else if (kind === 'color') {
-            bgStyle = 'background-color:' + css(S.bg1, '#1B1533') + ';';
-        } else if (S.bg) {
-            bgStyle = 'background-image:url(' + String(S.bg).replace(/[()'"\\\s]/g, '') + ');'
-                    + 'background-size:cover;background-position:center;';
-        }
-
-        /* Voile assombrissant + flou : uniquement sur une photo de fond */
-        var overlayEl = '';
-        if (kind === 'image' && S.bg) {
-            var op = num(S.opacity, 50) / 100;
-            var bl = num(S.blur, 0);
-            overlayEl = '<div style="position:absolute;inset:0;z-index:0;pointer-events:none;'
-                      + 'border-radius:inherit;background:rgba(0,0,0,' + op + ');'
-                      + (bl ? '-webkit-backdrop-filter:blur(' + bl + 'px);backdrop-filter:blur(' + bl + 'px);' : '')
-                      + '"></div>';
-        }
-
-        var pat = patternStyle(S.pattern);
-        var patEl = pat
-            ? '<div style="position:absolute;inset:0;z-index:1;pointer-events:none;' + pat + '"></div>'
-            : '';
+        var fond      = background(S);
+        var bgStyle   = fond.style;
+        var overlayEl = fond.overlay;
+        var patEl     = fond.pattern;
 
         /* ── Éléments libres posés par le commerçant ── */
         var layers = Array.isArray(S.layers) ? S.layers : [];
@@ -265,5 +293,6 @@ window.KeepoCard = (function () {
              + '</div></div></div>';
     }
 
-    return { render: render, escapeHtml: esc, glow: glow, patternStyle: patternStyle };
+    return { render: render, escapeHtml: esc, glow: glow,
+             patternStyle: patternStyle, background: background };
 })();
