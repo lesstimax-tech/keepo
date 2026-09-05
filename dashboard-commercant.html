@@ -2059,7 +2059,7 @@
         <nav style="display:flex;flex-direction:column;gap:2px;">
             <button class="nav-btn" onclick="switchPanel('view-boutiques')">
                 <i class="fa-solid fa-store"></i> Mes Boutiques
-                <span class="nav-lock" id="nav-lock-boutiques" title="À partir de la formule Essentiel" style="display:none;"><i class="fa-solid fa-lock"></i></span>
+                <span class="nav-lock" id="nav-lock-boutiques" title="Réservé à Pro Scale" style="display:none;"><i class="fa-solid fa-lock"></i></span>
             </button>
             <button class="nav-btn" onclick="switchPanel('view-caisse')">
                 <i class="fa-solid fa-cash-register"></i> Mode Caisse
@@ -4366,7 +4366,7 @@
         essential: { nom: 'Essential', classe: 'plan-essential', icone: 'fa-store',
                      membres: 150, suivante: 'Pro Scale',
                      automations: true,
-                     reserves: [],
+                     reserves: ['view-boutiques'],
                      argument: "Débloquez l'analyse prédictive, le panier moyen et l'export CSV avec Pro Scale." },
     };
     FORMULES.essentiel = FORMULES.essential;   // les deux orthographes coexistent en base
