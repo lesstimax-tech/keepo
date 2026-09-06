@@ -158,6 +158,29 @@
 .loyalty-card.has-bg .card-reward-badge { background: rgba(255,255,255,.16);
     border-color: var(--faint); color: #fff; }
 
+/* Fond clair — le style « Papier », ou tout aplat pastel. Les règles
+   ci-dessus supposent un fond sombre ; ici le blanc disparaîtrait, on
+   repasse donc en encre sombre. Même liste, même ordre. */
+.loyalty-card.has-bg.kc-clair { border-color: rgba(16,16,24,.12); }
+.loyalty-card.has-bg.kc-clair .merchant-name,
+.loyalty-card.has-bg.kc-clair .card-points-num,
+.loyalty-card.has-bg.kc-clair .card-progress-labels,
+.loyalty-card.has-bg.kc-clair .card-logo-chip { color: var(--text); }
+.loyalty-card.has-bg.kc-clair .card-points-lbl,
+.loyalty-card.has-bg.kc-clair .card-stamps-note,
+.loyalty-card.has-bg.kc-clair .card-foot-note,
+.loyalty-card.has-bg.kc-clair .card-progress-labels span { color: var(--muted); }
+.loyalty-card.has-bg.kc-clair .card-footer { border-top-color: rgba(16,16,24,.14); }
+.loyalty-card.has-bg.kc-clair .card-progress-track { background: rgba(16,16,24,.12); }
+.loyalty-card.has-bg.kc-clair .btn-see-rewards { border-color: rgba(16,16,24,.22); color: var(--text); }
+.loyalty-card.has-bg.kc-clair .btn-see-rewards:hover { background: rgba(16,16,24,.06);
+    border-color: rgba(16,16,24,.42); color: var(--text); }
+.loyalty-card.has-bg.kc-clair .card-reward-badge { background: rgba(16,16,24,.06);
+    border-color: rgba(16,16,24,.18); color: var(--text); }
+/* Comme plus haut : l'initiale s'efface dès qu'une image la remplace. Cette
+   règle pèse une classe de plus, elle doit donc être répétée ici. */
+.loyalty-card.has-bg.kc-clair .card-logo-chip.has-img { color: transparent; }
+
 /* La carte s adapte a SA propre largeur, pas a celle de la fenetre : ainsi
    l apercu du Studio (354 px, soit un telephone de 390 px) rend toujours la
    meme chose que l app client sur ce meme telephone. */

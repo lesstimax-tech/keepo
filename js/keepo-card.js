@@ -262,8 +262,12 @@ window.KeepoCard = (function () {
         var footStatus;
         if (reached && badgeOn) {
             var bc = css(S.badgeColor, accent);
-            footStatus = '<div class="card-reward-badge" style="color:' + bc + ';'
-                       + 'border-color:' + glow(bc, 0.35) + ';background:' + glow(bc, 0.1) + ';'
+            /* Sur une carte habillée, la couleur vient de la feuille de style :
+               un style en ligne bat toutes les règles, et l'accent pose ici
+               serait illisible sur un fond bâti dans la même palette. */
+            footStatus = '<div class="card-reward-badge" style="'
+                       + (hasBg ? '' : 'color:' + bc + ';border-color:' + glow(bc, 0.35)
+                                     + ';background:' + glow(bc, 0.1) + ';')
                        + 'border-radius:' + num(S.badgeR, 999) + 'px;"><i class="fa-solid fa-gift"></i> '
                        + esc(S.badgeText || (stamps ? 'À retirer en caisse !' : 'Récompense dispo !')) + '</div>';
         } else {
@@ -273,15 +277,19 @@ window.KeepoCard = (function () {
                                                   : ' pt' + (remaining > 1 ? 's' : ''));
             footStatus = '<div class="card-foot-note" style="'
                        + (S.hintSize ? 'font-size:' + num(S.hintSize, 10) + 'px;' : '')
-                       + (S.hintColor ? 'color:' + css(S.hintColor) + ';' : '') + '">' + esc(hint) + '</div>';
+                       + (!hasBg && S.hintColor ? 'color:' + css(S.hintColor) + ';' : '')
+                       + '">' + esc(hint) + '</div>';
         }
         var rewardsBtn = (!stamps && o.showRewardsBtn)
             ? '<button class="btn-see-rewards"' + (o.rewardsOnclick ? ' onclick="' + o.rewardsOnclick + '"' : '')
-            + ' style="border-color:' + glow(accent, 0.4) + ';color:' + accent + ';">'
+            + (hasBg ? '' : ' style="border-color:' + glow(accent, 0.4) + ';color:' + accent + ';"') + '>'
             + '<i class="fa-solid fa-gift"></i> Voir les récompenses</button>' : '';
 
         /* ── Assemblage ── */
-        return '<div class="kc-host"><div class="loyalty-card' + (hasBg ? ' has-bg' : '') + (o.animate ? '' : ' kc-static') + '"'
+        /* kc-clair : le style « Papier » et tout aplat pastel. Sans lui,
+           has-bg forcerait l'encre en blanc sur un fond crème. */
+        return '<div class="kc-host"><div class="loyalty-card' + (hasBg ? ' has-bg' : '')
+             + (hasBg && fond.clair ? ' kc-clair' : '') + (o.animate ? '' : ' kc-static') + '"'
              + ' style="--card-glow:' + glow(accent) + ';--card-accent:' + accent + ';'
              + '--card-color1:' + accent + ';--card-color2:' + accent + ';--card-accent2:' + accent + ';'
              + bgStyle + '"' + (o.onclick ? ' onclick="' + o.onclick + '"' : '') + '>'
