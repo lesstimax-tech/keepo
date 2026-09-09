@@ -25,6 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/keepo-card.js?v=4"></script>
+    <script src="js/keepo-code.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -2290,6 +2291,26 @@
                     </button>
                 </div>
                 <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">Présentez le QR Code du client devant la caméra</p>
+
+                <!-- Recours au scan : un écran sombre ou un film de protection
+                     suffisent à faire renoncer la caméra. Le code évite de
+                     renvoyer le client sans ses points. -->
+                <div style="background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:14px;padding:18px;margin-bottom:14px;">
+                    <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-family:Inter,sans-serif;">
+                        <i class="fa-solid fa-keyboard"></i>&nbsp; Le scan ne passe pas ?
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:10px;">
+                        Sous son QR, le client voit un code de six caractères. Demandez-le-lui.
+                    </div>
+                    <input type="text" id="code-passage-input" placeholder="AC3 K7P" maxlength="8"
+                           autocomplete="off" autocapitalize="characters" spellcheck="false"
+                           oninput="this.value = this.value.toUpperCase()"
+                           onkeydown="if (event.key === 'Enter') validerCodePassage()"
+                           style="width:100%;padding:12px;text-align:center;background:var(--bg-dark);border:1px solid var(--glass-border);color:var(--text-main);border-radius:10px;font-size:20px;font-weight:800;letter-spacing:6px;margin-bottom:10px;font-family:Inter,sans-serif;">
+                    <button onclick="validerCodePassage()" class="btn-action" style="width:100%;">
+                        <i class="fa-solid fa-user-check"></i> Trouver le client
+                    </button>
+                </div>
 
                 <div style="background:var(--bg-card-hover);border:1px solid var(--glass-border);border-radius:14px;padding:18px;margin-bottom:14px;">
                     <div style="font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;font-family:Inter,sans-serif;">Recherche directe par UUID client</div>
@@ -6439,6 +6460,51 @@
         if (!win) { showToast('warning', 'Pop-up bloquée', 'Autorisez les pop-ups pour imprimer votre affiche.'); return; }
         win.document.write(html);
         win.document.close();
+    }
+
+    /* ── Créditer à partir du code affiché sur le téléphone du client ──
+       Le code se recalcule à partir des membres du commerce : rien n'est
+       stocké, et il expire de lui-même comme le QR. */
+    async function validerCodePassage() {
+        const champ  = document.getElementById('code-passage-input');
+        const saisie = champ ? champ.value : '';
+
+        if (!window.KeepoCode || !KeepoCode.estValide(saisie)) {
+            showToast('warning', 'Code incomplet',
+                'Six caractères, exactement comme ils apparaissent sur le téléphone du client.');
+            return;
+        }
+        if (!currentMerchantId) return;
+
+        const { data, error } = await supabaseClient
+            .from('loyalty_balances').select('client_id').eq('merchant_id', currentMerchantId);
+        if (error) { showToast('error', 'Erreur', error.message); return; }
+
+        const clients = [...new Set((data || []).map(r => r.client_id))];
+        if (!clients.length) {
+            showToast('warning', 'Aucun membre', "Votre programme n'a encore aucun client.");
+            return;
+        }
+
+        /* Le calcul exige un contexte sécurisé. Le site est en https ; on le
+           dit tout de même plutôt que d'échouer sans un mot. */
+        let clientId = null;
+        try {
+            clientId = await KeepoCode.retrouver(saisie, currentMerchantId, clients);
+        } catch (e) {
+            showToast('error', 'Indisponible ici',
+                'La saisie de code exige une connexion sécurisée (https).');
+            return;
+        }
+
+        if (!clientId) {
+            showToast('error', 'Code introuvable',
+                'Il a peut-être expiré — il change chaque minute. Demandez au client de regarder son écran à nouveau.');
+            return;
+        }
+
+        if (champ) champ.value = '';
+        executeClientLookup(clientId);
     }
 
     function regenerateMerchantQrUUID() {
