@@ -1377,9 +1377,58 @@
     }
 
     // ─── SPLASH HELPERS ───
+    /* La dernière étape annoncée : c'est elle qu'on montre si le démarrage
+       s'enlise, pour savoir où ça a coincé. */
+    let _etapeDemarrage = 'Démarrage';
+    let _gardeFouArme   = false;
+
     function splashProgress(pct, status) {
         document.getElementById('splash-bar').style.width = pct + '%';
-        if (status) document.getElementById('splash-status').innerText = status;
+        if (status) {
+            _etapeDemarrage = status;
+            document.getElementById('splash-status').innerText = status;
+        }
+        armerGardeFou();
+    }
+
+    /* Aucune requête ne doit pouvoir retenir l'application indéfiniment.
+       Au bout de quinze secondes, on rend la main au client et on lui dit
+       où ça s'est arrêté — plutôt que de le laisser devant une barre figée. */
+    function armerGardeFou() {
+        if (_gardeFouArme) return;
+        _gardeFouArme = true;
+        setTimeout(() => {
+            const s = document.getElementById('splash');
+            if (!s || s.classList.contains('hidden') || s.style.display === 'none') return;
+
+            const statut = document.getElementById('splash-status');
+            if (statut) {
+                statut.innerHTML = 'Le chargement s\'éternise.<br>'
+                    + '<span style="opacity:.7;font-size:12px;">Bloqué à : ' + _etapeDemarrage + '</span>';
+            }
+            const piste = document.querySelector('.splash-progress-track');
+            const bouton = document.createElement('button');
+            bouton.type = 'button';
+            bouton.textContent = 'Continuer quand même';
+            bouton.style.cssText = 'margin-top:18px;padding:12px 22px;border-radius:12px;border:none;'
+                + 'background:var(--grad);color:#fff;font-family:inherit;font-size:14px;'
+                + 'font-weight:650;cursor:pointer;';
+            bouton.onclick = () => { s.classList.add('hidden'); setTimeout(() => { s.style.display = 'none'; }, 600); };
+            (piste ? piste.parentNode : s).appendChild(bouton);
+
+            console.warn('[KEEPO] Démarrage enlisé à l\'étape : ' + _etapeDemarrage);
+        }, 15000);
+    }
+
+    /* Une requête qui ne répond jamais n'est pas une erreur : elle ne
+       revient simplement pas, et le try/catch ne sert alors à rien. On
+       lui impose donc une limite de temps. */
+    function avecDelai(promesse, ms, quoi) {
+        return Promise.race([
+            promesse,
+            new Promise((_, rejeter) => setTimeout(
+                () => rejeter(new Error(quoi + ' : pas de réponse après ' + Math.round(ms / 1000) + ' s')), ms))
+        ]);
     }
     function splashHide(name) {
         const greet = document.getElementById('splash-greeting');
@@ -1528,12 +1577,14 @@
         applyClientAvatarFromProfile(profile?.avatar_url);
 
         splashProgress(80, 'Récupération des cartes');
-        loadClientTheme(); // thème personnalisé avec ID connu
-        initPwa();
+        // Ni le thème ni l'enregistrement du service worker ne valent
+        // d'immobiliser l'application s'ils échouent.
+        try { loadClientTheme(); } catch (e) { console.error('[KEEPO] Thème :', e); }
+        try { initPwa(); }        catch (e) { console.error('[KEEPO] PWA :', e); }
         // Un échec de chargement ne doit JAMAIS laisser l'écran de démarrage bloqué :
         // l'app s'ouvre quand même et l'erreur est rendue visible.
         try {
-            await loadClientWallet();
+            await avecDelai(loadClientWallet(), 12000, 'Chargement des cartes');
         } catch (e) {
             console.error('[KEEPO] Chargement des cartes :', e);
             const c = document.getElementById('cards-container');
@@ -1545,7 +1596,7 @@
                     <i class="fa-solid fa-rotate"></i> Réessayer</button></div>`;
         }
         try {
-            await loadMyPhase3Profile();
+            await avecDelai(loadMyPhase3Profile(), 8000, 'Chargement du profil');
         } catch (e) {
             console.error('[KEEPO] Profil (parrainage/anniversaire) :', e);
         }
