@@ -26,6 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/keepo-card.js?v=4"></script>
+    <script src="js/keepo-code.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -470,6 +471,37 @@
         .qr-zone canvas, .qr-zone img, .qr-zone svg { display: block; border-radius: 6px; }
         .qr-countdown { font-size: 11.5px; color: var(--faint); font-variant-numeric: tabular-nums;
             letter-spacing: .04em; }
+
+        /* ── Recours au scan ─────────────────────────────────────
+           Quand la caméra du commerçant s'entête, il saisit ce code.
+           Il change en même temps que le QR. */
+        .qr-code-court { margin-top: 10px; }
+        .qr-code-court .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase;
+            letter-spacing: .06em; font-weight: 600; }
+        .qr-code-court .val { font-size: 26px; font-weight: 800; letter-spacing: .16em;
+            font-variant-numeric: tabular-nums; margin-top: 3px; color: var(--text); }
+        .qr-agrandir { margin-top: 14px; width: 100%; padding: 13px; border-radius: 14px;
+            border: 1px solid var(--border-2); background: var(--bg-2); color: var(--text);
+            font-family: inherit; font-size: 14px; font-weight: 650; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+
+        /* ── Plein écran ─────────────────────────────────────────
+           Fond blanc pur et code très grand : c'est ce qui donne le
+           plus de chances à une caméra médiocre. L'écran est aussi
+           maintenu allumé — la mise en veille automatique est l'autre
+           moitié du problème. */
+        .qr-plein { position: fixed; inset: 0; z-index: 100050; display: none;
+            background: #FFFFFF; color: #0A0911;
+            flex-direction: column; align-items: center; justify-content: center;
+            gap: 22px; padding: 24px; text-align: center; }
+        .qr-plein.ouvert { display: flex; }
+        .qr-plein-zone { width: min(78vw, 56vh); height: min(78vw, 56vh); }
+        .qr-plein-zone svg, .qr-plein-zone canvas { width: 100%; height: 100%; display: block; }
+        .qr-plein-code { font-size: clamp(30px, 9vw, 46px); font-weight: 800; letter-spacing: .14em;
+            font-variant-numeric: tabular-nums; }
+        .qr-plein-note { font-size: 15px; font-weight: 600; color: #3A3A48; max-width: 30ch; }
+        .qr-plein-bas { position: absolute; left: 0; right: 0; bottom: 22px;
+            font-size: 12.5px; color: #8A8A98; }
         .modal-points-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
         .modal-stat-box { background: var(--bg-2); border-radius: var(--r-sm); padding: 14px; }
         .modal-stat-label { font-size: 11px; color: var(--muted); font-weight: 500;
@@ -987,6 +1019,15 @@
 
         <div class="qr-zone" id="client-qr-rendering-zone"></div>
         <div class="qr-countdown" id="qr-countdown"></div>
+
+        <div class="qr-code-court" id="qr-code-court" style="display:none;">
+            <div class="lbl">Si le scan ne passe pas, dictez ce code</div>
+            <div class="val" id="qr-code-court-val">— — —</div>
+        </div>
+
+        <button type="button" class="qr-agrandir" onclick="ouvrirQrPlein()">
+            <i class="fa-solid fa-expand"></i> Afficher en grand
+        </button>
 
         <!-- Multi-boutique info (visible si le commerce a plusieurs boutiques) -->
         <div id="modal-boutiques-info" style="display:none;margin:-4px 0 12px;padding:10px 14px;background:rgba(14,124,140,0.06);border:1px solid rgba(14,124,140,0.18);border-radius:12px;">
@@ -1843,14 +1884,44 @@
 
         function buildQr() {
             const bucket = Math.floor(Date.now() / 60000); // granule de 1 min
+            const charge = `KEEPO:card:${currentClientId}:${merchantId}:${bucket}`;
+
             document.getElementById('client-qr-rendering-zone').innerHTML = "";
             new QRCodeStyling({
                 width: 200, height: 200, type: "svg",
-                data: `KEEPO:card:${currentClientId}:${merchantId}:${bucket}`,
+                data: charge,
                 dotsOptions: { color: "#0a0911", type: "rounded" },
                 backgroundOptions: { color: "#ffffff" },
                 cornersSquareOptions: { type: "extra-rounded", color: "#0a0911" }
             }).append(document.getElementById("client-qr-rendering-zone"));
+
+            /* Le même code, en grand, quand la couche plein écran est ouverte :
+               un seul cycle de rafraîchissement pour les deux affichages. */
+            const grand = document.getElementById('qr-plein-zone');
+            if (grand && document.getElementById('qr-plein').classList.contains('ouvert')) {
+                grand.innerHTML = "";
+                new QRCodeStyling({
+                    width: 900, height: 900, type: "svg",
+                    data: charge,
+                    dotsOptions: { color: "#000000", type: "square" },
+                    backgroundOptions: { color: "#ffffff" },
+                    cornersSquareOptions: { type: "square", color: "#000000" }
+                }).append(grand);
+            }
+
+            /* Le code court : dérivé de la même charge, donc toujours
+               d'accord avec le QR affiché à côté. */
+            if (window.KeepoCode) {
+                KeepoCode.pour(currentClientId, merchantId, bucket).then(code => {
+                    const joli = KeepoCode.joli(code);
+                    const boite = document.getElementById('qr-code-court');
+                    const val   = document.getElementById('qr-code-court-val');
+                    if (boite && val) { val.textContent = joli; boite.style.display = 'block'; }
+                    const gv = document.getElementById('qr-plein-code');
+                    if (gv) gv.textContent = joli;
+                }).catch(() => { /* contexte non sécurisé : on garde le QR seul */ });
+            }
+
             startQrCountdown();
         }
 
@@ -1868,6 +1939,7 @@
 
         buildQr();
         qrRefreshInterval = setInterval(buildQr, 55000); // refresh 5s avant le changement de bucket
+        window._keepoRebatirQr = buildQr;
 
         // ── Fonctionnalités Pro — masquées si le commerçant est Essential ──
         const isPro = merchantPlan && merchantPlan !== 'essential';
@@ -1919,6 +1991,7 @@
     }
 
     function closeQrModal() {
+        fermerQrPlein();
         document.getElementById('qrModal').style.display = 'none';
         if (qrRefreshInterval) { clearInterval(qrRefreshInterval); qrRefreshInterval = null; }
         if (qrCountdownTimer)  { clearInterval(qrCountdownTimer);  qrCountdownTimer  = null; }
@@ -3564,6 +3637,60 @@
     }
 </script>
 <style>:root{--kca-bottom:calc(var(--nav-h, 74px) + max(14px, env(safe-area-inset-bottom)))}</style>
+<!-- ═══════════ QR EN GRAND ═══════════ -->
+<div class="qr-plein" id="qr-plein" onclick="fermerQrPlein()">
+    <div class="qr-plein-zone" id="qr-plein-zone"></div>
+    <div class="qr-plein-code" id="qr-plein-code"></div>
+    <div class="qr-plein-note">Présentez cet écran à votre commerçant</div>
+    <div class="qr-plein-bas">Touchez l'écran pour revenir</div>
+</div>
+
+<script>
+/* ── Le QR en grand ──────────────────────────────────────────────
+   Deux choses font échouer un scan sur un écran de téléphone : un
+   code trop petit et mal contrasté, et la mise en veille qui baisse
+   la luminosité avant d'éteindre. On traite les deux ici. */
+let _veilleEcran = null;
+
+async function ouvrirQrPlein() {
+    const couche = document.getElementById('qr-plein');
+    if (!couche) return;
+    couche.classList.add('ouvert');
+    // Redessiner : la couche était vide tant qu'elle n'avait pas servi.
+    if (typeof window._keepoRebatirQr === 'function') window._keepoRebatirQr();
+    garderEcranAllume();
+}
+
+function fermerQrPlein() {
+    const couche = document.getElementById('qr-plein');
+    if (couche) couche.classList.remove('ouvert');
+    relacherEcran();
+}
+
+async function garderEcranAllume() {
+    try {
+        if ('wakeLock' in navigator && !_veilleEcran) {
+            _veilleEcran = await navigator.wakeLock.request('screen');
+            _veilleEcran.addEventListener('release', () => { _veilleEcran = null; });
+        }
+    } catch (e) { /* refusé ou non pris en charge : le grand format sert quand même */ }
+}
+
+function relacherEcran() {
+    try { if (_veilleEcran) _veilleEcran.release(); } catch (e) {}
+    _veilleEcran = null;
+}
+
+/* Le verrou saute dès que la page passe en arrière-plan : on le reprend
+   au retour, sinon l'écran s'éteindrait pendant que le client attend. */
+document.addEventListener('visibilitychange', () => {
+    const couche = document.getElementById('qr-plein');
+    if (document.visibilityState === 'visible' && couche && couche.classList.contains('ouvert')) {
+        garderEcranAllume();
+    }
+});
+</script>
+
 <script src="js/keepo-assistant.js" defer></script>
 </body>
 </html>

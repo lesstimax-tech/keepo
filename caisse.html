@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="js/keepo-code.js?v=1"></script>
 
     <style>
         :root {
@@ -425,6 +426,28 @@
             <p style="font-size:12px;color:var(--muted);margin-top:14px;text-align:center;">
                 💡 Astuce : placez le client à 15-25 cm de la caméra, écran lumineux.
             </p>
+
+            <!-- Recours au scan : un écran sombre, un film de protection ou une
+                 vitre fêlée suffisent à faire échouer la caméra. Le code évite
+                 de renvoyer le client sans ses points. -->
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                <div style="font-size:13.5px;font-weight:700;margin-bottom:5px;">
+                    <i class="fa-solid fa-keyboard"></i> Le scan ne passe pas ?
+                </div>
+                <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:11px;">
+                    Sous son QR, le client voit un code de six caractères.
+                    Demandez-le-lui et saisissez-le ici.
+                </p>
+                <div class="code-input-wrap">
+                    <input type="text" id="code-passage-input" placeholder="AC3 K7P" maxlength="8"
+                           autocomplete="off" autocapitalize="characters" spellcheck="false"
+                           oninput="this.value = this.value.toUpperCase()"
+                           onkeydown="if (event.key === 'Enter') validerCodePassage()">
+                </div>
+                <button onclick="validerCodePassage()" class="btn-action">
+                    <i class="fa-solid fa-user-check"></i> Trouver le client
+                </button>
+            </div>
         </div>
 
         <!-- RIGHT : ACTIONS -->
@@ -834,8 +857,12 @@ async function onQrScanned(qrData) {
     }
     // Stop scanner during action
     if (scanner) { try { await scanner.pause(); } catch {} }
+    await ouvrirCreditPour(clientId);
+}
 
-    // Récupère le profil client (nom + avatar)
+/* Le scan et le code aboutissent au même endroit : une seule suite,
+   donc un seul comportement à maintenir. */
+async function ouvrirCreditPour(clientId) {
     const { data: client } = await window.supabaseClient
         .from('profiles').select('name, avatar_url').eq('id', clientId).maybeSingle();
 
@@ -843,6 +870,52 @@ async function onQrScanned(qrData) {
     creditClientName = client?.name || 'Client';
 
     openCreditModal(creditClientName, client?.avatar_url || null);
+}
+
+/* ── Créditer à partir du code affiché sur le téléphone du client ──
+   Le code se recalcule à partir des membres du commerce : on ne stocke
+   rien, et il expire de lui-même comme le QR. */
+async function validerCodePassage() {
+    const champ  = document.getElementById('code-passage-input');
+    const saisie = champ ? champ.value : '';
+
+    if (!window.KeepoCode || !KeepoCode.estValide(saisie)) {
+        showCaisseResult('error', 'Code incomplet',
+            'Six caractères, exactement comme ils apparaissent sur le téléphone du client.');
+        return;
+    }
+
+    const { data, error } = await window.supabaseClient
+        .from('loyalty_balances').select('client_id').eq('merchant_id', merchantId);
+    if (error) { showCaisseResult('error', 'Erreur', error.message); return; }
+
+    const clients = [...new Set((data || []).map(r => r.client_id))];
+    if (!clients.length) {
+        showCaisseResult('error', 'Aucun membre',
+            'Ce commerce n\'a encore aucun client inscrit.');
+        return;
+    }
+
+    /* Le calcul du code exige un contexte securise. En production le site
+       est en https ; sur une adresse locale en clair, on le dit plutot que
+       d echouer sans un mot. */
+    let clientId = null;
+    try {
+        clientId = await KeepoCode.retrouver(saisie, merchantId, clients);
+    } catch (e) {
+        showCaisseResult("error", "Indisponible ici",
+            "La saisie de code exige une connexion securisee. Ouvrez la caisse depuis https://keepo.eu/caisse.");
+        return;
+    }
+    if (!clientId) {
+        showCaisseResult('error', 'Code introuvable',
+            'Il a peut-être expiré — il change chaque minute. Demandez au client de regarder son écran à nouveau.');
+        return;
+    }
+
+    if (champ) champ.value = '';
+    if (scanner) { try { await scanner.pause(); } catch {} }
+    await ouvrirCreditPour(clientId);
 }
 
 function openCreditModal(name, avatarUrl) {
