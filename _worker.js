@@ -2584,6 +2584,37 @@ const INCIDENTS_VUS = new Map();   // signature → horodatage
 const INCIDENT_SILENCE = 60_000;   // une minute entre deux signalements identiques
 let INCIDENTS_MINUTE = { debut: 0, n: 0 };
 
+/* ── Se souvenir d'un signalement au-delà de l'isolat ───────────────────
+   Une Map vit dans un isolat, et Cloudflare en change sans arrêt : mesuré
+   sur cinq requêtes identiques d'affilée, une seule retombait sur l'isolat
+   chaud. Autrement dit la Map seule bloque environ un doublon sur cinq —
+   ce qui n'est pas une protection.
+
+   Le cache de la zone, lui, est partagé par tout un centre de données. Ce
+   n'est toujours pas mondial — deux clients sur deux continents peuvent
+   passer deux fois — mais un vrai incident touche des gens groupés, et
+   c'est justement le cas qu'on veut amortir : le jour où mille clients
+   calent en même temps, ce salon doit rester lisible.
+
+   La Map reste devant : elle répond sans aucune latence quand elle sait. */
+const CLE_INCIDENT = (signature) =>
+  new Request('https://keepo.eu/__incident/' + encodeURIComponent(signature).slice(0, 200));
+
+async function incidentDejaVu(signature) {
+  try {
+    const cache = caches.default;
+    const cle = CLE_INCIDENT(signature);
+    if (await cache.match(cle)) return true;
+    await cache.put(cle, new Response('1', {
+      headers: { 'Cache-Control': 'max-age=' + Math.round(INCIDENT_SILENCE / 1000) }
+    }));
+  } catch {
+    /* Pas de cache disponible : on laisse passer plutôt que de perdre un
+       signalement. Un doublon coûte moins cher qu'un diagnostic manquant. */
+  }
+  return false;
+}
+
 async function handleIncident(request, env) {
   if (request.method !== 'POST') return json({ error: 'Méthode non autorisée' }, 405);
 
@@ -2614,11 +2645,12 @@ async function handleIncident(request, env) {
 
   const signature = etape + '|' + nav.slice(0, 60);
   const vu = INCIDENTS_VUS.get(signature);
-  if (vu && maintenant - vu < INCIDENT_SILENCE) return json({ recu: true });
+  if (vu && maintenant - vu < INCIDENT_SILENCE) return json({ recu: true, double: 'isolat' });
   INCIDENTS_VUS.set(signature, maintenant);
   if (INCIDENTS_VUS.size > 200) {
     for (const [k, t] of INCIDENTS_VUS) if (maintenant - t > INCIDENT_SILENCE) INCIDENTS_VUS.delete(k);
   }
+  if (await incidentDejaVu(signature)) return json({ recu: true, double: 'cache' });
 
   const cf = request.cf || {};
   const issue = await versDiscord(env, {
@@ -2657,6 +2689,13 @@ export default {
     // les images base64, il faut une URL servie en HTTP).
     if (url.pathname.startsWith('/logo/')) {
       return handleMerchantLogo(request, env, url);
+    }
+
+    /* Les marques d'anti-répétition des incidents vivent dans le cache de la
+       zone, sous cette adresse. Elle n'est pas un contenu : on la ferme, pour
+       que personne ne puisse demander à la lire. */
+    if (url.pathname.startsWith('/__incident/')) {
+      return new Response('Not found', { status: 404 });
     }
 
     switch (url.pathname) {
