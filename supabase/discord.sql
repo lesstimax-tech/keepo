@@ -4,16 +4,25 @@
 --  À coller dans l'éditeur SQL de Supabase :
 --    https://supabase.com/dashboard/project/kvtsjylnwgexfywvxnwz/sql
 --
---  AVANT DE LANCER : remplacez COLLEZ_VOTRE_KEEPO_RELAI_TOKEN par la valeur
---  de KEEPO_RELAI_TOKEN — celle que vous avez posée chez Cloudflare et dans
---  les secrets Supabase.
+--  AVANT DE LANCER : déposez le jeton dans le coffre, une seule fois, dans
+--  l'éditeur SQL — cette ligne-là ne s'enregistre nulle part :
+--
+--    select vault.create_secret(
+--      'LA_VALEUR_DE_KEEPO_RELAI_TOKEN',   -- celle posée chez Cloudflare
+--      'keepo_relai_token',
+--      'Jeton d''appel de la fonction keepo-discord'
+--    );
+--
+--  Ce fichier ne contient donc AUCUN secret, et n'a pas à en contenir : il
+--  vit dans un dépôt public. Une première version demandait de coller le
+--  jeton ici même — c'était un piège, il suffisait d'un « git add . » pour
+--  le publier.
 --
 --  Pourquoi pas la clé service_role : ce projet a migré vers le nouveau
 --  système de clés Supabase, et les deux copies du service role ne sont plus
 --  identiques selon l'endroit d'où l'on appelle. C'est ce qui a fait échouer
---  le relais du Worker pendant une heure. Le jeton de relais, lui, ne dépend
---  d'aucune migration — et il ne porte aucun privilège sur la base, ce qui
---  vaut mieux pour une valeur stockée dans la définition d'une fonction.
+--  le relais du Worker pendant une heure. Le jeton de relais ne dépend
+--  d'aucune migration, et ne porte aucun privilège sur la base.
 --
 --  Extensions nécessaires (déjà actives sur ce projet, la tâche
 --  keepo-notif-cron s'en sert) :
@@ -35,12 +44,24 @@ language plpgsql
 security definer
 set search_path = public, extensions
 as $$
+declare
+  jeton text;
 begin
+  -- Le jeton est lu dans le coffre à chaque appel : il n'apparaît ni dans
+  -- ce fichier, ni dans la définition de la fonction, ni dans un dump.
+  select decrypted_secret into jeton
+    from vault.decrypted_secrets where name = 'keepo_relai_token';
+
+  if jeton is null then
+    raise warning 'keepo_discord : le secret keepo_relai_token est absent du coffre';
+    return;
+  end if;
+
   perform net.http_post(
     url     := 'https://kvtsjylnwgexfywvxnwz.supabase.co/functions/v1/keepo-discord',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer COLLEZ_VOTRE_KEEPO_RELAI_TOKEN'
+      'Authorization', 'Bearer ' || jeton
     ),
     body    := charge
   );
@@ -174,6 +195,9 @@ select cron.schedule(
 -- Le déclencheur est-il bien en place sur profiles ?
 -- select tgname, tgenabled from pg_trigger
 --   where tgrelid = 'public.profiles'::regclass and not tgisinternal;
+
+-- Le jeton est-il bien dans le coffre ? (affiche le nom, jamais la valeur)
+-- select name, created_at from vault.secrets where name = 'keepo_relai_token';
 
 -- La tâche quotidienne est-elle planifiée ?
 -- select jobname, schedule, active from cron.job;
