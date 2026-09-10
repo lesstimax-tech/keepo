@@ -1340,7 +1340,14 @@ async function verifyStripeSignature(rawBody, sigHeader, secret, toleranceSec = 
 }
 
 // POST /api/stripe-webhook — Stripe notifie les paiements réussis
-async function handleStripeWebhook(request, env) {
+async function handleStripeWebhook(request, env, ctx) {
+  /* Prévenir Discord ne doit jamais retarder la réponse à Stripe : au-delà
+     de son délai, Stripe rejoue l'événement, et un rejeu re-appliquerait la
+     mise à jour du plan. waitUntil laisse la notification partir après. */
+  const prevenir = (charge) => {
+    const envoi = versDiscord(env, charge);
+    if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(envoi);
+  };
   if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
 
   // Lecture du corps BRUT (requis pour la vérification de signature).
@@ -1412,6 +1419,19 @@ async function handleStripeWebhook(request, env) {
         })
       });
       if (!updateRes.ok) console.error('Webhook update failed', await updateRes.text());
+
+      prevenir({
+        salon: 'paiements',
+        titre: 'Nouvel abonnement — ' + (paidPlan || 'formule inconnue'),
+        texte: trialEndsAt
+          ? "Période d'essai en cours ; le premier prélèvement suivra."
+          : 'Abonnement actif.',
+        champs: [
+          { nom: 'Formule',      valeur: String(paidPlan || '—') },
+          { nom: 'Commerçant',   valeur: String(merchantId).slice(0, 8) },
+          { nom: 'Renouvelle le', valeur: renewsAt ? String(renewsAt).slice(0, 10) : '—' }
+        ]
+      });
     }
   }
 
@@ -1422,6 +1442,21 @@ async function handleStripeWebhook(request, env) {
     const sub        = event.data?.object;
     const merchantId = sub?.metadata?.merchant_id;
     const subId      = sub?.id;
+
+    /* Le signal le plus important du salon : un commerçant qui part. Il
+       vaut d'être su le jour même, pas au relevé du mois. */
+    prevenir({
+      salon: 'paiements',
+      titre: 'Abonnement résilié',
+      texte: sub?.cancellation_details?.reason === 'payment_failed'
+        ? 'Résiliation après échecs de paiement répétés.'
+        : 'Résiliation volontaire, ou fin de période.',
+      couleur: 0xE0554A,
+      champs: [
+        { nom: 'Commerçant',  valeur: merchantId ? String(merchantId).slice(0, 8) : '—' },
+        { nom: 'Abonnement',  valeur: subId ? String(subId).slice(0, 20) : '—' }
+      ]
+    });
     const SUPA_URL   = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
     const SUPA_KEY   = env.SUPABASE_SERVICE_ROLE;
 
@@ -1454,6 +1489,15 @@ async function handleStripeWebhook(request, env) {
     const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
 
     if (SUPA_KEY && subId && amount > 0) {
+      prevenir({
+        salon: 'paiements',
+        titre: 'Paiement reçu — ' + (amount / 100).toFixed(2).replace('.', ',') + ' €',
+        champs: [
+          { nom: 'Montant',    valeur: (amount / 100).toFixed(2).replace('.', ',') + ' €' },
+          { nom: 'Abonnement', valeur: String(subId).slice(0, 20) }
+        ]
+      });
+
       const supaHeaders = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Content-Type': 'application/json' };
       try {
         // 1) Filleul = profil abonné à cette souscription.
@@ -2677,7 +2721,7 @@ async function handleIncident(request, env) {
 // ──────────── Router ────────────
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     // Dynamic route: public merchant page
@@ -2707,7 +2751,7 @@ export default {
       case '/api/ai-reward-suggestions':   return handleRewardSuggestions(request, env);
       case '/api/ai-design-studio':        return handleDesignStudio(request, env);
       case '/api/stripe-checkout':         return handleStripeCheckout(request, env);
-      case '/api/stripe-webhook':          return handleStripeWebhook(request, env);
+      case '/api/stripe-webhook':          return handleStripeWebhook(request, env, ctx);
       case '/api/send-campaign':           return handleSendCampaign(request, env);
       case '/api/campaign-count':          return handleCampaignCount(request, env);
       case '/api/delete-account':          return handleDeleteAccount(request, env);
