@@ -2539,13 +2539,18 @@ async function versDiscord(env, charge) {
      endroit à l'exiger était une erreur — c'est elle qui laissait le salon
      vide sans que rien ne le dise. */
   const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
-  if (!env.SUPABASE_SERVICE_ROLE) return { relaye: false, raison: 'SUPABASE_SERVICE_ROLE absente du Worker' };
+  /* Notre copie du service role est un ancien JWT : valide pour la base,
+     mais plus celui que Supabase injecte dans ses fonctions depuis la
+     migration des clés. D'où un jeton dédié — qui ne porte d'ailleurs aucun
+     privilège sur la base, ce qui vaut mieux pour poster un message. */
+  const jeton = env.KEEPO_RELAI_TOKEN || env.SUPABASE_SERVICE_ROLE;
+  if (!jeton) return { relaye: false, raison: 'KEEPO_RELAI_TOKEN absent du Worker' };
   try {
     const r = await fetch(`${SUPA_URL}/functions/v1/keepo-discord`, {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
-        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE}`
+        'Authorization': `Bearer ${jeton}`
       },
       body: JSON.stringify(charge)
     });

@@ -19,7 +19,10 @@
 //  Une URL de webhook est un mot de passe : qui l'a peut écrire dans le
 //  salon. Elle ne doit jamais entrer dans le dépôt.
 //
-//  Appel (serveur uniquement — exige le service role en Bearer) :
+//  Jeton du relais Cloudflare (voir le garde-fou dans le code) :
+//    supabase secrets set KEEPO_RELAI_TOKEN=<meme valeur que chez Cloudflare>
+//
+//  Appel (serveur uniquement — KEEPO_RELAI_TOKEN ou le service role) :
 //    POST { salon: 'erreurs'|'inscriptions'|'quotidien'|'paiements',
 //           titre: string,
 //           texte?: string,
@@ -39,6 +42,8 @@
 /// <reference lib="deno.ns" />
 
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+/* Le jeton du Worker : voir le garde-fou plus bas. */
+const RELAI_TOKEN      = Deno.env.get('KEEPO_RELAI_TOKEN') ?? '';
 
 /* Le nom du salon ne sert qu'à choisir un secret : on ne construit jamais
    une URL à partir de ce que l'appelant envoie. */
@@ -94,9 +99,23 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST')    return json({ error: 'Méthode non autorisée' }, 405);
 
-  // Garde-fou : appel serveur uniquement (Worker, cron, autres fonctions).
+  /* Garde-fou : appel serveur uniquement.
+
+     Deux jetons acceptés, et c'est voulu.
+
+     Les appelants qui vivent DANS Supabase — pg_cron, déclencheurs, autres
+     fonctions — ont le service role sous la main, injecté par la plateforme.
+
+     Le Worker, lui, vit chez Cloudflare : sa copie du service role est un
+     ancien JWT, encore valide pour la base mais différent de celui que la
+     plateforme injecte ici depuis la migration des clés. Les aligner
+     casserait le reste du Worker. On lui donne donc son propre jeton, qui
+     ne dépend d'aucune migration — et qui, au passage, ne porte aucun
+     privilège sur la base : poster dans un salon Discord n'a pas besoin
+     d'une clé qui peut tout lire. */
   const authHeader = req.headers.get('Authorization') || '';
-  if (!SERVICE_ROLE_KEY || authHeader !== `Bearer ${SERVICE_ROLE_KEY}`) {
+  const jetons = [RELAI_TOKEN, SERVICE_ROLE_KEY].filter(Boolean);
+  if (!jetons.some((j) => authHeader === `Bearer ${j}`)) {
     return json({ error: 'Non autorisé' }, 401);
   }
 
