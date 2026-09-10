@@ -2534,7 +2534,8 @@ async function handleMerchantPage(request, env, url) {
    raconte : cette fonction n'émet donc rien vers l'appelant, et n'attend
    même pas de savoir si Discord a répondu quand on ne le lui demande pas. */
 async function versDiscord(env, charge) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE) return false;
+  if (!env.SUPABASE_URL)          return { relaye: false, raison: 'SUPABASE_URL absente du Worker' };
+  if (!env.SUPABASE_SERVICE_ROLE) return { relaye: false, raison: 'SUPABASE_SERVICE_ROLE absente du Worker' };
   try {
     const r = await fetch(`${env.SUPABASE_URL}/functions/v1/keepo-discord`, {
       method: 'POST',
@@ -2544,9 +2545,17 @@ async function versDiscord(env, charge) {
       },
       body: JSON.stringify(charge)
     });
-    return r.ok;
-  } catch {
-    return false;
+    /* keepo-discord répond 200 même quand elle n'a rien pu envoyer : c'est
+       voulu — une notification ratée ne doit pas ressembler à une panne de
+       l'appelant. Mais alors le code HTTP ne dit rien, et il faut lire le
+       corps. Sans cela le relais est muet, y compris pour nous. */
+    let corps = null;
+    try { corps = await r.json(); } catch { /* corps illisible */ }
+    if (!r.ok)   return { relaye: false, raison: `keepo-discord HTTP ${r.status}` };
+    if (!corps)  return { relaye: false, raison: 'réponse illisible' };
+    return { relaye: corps.envoye === true, raison: corps.raison || null };
+  } catch (e) {
+    return { relaye: false, raison: 'appel impossible : ' + (e && e.message || 'inconnu') };
   }
 }
 
@@ -2603,7 +2612,7 @@ async function handleIncident(request, env) {
   }
 
   const cf = request.cf || {};
-  await versDiscord(env, {
+  const issue = await versDiscord(env, {
     salon: 'erreurs',
     titre: 'Démarrage enlisé — ' + etape,
     texte: "L'application cliente n'a pas fini de charger au bout de "
@@ -2618,7 +2627,10 @@ async function handleIncident(request, env) {
     ]
   });
 
-  return json({ recu: true });
+  /* On dit si le message est bien parti. Ce n'est pas une fuite : « Discord
+     401 » ou « salon non configuré » n'apprend rien d'exploitable, et sans
+     cette ligne on ne peut pas savoir pourquoi un salon reste vide. */
+  return json({ recu: true, relaye: issue.relaye, raison: issue.raison || undefined });
 }
 
 // ──────────── Router ────────────
