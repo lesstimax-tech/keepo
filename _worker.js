@@ -2534,10 +2534,14 @@ async function handleMerchantPage(request, env, url) {
    raconte : cette fonction n'émet donc rien vers l'appelant, et n'attend
    même pas de savoir si Discord a répondu quand on ne le lui demande pas. */
 async function versDiscord(env, charge) {
-  if (!env.SUPABASE_URL)          return { relaye: false, raison: 'SUPABASE_URL absente du Worker' };
+  /* Comme partout ailleurs dans ce fichier : SUPABASE_URL n'a jamais été
+     posée dans Cloudflare, tout repose sur le repli en dur. Être le seul
+     endroit à l'exiger était une erreur — c'est elle qui laissait le salon
+     vide sans que rien ne le dise. */
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
   if (!env.SUPABASE_SERVICE_ROLE) return { relaye: false, raison: 'SUPABASE_SERVICE_ROLE absente du Worker' };
   try {
-    const r = await fetch(`${env.SUPABASE_URL}/functions/v1/keepo-discord`, {
+    const r = await fetch(`${SUPA_URL}/functions/v1/keepo-discord`, {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
