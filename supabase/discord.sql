@@ -4,14 +4,16 @@
 --  À coller dans l'éditeur SQL de Supabase :
 --    https://supabase.com/dashboard/project/kvtsjylnwgexfywvxnwz/sql
 --
---  AVANT DE LANCER : remplacez les deux occurrences de COLLEZ_VOTRE_SERVICE_ROLE
---  par la clé service_role du projet. Elle se trouve dans
---  Settings → API → Project API keys → service_role → Reveal.
+--  AVANT DE LANCER : remplacez COLLEZ_VOTRE_KEEPO_RELAI_TOKEN par la valeur
+--  de KEEPO_RELAI_TOKEN — celle que vous avez posée chez Cloudflare et dans
+--  les secrets Supabase.
 --
---  Cette clé sera stockée dans la définition des objets ci-dessous, donc
---  dans votre base. C'est déjà le cas de la tâche keepo-notif-cron que vous
---  avez planifiée de la même façon : on reste sur le même usage plutôt que
---  d'introduire un second mécanisme.
+--  Pourquoi pas la clé service_role : ce projet a migré vers le nouveau
+--  système de clés Supabase, et les deux copies du service role ne sont plus
+--  identiques selon l'endroit d'où l'on appelle. C'est ce qui a fait échouer
+--  le relais du Worker pendant une heure. Le jeton de relais, lui, ne dépend
+--  d'aucune migration — et il ne porte aucun privilège sur la base, ce qui
+--  vaut mieux pour une valeur stockée dans la définition d'une fonction.
 --
 --  Extensions nécessaires (déjà actives sur ce projet, la tâche
 --  keepo-notif-cron s'en sert) :
@@ -38,7 +40,7 @@ begin
     url     := 'https://kvtsjylnwgexfywvxnwz.supabase.co/functions/v1/keepo-discord',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer COLLEZ_VOTRE_SERVICE_ROLE'
+      'Authorization', 'Bearer COLLEZ_VOTRE_KEEPO_RELAI_TOKEN'
     ),
     body    := charge
   );
@@ -151,5 +153,27 @@ select cron.schedule(
 -- ────────────────────────────────────────────────────────────────
 --  4. Vérifier tout de suite, sans attendre demain
 -- ────────────────────────────────────────────────────────────────
--- select public.keepo_digest_quotidien();
 -- select public.keepo_discord('{"salon":"inscriptions","titre":"Essai depuis Postgres"}'::jsonb);
+-- select public.keepo_digest_quotidien();
+
+-- ────────────────────────────────────────────────────────────────
+--  5. Quand rien n'arrive
+--
+--  keepo_discord avale ses erreurs — c'est voulu : une notification ratée
+--  n'a pas le droit d'annuler l'inscription qu'elle raconte. La contrepartie
+--  est qu'elle ne dit rien. La vérité est ici : pg_net conserve la réponse
+--  de chaque appel.
+-- ────────────────────────────────────────────────────────────────
+-- Qu'a répondu la fonction ? (401 = jeton refusé, 200 = regardez « envoye »)
+-- select id, status_code, left(content, 300) as reponse, created
+--   from net._http_response order by created desc limit 6;
+
+-- Aucune ligne du tout ? Alors la requête n'a jamais été déposée.
+-- select extname from pg_extension where extname in ('pg_net', 'pg_cron');
+
+-- Le déclencheur est-il bien en place sur profiles ?
+-- select tgname, tgenabled from pg_trigger
+--   where tgrelid = 'public.profiles'::regclass and not tgisinternal;
+
+-- La tâche quotidienne est-elle planifiée ?
+-- select jobname, schedule, active from cron.job;
