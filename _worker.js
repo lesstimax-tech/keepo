@@ -1343,11 +1343,23 @@ async function verifyStripeSignature(rawBody, sigHeader, secret, toleranceSec = 
 async function handleStripeWebhook(request, env, ctx) {
   /* Prévenir Discord ne doit jamais retarder la réponse à Stripe : au-delà
      de son délai, Stripe rejoue l'événement, et un rejeu re-appliquerait la
-     mise à jour du plan. waitUntil laisse la notification partir après. */
+     mise à jour du plan. waitUntil laisse la notification partir après.
+
+     Sans waitUntil, la version précédente créait la promesse sans jamais
+     l'attendre ni l'enregistrer : l'isolat pouvait la tuer en renvoyant la
+     réponse, et la notification disparaissait sans trace. On garde donc de
+     quoi l'attendre si le contexte manque. */
+  const enCours = [];
   const prevenir = (charge) => {
     const envoi = versDiscord(env, charge);
     if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(envoi);
+    else enCours.push(envoi);
   };
+
+  /* Ce que le Worker a compris de l'événement. Stripe affiche la réponse de
+     l'endpoint dans son tableau de bord : c'est le seul endroit où l'on peut
+     lire ce qui s'est passé ici, faute de journal accessible. */
+  const vu = { waitUntil: !!(ctx && typeof ctx.waitUntil === 'function') };
   if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
 
   // Lecture du corps BRUT (requis pour la vérification de signature).
@@ -1374,6 +1386,7 @@ async function handleStripeWebhook(request, env, ctx) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data?.object;
+    vu.branche = 'checkout';
     const merchantId = session?.client_reference_id || session?.metadata?.merchant_id;
     const customerId = session?.customer;
     const subId      = session?.subscription;
@@ -1439,6 +1452,7 @@ async function handleStripeWebhook(request, env, ctx) {
   // → retour au plan limité. Le merchant_id voyage dans les métadonnées de
   // l'abonnement ; à défaut on retrouve le profil par stripe_subscription_id.
   if (event.type === 'customer.subscription.deleted') {
+    vu.branche = 'resiliation';
     const sub        = event.data?.object;
     const merchantId = sub?.metadata?.merchant_id;
     const subId      = sub?.id;
@@ -1483,12 +1497,25 @@ async function handleStripeWebhook(request, env, ctx) {
   // une seule fois grâce à la réclamation atomique du parrainage (status=pending).
   if (event.type === 'invoice.paid' || event.type === 'invoice.payment_succeeded') {
     const invoice  = event.data?.object;
-    const subId    = invoice?.subscription;
+    /* invoice.subscription a disparu des versions 2025 de l'API : il vit
+       désormais sous invoice.parent.subscription_details.subscription. Sans
+       cette lecture, la branche entière était sautée en silence — donc la
+       notification, mais aussi le crédit de parrainage. */
+    const subId    = invoice?.subscription
+                  || invoice?.parent?.subscription_details?.subscription
+                  || invoice?.lines?.data?.[0]?.subscription
+                  || invoice?.lines?.data?.[0]?.parent?.subscription_item_details?.subscription;
     const amount   = invoice?.amount_paid || 0;
+    vu.abonnement  = subId ? 'trouvé' : 'INTROUVABLE';
+    vu.montant     = amount;
+    vu.champs      = Object.keys(invoice || {}).filter(k => /sub|parent|line/i.test(k)).join(',');
     const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
     const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+    vu.branche = 'facture';
+    vu.cle     = SUPA_KEY ? 'présente' : 'ABSENTE';
 
     if (SUPA_KEY && subId && amount > 0) {
+      vu.notifie = true;
       prevenir({
         salon: 'paiements',
         titre: 'Paiement reçu — ' + (amount / 100).toFixed(2).replace('.', ',') + ' €',
@@ -1548,7 +1575,8 @@ async function handleStripeWebhook(request, env, ctx) {
     }
   }
 
-  return json({ received: true });
+  if (enCours.length) await Promise.allSettled(enCours);
+  return json({ received: true, type: event.type, vu });
 }
 
 // ════════════════════════════════════════════════════════════════
