@@ -1463,11 +1463,25 @@
        revient simplement pas, et le try/catch ne sert alors à rien. On
        lui impose donc une limite de temps. */
     function avecDelai(promesse, ms, quoi) {
-        return Promise.race([
-            promesse,
-            new Promise((_, rejeter) => setTimeout(
-                () => rejeter(new Error(quoi + ' : pas de réponse après ' + Math.round(ms / 1000) + ' s')), ms))
-        ]);
+        /* Ces limites sont plus courtes que les quinze secondes du garde-fou :
+           quand l'une expire, l'application continue et l'écran s'affiche. Le
+           client le trouve normal, il lui manque seulement des cartes ou des
+           données de profil — et personne n'en sait rien. C'est l'angle mort
+           entre « ça marche » et « ça marche vraiment ».
+
+           Le minuteur est annulé dès que la course se décide : sans cela il
+           se déclencherait aussi quand la promesse a répondu à temps, et on
+           signalerait des pannes qui n'existent pas. */
+        const secondes = Math.round(ms / 1000);
+        let minuteur;
+        const limite = new Promise((_, rejeter) => {
+            minuteur = setTimeout(() => {
+                signalerIncident('Délai dépassé — ' + quoi + ' (' + secondes + ' s)');
+                rejeter(new Error(quoi + ' : pas de réponse après ' + secondes + ' s'));
+            }, ms);
+        });
+        return Promise.race([promesse, limite])
+            .finally(() => clearTimeout(minuteur));
     }
     function splashHide(name) {
         const greet = document.getElementById('splash-greeting');
