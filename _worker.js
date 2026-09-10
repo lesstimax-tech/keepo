@@ -2524,6 +2524,103 @@ async function handleMerchantPage(request, env, url) {
   });
 }
 
+// ──────────── Discord : le fil privé de Sami ────────────
+
+/* Relais vers l'Edge Function keepo-discord. Le format des messages vit
+   là-bas ; ici on ne fait que transmettre, avec le service role que le
+   navigateur n'a évidemment pas.
+
+   Une notification qui échoue ne doit jamais faire tomber l'action qu'elle
+   raconte : cette fonction n'émet donc rien vers l'appelant, et n'attend
+   même pas de savoir si Discord a répondu quand on ne le lui demande pas. */
+async function versDiscord(env, charge) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE) return false;
+  try {
+    const r = await fetch(`${env.SUPABASE_URL}/functions/v1/keepo-discord`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE}`
+      },
+      body: JSON.stringify(charge)
+    });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
+/* ── Le garde-fou du démarrage rapporte ici ──────────────────────────
+   Appelée par le navigateur du client, donc SANS clé : n'importe qui peut
+   la solliciter. Trois protections, dans cet ordre :
+
+     1. la forme est imposée — aucun champ libre ne part vers Discord ;
+     2. la taille est bornée à chaque étage ;
+     3. un même signalement ne repart pas avant une minute.
+
+   Le pire qu'on risque reste qu'un plaisantin poste dans un salon privé.
+   En échange, on apprend enfin où le démarrage s'enlise chez les gens :
+   le garde-fou connaissait déjà l'étape, mais il l'écrivait dans une
+   console que personne ne lit. */
+const INCIDENTS_VUS = new Map();   // signature → horodatage
+const INCIDENT_SILENCE = 60_000;   // une minute entre deux signalements identiques
+let INCIDENTS_MINUTE = { debut: 0, n: 0 };
+
+async function handleIncident(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Méthode non autorisée' }, 405);
+
+  /* Plafond global : au-delà, on répond « bien reçu » sans rien envoyer.
+     Mentir à un éventuel spammeur vaut mieux que lui confirmer qu'il tape
+     dans le mille. */
+  const maintenant = Date.now();
+  if (maintenant - INCIDENTS_MINUTE.debut > 60_000) INCIDENTS_MINUTE = { debut: maintenant, n: 0 };
+  if (++INCIDENTS_MINUTE.n > 30) return json({ recu: true });
+
+  let corps;
+  try { corps = await request.json(); }
+  catch { return json({ error: 'Corps illisible' }, 400); }
+
+  const borne = (v, max) => String(v ?? '').replace(/[\r\n]+/g, ' ').trim().slice(0, max);
+
+  const etape = borne(corps?.etape, 120);
+  if (!etape) return json({ error: 'Étape manquante' }, 400);
+
+  const nav      = borne(corps?.navigateur, 200);
+  const ecran    = borne(corps?.ecran, 40);
+  const reseau   = borne(corps?.reseau, 40);
+  const secondes = Math.min(Math.max(Number(corps?.secondes) || 0, 0), 600);
+  /* Un identifiant tronqué : assez pour recouper deux signalements du même
+     compte, pas assez pour être une identité dans un salon Discord. Ni
+     e-mail ni nom ne quittent le serveur. */
+  const trace = isUuid(corps?.client_id) ? String(corps.client_id).slice(0, 8) : '—';
+
+  const signature = etape + '|' + nav.slice(0, 60);
+  const vu = INCIDENTS_VUS.get(signature);
+  if (vu && maintenant - vu < INCIDENT_SILENCE) return json({ recu: true });
+  INCIDENTS_VUS.set(signature, maintenant);
+  if (INCIDENTS_VUS.size > 200) {
+    for (const [k, t] of INCIDENTS_VUS) if (maintenant - t > INCIDENT_SILENCE) INCIDENTS_VUS.delete(k);
+  }
+
+  const cf = request.cf || {};
+  await versDiscord(env, {
+    salon: 'erreurs',
+    titre: 'Démarrage enlisé — ' + etape,
+    texte: "L'application cliente n'a pas fini de charger au bout de "
+         + Math.round(secondes) + ' s.',
+    champs: [
+      { nom: 'Étape',       valeur: etape, ligne: false },
+      { nom: 'Navigateur',  valeur: nav || '—', ligne: false },
+      { nom: 'Écran',       valeur: ecran || '—' },
+      { nom: 'Réseau',      valeur: reseau || '—' },
+      { nom: 'Pays',        valeur: borne(cf.country, 8) || '—' },
+      { nom: 'Compte',      valeur: trace }
+    ]
+  });
+
+  return json({ recu: true });
+}
+
 // ──────────── Router ────────────
 
 export default {
@@ -2558,6 +2655,7 @@ export default {
       case '/api/geocode':                 return handleGeocode(request, env);
       case '/api/google-wallet-save':      return handleGoogleWalletSave(request, env);
       case '/api/wallet-sync':             return handleWalletSync(request, env);
+      case '/api/incident':                return handleIncident(request, env);
     }
 
     // Tout le reste → assets statiques

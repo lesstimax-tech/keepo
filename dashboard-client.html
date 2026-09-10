@@ -1417,7 +1417,46 @@
             (piste ? piste.parentNode : s).appendChild(bouton);
 
             console.warn('[KEEPO] Démarrage enlisé à l\'étape : ' + _etapeDemarrage);
+            signalerIncident(_etapeDemarrage);
         }, 15000);
+    }
+
+    /* Le garde-fou savait déjà où ça coinçait, mais il l'écrivait dans une
+       console que personne n'ouvre : sur le téléphone d'un client, cette
+       information n'existait pas. On la fait remonter.
+
+       Ce qui part : l'étape, le navigateur, la taille d'écran, le type de
+       connexion, et huit caractères de l'identifiant — de quoi recouper
+       deux signalements du même compte. Ni e-mail ni nom : ils ne servent
+       pas à réparer un chargement. */
+    function signalerIncident(etape) {
+        try {
+            const c = navigator.connection || {};
+            const charge = {
+                etape:      etape,
+                navigateur: navigator.userAgent,
+                ecran:      screen.width + '×' + screen.height
+                            + ' @' + (window.devicePixelRatio || 1),
+                reseau:     c.effectiveType || 'inconnu',
+                secondes:   Math.round(performance.now() / 1000),
+                client_id:  currentClientId || null
+            };
+            /* sendBeacon survit à la fermeture de l'onglet — et quelqu'un
+               que l'application fait attendre quinze secondes ferme
+               souvent l'onglet juste après. */
+            const corps = new Blob([JSON.stringify(charge)], { type: 'application/json' });
+            if (!(navigator.sendBeacon && navigator.sendBeacon('/api/incident', corps))) {
+                fetch('/api/incident', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(charge),
+                    keepalive: true
+                }).catch(() => {});
+            }
+        } catch (e) {
+            /* Un rapport qui échoue ne doit surtout pas aggraver la panne
+               qu'il raconte. */
+        }
     }
 
     /* Une requête qui ne répond jamais n'est pas une erreur : elle ne
