@@ -1456,6 +1456,185 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 })();
 
 </script>
+<!-- ══════════════════════════════════════════════════════════════
+     Mini-page d'accueil — pour le trafic publicitaire
+
+     Elle s'affiche une seule fois par visiteur, jamais à quelqu'un qui a
+     déjà une session ouverte, et jamais deux fois dans le même mois. Une
+     fenêtre qui revient à chaque page tue la confiance plus vite qu'elle
+     ne convertit.
+
+     Le prix affiché est le vrai : 24,90 € et non « à partir de 25 € ».
+     Il est plus bas, et il est exact.
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+  .kp-accueil{
+    position:fixed; inset:0; z-index:9999; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(6,5,12,.72); backdrop-filter:blur(6px);
+  }
+  .kp-accueil.on{ display:flex; animation:kp-fond .28s ease both }
+  .kp-carte{
+    position:relative; width:min(440px,100%);
+    background:var(--bg-card,#15131f); border:1px solid var(--glass-border,rgba(255,255,255,.08));
+    border-radius:22px; padding:34px 30px 26px;
+    box-shadow:0 30px 80px var(--shadow-main,rgba(0,0,0,.5));
+    animation:kp-monte .42s var(--bezier-smooth,cubic-bezier(.16,1,.3,1)) both;
+  }
+  /* Le fond de la carte doit être opaque : --bg-card vaut 3 % de blanc dans
+     le thème sombre, ce qui laisserait la page transparaître au travers. */
+  :root .kp-carte{ background:#15131f }
+  :root[data-theme="light"] .kp-carte,
+  body.theme-light .kp-carte{ background:#fff }
+
+  .kp-marque{
+    font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
+    font-size:12px; font-weight:700; letter-spacing:2.4px; text-transform:uppercase;
+    color:var(--secondary-accent,#16B8C4); margin:0 0 16px;
+  }
+  .kp-titre{
+    font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
+    font-size:clamp(25px,5.6vw,31px); line-height:1.16; font-weight:800;
+    letter-spacing:-.6px; color:var(--text-main,#f3f3f6); margin:0 0 14px;
+  }
+  .kp-texte{
+    font-size:15px; line-height:1.62; color:var(--text-muted,#7e7b91); margin:0 0 22px;
+  }
+  .kp-prix{
+    display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;
+    padding:14px 16px; margin:0 0 22px; border-radius:13px;
+    background:rgba(22,184,196,.08); border:1px solid rgba(22,184,196,.22);
+  }
+  .kp-prix b{
+    font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
+    font-size:20px; font-weight:800; color:var(--text-main,#f3f3f6); letter-spacing:-.3px;
+  }
+  .kp-prix span{ font-size:13.5px; color:var(--text-muted,#7e7b91) }
+  .kp-bouton{
+    display:block; width:100%; padding:15px 20px; border:none; border-radius:13px;
+    background:var(--btn-cta-bg,linear-gradient(135deg,#5B3AA0,#16B8C4));
+    color:#fff; font-family:inherit; font-size:15.5px; font-weight:700;
+    cursor:pointer; transition:transform .18s var(--bezier-smooth,ease), filter .18s ease;
+  }
+  .kp-bouton:hover{ transform:translateY(-1px); filter:brightness(1.07) }
+  .kp-bouton:focus-visible{ outline:2px solid var(--secondary-accent,#16B8C4); outline-offset:3px }
+  .kp-second{
+    display:block; text-align:center; margin:14px 0 0;
+    font-size:13.5px; color:var(--text-muted,#7e7b91); text-decoration:none;
+  }
+  .kp-second u{ color:var(--secondary-accent,#16B8C4); text-underline-offset:3px }
+  .kp-second:hover u{ color:var(--text-main,#f3f3f6) }
+  .kp-fermer{
+    position:absolute; top:12px; right:12px; width:34px; height:34px;
+    display:flex; align-items:center; justify-content:center;
+    background:none; border:none; border-radius:9px; cursor:pointer;
+    color:var(--text-muted,#7e7b91); font-size:21px; line-height:1;
+  }
+  .kp-fermer:hover{ color:var(--text-main,#f3f3f6); background:rgba(127,127,150,.12) }
+  .kp-fermer:focus-visible{ outline:2px solid var(--secondary-accent,#16B8C4); outline-offset:2px }
+
+  @keyframes kp-fond{ from{opacity:0} to{opacity:1} }
+  @keyframes kp-monte{ from{opacity:0; transform:translateY(18px) scale(.975)} to{opacity:1; transform:none} }
+  /* Une animation d'entrée n'est pas une information : on la retire pour
+     qui a demandé moins de mouvement. */
+  @media (prefers-reduced-motion:reduce){
+    .kp-accueil.on, .kp-carte{ animation:none }
+    .kp-bouton{ transition:none }
+  }
+</style>
+
+<div class="kp-accueil" id="kpAccueil" role="dialog" aria-modal="true"
+     aria-labelledby="kpTitre" aria-describedby="kpTexte">
+  <div class="kp-carte">
+    <button type="button" class="kp-fermer" id="kpFermer" aria-label="Fermer">&times;</button>
+    <p class="kp-marque">KEEPO</p>
+    <h2 class="kp-titre" id="kpTitre">Vos clients reviennent.<br>Vous ne savez pas lesquels.</h2>
+    <p class="kp-texte" id="kpTexte">
+      La carte à tampons finit au fond d'un sac. KEEPO la met dans le téléphone
+      de vos clients — et vous dit enfin qui revient, qui décroche, et quand les
+      relancer.
+    </p>
+    <p class="kp-prix">
+      <b>14 jours gratuits</b>
+      <span>puis 24,90 €/mois · sans engagement</span>
+    </p>
+    <button type="button" class="kp-bouton" id="kpDecouvrir">Découvrir</button>
+    <a class="kp-second" href="connexion.html?role=commercant&amp;tab=register">
+      ou <u>commencer l'essai maintenant</u>
+    </a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var CLE = 'keepo_accueil_vu';
+  var SILENCE = 30 * 24 * 60 * 60 * 1000;   // on ne la remontre pas du mois
+  var boite = document.getElementById('kpAccueil');
+  if (!boite) return;
+
+  /* Ne jamais l'afficher à quelqu'un qui est déjà entré : une fenêtre
+     d'accroche devant un commerçant qui vient consulter son tableau de bord
+     est une nuisance, pas une publicité. */
+  function dejaConnecte() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        if (/^sb-.*-auth-token$/.test(localStorage.key(i))) return true;
+      }
+    } catch (e) { /* stockage inaccessible : on suppose visiteur */ }
+    return false;
+  }
+
+  function dejaVue() {
+    try {
+      var t = parseInt(localStorage.getItem(CLE) || '0', 10);
+      return t > 0 && (Date.now() - t) < SILENCE;
+    } catch (e) { return false; }
+  }
+
+  if (dejaConnecte() || dejaVue()) return;
+
+  var rendu = null;
+
+  function fermer() {
+    boite.classList.remove('on');
+    document.body.style.overflow = '';
+    try { localStorage.setItem(CLE, String(Date.now())); } catch (e) {}
+    if (rendu && rendu.focus) rendu.focus();
+    document.removeEventListener('keydown', auClavier, true);
+  }
+
+  function auClavier(e) {
+    if (e.key === 'Escape') { fermer(); return; }
+    if (e.key !== 'Tab') return;
+    /* Le clavier ne doit pas sortir de la fenêtre tant qu'elle est ouverte :
+       sans cela, la tabulation part se promener dans la page cachée derrière. */
+    var cibles = boite.querySelectorAll('button, a[href]');
+    if (!cibles.length) return;
+    var premier = cibles[0], dernier = cibles[cibles.length - 1];
+    if (e.shiftKey && document.activeElement === premier) { dernier.focus(); e.preventDefault(); }
+    else if (!e.shiftKey && document.activeElement === dernier) { premier.focus(); e.preventDefault(); }
+  }
+
+  function ouvrir() {
+    rendu = document.activeElement;
+    boite.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', auClavier, true);
+    var b = document.getElementById('kpDecouvrir');
+    if (b) b.focus();
+  }
+
+  document.getElementById('kpDecouvrir').addEventListener('click', fermer);
+  document.getElementById('kpFermer').addEventListener('click', fermer);
+  boite.addEventListener('click', function (e) { if (e.target === boite) fermer(); });
+
+  /* Une seconde et quart : la page a eu le temps de se peindre, le visiteur
+     a vu où il arrivait. Une fenêtre qui tombe sur un écran encore blanc
+     ressemble à une erreur. */
+  setTimeout(ouvrir, 1250);
+})();
+</script>
+
 <script src="js/keepo-assistant.js" defer></script>
 </body>
 </html>
