@@ -1456,90 +1456,198 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 })();
 
 </script>
-<!-- ══════════════════════════════════════════════════════════════
-     Mini-page d'accueil — pour le trafic publicitaire
-
-     Elle s'affiche une seule fois par visiteur, jamais à quelqu'un qui a
-     déjà une session ouverte, et jamais deux fois dans le même mois. Une
-     fenêtre qui revient à chaque page tue la confiance plus vite qu'elle
-     ne convertit.
-
-     Le prix affiché est le vrai : 24,90 € et non « à partir de 25 € ».
-     Il est plus bas, et il est exact.
-     ══════════════════════════════════════════════════════════════ -->
+<!-- Mini-page d'accueil — le commentaire detaille est dans le bloc de style -->
 <style>
+  /* ══════════════════════════════════════════════════════════════
+     Mini-page d'accueil — la première seconde
+
+     Une fenêtre qui parle d'une carte de fidélité dans le téléphone et qui
+     ne montre pas la carte demande au visiteur d'imaginer le produit. On la
+     montre : elle se pose, ses tampons se remplissent, et le geste central
+     de KEEPO est compris avant même qu'on ait lu la phrase.
+
+     Tout est en CSS. Pas une image à charger, pas un script d'animation :
+     la fenêtre s'affiche à la seconde même sur un téléphone en 3G, ce qui
+     est précisément la situation d'un clic publicitaire.
+     ══════════════════════════════════════════════════════════════ */
   .kp-accueil{
     position:fixed; inset:0; z-index:9999; display:none;
-    align-items:center; justify-content:center; padding:20px;
-    background:rgba(6,5,12,.72); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center; padding:18px;
+    background:rgba(5,4,10,.76); backdrop-filter:blur(8px);
   }
-  .kp-accueil.on{ display:flex; animation:kp-fond .28s ease both }
-  .kp-carte{
-    position:relative; width:min(440px,100%);
-    background:var(--bg-card,#15131f); border:1px solid var(--glass-border,rgba(255,255,255,.08));
-    border-radius:22px; padding:34px 30px 26px;
-    box-shadow:0 30px 80px var(--shadow-main,rgba(0,0,0,.5));
-    animation:kp-monte .42s var(--bezier-smooth,cubic-bezier(.16,1,.3,1)) both;
-  }
-  /* Le fond de la carte doit être opaque : --bg-card vaut 3 % de blanc dans
-     le thème sombre, ce qui laisserait la page transparaître au travers. */
-  :root .kp-carte{ background:#15131f }
-  :root[data-theme="light"] .kp-carte,
-  body.theme-light .kp-carte{ background:#fff }
+  .kp-accueil.on{ display:flex; animation:kp-fond .3s ease both }
 
+  .kp-carte{
+    position:relative; width:min(412px,100%); overflow:hidden;
+    border:1px solid rgba(255,255,255,.10); border-radius:26px;
+    box-shadow:0 40px 90px -20px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.03) inset;
+    animation:kp-monte .5s cubic-bezier(.16,1,.3,1) both;
+    /* Fond opaque choisi ici plutôt qu'hérité : --bg-card vaut 3 % de blanc
+       dans le thème sombre, la page transparaîtrait au travers. */
+    background:#100E1A;
+  }
+  :root[data-theme="light"] .kp-carte, body.theme-light .kp-carte{ background:#fff }
+
+  /* ── La scène : le champ de couleur et la carte qui se pose ── */
+  .kp-scene{
+    position:relative; height:198px; overflow:hidden;
+    background:
+      radial-gradient(120% 100% at 18% 0%,  rgba(91,58,160,.85) 0%, rgba(91,58,160,0) 62%),
+      radial-gradient(110% 100% at 88% 30%, rgba(22,184,196,.50) 0%, rgba(22,184,196,0) 60%),
+      linear-gradient(160deg,#1B1430 0%,#0E1826 100%);
+  }
+  /* Un halo qui respire, très lentement : l'image n'est jamais tout à fait
+     figée, sans jamais attirer l'œil hors du texte. */
+  .kp-scene::before{
+    content:""; position:absolute; inset:-40%;
+    background:radial-gradient(closest-side, rgba(255,255,255,.16), rgba(255,255,255,0) 70%);
+    animation:kp-souffle 9s ease-in-out infinite alternate;
+  }
+  .kp-scene::after{
+    content:""; position:absolute; left:0; right:0; bottom:0; height:64px;
+    background:linear-gradient(to bottom, rgba(16,14,26,0), #100E1A);
+  }
+  :root[data-theme="light"] .kp-scene::after, body.theme-light .kp-scene::after{
+    background:linear-gradient(to bottom, rgba(255,255,255,0), #fff);
+  }
+
+  /* ── La carte de fidélité ── */
+  .kp-fid{
+    box-sizing:border-box;
+    /* left/right a zero avec margin auto : le centrage ne depend plus
+       d une moitie de largeur ecrite a la main. */
+    position:absolute; left:0; right:0; top:20px; width:230px; height:132px;
+    margin:0 auto; padding:15px 16px; border-radius:16px;
+    background:linear-gradient(135deg,#7B5BD6 0%,#4E77C4 52%,#2FC2C5 100%);
+    box-shadow:0 22px 44px -12px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.22) inset;
+    transform:rotate(-7deg);
+    animation:kp-pose .78s cubic-bezier(.16,1,.3,1) .12s both;
+  }
+  /* Le reflet qui traverse une fois : ce qui distingue un objet d'un
+     rectangle coloré. */
+  .kp-fid::after{
+    content:""; position:absolute; inset:0; border-radius:16px; overflow:hidden;
+    background:linear-gradient(105deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.30) 50%, rgba(255,255,255,0) 62%);
+    background-size:260% 100%; background-position:180% 0;
+    animation:kp-reflet 1.5s cubic-bezier(.4,0,.2,1) .75s both;
+  }
+  .kp-fid b{
+    display:block; font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
+    font-size:15px; font-weight:800; letter-spacing:-.2px; color:#fff;
+  }
+  .kp-fid i{
+    display:block; margin-top:3px; font-style:normal; font-size:10.5px;
+    letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,.66);
+  }
+  .kp-tampons{ position:absolute; left:16px; bottom:15px; display:flex; gap:6px }
+  .kp-tampons s{
+    box-sizing:border-box;
+    width:17px; height:17px; border-radius:50%; text-decoration:none;
+    border:1.6px solid rgba(255,255,255,.42);
+  }
+  /* Cinq cases se remplissent l'une après l'autre : c'est le geste du
+     produit, joué en une seconde. */
+  .kp-tampons s:nth-child(-n+5){
+    background:#fff; border-color:#fff; transform:scale(0);
+    animation:kp-pose-tampon .42s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .kp-tampons s:nth-child(1){ animation-delay:.62s }
+  .kp-tampons s:nth-child(2){ animation-delay:.73s }
+  .kp-tampons s:nth-child(3){ animation-delay:.84s }
+  .kp-tampons s:nth-child(4){ animation-delay:.95s }
+  .kp-tampons s:nth-child(5){ animation-delay:1.06s }
+
+  /* ── Le texte ── */
+  .kp-corps{ position:relative; padding:4px 28px 26px }
   .kp-marque{
     font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
-    font-size:12px; font-weight:700; letter-spacing:2.4px; text-transform:uppercase;
-    color:var(--secondary-accent,#16B8C4); margin:0 0 16px;
+    font-size:11px; font-weight:700; letter-spacing:2.6px; text-transform:uppercase;
+    color:var(--secondary-accent,#16B8C4); margin:0 0 13px;
   }
   .kp-titre{
     font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
-    font-size:clamp(25px,5.6vw,31px); line-height:1.16; font-weight:800;
-    letter-spacing:-.6px; color:var(--text-main,#f3f3f6); margin:0 0 14px;
+    font-size:clamp(26px,6.2vw,32px); line-height:1.1; font-weight:800;
+    letter-spacing:-1px; color:var(--text-main,#f3f3f6); margin:0 0 13px;
+  }
+  .kp-titre em{
+    font-style:normal;
+    background:linear-gradient(100deg,#8E6BE8,#2FC2C5);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   .kp-texte{
-    font-size:15px; line-height:1.62; color:var(--text-muted,#7e7b91); margin:0 0 22px;
+    font-size:14.5px; line-height:1.6; color:var(--text-muted,#7e7b91); margin:0 0 20px;
   }
+  /* Le prix est une ligne, pas un encadré : un cartouche de plus alourdit
+     sans rien ajouter. Le filet suffit à le détacher. */
   .kp-prix{
-    display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;
-    padding:14px 16px; margin:0 0 22px; border-radius:13px;
-    background:rgba(22,184,196,.08); border:1px solid rgba(22,184,196,.22);
+    display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
+    margin:0 0 20px; padding:0 0 18px;
+    border-bottom:1px solid var(--glass-border,rgba(255,255,255,.08));
   }
   .kp-prix b{
     font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
-    font-size:20px; font-weight:800; color:var(--text-main,#f3f3f6); letter-spacing:-.3px;
+    font-size:19px; font-weight:800; letter-spacing:-.3px;
+    background:linear-gradient(100deg,#8E6BE8,#2FC2C5);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .kp-prix span{ font-size:13.5px; color:var(--text-muted,#7e7b91) }
+  .kp-prix span{ font-size:13px; color:var(--text-muted,#7e7b91) }
+
   .kp-bouton{
-    display:block; width:100%; padding:15px 20px; border:none; border-radius:13px;
-    background:var(--btn-cta-bg,linear-gradient(135deg,#5B3AA0,#16B8C4));
-    color:#fff; font-family:inherit; font-size:15.5px; font-weight:700;
-    cursor:pointer; transition:transform .18s var(--bezier-smooth,ease), filter .18s ease;
+    position:relative; overflow:hidden; display:block; width:100%;
+    padding:16px 20px; border:none; border-radius:14px;
+    background:linear-gradient(135deg,#5B3AA0,#16B8C4);
+    color:#fff; font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
+    font-size:16px; font-weight:800; letter-spacing:-.2px; cursor:pointer;
+    box-shadow:0 12px 28px -10px rgba(91,58,160,.9);
+    transition:transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease;
   }
-  .kp-bouton:hover{ transform:translateY(-1px); filter:brightness(1.07) }
-  .kp-bouton:focus-visible{ outline:2px solid var(--secondary-accent,#16B8C4); outline-offset:3px }
+  .kp-bouton:hover{ transform:translateY(-2px); box-shadow:0 18px 34px -10px rgba(91,58,160,1) }
+  .kp-bouton:active{ transform:translateY(0) }
+  .kp-bouton:focus-visible{ outline:2px solid #7BE7EF; outline-offset:3px }
   .kp-second{
-    display:block; text-align:center; margin:14px 0 0;
-    font-size:13.5px; color:var(--text-muted,#7e7b91); text-decoration:none;
+    display:block; text-align:center; margin:13px 0 0;
+    font-size:13px; color:var(--text-muted,#7e7b91); text-decoration:none;
   }
   .kp-second u{ color:var(--secondary-accent,#16B8C4); text-underline-offset:3px }
   .kp-second:hover u{ color:var(--text-main,#f3f3f6) }
+
   .kp-fermer{
-    position:absolute; top:12px; right:12px; width:34px; height:34px;
-    display:flex; align-items:center; justify-content:center;
-    background:none; border:none; border-radius:9px; cursor:pointer;
-    color:var(--text-muted,#7e7b91); font-size:21px; line-height:1;
+    position:absolute; top:13px; right:13px; z-index:2;
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    border:none; border-radius:50%; cursor:pointer; font-size:19px; line-height:1;
+    background:rgba(0,0,0,.28); color:rgba(255,255,255,.82);
+    backdrop-filter:blur(4px); transition:background .18s ease, color .18s ease;
   }
-  .kp-fermer:hover{ color:var(--text-main,#f3f3f6); background:rgba(127,127,150,.12) }
-  .kp-fermer:focus-visible{ outline:2px solid var(--secondary-accent,#16B8C4); outline-offset:2px }
+  .kp-fermer:hover{ background:rgba(0,0,0,.45); color:#fff }
+  .kp-fermer:focus-visible{ outline:2px solid #7BE7EF; outline-offset:2px }
 
   @keyframes kp-fond{ from{opacity:0} to{opacity:1} }
-  @keyframes kp-monte{ from{opacity:0; transform:translateY(18px) scale(.975)} to{opacity:1; transform:none} }
-  /* Une animation d'entrée n'est pas une information : on la retire pour
-     qui a demandé moins de mouvement. */
+  @keyframes kp-monte{ from{opacity:0; transform:translateY(22px) scale(.97)} to{opacity:1; transform:none} }
+  @keyframes kp-pose{
+    from{ opacity:0; transform:rotate(-14deg) translateY(30px) scale(.9) }
+    to  { opacity:1; transform:rotate(-7deg) translateY(0) scale(1) }
+  }
+  @keyframes kp-pose-tampon{ to{ transform:scale(1) } }
+  @keyframes kp-reflet{ from{background-position:180% 0} to{background-position:-80% 0} }
+  @keyframes kp-souffle{
+    from{ transform:translate3d(-6%,-4%,0) scale(1) }
+    to  { transform:translate3d(8%,6%,0) scale(1.14) }
+  }
+
+  /* Le mouvement n'est pas une information : qui en a demandé moins voit la
+     même scène, posée d'emblée. */
   @media (prefers-reduced-motion:reduce){
-    .kp-accueil.on, .kp-carte{ animation:none }
+    .kp-accueil.on,.kp-carte,.kp-fid,.kp-fid::after,.kp-scene::before{ animation:none }
+    .kp-tampons s:nth-child(-n+5){ animation:none; transform:none }
     .kp-bouton{ transition:none }
+  }
+  /* Écrans courts : la scène se réduit plutôt que de pousser le bouton hors
+     de l'écran. C'est le bouton qui doit rester visible, pas le décor. */
+  @media (max-height:700px){
+    .kp-scene{ height:158px }
+    .kp-fid{ top:14px; transform:rotate(-6deg) scale(.88) }
+    .kp-corps{ padding:2px 24px 20px }
+    .kp-texte{ margin-bottom:16px }
   }
 </style>
 
@@ -1547,24 +1655,34 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
      aria-labelledby="kpTitre" aria-describedby="kpTexte">
   <div class="kp-carte">
     <button type="button" class="kp-fermer" id="kpFermer" aria-label="Fermer">&times;</button>
-    <p class="kp-marque">KEEPO</p>
-    <h2 class="kp-titre" id="kpTitre">Vos clients reviennent.<br>Vous ne savez pas lesquels.</h2>
-    <p class="kp-texte" id="kpTexte">
-      La carte à tampons finit au fond d'un sac. KEEPO la met dans le téléphone
-      de vos clients — et vous dit enfin qui revient, qui décroche, et quand les
-      relancer.
-    </p>
-    <p class="kp-prix">
-      <b>14 jours gratuits</b>
-      <span>puis 24,90 €/mois · sans engagement</span>
-    </p>
-    <button type="button" class="kp-bouton" id="kpDecouvrir">Découvrir</button>
-    <a class="kp-second" href="connexion.html?role=commercant&amp;tab=register">
-      ou <u>commencer l'essai maintenant</u>
-    </a>
+
+    <div class="kp-scene" aria-hidden="true">
+      <div class="kp-fid">
+        <b>Votre enseigne</b>
+        <i>Carte de fidélité</i>
+        <div class="kp-tampons"><s></s><s></s><s></s><s></s><s></s><s></s><s></s><s></s></div>
+      </div>
+    </div>
+
+    <div class="kp-corps">
+      <p class="kp-marque">KEEPO</p>
+      <h2 class="kp-titre" id="kpTitre">Vos clients reviennent.<br><em>Vous ne savez pas lesquels.</em></h2>
+      <p class="kp-texte" id="kpTexte">
+        La carte à tampons finit au fond d'un sac. KEEPO la met dans leur
+        téléphone — et vous dit enfin qui revient, qui décroche, et quand
+        les relancer.
+      </p>
+      <p class="kp-prix">
+        <b>14 jours gratuits</b>
+        <span>puis 24,90 €/mois · sans engagement</span>
+      </p>
+      <button type="button" class="kp-bouton" id="kpDecouvrir">Découvrir KEEPO</button>
+      <a class="kp-second" href="connexion.html?role=commercant&amp;tab=register">
+        ou <u>commencer l'essai maintenant</u>
+      </a>
+    </div>
   </div>
 </div>
-
 <script>
 (function () {
   var CLE = 'keepo_accueil_vu';
