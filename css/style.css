@@ -65,7 +65,7 @@ html {
     margin: 0;
     padding: 0;
     box-sizing: inherit;
-    font-family: 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -84,7 +84,7 @@ h1, h2, h3, h4,
 .section-tag,
 .stat-big,
 .price-amount {
-    font-family: 'Cabinet Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     letter-spacing: -0.01em;
 }
 

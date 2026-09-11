@@ -46,7 +46,7 @@
 
 /* ─── La carte ─────────────────────────────────────────────────── */
 /* La carte impose sa typographie et son interligne. Les pages hôtes ont des
-   règles universelles (css/style.css impose DM Sans à tout élément) : sans ce
+   règles universelles (css/style.css impose Inter à tout élément) : sans ce
    verrou, la même carte ne se composerait pas pareil selon la page. Les polices
    choisies dans le Studio restent prioritaires : elles sont posées en style
    en-ligne. Les <i> sont exclus pour ne pas casser les icônes Font Awesome. */

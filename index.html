@@ -1730,14 +1730,20 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     } catch (e) { return false; }
   }
 
-  if (dejaConnecte() || dejaVue()) return;
+  /* keepo.eu/?apercu la remontre a coup sur, sans vider son navigateur :
+     une fenetre qui se tait trente jours est impossible a relire autrement,
+     et c est la premiere chose qu on veut verifier avant une campagne. */
+  var forcee = /(^|[?&])apercu(=|&|$)/.test(location.search);
+  if (!forcee && (dejaConnecte() || dejaVue())) return;
 
   var rendu = null;
 
   function fermer() {
     boite.classList.remove('on');
     document.body.style.overflow = '';
-    try { localStorage.setItem(CLE, String(Date.now())); } catch (e) {}
+    /* Un apercu ne compte pas comme une visite : sinon la premiere
+       verification consommerait le seul affichage du mois. */
+    if (!forcee) { try { localStorage.setItem(CLE, String(Date.now())); } catch (e) {} }
     if (rendu && rendu.focus) rendu.focus();
     document.removeEventListener('keydown', auClavier, true);
   }
