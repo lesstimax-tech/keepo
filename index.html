@@ -875,6 +875,62 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   </div>
 </section>
 
+<style>
+  /* ══════════════════════════════════════════════════════════════
+     L'offre fondateur
+
+     Dix places, pas cent. À zéro client, annoncer cent places annonce
+     surtout qu'on n'a personne — et la rareté ne convainc que là où la
+     demande se voit déjà.
+
+     La remise n'achète pas du volume, elle achète ce qui manque vraiment
+     à ce stade : des noms, des logos, et quelqu'un qui dit ce qui cloche.
+     Le plafond de dix est tenu par Stripe (max_redemptions sur le code),
+     pas par un compteur qu'il faudrait maintenir et qui pourrait mentir.
+     ══════════════════════════════════════════════════════════════ */
+  .fondateur{
+    position:relative; margin:0 auto 40px; max-width:760px;
+    padding:30px clamp(22px,4vw,38px);
+    border-radius:20px; border:1px solid var(--line-2);
+    background:var(--card);
+    box-shadow:0 18px 44px -26px rgba(13,13,17,.34);
+  }
+  .fondateur::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:4px;
+    border-radius:20px 20px 0 0;
+    background:linear-gradient(90deg,#5B3AA0,#16B8C4);
+  }
+  .fondateur .f-tag{
+    display:inline-block; margin:0 0 12px; padding:4px 11px; border-radius:999px;
+    font-size:11.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+    color:#fff; background:linear-gradient(90deg,#5B3AA0,#16B8C4);
+  }
+  .fondateur h3{
+    margin:0 0 10px; font-size:clamp(22px,3.4vw,29px); line-height:1.18;
+    letter-spacing:-.6px; color:var(--ink);
+  }
+  .fondateur > p{ margin:0 0 20px; color:var(--muted); line-height:1.62; font-size:15.5px }
+  .fondateur ul{ margin:0 0 20px; padding:0; list-style:none; display:grid; gap:9px }
+  .fondateur li{
+    display:flex; gap:10px; align-items:flex-start;
+    font-size:14.5px; line-height:1.5; color:var(--ink-2);
+  }
+  .fondateur li b{ color:var(--ink) }
+  .fondateur li::before{
+    content:"→"; flex:none; color:var(--acc); font-weight:700; line-height:1.5;
+  }
+  .fondateur .f-bas{
+    display:flex; flex-wrap:wrap; align-items:center; gap:12px;
+    padding-top:18px; border-top:1px solid var(--line);
+  }
+  .fondateur code{
+    padding:7px 13px; border-radius:9px; border:1px dashed var(--line-2);
+    background:#F7F7FA; font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:14px; font-weight:700; letter-spacing:.09em; color:var(--acc-ink);
+  }
+  .fondateur .f-bas span{ font-size:13.5px; color:var(--muted); line-height:1.5 }
+</style>
+
 <!-- ════════ TARIFS ════════ -->
 <section id="pricing" aria-labelledby="pricing-title" style="padding-top:90px;">
   <div class="wrap">
@@ -883,6 +939,29 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       <h2 id="pricing-title">Un tarif simple, sans engagement</h2>
       <p>14 jours d'essai complet · 0&nbsp;€ aujourd'hui · sans engagement, résiliable en 1 clic.</p>
       <p style="font-size:13.5px;opacity:.72;margin-top:6px;">TVA non applicable, article 293 B du CGI — le montant affiché est celui qui est prélevé.</p>
+    </div>
+
+    <div class="fondateur rv">
+      <span class="f-tag">Offre fondateur · 10 places</span>
+      <h3>Les dix premiers commerces obtiennent&nbsp;−50&nbsp;% la première année.</h3>
+      <p>
+        KEEPO démarre. J'ai besoin de dix commerçants qui l'utilisent pour de vrai
+        et qui me disent ce qui cloche. En échange, vous payez moitié prix pendant
+        douze mois, sur Essentiel ou Pro&nbsp;Scale.
+      </p>
+      <ul>
+        <li><span>Votre <b>enseigne et votre logo</b> affichés sur cette page, parmi les premiers</span></li>
+        <li><span>Un <b>témoignage</b> une fois que vous aurez un avis — bon ou mauvais</span></li>
+        <li><span><b>Quinze minutes par mois</b> pour me dire ce qui vous manque</span></li>
+        <li><span>Le tarif réduit reste acquis <b>douze mois</b>, même si vous changez de formule</span></li>
+      </ul>
+      <div class="f-bas">
+        <code>FONDATEUR</code>
+        <span>
+          À saisir au moment du paiement. Dix codes, pas un de plus&nbsp;—
+          au onzième, il ne fonctionne plus.
+        </span>
+      </div>
     </div>
 
     <div style="text-align:center" class="rv">
