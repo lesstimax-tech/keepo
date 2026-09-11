@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEEPO Pro Scale — Débloquez tout KEEPO pour votre commerce</title>
-    <meta name="description" content="Passez à KEEPO Pro Scale : membres illimités, analytics, assistant IA, mode caisse tablette, multi-caissiers et marketing automatisé. 99 € HT/mois, sans engagement.">
+    <meta name="description" content="Passez à KEEPO Pro Scale : membres illimités, analytics, assistant IA, mode caisse tablette, multi-caissiers et marketing automatisé. 99 €/mois, sans engagement.">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -319,7 +319,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         </p>
         <div class="cta-row">
             <button onclick="goToCheckout('pro')" class="btn btn-grad btn-lg" id="heroCta">
-                <i class="fa-solid fa-crown"></i> Passer Pro Scale — 99 € HT/mois
+                <i class="fa-solid fa-crown"></i> Passer Pro Scale — 99 €/mois
             </button>
             <a href="/demo" class="btn btn-ghost">Essayer la démo d'abord</a>
         </div>
@@ -353,8 +353,8 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
                 <thead>
                     <tr>
                         <th>Ce que vous obtenez</th>
-                        <th>Essentiel — 49 € HT</th>
-                        <th class="pro">Pro Scale — 99 € HT</th>
+                        <th>Essentiel — 49 €</th>
+                        <th class="pro">Pro Scale — 99 €</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -376,7 +376,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
             </table>
         </div>
         <p style="text-align:center;color:var(--muted);font-size:14.5px;margin:22px auto 0;max-width:52ch;">
-            Une troisieme formule existe&nbsp;: <strong style="color:var(--ink);">Smart, a 24,90&nbsp;&euro; HT/mois</strong>,
+            Une troisieme formule existe&nbsp;: <strong style="color:var(--ink);">Smart, a 24,90&nbsp;&euro;/mois</strong>,
             limitee a 50 clients fideles, avec les campagnes manuelles mais sans
             envois programmes. De quoi demarrer,
             puis monter quand votre fichier grandit.
@@ -488,7 +488,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
             <div class="price-tag">Toutes les fonctionnalités débloquées</div>
 
             <div class="amount">
-                <span class="c">€</span><span class="n" id="price-n">99</span><span class="p" id="price-per">HT/mois</span>
+                <span class="c">€</span><span class="n" id="price-n">99</span><span class="p" id="price-per">/mois</span>
             </div>
             <div class="price-tax" id="price-note">Facturé mensuellement · Résiliable en un clic</div>
 
@@ -516,13 +516,13 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
             </button>
 
             <button onclick="goToCheckout('essentiel')" id="essCta" class="price-alt">
-                Ou démarrer avec Essentiel — 49 € HT/mois <span style="opacity:.75">(150 membres, sans le marketing)</span>
+                Ou démarrer avec Essentiel — 49 €/mois <span style="opacity:.75">(150 membres, sans le marketing)</span>
             </button>
 
             <div class="price-foot">
                 <i class="fa-solid fa-lock"></i> Paiement traité par Stripe — vos coordonnées bancaires
                 ne transitent jamais par KEEPO.<br>
-                Prix hors taxes, à destination des professionnels.
+                TVA non applicable, article 293 B du CGI. Le montant affiché est celui qui est prélevé.
             </div>
         </div>
     </div>
@@ -580,7 +580,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
             <h2>Prêt à débloquer tout KEEPO ?</h2>
             <p>Activation immédiate. Sans engagement. Résiliable en un clic.</p>
             <button onclick="goToCheckout('pro')" class="btn btn-lg" id="finalCta">
-                <i class="fa-solid fa-crown"></i> Passer Pro Scale — 99 € HT/mois
+                <i class="fa-solid fa-crown"></i> Passer Pro Scale — 99 €/mois
             </button>
             <div class="final-foot">
                 Vous préférez voir avant ? <a href="/demo" style="color:#fff;text-decoration:underline">Essayez la démo</a>, sans inscription.
@@ -599,7 +599,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
             <a href="/cgu-cgv">CGU / CGV</a>
             <a href="mailto:contact@keepo.eu">Contact</a>
         </div>
-        <div>© 2026 KEEPO · Programme de fidélité digital · 99 € HT/mois, sans engagement</div>
+        <div>© 2026 KEEPO · Programme de fidélité digital · 99 €/mois, sans engagement</div>
     </div>
 </footer>
 
@@ -622,14 +622,14 @@ function setBilling(b) {
     document.getElementById('bill-year').classList.toggle('on', annuel);
 
     document.getElementById('price-n').textContent   = annuel ? '890' : '99';
-    document.getElementById('price-per').textContent = annuel ? 'HT/an' : 'HT/mois';
+    document.getElementById('price-per').textContent = annuel ? '/an' : '/mois';
     document.getElementById('price-note').textContent = annuel
-        ? 'Soit 74 € HT par mois — environ trois mois offerts sur l\'année'
+        ? 'Soit 74 € par mois — environ trois mois offerts sur l\'année'
         : 'Facturé mensuellement · Résiliable en un clic';
 
     document.getElementById('essCta').innerHTML = annuel
-        ? 'Ou démarrer avec Essentiel — 499 € HT/an <span style="opacity:.75">(150 membres, sans le marketing)</span>'
-        : 'Ou démarrer avec Essentiel — 49 € HT/mois <span style="opacity:.75">(150 membres, sans le marketing)</span>';
+        ? 'Ou démarrer avec Essentiel — 499 €/an <span style="opacity:.75">(150 membres, sans le marketing)</span>'
+        : 'Ou démarrer avec Essentiel — 49 €/mois <span style="opacity:.75">(150 membres, sans le marketing)</span>';
 }
 
 /* ── Souscription (Stripe) ─────────────────────────────────────── */
