@@ -910,6 +910,11 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     letter-spacing:-.6px; color:var(--ink);
   }
   .fondateur > p{ margin:0 0 20px; color:var(--muted); line-height:1.62; font-size:15.5px }
+  /* Une liste qui tombe sans être annoncée se lit comme un contrat. Annoncée,
+     elle se lit comme un échange. */
+  .fondateur .f-intro{ margin:0 0 12px; color:var(--ink); font-weight:650; font-size:15.5px }
+  .fondateur .f-note{ margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.55 }
+  .fondateur .f-note b{ color:var(--ink-2) }
   .fondateur ul{ margin:0 0 20px; padding:0; list-style:none; display:grid; gap:9px }
   .fondateur li{
     display:flex; gap:10px; align-items:flex-start;
@@ -945,16 +950,17 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       <span class="f-tag">Offre fondateur · 10 places</span>
       <h3>Les dix premiers commerces obtiennent&nbsp;−50&nbsp;% la première année.</h3>
       <p>
-        KEEPO démarre. J'ai besoin de dix commerçants qui l'utilisent pour de vrai
-        et qui me disent ce qui cloche. En échange, vous payez moitié prix pendant
-        douze mois, sur Essentiel ou Pro&nbsp;Scale.
+        KEEPO démarre. On a besoin de dix commerçants qui l'utilisent pour de vrai
+        et qui disent ce qui cloche. Vous payez moitié prix pendant douze mois,
+        sur Essentiel ou Pro&nbsp;Scale.
       </p>
+      <p class="f-intro">En échange, on vous demande trois choses&nbsp;:</p>
       <ul>
         <li><span>Votre <b>enseigne et votre logo</b> affichés sur cette page, parmi les premiers</span></li>
         <li><span>Un <b>témoignage</b> une fois que vous aurez un avis — bon ou mauvais</span></li>
-        <li><span><b>Quinze minutes par mois</b> pour me dire ce qui vous manque</span></li>
-        <li><span>Le tarif réduit reste acquis <b>douze mois</b>, même si vous changez de formule</span></li>
+        <li><span><b>Un appel par mois</b> pour dire ce qui vous manque</span></li>
       </ul>
+      <p class="f-note">Le tarif réduit reste acquis <b>douze mois</b>, même si vous changez de formule.</p>
       <div class="f-bas">
         <code>FONDATEUR</code>
         <span>
