@@ -24,7 +24,7 @@
 <meta name="twitter:image" content="https://keepo.eu/img/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700;800&display=swap" rel="stylesheet">
 
 <script type="application/ld+json">
 {
@@ -1461,10 +1461,14 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   /* ══════════════════════════════════════════════════════════════
      Mini-page d'accueil — la première seconde
 
-     Une fenêtre qui parle d'une carte de fidélité dans le téléphone et qui
-     ne montre pas la carte demande au visiteur d'imaginer le produit. On la
-     montre : elle se pose, ses tampons se remplissent, et le geste central
-     de KEEPO est compris avant même qu'on ait lu la phrase.
+     Le panneau remplit l'écran moins une gouttière identique sur les
+     quatre côtés : c'est une seule valeur, posée en padding sur le voile,
+     et la carte s'étire pour occuper le reste. Aucun réglage par côté ne
+     peut donc diverger d'un écran à l'autre.
+
+     Fond blanc, dégradé conservé : la couleur de la marque vit dans la
+     scène du haut, le texte respire sur du blanc. Sur un site sombre, un
+     panneau clair est ce qui arrête le regard.
 
      Tout est en CSS. Pas une image à charger, pas un script d'animation :
      la fenêtre s'affiche à la seconde même sur un téléphone en 3G, ce qui
@@ -1472,81 +1476,85 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
      ══════════════════════════════════════════════════════════════ */
   .kp-accueil{
     position:fixed; inset:0; z-index:9999; display:none;
-    align-items:center; justify-content:center; padding:18px;
-    background:rgba(5,4,10,.76); backdrop-filter:blur(8px);
+    align-items:stretch; justify-content:stretch;
+    /* La gouttière, une seule fois, pour les quatre côtés. */
+    padding:clamp(14px, 3.4vmin, 40px);
+    background:rgba(5,4,10,.74); backdrop-filter:blur(8px);
   }
   .kp-accueil.on{ display:flex; animation:kp-fond .3s ease both }
 
   .kp-carte{
-    position:relative; width:min(412px,100%); overflow:hidden;
-    border:1px solid rgba(255,255,255,.10); border-radius:26px;
-    box-shadow:0 40px 90px -20px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.03) inset;
+    position:relative; box-sizing:border-box;
+    flex:1 1 auto; display:flex; flex-direction:column; overflow:hidden;
+    background:#fff; border-radius:clamp(18px, 2.6vmin, 30px);
+    box-shadow:0 40px 100px -24px rgba(0,0,0,.65);
     animation:kp-monte .5s cubic-bezier(.16,1,.3,1) both;
-    /* Fond opaque choisi ici plutôt qu'hérité : --bg-card vaut 3 % de blanc
-       dans le thème sombre, la page transparaîtrait au travers. */
-    background:#100E1A;
   }
-  :root[data-theme="light"] .kp-carte, body.theme-light .kp-carte{ background:#fff }
 
-  /* ── La scène : le champ de couleur et la carte qui se pose ── */
+  /* ── La scène : le dégradé de la marque, et la carte qui se pose ── */
   .kp-scene{
-    position:relative; height:198px; overflow:hidden;
+    position:relative; flex:0 0 auto; overflow:hidden;
+    min-height:clamp(178px, 27vh, 330px);
+    display:flex; align-items:center; justify-content:center;
     background:
-      radial-gradient(120% 100% at 18% 0%,  rgba(91,58,160,.85) 0%, rgba(91,58,160,0) 62%),
-      radial-gradient(110% 100% at 88% 30%, rgba(22,184,196,.50) 0%, rgba(22,184,196,0) 60%),
-      linear-gradient(160deg,#1B1430 0%,#0E1826 100%);
+      radial-gradient(120% 110% at 16% 0%,  rgba(123,91,214,.95) 0%, rgba(123,91,214,0) 64%),
+      radial-gradient(110% 110% at 90% 26%, rgba(47,194,197,.85) 0%, rgba(47,194,197,0) 62%),
+      linear-gradient(155deg,#5B3AA0 0%,#3C63B4 48%,#16B8C4 100%);
   }
-  /* Un halo qui respire, très lentement : l'image n'est jamais tout à fait
-     figée, sans jamais attirer l'œil hors du texte. */
+  /* Un halo qui respire très lentement : l'image n'est jamais tout à fait
+     figée, sans jamais tirer l'œil hors du texte. */
   .kp-scene::before{
     content:""; position:absolute; inset:-40%;
-    background:radial-gradient(closest-side, rgba(255,255,255,.16), rgba(255,255,255,0) 70%);
+    background:radial-gradient(closest-side, rgba(255,255,255,.22), rgba(255,255,255,0) 70%);
     animation:kp-souffle 9s ease-in-out infinite alternate;
   }
+  /* Le dégradé s'éteint dans le blanc du panneau : pas de couture. */
   .kp-scene::after{
-    content:""; position:absolute; left:0; right:0; bottom:0; height:64px;
-    background:linear-gradient(to bottom, rgba(16,14,26,0), #100E1A);
-  }
-  :root[data-theme="light"] .kp-scene::after, body.theme-light .kp-scene::after{
+    content:""; position:absolute; left:0; right:0; bottom:0;
+    height:clamp(48px, 8vh, 90px);
     background:linear-gradient(to bottom, rgba(255,255,255,0), #fff);
   }
 
-  /* ── La carte de fidélité ── */
+  /* ── La carte de fidélité ──
+     Toutes ses mesures sont en em : une seule taille de police la fait
+     grandir ou rétrécir d'un bloc, sans qu'aucune proportion ne bouge. */
   .kp-fid{
-    box-sizing:border-box;
-    /* left/right a zero avec margin auto : le centrage ne depend plus
-       d une moitie de largeur ecrite a la main. */
-    position:absolute; left:0; right:0; top:20px; width:230px; height:132px;
-    margin:0 auto; padding:15px 16px; border-radius:16px;
-    background:linear-gradient(135deg,#7B5BD6 0%,#4E77C4 52%,#2FC2C5 100%);
-    box-shadow:0 22px 44px -12px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.22) inset;
+    box-sizing:border-box; position:relative;
+    /* La marge verticale absorbe le depassement de la rotation : la scene
+       ne peut plus etre trop courte pour la carte. */
+    margin:1.15em 0;
+    /* Une seule taille de police commande toutes les proportions de la
+       carte : elle suit la largeur du panneau, pas une valeur fixe. */
+    font-size:clamp(15px, 4.4vw, 26px);
+    width:17.7em; height:10.15em; padding:1.15em 1.23em; border-radius:1.23em;
+    background:linear-gradient(135deg,#8E6BE8 0%,#5E8BD8 52%,#3ED9DC 100%);
+    box-shadow:0 1.7em 3.4em -.9em rgba(24,10,60,.55), 0 0 0 .08em rgba(255,255,255,.34) inset;
     transform:rotate(-7deg);
     animation:kp-pose .78s cubic-bezier(.16,1,.3,1) .12s both;
   }
   /* Le reflet qui traverse une fois : ce qui distingue un objet d'un
      rectangle coloré. */
   .kp-fid::after{
-    content:""; position:absolute; inset:0; border-radius:16px; overflow:hidden;
-    background:linear-gradient(105deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.30) 50%, rgba(255,255,255,0) 62%);
+    content:""; position:absolute; inset:0; border-radius:1.23em;
+    background:linear-gradient(105deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.34) 50%, rgba(255,255,255,0) 62%);
     background-size:260% 100%; background-position:180% 0;
-    animation:kp-reflet 1.5s cubic-bezier(.4,0,.2,1) .75s both;
+    animation:kp-reflet 1.5s cubic-bezier(.4,0,.2,1) .8s both;
   }
   .kp-fid b{
-    display:block; font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
-    font-size:15px; font-weight:800; letter-spacing:-.2px; color:#fff;
+    display:block; font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    font-size:1.15em; font-weight:800; letter-spacing:-.01em; color:#fff; line-height:1.1;
   }
   .kp-fid i{
-    display:block; margin-top:3px; font-style:normal; font-size:10.5px;
-    letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,.66);
+    display:block; margin-top:.3em; font-style:normal; font-size:.8em;
+    letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.72);
   }
-  .kp-tampons{ position:absolute; left:16px; bottom:15px; display:flex; gap:6px }
+  .kp-tampons{ position:absolute; left:1.23em; bottom:1.15em; display:flex; gap:.46em }
   .kp-tampons s{
-    box-sizing:border-box;
-    width:17px; height:17px; border-radius:50%; text-decoration:none;
-    border:1.6px solid rgba(255,255,255,.42);
+    box-sizing:border-box; width:1.31em; height:1.31em; border-radius:50%;
+    text-decoration:none; border:.12em solid rgba(255,255,255,.5);
   }
-  /* Cinq cases se remplissent l'une après l'autre : c'est le geste du
-     produit, joué en une seconde. */
+  /* Cinq cases se remplissent l'une après l'autre : le geste du produit,
+     joué en une seconde. */
   .kp-tampons s:nth-child(-n+5){
     background:#fff; border-color:#fff; transform:scale(0);
     animation:kp-pose-tampon .42s cubic-bezier(.34,1.56,.64,1) both;
@@ -1557,74 +1565,84 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   .kp-tampons s:nth-child(4){ animation-delay:.95s }
   .kp-tampons s:nth-child(5){ animation-delay:1.06s }
 
-  /* ── Le texte ── */
-  .kp-corps{ position:relative; padding:4px 28px 26px }
+  /* ── Le texte, centré dans ce qui reste ── */
+  .kp-corps{
+    position:relative; flex:1 1 auto; display:flex; align-items:center;
+    overflow-y:auto;
+    padding:0 clamp(22px, 5vmin, 44px) clamp(22px, 4vmin, 40px);
+  }
+  /* Une largeur de lecture, même sur un très grand écran : une phrase de
+     mille pixels de long ne se lit pas. */
+  .kp-interieur{ width:100%; max-width:520px; margin:0 auto }
+
   .kp-marque{
-    font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
     font-size:11px; font-weight:700; letter-spacing:2.6px; text-transform:uppercase;
-    color:var(--secondary-accent,#16B8C4); margin:0 0 13px;
+    color:#0E8F99; margin:0 0 13px;
   }
   .kp-titre{
-    font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
-    font-size:clamp(26px,6.2vw,32px); line-height:1.1; font-weight:800;
-    letter-spacing:-1px; color:var(--text-main,#f3f3f6); margin:0 0 13px;
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    font-size:clamp(30px, 8.2vw, 46px); line-height:1.06; font-weight:800;
+    letter-spacing:-1px; color:#12111a; margin:0 0 14px;
   }
   .kp-titre em{
     font-style:normal;
-    background:linear-gradient(100deg,#8E6BE8,#2FC2C5);
+    background:linear-gradient(100deg,#5B3AA0,#0E8F99);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   .kp-texte{
-    font-size:14.5px; line-height:1.6; color:var(--text-muted,#7e7b91); margin:0 0 20px;
+    font-size:clamp(15px, 4vw, 18px); line-height:1.58;
+    color:#5a5870; margin:0 0 20px;
   }
-  /* Le prix est une ligne, pas un encadré : un cartouche de plus alourdit
+  /* Le prix est une ligne, pas un cartouche : un encadré de plus alourdit
      sans rien ajouter. Le filet suffit à le détacher. */
   .kp-prix{
     display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
-    margin:0 0 20px; padding:0 0 18px;
-    border-bottom:1px solid var(--glass-border,rgba(255,255,255,.08));
+    margin:0 0 20px; padding:0 0 18px; border-bottom:1px solid rgba(18,17,26,.10);
   }
   .kp-prix b{
-    font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
-    font-size:19px; font-weight:800; letter-spacing:-.3px;
-    background:linear-gradient(100deg,#8E6BE8,#2FC2C5);
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    font-size:clamp(19px, .8vmin + 17px, 23px); font-weight:800; letter-spacing:-.3px;
+    background:linear-gradient(100deg,#5B3AA0,#0E8F99);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .kp-prix span{ font-size:13px; color:var(--text-muted,#7e7b91) }
+  .kp-prix span{ font-size:13.5px; color:#6b697c }
 
   .kp-bouton{
-    position:relative; overflow:hidden; display:block; width:100%;
-    padding:16px 20px; border:none; border-radius:14px;
+    position:relative; display:block; width:100%; box-sizing:border-box;
+    padding:clamp(15px, 1.7vmin, 20px) 20px; border:none;
+    border-radius:clamp(12px, 1.6vmin, 16px);
     background:linear-gradient(135deg,#5B3AA0,#16B8C4);
-    color:#fff; font-family:'Cabinet Grotesk','Segoe UI',system-ui,sans-serif;
-    font-size:16px; font-weight:800; letter-spacing:-.2px; cursor:pointer;
-    box-shadow:0 12px 28px -10px rgba(91,58,160,.9);
+    color:#fff; font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    font-size:clamp(16px, .7vmin + 14px, 19px); font-weight:800; letter-spacing:-.2px;
+    cursor:pointer; box-shadow:0 12px 28px -10px rgba(91,58,160,.75);
     transition:transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease;
   }
-  .kp-bouton:hover{ transform:translateY(-2px); box-shadow:0 18px 34px -10px rgba(91,58,160,1) }
+  .kp-bouton:hover{ transform:translateY(-2px); box-shadow:0 18px 34px -10px rgba(91,58,160,.9) }
   .kp-bouton:active{ transform:translateY(0) }
-  .kp-bouton:focus-visible{ outline:2px solid #7BE7EF; outline-offset:3px }
+  .kp-bouton:focus-visible{ outline:2px solid #5B3AA0; outline-offset:3px }
   .kp-second{
     display:block; text-align:center; margin:13px 0 0;
-    font-size:13px; color:var(--text-muted,#7e7b91); text-decoration:none;
+    font-size:13.5px; color:#6b697c; text-decoration:none;
   }
-  .kp-second u{ color:var(--secondary-accent,#16B8C4); text-underline-offset:3px }
-  .kp-second:hover u{ color:var(--text-main,#f3f3f6) }
+  .kp-second u{ color:#0E8F99; text-underline-offset:3px }
+  .kp-second:hover u{ color:#12111a }
 
   .kp-fermer{
-    position:absolute; top:13px; right:13px; z-index:2;
-    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
-    border:none; border-radius:50%; cursor:pointer; font-size:19px; line-height:1;
-    background:rgba(0,0,0,.28); color:rgba(255,255,255,.82);
-    backdrop-filter:blur(4px); transition:background .18s ease, color .18s ease;
+    position:absolute; top:clamp(12px, 1.6vmin, 20px); right:clamp(12px, 1.6vmin, 20px);
+    z-index:2; width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    border:none; border-radius:50%; cursor:pointer; font-size:21px; line-height:1;
+    background:rgba(12,8,28,.30); color:rgba(255,255,255,.92);
+    backdrop-filter:blur(4px); transition:background .18s ease;
   }
-  .kp-fermer:hover{ background:rgba(0,0,0,.45); color:#fff }
-  .kp-fermer:focus-visible{ outline:2px solid #7BE7EF; outline-offset:2px }
+  .kp-fermer:hover{ background:rgba(12,8,28,.52) }
+  .kp-fermer:focus-visible{ outline:2px solid #fff; outline-offset:2px }
 
   @keyframes kp-fond{ from{opacity:0} to{opacity:1} }
-  @keyframes kp-monte{ from{opacity:0; transform:translateY(22px) scale(.97)} to{opacity:1; transform:none} }
+  @keyframes kp-monte{ from{opacity:0; transform:translateY(22px) scale(.985)} to{opacity:1; transform:none} }
   @keyframes kp-pose{
-    from{ opacity:0; transform:rotate(-14deg) translateY(30px) scale(.9) }
+    from{ opacity:0; transform:rotate(-14deg) translateY(1.6em) scale(.9) }
     to  { opacity:1; transform:rotate(-7deg) translateY(0) scale(1) }
   }
   @keyframes kp-pose-tampon{ to{ transform:scale(1) } }
@@ -1634,20 +1652,21 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     to  { transform:translate3d(8%,6%,0) scale(1.14) }
   }
 
-  /* Le mouvement n'est pas une information : qui en a demandé moins voit la
-     même scène, posée d'emblée. */
+  /* Le mouvement n'est pas une information : qui en a demandé moins voit
+     la même scène, posée d'emblée. */
   @media (prefers-reduced-motion:reduce){
     .kp-accueil.on,.kp-carte,.kp-fid,.kp-fid::after,.kp-scene::before{ animation:none }
     .kp-tampons s:nth-child(-n+5){ animation:none; transform:none }
     .kp-bouton{ transition:none }
   }
-  /* Écrans courts : la scène se réduit plutôt que de pousser le bouton hors
-     de l'écran. C'est le bouton qui doit rester visible, pas le décor. */
-  @media (max-height:700px){
-    .kp-scene{ height:158px }
-    .kp-fid{ top:14px; transform:rotate(-6deg) scale(.88) }
-    .kp-corps{ padding:2px 24px 20px }
-    .kp-texte{ margin-bottom:16px }
+  /* Écrans courts : c'est le décor qui cède, jamais le bouton. Le seuil
+     est à 780 px parce qu'un portable de 1440x700 y tombe, et que le
+     bouton y sortait de l'écran. */
+  @media (max-height:780px){
+    .kp-scene{ min-height:0 }
+    .kp-fid{ font-size:clamp(12px, 3vw, 16px) }
+    .kp-texte{ margin-bottom:14px }
+    .kp-prix{ margin-bottom:14px; padding-bottom:12px }
   }
 </style>
 
@@ -1665,21 +1684,23 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     </div>
 
     <div class="kp-corps">
-      <p class="kp-marque">KEEPO</p>
-      <h2 class="kp-titre" id="kpTitre">Vos clients reviennent.<br><em>Vous ne savez pas lesquels.</em></h2>
-      <p class="kp-texte" id="kpTexte">
-        La carte à tampons finit au fond d'un sac. KEEPO la met dans leur
-        téléphone — et vous dit enfin qui revient, qui décroche, et quand
-        les relancer.
-      </p>
-      <p class="kp-prix">
-        <b>14 jours gratuits</b>
-        <span>puis 24,90 €/mois · sans engagement</span>
-      </p>
-      <button type="button" class="kp-bouton" id="kpDecouvrir">Découvrir KEEPO</button>
-      <a class="kp-second" href="connexion.html?role=commercant&amp;tab=register">
-        ou <u>commencer l'essai maintenant</u>
-      </a>
+      <div class="kp-interieur">
+        <p class="kp-marque">KEEPO</p>
+        <h2 class="kp-titre" id="kpTitre">Vos clients reviennent.<br><em>Vous ne savez pas lesquels.</em></h2>
+        <p class="kp-texte" id="kpTexte">
+          La carte à tampons finit au fond d'un sac. KEEPO la met dans leur
+          téléphone — et vous dit enfin qui revient, qui décroche, et quand
+          les relancer.
+        </p>
+        <p class="kp-prix">
+          <b>14 jours gratuits</b>
+          <span>puis 24,90 €/mois · sans engagement</span>
+        </p>
+        <button type="button" class="kp-bouton" id="kpDecouvrir">Découvrir KEEPO</button>
+        <a class="kp-second" href="connexion.html?role=commercant&amp;tab=register">
+          ou <u>commencer l'essai maintenant</u>
+        </a>
+      </div>
     </div>
   </div>
 </div>
