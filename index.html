@@ -1022,7 +1022,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         <ul>
           <li><svg class="icon"><use href="#i-check"/></svg><span><b>Programme marketing complet</b> : relances, parrainage, anniversaires, roue, VIP</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span><b>Clients &amp; scans illimités</b></span></li>
-          <li><svg class="icon"><use href="#i-check"/></svg><span><b>3 points de vente</b>, et plus en option</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span><b>3 points de vente</b>, puis <span id="pdv-pro">19€/mois</span> chacun</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>Campagnes e-mail vers votre fichier client</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>Statistiques avancées &amp; prédictives</span></li>
           <li><svg class="icon"><use href="#i-check"/></svg><span>Mode caisse + multi-serveurs (équipe)</span></li>
@@ -1048,7 +1048,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
           <tbody>
             <tr><td>Clients actifs</td><td>150 max</td><td class="col-pro yes">Illimités</td></tr>
             <tr><td>Scans par mois</td><td>300 max</td><td class="col-pro yes">Illimités</td></tr>
-            <tr><td>Points de vente</td><td>2</td><td class="col-pro yes">3, et plus en option</td></tr>
+            <tr><td>Points de vente</td><td>2</td><td class="col-pro yes">3, puis 19€/mois ou 169€/an chacun</td></tr>
             <tr><td>Points &amp; cartes à tampons</td><td class="yes"><svg class="icon"><use href="#i-check"/></svg></td><td class="col-pro yes"><svg class="icon"><use href="#i-check"/></svg></td></tr>
             <tr><td>Programme marketing automatisé<br><small style="color:var(--muted);font-weight:400">relances, parrainage, roue, VIP…</small></td><td class="no">—</td><td class="col-pro yes"><svg class="icon"><use href="#i-check"/></svg></td></tr>
             <tr><td>Tableau de bord</td><td>Basique</td><td class="col-pro yes">Avancé + prédictif</td></tr>
@@ -1090,7 +1090,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       </details>
       <details class="faq">
         <summary>Puis-je gérer plusieurs boutiques ?<span class="chev">＋</span></summary>
-        <div class="ans">Oui. Smart couvre <b>un point de vente</b>, Essentiel <b>deux</b>, KEEPO Pro <b>trois</b>, et Pro en ajoute d'autres en option depuis le tableau de bord. Vos clients cumulent leurs points dans tous vos points de vente, et vous suivez chacun depuis le même tableau de bord.</div>
+        <div class="ans">Oui. Smart couvre <b>un point de vente</b>, Essentiel <b>deux</b>, KEEPO Pro <b>trois</b>, et Pro en ajoute d'autres depuis le tableau de bord, à <b>19&nbsp;€ par mois</b> chacun (169&nbsp;€ par an). Vos clients cumulent leurs points dans tous vos points de vente, et vous suivez chacun depuis le même tableau de bord.</div>
       </details>
       <details class="faq">
         <summary>Où sont stockées mes données et celles de mes clients ?<span class="chev">＋</span></summary>
@@ -1213,10 +1213,10 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   var P = {
     month: { smart:"24,90€", smartPer:"/mois", smartNote:"Facturation mensuelle, sans engagement",
              ess:"49€", essPer:"/mois", essNote:"Facturation mensuelle, sans engagement",
-             pro:"99€", proPer:"/mois", proNote:"Facturation mensuelle, sans engagement" },
+             pro:"99€", proPer:"/mois", proNote:"Facturation mensuelle, sans engagement", pdv:"19€/mois" },
     year:  { smart:"20,75€", smartPer:"/mois", smartNote:"Facturé 249€ par an · −15%",
              ess:"41,60€", essPer:"/mois", essNote:"Facturé 499€ par an · −15%",
-             pro:"74,20€", proPer:"/mois", proNote:"Facturé 890€ par an · −25% ≈ 3 mois offerts" }
+             pro:"74,20€", proPer:"/mois", proNote:"Facturé 890€ par an · −25% ≈ 3 mois offerts", pdv:"169€/an" }
   };
   function setBill(mode){
     var p = P[mode];
@@ -1229,6 +1229,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     document.getElementById("p-pro").textContent  = p.pro;
     document.getElementById("per-pro").textContent = p.proPer;
     document.getElementById("note-pro").textContent = p.proNote;
+    document.getElementById("pdv-pro").textContent = p.pdv;
     bm.classList.toggle("on", mode === "month");
     by.classList.toggle("on", mode === "year");
     bm.setAttribute("aria-pressed", mode === "month" ? "true" : "false");
@@ -1275,7 +1276,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     {
       "@type": "Question",
       "name": "Puis-je gérer plusieurs boutiques ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Oui. Smart couvre un point de vente, Essentiel deux, KEEPO Pro trois, et Pro en ajoute d'autres en option depuis le tableau de bord. Vos clients cumulent leurs points dans tous vos points de vente, et vous suivez chacun depuis le même tableau de bord." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Oui. Smart couvre un point de vente, Essentiel deux, KEEPO Pro trois, et Pro en ajoute d'autres depuis le tableau de bord, à 19 € par mois chacun (169 € par an). Vos clients cumulent leurs points dans tous vos points de vente, et vous suivez chacun depuis le même tableau de bord." }
     },
     {
       "@type": "Question",

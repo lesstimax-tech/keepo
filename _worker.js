@@ -73,8 +73,8 @@ CE QU'EST KEEPO :
 LES OFFRES :
 - Smart — 24,90 €/mois (ou 249 €/an) : jusqu'à 50 membres, 1 point de vente, cartes digitales, Studio, campagnes e-mail envoyées à la main (sans envois programmés).
 - Essentiel — 49 €/mois (ou 499 €/an) : jusqu'à 150 membres, 2 points de vente, cartes digitales, Studio, notifications e-mail.
-- Pro Scale — 99 €/mois (ou 890 €/an, environ trois mois offerts) : membres illimités, 3 points de vente (d'autres en option depuis le tableau de bord, au prix qui y est affiché), analytics avancée, assistant IA, mode caisse tablette, caissiers illimités, marketing automatisé, parrainage, export CSV, support sous 4 h ouvrées.
-- Les points de vente se comptent établissement principal compris. Ne cite jamais de montant pour l'option : il n'est affiché que dans le tableau de bord.
+- Pro Scale — 99 €/mois (ou 890 €/an, environ trois mois offerts) : membres illimités, 3 points de vente, puis 19 €/mois (ou 169 €/an) par point de vente en plus, ajouté depuis le tableau de bord, analytics avancée, assistant IA, mode caisse tablette, caissiers illimités, marketing automatisé, parrainage, export CSV, support sous 4 h ouvrées.
+- Les points de vente se comptent établissement principal compris. Les points de vente en plus n'existent que sur Pro Scale.
 - Sans engagement, résiliable en un clic. Paiement par Stripe. TVA non applicable (article 293 B du CGI) : le prix affiché est celui qui est prélevé. Offres réservées aux professionnels.
 
 HONNÊTETÉ — non négociable :

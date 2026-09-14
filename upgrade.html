@@ -368,7 +368,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
                     <tr><td>Assistant IA &amp; rédaction d'e-mails</td><td><i class="fa-solid fa-xmark no"></i></td><td class="pro"><i class="fa-solid fa-check yes"></i></td></tr>
                     <tr><td>Comptes caissiers (code PIN)</td><td>1 seul</td><td class="pro">Illimités</td></tr>
                     <tr><td>Mode caisse tablette</td><td><i class="fa-solid fa-xmark no"></i></td><td class="pro"><i class="fa-solid fa-check yes"></i></td></tr>
-                    <tr><td>Points de vente</td><td>2</td><td class="pro">3, et plus en option</td></tr>
+                    <tr><td>Points de vente</td><td>2</td><td class="pro">3, puis 19&nbsp;€/mois chacun</td></tr>
                     <tr><td>Programme VIP, roue &amp; cartes cadeaux</td><td>Limité</td><td class="pro">Complet</td></tr>
                     <tr><td>Export CSV</td><td><i class="fa-solid fa-xmark no"></i></td><td class="pro"><i class="fa-solid fa-check yes"></i></td></tr>
                     <tr><td>Support prioritaire (réponse &lt; 4 h ouvrées)</td><td><i class="fa-solid fa-xmark no"></i></td><td class="pro"><i class="fa-solid fa-check yes"></i></td></tr>
@@ -434,7 +434,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
             <div class="feat">
                 <div class="feat-ico"><i class="fa-solid fa-store"></i></div>
                 <h3>Plusieurs points de vente</h3>
-                <p>Trois points de vente sous une seule carte, et d'autres en option : le client cumule partout et le solde suit. Chaque point de vente garde son propre comptoir.</p>
+                <p>Trois points de vente sous une seule carte, et d'autres à 19&nbsp;€ par mois chacun : le client cumule partout et le solde suit. Chaque point de vente garde son propre comptoir.</p>
             </div>
         </div>
     </div>
@@ -480,7 +480,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         <div class="sec-head">
             <span class="eyebrow">Tarif</span>
             <h2>Un prix, <span class="grad">tout inclus</span></h2>
-            <p class="sec-sub">Pas de frais d'installation, pas de durée minimum. Seuls les points de vente au-delà de trois sont en option.</p>
+            <p class="sec-sub">Pas de frais d'installation, pas de durée minimum. Seuls les points de vente au-delà de trois sont en option, à 19&nbsp;€ par mois chacun.</p>
         </div>
 
         <div class="price-box">
@@ -505,7 +505,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
                 <div class="row"><i class="fa-solid fa-check"></i><span>Mode caisse tablette + caissiers illimités</span></div>
                 <div class="row"><i class="fa-solid fa-check"></i><span>Marketing automatisé et parrainage</span></div>
                 <div class="row"><i class="fa-solid fa-check"></i><span>Programme VIP, roue et cartes cadeaux</span></div>
-                <div class="row"><i class="fa-solid fa-check"></i><span><strong>3 points de vente</strong>, et plus en option</span></div>
+                <div class="row"><i class="fa-solid fa-check"></i><span><strong>3 points de vente</strong>, puis <span id="pdv-prix">19 €/mois</span> chacun</span></div>
                 <div class="row"><i class="fa-solid fa-check"></i><span>Export CSV</span></div>
                 <div class="row"><i class="fa-solid fa-check"></i><span>Support prioritaire sous 4 h ouvrées</span></div>
                 <div class="row"><i class="fa-solid fa-check"></i><span>Mises à jour incluses</span></div>
@@ -563,7 +563,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
             </div>
             <div class="faq">
                 <button class="faq-q" onclick="toggleFaq(this)">Et si j'ai plusieurs boutiques ?<i class="fa-solid fa-chevron-down"></i></button>
-                <div class="faq-a"><div><p>Pro Scale en couvre trois, Essentiel deux, Smart un. Au-delà de trois, vous ajoutez des points de vente en option depuis le tableau de bord, facturés au prorata. Chacun obtient son propre comptoir, et le client cumule ses points sur une seule carte valable partout.</p></div></div>
+                <div class="faq-a"><div><p>Pro Scale en couvre trois, Essentiel deux, Smart un. Au-delà de trois, chaque point de vente coûte 19&nbsp;€ par mois (169&nbsp;€ par an) : vous l'ajoutez depuis le tableau de bord, facturé au prorata. Chacun obtient son propre comptoir, et le client cumule ses points sur une seule carte valable partout.</p></div></div>
             </div>
             <div class="faq">
                 <button class="faq-q" onclick="toggleFaq(this)">Quel support est inclus ?<i class="fa-solid fa-chevron-down"></i></button>
@@ -626,6 +626,7 @@ function setBilling(b) {
     document.getElementById('price-note').textContent = annuel
         ? 'Soit 74 € par mois — environ trois mois offerts sur l\'année'
         : 'Facturé mensuellement · Résiliable en un clic';
+    document.getElementById('pdv-prix').textContent = annuel ? '169 €/an' : '19 €/mois';
 
     document.getElementById('essCta').innerHTML = annuel
         ? 'Ou démarrer avec Essentiel — 499 €/an <span style="opacity:.75">(150 membres, 2 points de vente, sans le marketing)</span>'
