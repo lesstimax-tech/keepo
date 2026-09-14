@@ -71,9 +71,11 @@ CE QU'EST KEEPO :
 - Le commerçant personnalise sa carte dans un Studio (couleurs, logo, fond, typographies).
 
 LES OFFRES :
-- Essentiel — 49 € HT/mois (ou 499 € HT/an) : jusqu'à 150 membres, cartes digitales, Studio, notifications e-mail.
-- Pro Scale — 99 € HT/mois (ou 890 € HT/an, environ trois mois offerts) : membres illimités, analytics avancée, assistant IA, mode caisse tablette, caissiers illimités, marketing automatisé, parrainage, multi-boutiques, export CSV, support sous 4 h ouvrées.
-- Sans engagement, résiliable en un clic. Paiement par Stripe. Prix hors taxes, à destination des professionnels.
+- Smart — 24,90 €/mois (ou 249 €/an) : jusqu'à 50 membres, 1 point de vente, cartes digitales, Studio, campagnes e-mail envoyées à la main (sans envois programmés).
+- Essentiel — 49 €/mois (ou 499 €/an) : jusqu'à 150 membres, 2 points de vente, cartes digitales, Studio, notifications e-mail.
+- Pro Scale — 99 €/mois (ou 890 €/an, environ trois mois offerts) : membres illimités, 3 points de vente (d'autres en option depuis le tableau de bord, au prix qui y est affiché), analytics avancée, assistant IA, mode caisse tablette, caissiers illimités, marketing automatisé, parrainage, export CSV, support sous 4 h ouvrées.
+- Les points de vente se comptent établissement principal compris. Ne cite jamais de montant pour l'option : il n'est affiché que dans le tableau de bord.
+- Sans engagement, résiliable en un clic. Paiement par Stripe. TVA non applicable (article 293 B du CGI) : le prix affiché est celui qui est prélevé. Offres réservées aux professionnels.
 
 HONNÊTETÉ — non négociable :
 - KEEPO démarre : il n'y a PAS encore de témoignages clients, pas de chiffres de résultats. N'en invente jamais, même si on insiste.
@@ -1309,6 +1311,134 @@ async function handleStripeCheckout(request, env) {
   return json({ url: result.data.url });
 }
 
+// ──────────── Points de vente en option (Pro Scale) ────────────
+// Pro Scale compte trois points de vente, établissement principal compris.
+// Au-delà, chaque point de vente est une unité d'un article de l'abonnement
+// Stripe, au tarif de la période du commerçant : Stripe refuse de mélanger
+// mois et année dans un même abonnement, d'où deux prix.
+// GET lit l'état de l'option, POST règle la quantité.
+const POINTS_DE_VENTE_MAX_SUP = 20;
+
+async function handlePointsDeVente(request, env, ctx) {
+  if (request.method !== 'GET' && request.method !== 'POST') {
+    return json({ error: 'Method Not Allowed' }, 405);
+  }
+  // Le commerçant visé est celui du jeton, jamais un identifiant envoyé.
+  const auth = await requireMerchant(request, env);
+  if (auth.error) return auth.error;
+  const merchantId = auth.user.id;
+
+  // Tant que l'option n'existe pas dans Stripe, le tableau de bord cache le
+  // bloc : inutile de lire le profil ou l'abonnement pour le lui dire.
+  const optionMois = (env.STRIPE_POINT_VENTE_PRICE_ID || '').trim();
+  const optionAn   = (env.STRIPE_POINT_VENTE_YEAR_PRICE_ID || '').trim();
+  if (!optionMois && !optionAn) return json({ disponible: false, raison: 'tarif' });
+
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+  if (!SUPA_KEY) return json({ error: 'Service indisponible' }, 503);
+  const supa = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` };
+
+  const pr = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&select=plan,stripe_subscription_id,points_de_vente_sup`, { headers: supa });
+  const profil = pr.ok ? (await pr.json())[0] : null;
+  if (!profil) return json({ error: 'Profil introuvable' }, 404);
+
+  const plan = String(profil.plan || '').toLowerCase();
+  if (plan !== 'pro' && plan !== 'pro scale') return json({ disponible: false, raison: 'formule' });
+  if (!profil.stripe_subscription_id)          return json({ disponible: false, raison: 'abonnement' });
+
+  const abo = await stripeApi(env, `subscriptions/${encodeURIComponent(profil.stripe_subscription_id)}`);
+  if (!abo.ok) return json({ error: abo.error }, 502);
+  const sub = abo.data;
+  if (!['active', 'trialing'].includes(sub.status)) return json({ disponible: false, raison: 'paiement' });
+
+  const options    = [optionMois, optionAn].filter(Boolean);
+  const articles   = sub.items?.data || [];
+  const formule    = articles.find(a => !options.includes(a.price?.id));
+  const periode    = formule?.price?.recurring?.interval === 'year' ? 'year' : 'month';
+  const optionId   = periode === 'year' ? optionAn : optionMois;
+  if (!optionId) return json({ disponible: false, raison: 'tarif' });
+
+  const article  = articles.find(a => a.price?.id === optionId);
+  const actuelle = article ? (article.quantity || 0) : 0;
+
+  if (request.method === 'GET') {
+    const prix = await stripeApi(env, `prices/${encodeURIComponent(optionId)}`);
+    if (!prix.ok) return json({ error: prix.error }, 502);
+    if (prix.data.unit_amount == null) return json({ disponible: false, raison: 'tarif' });
+    return json({
+      disponible: true,
+      quantite: actuelle,
+      max: POINTS_DE_VENTE_MAX_SUP,
+      prix: prix.data.unit_amount,          // en centimes
+      devise: prix.data.currency,
+      periode
+    });
+  }
+
+  let corps;
+  try { corps = await request.json(); }
+  catch { return json({ error: 'Corps invalide' }, 400); }
+  const voulue = Number(corps?.quantite);
+  if (!Number.isInteger(voulue) || voulue < 0 || voulue > POINTS_DE_VENTE_MAX_SUP) {
+    return json({ error: `Quantité attendue entre 0 et ${POINTS_DE_VENTE_MAX_SUP}` }, 400);
+  }
+
+  // Retirer une option ne doit pas laisser en place le point de vente
+  // qu'elle payait : on compte ce qui existe avant d'accepter la baisse.
+  const br = await fetch(`${SUPA_URL}/rest/v1/boutiques?merchant_id=eq.${merchantId}&select=id`, { headers: supa });
+  if (!br.ok) return json({ error: 'Service indisponible' }, 503);
+  const minimum = Math.max(0, (await br.json()).length - 2);
+  if (voulue < minimum) {
+    return json({ error: 'Supprimez d\'abord un point de vente : cette option sert à l\'un d\'eux.', minimum }, 409);
+  }
+
+  if (voulue !== actuelle) {
+    // always_invoice : l'ajout est facturé tout de suite, au prorata.
+    // error_if_incomplete : si le paiement échoue, Stripe refuse la
+    // modification entière — pas d'option sans paiement.
+    const params = {
+      'proration_behavior': 'always_invoice',
+      'payment_behavior'  : 'error_if_incomplete'
+    };
+    if (article && voulue === 0) {
+      params['items[0][id]']       = article.id;
+      params['items[0][deleted]']  = 'true';
+    } else if (article) {
+      params['items[0][id]']       = article.id;
+      params['items[0][quantity]'] = String(voulue);
+    } else {
+      params['items[0][price]']    = optionId;
+      params['items[0][quantity]'] = String(voulue);
+    }
+    const maj = await stripeApi(env, `subscriptions/${encodeURIComponent(sub.id)}`, params, 'POST');
+    if (!maj.ok) return json({ error: maj.error }, maj.status === 402 ? 402 : 502);
+
+    const envoi = Promise.resolve(versDiscord(env, {
+      salon: 'paiements',
+      titre: voulue > actuelle ? 'Option point de vente ajoutée' : 'Option point de vente retirée',
+      champs: [
+        { nom: 'Commerçant', valeur: String(merchantId).slice(0, 8) },
+        { nom: 'Options',    valeur: `${actuelle} → ${voulue}` },
+        { nom: 'Période',    valeur: periode === 'year' ? 'annuelle' : 'mensuelle' }
+      ]
+    })).catch(() => {});
+    if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(envoi);
+    else await envoi;
+  }
+
+  // Le webhook customer.subscription.updated repasse derrière : si cette
+  // écriture échoue, la base se réaligne sur Stripe quelques secondes après.
+  const ecrit = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}`, {
+    method: 'PATCH',
+    headers: { ...supa, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ points_de_vente_sup: voulue })
+  });
+  if (!ecrit.ok) console.error('Points de vente : profil non mis à jour', await ecrit.text());
+
+  return json({ ok: true, quantite: voulue });
+}
+
 // Vérifie la signature HMAC-SHA256 d'un webhook Stripe (anti-fraude + anti-rejeu).
 async function verifyStripeSignature(rawBody, sigHeader, secret, toleranceSec = 300) {
   if (!sigHeader || !secret) return false;
@@ -1489,6 +1619,49 @@ async function handleStripeWebhook(request, env, ctx) {
         body: JSON.stringify({ plan: 'essential', stripe_subscription_id: null })
       });
       if (!res.ok) console.error('Webhook downgrade failed', await res.text());
+      // À part : tant que la migration points-de-vente.sql n'est pas passée,
+      // la colonne manque, et la rétrogradation ci-dessus ne doit pas
+      // échouer avec elle.
+      await fetch(`${SUPA_URL}/rest/v1/profiles?${filter}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPA_KEY,
+          'Authorization': `Bearer ${SUPA_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ points_de_vente_sup: 0 })
+      }).catch(() => {});
+    }
+  }
+
+  // Option points de vente modifiée ailleurs que depuis le tableau de bord
+  // (tableau de bord Stripe, support) : la base suit la quantité réelle.
+  // Le filtre porte sur l'abonnement, pas sur le commerçant : un ancien
+  // abonnement mis à jour ne doit pas écraser l'option du nouveau.
+  if (event.type === 'customer.subscription.updated') {
+    vu.branche = 'mise a jour';
+    const sub      = event.data?.object;
+    const options  = [env.STRIPE_POINT_VENTE_PRICE_ID, env.STRIPE_POINT_VENTE_YEAR_PRICE_ID]
+                       .map(v => (v || '').trim()).filter(Boolean);
+    const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+    const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+    if (SUPA_KEY && sub?.id && options.length) {
+      const quantite = (sub.items?.data || [])
+        .filter(a => options.includes(a.price?.id))
+        .reduce((total, a) => total + (a.quantity || 0), 0);
+      vu.pointsDeVente = quantite;
+      const res = await fetch(`${SUPA_URL}/rest/v1/profiles?stripe_subscription_id=eq.${encodeURIComponent(sub.id)}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPA_KEY,
+          'Authorization': `Bearer ${SUPA_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ points_de_vente_sup: Math.min(quantite, 50) })
+      });
+      if (!res.ok) console.error('Points de vente : synchronisation échouée', await res.text());
     }
   }
 
@@ -2788,6 +2961,7 @@ export default {
       case '/api/google-wallet-save':      return handleGoogleWalletSave(request, env);
       case '/api/wallet-sync':             return handleWalletSync(request, env);
       case '/api/incident':                return handleIncident(request, env);
+      case '/api/points-de-vente':         return handlePointsDeVente(request, env, ctx);
     }
 
     // Tout le reste → assets statiques

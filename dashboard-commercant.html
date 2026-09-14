@@ -3058,11 +3058,17 @@
         <!-- ══════════ MES BOUTIQUES ══════════ -->
         <div id="view-boutiques" class="panel-view">
             <h2 class="panel-title">Mes Boutiques</h2>
-            <p class="panel-subtitle">Gérez vos points de vente. Chaque boutique partage le même programme de fidélité.</p>
+            <p class="panel-subtitle">Gérez vos points de vente. Tous partagent le même programme de fidélité.</p>
 
-            <!-- Ajouter une boutique -->
-            <div class="settings-card" style="margin-bottom:18px;">
-                <h3 class="settings-section-title"><i class="fa-solid fa-plus"></i> Ajouter une boutique</h3>
+            <!-- Places : utilisées / comprises dans la formule -->
+            <div id="pdv-quota" class="settings-card" style="margin-bottom:18px;"></div>
+
+            <!-- Option Pro Scale : points de vente au-delà de trois -->
+            <div id="pdv-option" class="settings-card" style="margin-bottom:18px;display:none;"></div>
+
+            <!-- Ajouter un point de vente -->
+            <div id="pdv-ajout" class="settings-card" style="margin-bottom:18px;">
+                <h3 class="settings-section-title"><i class="fa-solid fa-plus"></i> Ajouter un point de vente</h3>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
                     <div style="grid-column:1/-1;">
                         <label class="settings-label">Nom de la boutique *</label>
@@ -3074,7 +3080,7 @@
                     </div>
                 </div>
                 <button onclick="addBoutique()" class="btn-action btn-primary-gradient" style="width:100%;margin-top:14px;">
-                    <i class="fa-solid fa-store"></i> Créer la boutique
+                    <i class="fa-solid fa-store"></i> Créer le point de vente
                 </button>
             </div>
 
@@ -4382,12 +4388,14 @@
                      // Smart envoie ses campagnes à la main ; ce sont les envois
                      // programmés, qui partent sans surveillance, qui restent fermés.
                      automations: false,
+                     pointsDeVente: 1,
                      reserves: ['view-events', 'view-boutiques'],
                      argument: "Passez Essentiel pour tripler votre nombre de membres et programmer vos envois." },
         essential: { nom: 'Essential', classe: 'plan-essential', icone: 'fa-store',
                      membres: 150, suivante: 'Pro Scale',
                      automations: true,
-                     reserves: ['view-boutiques'],
+                     pointsDeVente: 2,
+                     reserves: [],
                      argument: "Débloquez l'analyse prédictive, le panier moyen et l'export CSV avec Pro Scale." },
     };
     FORMULES.essentiel = FORMULES.essential;   // les deux orthographes coexistent en base
@@ -4395,7 +4403,7 @@
     /* Ce que l'on montre au commerçant quand il clique sur un espace fermé. */
     const ESPACES_RESERVES = {
         'view-events':    'Événements multiplicateurs',
-        'view-boutiques': 'Multi-boutiques',
+        'view-boutiques': 'Points de vente supplémentaires',
     };
     const CADENAS_MENU = ['nav-lock-advanced', 'nav-lock-caisse',
                           'nav-lock-events', 'nav-lock-boutiques'];
@@ -4412,6 +4420,16 @@
     /* Une formule inconnue vaut Essentiel : mieux vaut ouvrir un droit de trop
        que priver un client payant de ce qu'il a acheté. */
     function formuleCourante() { return FORMULES[activeMerchantPlan] || FORMULES.essential; }
+
+    /* Points de vente, établissement principal compris : Smart 1, Essentiel 2,
+       Pro Scale 3 plus ceux pris en option. La base applique la même règle
+       (déclencheur keepo_limite_points_de_vente) : ce calcul sert à prévenir,
+       pas à interdire. */
+    let merchantPointsSup = 0;
+    function pointsDeVenteInclus() {
+        if (estProScale()) return 3 + merchantPointsSup;
+        return formuleCourante().pointsDeVente || 2;
+    }
     let currentPointsPerEuro = 0.1; // 10€ = 1 pt par défaut
     let currentActiveClientSession = null;
     let realTimeHtml5QrScanner = null;
@@ -4852,6 +4870,7 @@
             // Les abonnés payants ont un stripe_subscription_id → jamais concernés.
             merchantTrialEndsAt  = profile?.trial_ends_at || null;
             merchantHasStripeSub = !!profile?.stripe_subscription_id;
+            merchantPointsSup    = Math.max(0, parseInt(profile?.points_de_vente_sup, 10) || 0);
             if (estProScale()
                 && !merchantHasStripeSub && merchantTrialEndsAt
                 && new Date(merchantTrialEndsAt) <= new Date()) {
@@ -6134,14 +6153,14 @@
                     <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-smart-price">24,90€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
             <div style="font-size:11px;color:var(--text-muted,#6B6A78);margin-bottom:4px;">TVA non applicable, article 293 B du CGI</div>
                     <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-smart-note"></div>
-                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">50 clients actifs · campagnes manuelles · scanner QR</div>
+                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">50 clients actifs · 1 point de vente · campagnes manuelles</div>
                     <button onclick="startStripeUpgrade('smart', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Smart</button>
                 </div>
                 <div style="background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:20px;padding:26px 22px;text-align:left;">
                     <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Essentiel</div>
                     <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-ess-price">49€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
                     <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-ess-note"></div>
-                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">150 clients actifs · scanner QR · tableau de bord</div>
+                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">150 clients actifs · 2 points de vente · tableau de bord</div>
                     <button onclick="startStripeUpgrade('essentiel', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Essentiel</button>
                 </div>
                 <div style="background:var(--bg-card,#fff);border:2px solid rgba(14,124,140,0.45);border-radius:20px;padding:26px 22px;text-align:left;position:relative;">
@@ -6149,7 +6168,7 @@
                     <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">KEEPO Pro</div>
                     <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-pro-price">99€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
                     <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-pro-note"></div>
-                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">Illimité · marketing automatisé · parrainage, roue, VIP</div>
+                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">Illimité · 3 points de vente · marketing automatisé, parrainage, roue, VIP</div>
                     <button onclick="startStripeUpgrade('pro', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Pro gratuitement</button>
                 </div>
             </div>
@@ -10008,17 +10027,11 @@
             return;
         }
         boutiquesCache = data || [];
+        pdvRendreQuota();
+        if (estProScale()) { if (pdvOption) pdvRendreOption(); else pdvChargerOption(); }
 
-        if (!boutiquesCache.length) {
-            container.innerHTML = `
-                <div style="text-align:center;padding:40px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;">
-                    <i class="fa-solid fa-store" style="font-size:32px;margin-bottom:12px;display:block;opacity:.4;"></i>
-                    <p style="font-size:14px;">Aucune boutique configurée.<br>Ajoutez votre première boutique ci-dessus.</p>
-                </div>`;
-            return;
-        }
-
-        container.innerHTML = boutiquesCache.map(b => `
+        // L'établissement principal n'a pas de ligne en base : il ouvre la liste.
+        container.innerHTML = pdvCartePrincipale() + boutiquesCache.map(b => `
             <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:16px;">
                 <div style="width:44px;height:44px;border-radius:12px;background:rgba(14,124,140,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <i class="fa-solid fa-store" style="color:var(--secondary-accent);font-size:18px;"></i>
@@ -10050,12 +10063,28 @@
         const address = document.getElementById('new-boutique-address')?.value?.trim();
         if (!name) { showToast('warning', 'Nom requis', 'Donnez un nom à la boutique.'); return; }
         if (!currentMerchantId) return;
+        if (boutiquesCache.length + 1 >= pointsDeVenteInclus()) {
+            showToast('warning', 'Tous vos points de vente sont utilisés', estProScale()
+                ? 'Ajoutez une option pour en ouvrir un autre.'
+                : 'Passez Pro Scale pour ouvrir jusqu\'à trois points de vente.');
+            return;
+        }
 
         const { error } = await supabaseClient
             .from('boutiques')
             .insert([{ merchant_id: currentMerchantId, name, address: address || null }]);
 
-        if (error) { showToast('error', 'Erreur', error.message); return; }
+        if (error) {
+            // La base a le dernier mot : le cache pouvait dater d'avant un
+            // point de vente créé depuis un autre appareil.
+            if (error.hint === 'KEEPO_LIMITE_POINTS_DE_VENTE') {
+                showToast('warning', 'Tous vos points de vente sont utilisés', error.message);
+                loadBoutiques();
+            } else {
+                showToast('error', 'Erreur', error.message);
+            }
+            return;
+        }
 
         document.getElementById('new-boutique-name').value    = '';
         document.getElementById('new-boutique-address').value = '';
@@ -10088,6 +10117,175 @@
         if (error) { showToast('error', 'Erreur', error.message); return; }
         showToast('success', 'Boutique supprimée', '');
         loadBoutiques();
+    }
+
+    /* ─── Points de vente : places et option ─────────────────── */
+    function pdvCartePrincipale() {
+        return `
+            <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:16px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(14,124,140,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-house" style="color:var(--secondary-accent);font-size:17px;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:15px;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(currentMerchantName || 'Votre établissement')}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Établissement principal · votre QR de comptoir habituel</div>
+                </div>
+            </div>`;
+    }
+
+    function pdvRendreQuota() {
+        const zone = document.getElementById('pdv-quota');
+        if (!zone) return;
+        const inclus   = pointsDeVenteInclus();
+        const utilises = boutiquesCache.length + 1;
+        const complet  = utilises >= inclus;
+        const nom      = estProScale() ? 'Pro Scale' : formuleCourante().nom;
+        const part     = Math.min(100, Math.round(utilises / inclus * 100));
+
+        let texte = `Votre formule ${escapeHtml(nom)} en compte ${inclus}`
+                  + (estProScale() && merchantPointsSup ? `, dont ${merchantPointsSup} en option` : '')
+                  + ', établissement principal compris.';
+        if (utilises > inclus) {
+            texte += ` Vous en avez ${utilises} : ils restent actifs, mais vous ne pouvez plus en créer.`;
+        }
+
+        let suite = '';
+        if (complet && !estProScale()) {
+            suite = `<button onclick="openUpgradeModal('Points de vente supplémentaires')" class="btn-action btn-primary-gradient" style="width:100%;margin-top:14px;"><i class="fa-solid fa-crown"></i> Passer Pro Scale : 3 points de vente</button>`;
+        } else if (complet) {
+            suite = '<p style="font-size:12.5px;color:var(--text-muted);margin-top:8px;">Pour en ouvrir un autre, ajoutez une option ci-dessous.</p>';
+        }
+
+        zone.innerHTML = `
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;">
+                <h3 class="settings-section-title" style="margin:0;"><i class="fa-solid fa-location-dot"></i> Points de vente</h3>
+                <span style="font-weight:800;font-size:18px;color:var(--text-main);">${utilises}<span style="font-weight:600;font-size:14px;color:var(--text-muted);"> / ${inclus}</span></span>
+            </div>
+            <div style="height:6px;border-radius:6px;background:var(--bg-card-hover);margin-top:12px;overflow:hidden;">
+                <div style="height:100%;width:${part}%;border-radius:6px;background:${utilises > inclus ? 'var(--warning)' : 'linear-gradient(90deg,var(--tertiary-accent),var(--secondary-accent))'};"></div>
+            </div>
+            <p style="font-size:12.5px;color:var(--text-muted);margin-top:10px;line-height:1.55;">${texte}</p>
+            ${suite}`;
+
+        const ajout = document.getElementById('pdv-ajout');
+        if (ajout) ajout.style.display = complet ? 'none' : '';
+    }
+
+    let pdvOption = null;   // état lu sur /api/points-de-vente
+    let pdvChoix  = 0;      // quantité en cours de réglage, pas encore validée
+
+    async function pdvJeton() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        return session?.access_token || null;
+    }
+
+    async function pdvChargerOption() {
+        const zone = document.getElementById('pdv-option');
+        if (!zone) return;
+        zone.style.display = '';
+        zone.innerHTML = '<div style="font-size:13px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Lecture de votre option…</div>';
+        try {
+            const jeton = await pdvJeton();
+            if (!jeton) { zone.style.display = 'none'; return; }
+            const res  = await fetch('/api/points-de-vente', { headers: { 'Authorization': 'Bearer ' + jeton } });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Option indisponible');
+            pdvOption = data;
+            pdvChoix  = data.quantite || 0;
+            pdvRendreOption();
+        } catch (e) {
+            zone.innerHTML = '<p style="font-size:13px;color:var(--text-muted);">L\'option est indisponible pour le moment. Réessayez dans quelques minutes.</p>';
+        }
+    }
+
+    function pdvPrix(centimes) {
+        return (centimes / 100).toLocaleString('fr-FR', {
+            style: 'currency', currency: String(pdvOption?.devise || 'eur').toUpperCase()
+        });
+    }
+
+    function pdvRendreOption() {
+        const zone = document.getElementById('pdv-option');
+        if (!zone || !pdvOption) return;
+
+        if (!pdvOption.disponible) {
+            // 'tarif' (option pas encore créée dans Stripe) et 'formule' : rien à montrer.
+            const messages = {
+                abonnement: "Votre compte n'a pas d'abonnement Stripe : écrivez-nous depuis l'onglet Support pour ouvrir un point de vente de plus.",
+                paiement:   "Un paiement de votre abonnement est en attente. Réglez-le d'abord : l'option sera ensuite disponible."
+            };
+            const message = messages[pdvOption.raison];
+            zone.style.display = message ? '' : 'none';
+            if (message) zone.innerHTML = `<h3 class="settings-section-title"><i class="fa-solid fa-circle-plus"></i> Points de vente en option</h3><p style="font-size:13px;color:var(--text-muted);margin-top:8px;line-height:1.55;">${message}</p>`;
+            return;
+        }
+
+        const periode = pdvOption.periode === 'year' ? 'an' : 'mois';
+        const minimum = Math.max(0, boutiquesCache.length - 2);
+        pdvChoix = Math.min(pdvOption.max, Math.max(minimum, pdvChoix));
+        const change = pdvChoix !== pdvOption.quantite;
+        const pas = 'width:40px;height:40px;border-radius:12px;border:1px solid var(--glass-border);background:var(--bg-card-hover);color:var(--text-main);font-size:18px;font-weight:700;cursor:pointer;';
+
+        zone.style.display = '';
+        zone.innerHTML = `
+            <h3 class="settings-section-title"><i class="fa-solid fa-circle-plus"></i> Points de vente en option</h3>
+            <p style="font-size:13px;color:var(--text-muted);margin-top:8px;line-height:1.55;">
+                Au-delà de trois, chaque point de vente ajoute <b style="color:var(--text-main);">${pdvPrix(pdvOption.prix)} / ${periode}</b> à votre abonnement.
+                L'ajout est facturé au prorata dès la validation ; une option retirée est déduite de la facture suivante.
+            </p>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap;">
+                <button onclick="pdvRegler(-1)" style="${pas}${pdvChoix <= minimum ? 'opacity:.4;cursor:default;' : ''}" ${pdvChoix <= minimum ? 'disabled' : ''} aria-label="Retirer une option">−</button>
+                <span style="font-weight:800;font-size:20px;min-width:2ch;text-align:center;color:var(--text-main);">${pdvChoix}</span>
+                <button onclick="pdvRegler(1)" style="${pas}${pdvChoix >= pdvOption.max ? 'opacity:.4;cursor:default;' : ''}" ${pdvChoix >= pdvOption.max ? 'disabled' : ''} aria-label="Ajouter une option">+</button>
+                <span style="font-size:13px;color:var(--text-muted);">${pdvChoix ? `${pdvPrix(pdvOption.prix * pdvChoix)} / ${periode} en plus` : 'Aucune option'}</span>
+            </div>
+            ${minimum ? `<p style="font-size:12px;color:var(--text-muted);margin-top:10px;">${minimum > 1 ? `${minimum} options servent` : 'Une option sert'} déjà à vos points de vente actuels : supprimez-en un pour descendre plus bas.</p>` : ''}
+            <button id="pdv-valider" onclick="pdvValider()" class="btn-action btn-primary-gradient" style="width:100%;margin-top:14px;${change ? '' : 'opacity:.5;cursor:default;'}" ${change ? '' : 'disabled'}>
+                <i class="fa-solid fa-check"></i> ${change ? 'Valider' : 'Aucun changement'}
+            </button>`;
+    }
+
+    function pdvRegler(pas) {
+        pdvChoix += pas;
+        pdvRendreOption();
+    }
+
+    async function pdvValider() {
+        if (!pdvOption || pdvChoix === pdvOption.quantite) return;
+        const ecart   = pdvChoix - pdvOption.quantite;
+        const periode = pdvOption.periode === 'year' ? 'an' : 'mois';
+        const question = ecart > 0
+            ? `Ajouter ${ecart} point${ecart > 1 ? 's' : ''} de vente, pour ${pdvPrix(pdvOption.prix * ecart)} / ${periode} de plus ?\n\nLe montant est facturé au prorata dès maintenant, sur votre moyen de paiement enregistré.`
+            : `Retirer ${-ecart} option${-ecart > 1 ? 's' : ''} ?\n\nLe temps non utilisé sera déduit de votre prochaine facture.`;
+        if (!confirm(question)) return;
+
+        const bouton = document.getElementById('pdv-valider');
+        if (bouton) { bouton.disabled = true; bouton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validation…'; }
+        try {
+            const jeton = await pdvJeton();
+            if (!jeton) { showToast('error', 'Session expirée', 'Reconnectez-vous pour modifier l\'option.'); pdvRendreOption(); return; }
+            const res  = await fetch('/api/points-de-vente', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jeton },
+                body: JSON.stringify({ quantite: pdvChoix })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showToast('error', 'Option inchangée', res.status === 402
+                    ? 'Le paiement a été refusé : rien n\'a changé. Vérifiez votre moyen de paiement.'
+                    : (data.error || 'La modification a échoué.'));
+                pdvRendreOption();
+                return;
+            }
+            merchantPointsSup  = data.quantite;
+            pdvOption.quantite = data.quantite;
+            pdvChoix           = data.quantite;
+            showToast('success', 'Option mise à jour', `${pointsDeVenteInclus()} points de vente disponibles.`);
+            loadBoutiques();
+        } catch (e) {
+            showToast('error', 'Option inchangée', 'Connexion impossible. Réessayez.');
+            pdvRendreOption();
+        }
     }
 
     let _boutiqueQrInstance = null;
