@@ -2440,7 +2440,6 @@ async function handleGeocode(request, env) {
 // abonnement Stripe actif est annulé avant, pour ne plus jamais le facturer.
 async function handleDeleteAccount(request, env) {
   if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
-
   const user = await getAuthUser(request, env);
   if (!user) return json({ error: 'Authentification requise' }, 401);
   const userId = user.id;
@@ -2448,18 +2447,37 @@ async function handleDeleteAccount(request, env) {
   const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
   const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
   if (!SUPA_KEY) return json({ error: 'Service indisponible' }, 500);
-
   const supaHeaders = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` };
+  const RIEN = "rien n'a été supprimé. Réessayez dans quelques minutes ou écrivez-nous à contact@keepo.eu.";
 
-  // 1. Annule l'abonnement Stripe s'il existe (sinon facturation continue).
-  try {
-    const pr = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${userId}&select=stripe_subscription_id`, { headers: supaHeaders });
-    const rows = pr.ok ? await pr.json() : [];
-    const subId = rows[0]?.stripe_subscription_id;
-    if (subId && env.STRIPE_SECRET_KEY) {
-      await stripeApi(env, `subscriptions/${encodeURIComponent(subId)}`, null, 'DELETE');
+  /* 1. L'abonnement d'abord. Tant que son annulation n'est pas confirmée,
+     on ne supprime rien : un compte effacé dont l'abonnement court encore
+     serait prélevé chaque mois sans que personne puisse l'arrêter. La
+     version précédente ignorait la réponse de Stripe et supprimait quand
+     même. */
+  const pr = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${userId}&select=stripe_subscription_id`, { headers: supaHeaders });
+  if (!pr.ok) return json({ error: 'Lecture du compte impossible : ' + RIEN }, 503);
+  const subId = (await pr.json())[0]?.stripe_subscription_id;
+  if (subId) {
+    const annul = await stripeApi(env, `subscriptions/${encodeURIComponent(subId)}`, null, 'DELETE');
+    // Un abonnement déjà terminé chez Stripe ne retient pas la suppression.
+    const dejaTermine = !annul.ok && (annul.status === 404 || /cancel/i.test(annul.error || ''));
+    if (!annul.ok && !dejaTermine) {
+      try {
+        await versDiscord(env, {
+          salon: 'erreurs',
+          titre: 'Suppression de compte bloquée',
+          texte: "Stripe n'a pas annulé l'abonnement : le compte est conservé, et on a demandé de réessayer.",
+          champs: [
+            { nom: 'Compte',     valeur: String(userId).slice(0, 8) },
+            { nom: 'Abonnement', valeur: String(subId).slice(0, 20) },
+            { nom: 'Stripe',     valeur: String(annul.error || annul.status).slice(0, 200) }
+          ]
+        });
+      } catch (_) { /* l'alerte ne doit pas masquer la réponse */ }
+      return json({ error: "Votre abonnement n'a pas pu être annulé, donc " + RIEN }, 502);
     }
-  } catch (_) { /* on supprime quand même : le droit à l'effacement prime */ }
+  }
 
   // 2. Supprime l'utilisateur Auth → cascade SQL sur profiles + tout le reste.
   const delRes = await fetch(`${SUPA_URL}/auth/v1/admin/users/${userId}`, {
@@ -2470,8 +2488,77 @@ async function handleDeleteAccount(request, env) {
     console.error('Delete account failed', await delRes.text().catch(() => ''));
     return json({ error: 'La suppression a échoué. Réessayez ou contactez le support.' }, 500);
   }
-
   return json({ deleted: true });
+}
+
+// ──────────── Mon abonnement : arrêter en fin de période, ou reprendre ────────────
+// Le site promet « résiliable en 1 clic, l'abonnement s'arrête à la fin de la
+// période » : c'est ce bouton. Stripe garde l'abonnement jusqu'à la fin de la
+// période payée (ou de l'essai, sans rien prélever), puis envoie
+// customer.subscription.deleted, que le webhook traite déjà. Les données du
+// commerçant ne sont pas touchées.
+function etatAbonnement(sub) {
+  // Depuis les versions 2025 de l'API, la fin de période vit sur les articles.
+  const finPeriode = sub.items?.data?.[0]?.current_period_end || sub.current_period_end || null;
+  const secondes = sub.cancel_at || (sub.status === 'trialing' && sub.trial_end) || finPeriode;
+  return {
+    abonnement: true,
+    essai: sub.status === 'trialing',
+    arretPrevu: !!(sub.cancel_at_period_end || sub.cancel_at),
+    fin: secondes ? new Date(secondes * 1000).toISOString() : null
+  };
+}
+
+async function handleAbonnement(request, env, ctx) {
+  if (request.method !== 'GET' && request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+  // Le commerçant visé est celui du jeton, jamais un identifiant envoyé.
+  const auth = await requireMerchant(request, env);
+  if (auth.error) return auth.error;
+  const merchantId = auth.user.id;
+
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+  if (!SUPA_KEY) return json({ error: 'Service indisponible' }, 503);
+  const pr = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&select=stripe_subscription_id`, {
+    headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+  });
+  if (!pr.ok) return json({ error: 'Service indisponible, réessayez dans un instant.' }, 503);
+  const subId = (await pr.json())[0]?.stripe_subscription_id;
+  if (!subId) return json({ abonnement: false });
+
+  const lu = await stripeApi(env, `subscriptions/${encodeURIComponent(subId)}`);
+  if (!lu.ok) return json({ error: 'Stripe ne répond pas, réessayez dans un instant.' }, 502);
+  if (['canceled', 'incomplete_expired'].includes(lu.data.status)) return json({ abonnement: false });
+  if (request.method === 'GET') return json(etatAbonnement(lu.data));
+
+  let corps;
+  try { corps = await request.json(); }
+  catch { return json({ error: 'Corps invalide' }, 400); }
+  const action = corps?.action;
+  if (action !== 'arreter' && action !== 'reprendre') return json({ error: 'Action inconnue' }, 400);
+
+  const maj = await stripeApi(env, `subscriptions/${encodeURIComponent(subId)}`,
+    { 'cancel_at_period_end': action === 'arreter' ? 'true' : 'false' }, 'POST');
+  if (!maj.ok) return json({ error: "Stripe a refusé la modification : rien n'a changé. Réessayez dans un instant." }, 502);
+  const etat = etatAbonnement(maj.data);
+
+  // Un commerçant qui s'en va est le signal à connaître le jour même.
+  const envoi = Promise.resolve(versDiscord(env, {
+    salon: 'paiements',
+    titre: action === 'arreter' ? 'Résiliation programmée' : 'Résiliation annulée',
+    texte: action === 'arreter'
+      ? "Le commerçant a arrêté son abonnement : il garde l'accès jusqu'à la fin de la période."
+      : 'Le commerçant a finalement gardé son abonnement.',
+    couleur: action === 'arreter' ? 0xE3A94E : 0x5BC98A,
+    champs: [
+      { nom: 'Commerçant', valeur: String(merchantId).slice(0, 8) },
+      { nom: action === 'arreter' ? 'Fin le' : 'Échéance', valeur: etat.fin ? etat.fin.slice(0, 10) : '—' }
+    ]
+  })).catch(() => {});
+  if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(envoi);
+  else await envoi;
+
+  return json(etat);
 }
 
 async function handleCampaignCount(request, env) {
@@ -2956,6 +3043,7 @@ export default {
       case '/api/send-campaign':           return handleSendCampaign(request, env);
       case '/api/campaign-count':          return handleCampaignCount(request, env);
       case '/api/delete-account':          return handleDeleteAccount(request, env);
+      case '/api/abonnement':              return handleAbonnement(request, env, ctx);
       case '/api/address-suggest':        return handleAddressSuggest(request, env);
       case '/api/geocode':                 return handleGeocode(request, env);
       case '/api/google-wallet-save':      return handleGoogleWalletSave(request, env);

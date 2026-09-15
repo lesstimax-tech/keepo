@@ -691,10 +691,10 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 <!-- ════════ BANDE DE CONFIANCE ════════ -->
 <div class="trust" role="presentation">
   <div class="trust-row">
-    <span><svg class="icon"><use href="#i-shield"/></svg> 100% conforme RGPD</span>
+    <span><svg class="icon"><use href="#i-shield"/></svg> Paiement sécurisé par Stripe</span>
     <span><svg class="icon"><use href="#i-fr"/></svg> Conçu pour les commerçants français</span>
     <span><svg class="icon"><use href="#i-phone"/></svg> Aucun matériel — votre smartphone suffit</span>
-    <span><svg class="icon"><use href="#i-euro"/></svg> ROI positif dès 8 clients fidèles</span>
+    <span><svg class="icon"><use href="#i-euro"/></svg> Sans engagement ni frais d'installation</span>
   </div>
 </div>
 
@@ -872,8 +872,24 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         <p><strong style="font-family:var(--font-d);font-size:16px;color:var(--ink);display:block;margin-bottom:8px;">Votre avis façonne KEEPO</strong>En arrivant tôt, vos retours orientent les prochaines fonctionnalités. Vous construisez l'outil avec nous.</p>
       </article>
     </div>
+    <div class="qui rv">
+      <h3>Qui est derrière KEEPO&nbsp;?</h3>
+      <p>Une jeune entreprise individuelle, basée à Grasse dans les Alpes-Maritimes. La personne qui vous répond est celle qui construit l'outil&nbsp;: pas de centre d'appels, pas d'intermédiaire.</p>
+      <p class="qui-bas">Paiements traités par Stripe&nbsp;: KEEPO ne voit jamais vos coordonnées bancaires · <a href="mentions-legales.html">Mentions légales</a> · <a href="mailto:contact@keepo.eu">contact@keepo.eu</a></p>
+    </div>
   </div>
 </section>
+
+<style>
+  /* Qui est derrière KEEPO : pas de visage, mais une entreprise située et
+     joignable. Même matière que les cartes .tst voisines. */
+  .qui{ max-width:680px; margin:28px auto 0; padding:24px 26px; text-align:center;
+        background:rgba(255,255,255,.94); border:1px solid var(--line); border-radius:var(--r-lg) }
+  .qui h3{ margin:0 0 8px; font-family:var(--font-d); font-size:17px; color:var(--ink); text-wrap:balance }
+  .qui p{ margin:0; font-size:15.5px; line-height:1.6; color:var(--ink-2); text-wrap:pretty }
+  .qui .qui-bas{ margin-top:12px; font-size:13.5px; color:var(--muted) }
+  .qui a{ color:var(--ink-2); text-underline-offset:3px }
+</style>
 
 <style>
   /* ══════════════════════════════════════════════════════════════
@@ -1014,7 +1030,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       </article>
 
       <article class="plan hot rv d3">
-        <div class="plan-pop">⭐ Recommandé par les commerçants</div>
+        <div class="plan-pop">Le plus complet</div>
         <h3>KEEPO Pro</h3>
         <p class="for">Pour faire revenir vos clients en automatique</p>
         <div class="price-row"><span class="price grad-text" id="p-pro">99€</span><span class="per" id="per-pro">/mois</span></div>
@@ -1098,7 +1114,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       </details>
       <details class="faq">
         <summary>Et si je veux résilier ?<span class="chev">＋</span></summary>
-        <div class="ans">Aucun engagement : vous résiliez <b>en 1 clic</b> depuis votre espace, l'abonnement s'arrête à la fin de la période en cours. Vous récupérez votre fichier client avant de partir — il est à vous.</div>
+        <div class="ans">Aucun engagement : vous arrêtez <b>en 1 clic</b> depuis vos Réglages, et l'abonnement s'arrête à la fin de la période déjà payée, sans autre prélèvement. Vos données restent conservées si vous revenez.</div>
       </details>
     </div>
   </div>
@@ -1286,7 +1302,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     {
       "@type": "Question",
       "name": "Et si je veux résilier ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Aucun engagement : résiliation en 1 clic depuis votre espace, l'abonnement s'arrête à la fin de la période en cours et vous récupérez votre fichier client." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Aucun engagement : arrêt en 1 clic depuis vos Réglages, l'abonnement s'arrête à la fin de la période déjà payée, sans autre prélèvement, et vos données restent conservées." }
     }
   ]
 }

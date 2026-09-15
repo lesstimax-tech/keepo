@@ -3329,10 +3329,17 @@
                     <button onclick="showToast('info','🔌 Bientôt disponible','La liaison API &amp; Webhooks (Clover, Lightspeed, Zelty…) arrive prochainement.')" class="btn-action btn-secondary" style="opacity:.78;">Générer une clé de couplage API <span style="background:linear-gradient(90deg,#ffc34d,#ff8a5c);color:#06050d;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:8px;letter-spacing:.5px;">BIENTÔT</span></button>
                 </div>
 
+                <div class="card">
+                    <div class="card-title"><i class="fa-solid fa-credit-card"></i> Mon abonnement</div>
+                    <div id="abonnement-etat" style="color:var(--text-muted);font-size:13px;line-height:1.7;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Lecture de votre abonnement…
+                    </div>
+                </div>
+
                 <div class="card" style="border-color:rgba(224,36,94,0.3);">
                     <div class="card-title" style="color:#ff6b8f;"><i class="fa-solid fa-triangle-exclamation"></i> Zone de danger</div>
                     <p style="color:var(--text-muted);font-size:13px;line-height:1.7;margin-bottom:16px;">
-                        Supprimer votre compte est <strong style="color:var(--text-main);">définitif</strong> : votre programme de fidélité, vos cartes, vos clients, votre historique et vos automations seront effacés sans retour possible. Votre <strong style="color:var(--text-main);">abonnement en cours sera automatiquement annulé</strong>.
+                        Supprimer votre compte est <strong style="color:var(--text-main);">définitif</strong> : votre programme de fidélité, vos cartes, vos clients, votre historique et vos automations seront effacés sans retour possible. Votre <strong style="color:var(--text-main);">abonnement est coupé immédiatement</strong>, sans remboursement de la période en cours. Pour arrêter de payer en gardant vos données, utilisez plutôt « Arrêter mon abonnement » ci-dessus.
                     </p>
                     <button onclick="openMerchantDeleteAccount()" class="btn-action" style="background:rgba(224,36,94,0.1);color:#ff6b8f;border:1px solid rgba(224,36,94,0.3);">
                         <i class="fa-solid fa-trash-can"></i> Supprimer définitivement mon compte
@@ -4269,10 +4276,10 @@
                 </div>
                 <div class="sup-q">
                     <button type="button" onclick="supToggle(this)">Comment arrêter mon abonnement&nbsp;?<i class="fa-solid fa-chevron-down"></i></button>
-                    <div class="sup-a"><div><p>En un clic depuis vos Réglages, sans frais ni pénalité. L'arrêt
-                        prend effet à la fin de la période déjà payée, <b>sans remboursement au prorata</b>.
-                        Vos données sont conservées : vous repassez en Essentiel et pouvez reprendre quand
-                        vous voulez.</p></div></div>
+                    <div class="sup-a"><div><p>Dans vos Réglages, bouton <b>Arrêter mon abonnement</b>, sans frais ni pénalité.
+                        L'arrêt prend effet à la fin de la période déjà payée, <b>sans remboursement au prorata</b> ;
+                        pendant l'essai, rien n'est prélevé. Vos données sont conservées : vous reprenez quand
+                        vous voulez, là où vous en étiez.</p></div></div>
                 </div>
             </div>
 
@@ -6056,6 +6063,10 @@
         // Charger les boutiques
         if (panelId === 'view-boutiques' && currentMerchantId) {
             loadBoutiques();
+        }
+        // L'état de l'abonnement se lit à l'ouverture des Réglages
+        if (panelId === 'view-settings' && currentMerchantId) {
+            chargerAbonnement();
         }
         // Rafraîchir la liste des caissiers quand on ouvre le Mode Caisse
         if (panelId === 'view-caisse' && currentMerchantId) {
@@ -9274,7 +9285,14 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Suppression…';
         try {
-            const res = await fetch('/api/delete-account', { method: 'POST' });
+            // Le Worker exige le jeton de session : sans lui, il répondait 401
+            // et le compte n'était jamais effacé.
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) throw new Error('Session expirée : reconnectez-vous puis réessayez.');
+            const res = await fetch('/api/delete-account', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + session.access_token }
+            });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.deleted) throw new Error(data.error || 'Échec de la suppression');
             await supabaseClient.auth.signOut().catch(() => {});
@@ -9285,6 +9303,74 @@
             showToast('error', 'Erreur', e.message);
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Supprimer définitivement';
+        }
+    }
+
+    /* ─── Mon abonnement : arrêter en fin de période, ou reprendre ─── */
+    async function abonnementAppel(methode, corps) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) throw new Error('Session expirée : reconnectez-vous puis réessayez.');
+        const entetes = { 'Authorization': 'Bearer ' + session.access_token };
+        if (corps) entetes['Content-Type'] = 'application/json';
+        const res = await fetch('/api/abonnement', {
+            method: methode, headers: entetes, body: corps ? JSON.stringify(corps) : undefined
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Service indisponible, réessayez dans un instant.');
+        return data;
+    }
+
+    function abonnementDate(iso) {
+        return iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    }
+
+    async function chargerAbonnement() {
+        const zone = document.getElementById('abonnement-etat');
+        if (!zone) return;
+        zone.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lecture de votre abonnement…';
+        try { rendreAbonnement(await abonnementAppel('GET')); }
+        catch (e) { zone.textContent = e.message; }
+    }
+
+    function rendreAbonnement(a) {
+        const zone = document.getElementById('abonnement-etat');
+        if (!zone) return;
+        const para = 'color:var(--text-muted);font-size:13px;line-height:1.7;margin:0 0 14px;';
+        if (!a.abonnement) {
+            zone.innerHTML = `<p style="${para}">Aucun abonnement payant n'est rattaché à ce compte : rien ne vous est prélevé. Une question ? Écrivez-nous depuis l'onglet Support.</p>`;
+            return;
+        }
+        const date = a.fin ? 'le ' + escapeHtml(abonnementDate(a.fin)) : 'à la fin de la période en cours';
+        if (a.arretPrevu) {
+            zone.innerHTML = `<p style="${para}"><strong style="color:var(--text-main);">Arrêt programmé ${date}.</strong>
+                Vous gardez tout jusque-là, puis plus rien ne sera prélevé. Vos données restent conservées.</p>
+                <button id="abonnement-bouton" onclick="changerAbonnement('reprendre')" class="btn-action btn-secondary">
+                    <i class="fa-solid fa-rotate-left"></i> Annuler l'arrêt et continuer</button>`;
+            return;
+        }
+        const situation = a.essai
+            ? `Essai gratuit jusqu'${a.fin ? 'au ' + escapeHtml(abonnementDate(a.fin)) : 'à sa fin'} : si vous arrêtez maintenant, vous ne paierez rien.`
+            : `Prochain prélèvement ${date}. Si vous arrêtez, vous gardez l'accès jusque-là, sans remboursement au prorata.`;
+        zone.innerHTML = `<p style="${para}">${situation} Vos données restent conservées : vous pourrez reprendre quand vous voulez.</p>
+            <button id="abonnement-bouton" onclick="changerAbonnement('arreter')" class="btn-action btn-secondary">
+                <i class="fa-solid fa-circle-stop"></i> Arrêter mon abonnement</button>`;
+    }
+
+    async function changerAbonnement(action) {
+        if (action === 'arreter' && !confirm("Arrêter votre abonnement ?\n\nVous gardez l'accès jusqu'à la fin de la période en cours (ou de l'essai), puis plus rien ne sera prélevé. Vos données restent conservées.")) return;
+        const bouton = document.getElementById('abonnement-bouton');
+        if (bouton) { bouton.disabled = true; bouton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Un instant…'; }
+        try {
+            const a = await abonnementAppel('POST', { action });
+            rendreAbonnement(a);
+            showToast('success',
+                action === 'arreter' ? 'Arrêt programmé' : 'Abonnement maintenu',
+                action === 'arreter'
+                    ? (a.fin ? `Plus rien ne sera prélevé après le ${abonnementDate(a.fin)}.` : 'Plus rien ne sera prélevé après la période en cours.')
+                    : 'Votre abonnement continue normalement.');
+        } catch (e) {
+            showToast('error', "Rien n'a changé", e.message);
+            chargerAbonnement();
         }
     }
 
