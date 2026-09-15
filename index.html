@@ -599,7 +599,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         <li><a href="#features">Fonctionnalités</a></li>
         <li><a href="#marketing">Marketing<span class="pro-chip">PRO</span></a></li>
         <li><a href="#pricing">Tarifs</a></li>
-        <li><a href="#avis">Avis</a></li>
+        <li><a href="#avis">À propos</a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="connexion.html">Se connecter</a></li>
         <li><a href="connexion.html?role=commercant&amp;tab=register" class="btn btn-grad btn-sm">Essai gratuit</a></li>
@@ -612,7 +612,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   <a href="#features">Fonctionnalités</a>
   <a href="#marketing">Marketing <span class="pro-chip">PRO</span></a>
   <a href="#pricing">Tarifs</a>
-  <a href="#avis">Avis</a>
+  <a href="#avis">À propos</a>
   <a href="#faq">FAQ</a>
   <a href="connexion.html">Se connecter</a>
   <a href="connexion.html?role=commercant&amp;tab=register" class="btn btn-grad" style="margin-top:14px;display:flex;">Démarrer l'essai gratuit</a>
@@ -697,6 +697,81 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     <span><svg class="icon"><use href="#i-euro"/></svg> Sans engagement ni frais d'installation</span>
   </div>
 </div>
+
+<!-- ════════ KEEPO, C'EST QUOI ════════ -->
+<style>
+  /* Avant les fonctionnalités, la définition. Un commerçant qui ne sait pas
+     encore ce qu'on lui vend se méfie de tout le reste de la page. */
+  .cq-duo{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:18px; max-width:960px; margin:0 auto }
+  .cq-carte{ background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:var(--r-lg); padding:26px 26px 24px }
+  .cq-carte h3{ font-size:18px; margin-bottom:16px }
+  .cq-carte ul, .cq-pas ul{ list-style:none; margin:0; padding:0; display:grid; gap:12px }
+  .cq-carte li{ display:flex; align-items:flex-start; gap:10px; font-size:15.5px; line-height:1.5; color:var(--ink-2) }
+  .cq-carte li .icon{ flex:none; margin-top:4px; color:#1FA5A8 }
+  .cq-carte b, .cq-exemple b, .cq-pas b{ color:var(--ink); font-weight:650 }
+  .cq-exemple{ max-width:960px; margin:18px auto 0; padding:22px 26px; border-radius:var(--r-lg);
+               background:var(--grad-soft); border:1px solid var(--line) }
+  .cq-label{ margin:0 0 8px; font-size:12.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted) }
+  .cq-exemple .cq-texte{ margin:0; font-size:16px; line-height:1.62; color:var(--ink-2); max-width:72ch; text-wrap:pretty }
+  .cq-pas{ max-width:960px; margin:30px auto 0; padding:0 4px }
+  .cq-pas ul{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px 32px }
+  .cq-pas li{ position:relative; padding-left:24px; font-size:15px; line-height:1.5; color:var(--ink-2) }
+  .cq-pas li::before, .cq-pas li::after{ content:""; position:absolute; left:3px; top:.72em; width:11px; height:2px;
+                                         border-radius:2px; background:var(--muted); transform:rotate(45deg) }
+  .cq-pas li::after{ transform:rotate(-45deg) }
+  @media (max-width:760px){
+    .cq-duo, .cq-pas ul{ grid-template-columns:1fr }
+    .cq-carte, .cq-exemple{ padding:20px }
+  }
+</style>
+<section id="cest-quoi" aria-labelledby="cq-title">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <div class="eyebrow">En clair</div>
+      <h2 id="cq-title">KEEPO, c'est quoi exactement&nbsp;?</h2>
+      <p>Une carte de fidélité qui vit dans le téléphone de vos clients, à la place de la carte en carton. Vous la créez sur keepo.eu, vos clients l'ajoutent en scannant un QR code posé sur votre comptoir, et vous créditez leurs points en scannant leur téléphone avec le vôtre.</p>
+    </div>
+
+    <div class="cq-duo">
+      <article class="cq-carte rv d1">
+        <h3>Ce que vous avez, vous</h3>
+        <ul>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Un <b>tableau de bord</b>, sur votre téléphone ou votre ordinateur</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Votre <b>smartphone comme scanner</b> : aucun terminal à acheter</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Un <b>QR code à imprimer</b> et à poser sur le comptoir</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>La liste de vos clients : <b>nom, e-mail, visites</b></span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Un <b>abonnement</b> dès 24,90&nbsp;€ par mois, sans engagement</span></li>
+        </ul>
+      </article>
+      <article class="cq-carte rv d2">
+        <h3>Ce qu'a votre client</h3>
+        <ul>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Une carte <b>à vos couleurs et à votre logo</b></span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span><b>Rien à installer</b> : sa carte s'ouvre dans son navigateur, ou d'un raccourci sur son écran d'accueil</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Ses <b>points ou ses tampons</b>, à jour à chaque passage</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Une <b>notification</b> quand sa récompense est prête</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span>Le tout <b>gratuitement</b> : c'est vous qui avez l'abonnement</span></li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="cq-exemple rv">
+      <p class="cq-label">Un exemple</p>
+      <p class="cq-texte">Une boulangerie fixe « 10 baguettes = 1 viennoiserie offerte ». À chaque achat, la boulangère scanne le téléphone du client : <b>un tampon s'ajoute</b>. Au dixième, le client est prévenu, affiche le code de sa récompense sur sa carte, la boulangère le valide, et il repart avec sa viennoiserie.</p>
+    </div>
+
+    <div class="cq-pas rv">
+      <p class="cq-label">Ce que KEEPO n'est pas</p>
+      <ul>
+        <li><b>Pas une application</b> que vos clients doivent télécharger.</li>
+        <li><b>Pas un moyen de paiement</b> : vos clients paient comme d'habitude, KEEPO ne touche pas à vos ventes.</li>
+        <li><b>Pas de commission</b> : vous payez l'abonnement, rien d'autre.</li>
+        <li><b>Pas de matériel</b> à acheter, ni d'installation.</li>
+        <li><b>Pas d'engagement</b> : vous arrêtez quand vous voulez, depuis vos Réglages.</li>
+      </ul>
+    </div>
+  </div>
+</section>
 
 <!-- ════════ FONCTIONNALITÉS ════════ -->
 <section id="features" aria-labelledby="features-title">
@@ -837,16 +912,16 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   <div class="wrap">
     <div class="sec-head center rv">
       <div class="eyebrow">Le calcul</div>
-      <h2 id="res-title">Rentabilisé dès quelques clients fidèles</h2>
-      <p>Pas besoin de miracle : il suffit que quelques clients reviennent un peu plus souvent.</p>
+      <h2 id="res-title">Le calcul, avec votre marge</h2>
+      <p>Pas de promesse chiffrée : ce qui compte, c'est combien de clients reviennent un peu plus souvent, et ce que chaque passage vous rapporte.</p>
     </div>
     <div class="res-grid">
       <div class="res rv d1"><div class="n">2 min</div><div class="l">pour créer votre carte</div></div>
       <div class="res rv d2"><div class="n">0 €</div><div class="l">de matériel ou d'installation</div></div>
       <div class="res rv d3"><div class="n">1 scan</div><div class="l">pour cumuler et fidéliser</div></div>
-      <div class="res rv d4"><div class="n">8</div><div class="l">clients fidèles suffisent à le rentabiliser</div></div>
+      <div class="res rv d4"><div class="n">0,83 €</div><div class="l">par jour pour la formule Smart</div></div>
     </div>
-    <p class="res-note rv">Le calcul est simple : <b>8 clients</b> qui reviennent une fois de plus chaque mois avec un panier de 15&nbsp;€ couvrent largement l'abonnement Pro. Tout le reste, c'est du gain.</p>
+    <p class="res-note rv">Un exemple : <b>8 clients</b> qui reviennent une fois de plus par mois avec un panier de 15&nbsp;€, c'est 120&nbsp;€ de chiffre d'affaires en plus. Avec 30&nbsp;% de marge, il vous reste 36&nbsp;€ : plus que le prix de Smart (24,90&nbsp;€). Refaites le calcul avec votre panier moyen et votre marge.</p>
   </div>
 </section>
 
@@ -1161,7 +1236,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       <div class="foot-col">
         <h4>Ressources</h4>
         <a href="#faq">FAQ</a>
-        <a href="#avis">Avis clients</a>
+        <a href="#avis">À propos</a>
         <a href="connexion.html">Se connecter</a>
         <a href="connexion.html?role=commercant&amp;tab=register">Créer un compte</a>
       </div>
