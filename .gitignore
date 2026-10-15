@@ -10,3 +10,5 @@ Thumbs.db
 supabase/.temp/
 .claude/settings.local.json
 .claude/marble.cmd
+.agents/
+skills-lock.json
