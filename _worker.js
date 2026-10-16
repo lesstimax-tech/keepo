@@ -7,6 +7,7 @@
 //    POST /api/ai-email-writer          → génère email marketing
 //    POST /api/ai-reward-suggestions    → suggère récompenses
 //    POST /api/ai-design-studio         → génère palette + design carte
+//    POST /api/ai-onboarding            → crée le programme complet (photo de la carte + description)
 //    GET  /api/ai-status              → diagnostic IA (clé, modèle, ping)
 //    GET  /api/address-suggest        → suggestions d adresses (Base Adresse Nationale)
 //  Tout le reste → assets statiques
@@ -114,6 +115,32 @@ RÈGLES STRICTES :
 - "points" : entier cohérent avec le taux (commence vers 50 pts, finit vers 1000-2000 pts).
 - Adapté au type de commerce détecté.
 - En français.`;
+
+const ONBOARDING_PROMPT = `Tu crées le programme de fidélité d'un commerce de proximité français qui s'inscrit sur KEEPO. Le commerçant n'a pas le temps : ton programme doit être prêt à l'emploi.
+
+Tu reçois : le nom du commerce, une courte description écrite par le commerçant, et parfois la photo de sa carte, de son menu ou de ses tarifs.
+
+MÉTHODE :
+1. Identifie le type de commerce et ses produits ou prestations. Si une photo est fournie, lis les articles et leurs prix ; n'invente aucun produit qui n'y figure pas. Sans photo, appuie-toi sur la description et sur ce que vend habituellement ce type de commerce.
+2. Choisis le mode :
+   - "stamps" (1 tampon par passage) pour les achats fréquents à petit panier : boulangerie, café, snack, kebab, coiffeur, barbier, pressing, food truck.
+   - "points" (points par euro dépensé) pour les paniers variables : épicerie, boucherie, caviste, boutique, fleuriste, restaurant, institut.
+3. Récompense : un produit réel de la carte, très apprécié des clients mais peu coûteux pour le commerçant (boisson, viennoiserie, dessert, accompagnement, petite prestation), ou une réduction si c'est un service ou une boutique. Elle doit s'obtenir en 8 à 12 visites.
+   - Mode "stamps" : stamps_required entre 8 et 12, stamp_reward = la récompense.
+   - Mode "points" : points_per_euro = 1 (sauf panier moyen très élevé : 0,5) ; 2 ou 3 paliers dans rewards, le premier atteignable en 8 à 10 visites selon le panier moyen estimé, le dernier plus ambitieux.
+4. Cadeau de bienvenue : un petit geste immédiat qui donne envie de s'inscrire (une boisson, une douceur, ou -5 % / -10 % sur le premier achat). Toujours moins cher que la récompense.
+5. Couleurs : deux teintes qui évoquent le commerce, utilisées seulement s'il n'a pas de logo.
+
+RÈGLES :
+- Réponds UNIQUEMENT en JSON valide, sans texte autour, au format :
+{"commerce":"...","mode":"stamps","stamps_required":10,"stamp_reward":"...","points_per_euro":1,"rewards":[{"name":"...","points":100}],"welcome":{"type":"gift","label":"..."},"panier_moyen":12,"produits_lus":["..."],"pourquoi":"...","couleurs":["#hex","#hex"]}
+- "commerce" : 2 à 4 mots (ex : "Boulangerie de quartier").
+- Libellés courts, concrets, en français, sans emoji, 40 caractères maximum (ex : "1 croissant offert", "-10 % sur votre addition").
+- "welcome.type" : "gift" pour un produit offert, "discount" pour une réduction.
+- "rewards" : vide en mode "stamps". "stamp_reward" : vide en mode "points".
+- "produits_lus" : jusqu'à 6 articles lus sur la photo avec leur prix (ex : "Croissant 1,20 €"), vide sans photo.
+- "pourquoi" : une phrase de 25 mots maximum qui explique ton choix au commerçant, en le vouvoyant.
+- Aucune promesse chiffrée de résultat.`;
 
 const DESIGN_STUDIO_PROMPT = `Tu es directeur artistique pour KEEPO (cartes de fidélité digitales).
 
@@ -1190,6 +1217,94 @@ Propose une palette + tagline au format JSON {bgColor, txtColor, borderColor, ta
     tagline    : String(parsed.tagline || '').slice(0, 80),
     rationale  : String(parsed.rationale || '').slice(0, 200)
   });
+}
+
+// ── Prise en main express : l'IA crée le programme ─────────────
+// Le commerçant envoie la photo de sa carte (facultative) et une phrase
+// sur son commerce ; il reçoit un programme complet qu'il valide ensuite.
+// Tout ce que renvoie le modèle est borné ici : le navigateur ne reçoit
+// que des valeurs prêtes à enregistrer.
+async function handleAiOnboarding(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+
+  const auth = await requireMerchant(request, env);
+  if (auth.error) return auth.error;
+  const rl = await rateLimit(env, 'AI_LIMITER', auth.user.id);
+  if (rl) return rl;
+
+  let body;
+  try { body = await request.json(); }
+  catch { return json({ error: 'Corps invalide' }, 400); }
+
+  const nom         = String(body?.name || '').trim().slice(0, 80);
+  const description = String(body?.description || '').trim().slice(0, 600);
+  const photo       = String(body?.menuImage || '');
+
+  // Photo : data URL d'image, réduite par le navigateur (~1600 px).
+  let image = null;
+  if (photo) {
+    const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(photo);
+    if (!m) return json({ error: 'Photo illisible : envoyez une image JPG, PNG ou WebP.' }, 400);
+    if (m[2].length > 6 * 1024 * 1024) return json({ error: 'Photo trop lourde.' }, 413);
+    image = { mimeType: m[1], data: m[2] };
+  }
+  if (!image && !description) {
+    return json({ error: 'Envoyez la photo de votre carte ou décrivez votre commerce en une phrase.' }, 400);
+  }
+
+  const texte = `Nom du commerce : ${nom || '(non précisé)'}
+Description du commerçant : ${description || '(aucune)'}
+${image ? 'La photo jointe montre sa carte, son menu ou ses tarifs.' : 'Pas de photo jointe.'}
+
+Crée son programme au format JSON demandé.`;
+  const parts = [{ text: texte }];
+  if (image) parts.push({ inlineData: image });
+
+  const result = await callGemini(env, {
+    systemPrompt: ONBOARDING_PROMPT,
+    contents: [{ role: 'user', parts }],
+    generationConfig: { maxOutputTokens: 1500, temperature: 0.4 },
+    jsonMode: true
+  });
+  if (result.error) return json(result, result.status);
+
+  const p = extractJson(result.text);
+  if (!p || typeof p !== 'object') return json({ error: 'Réponse illisible, réessayez.' }, 502);
+
+  const court  = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, n);
+  const borne  = (v, min, max, def) => { const x = Number(v); return isFinite(x) ? Math.min(max, Math.max(min, x)) : def; };
+  const isHex  = c => /^#[0-9a-f]{6}$/i.test(String(c || '').trim());
+
+  const mode = p.mode === 'points' ? 'points' : 'stamps';
+  let rewards = Array.isArray(p.rewards) ? p.rewards : [];
+  rewards = rewards
+    .map(r => ({ name: court(r?.name, 60), points: Math.round(Number(r?.points)) }))
+    .filter(r => r.name && isFinite(r.points) && r.points > 0 && r.points <= 100000)
+    .sort((a, b) => a.points - b.points)
+    .slice(0, 3);
+
+  const programme = {
+    commerce       : court(p.commerce, 40),
+    mode,
+    stamps_required: Math.round(borne(p.stamps_required, 5, 20, 10)),
+    stamp_reward   : court(p.stamp_reward, 60),
+    points_per_euro: borne(p.points_per_euro, 0.1, 10, 1),
+    rewards,
+    welcome        : {
+      type : p.welcome?.type === 'discount' ? 'discount' : 'gift',
+      label: court(p.welcome?.label, 60)
+    },
+    panier_moyen   : Math.round(borne(p.panier_moyen, 1, 500, 12)),
+    produits_lus   : (Array.isArray(p.produits_lus) ? p.produits_lus : []).map(x => court(x, 50)).filter(Boolean).slice(0, 6),
+    pourquoi       : court(p.pourquoi, 220),
+    couleurs       : (Array.isArray(p.couleurs) ? p.couleurs : []).filter(isHex).map(c => c.trim()).slice(0, 2)
+  };
+
+  // Un programme sans récompense ne sert à rien : on complète plutôt que d'échouer.
+  if (mode === 'stamps' && !programme.stamp_reward) programme.stamp_reward = '1 produit offert';
+  if (mode === 'points' && !programme.rewards.length) programme.rewards = [{ name: '-10 % sur votre achat', points: 100 }];
+
+  return json({ programme });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3062,6 +3177,7 @@ export default {
       case '/api/ai-email-writer':         return handleEmailWriter(request, env);
       case '/api/ai-reward-suggestions':   return handleRewardSuggestions(request, env);
       case '/api/ai-design-studio':        return handleDesignStudio(request, env);
+      case '/api/ai-onboarding':           return handleAiOnboarding(request, env);
       case '/api/stripe-checkout':         return handleStripeCheckout(request, env);
       case '/api/stripe-webhook':          return handleStripeWebhook(request, env, ctx);
       case '/api/send-campaign':           return handleSendCampaign(request, env);
