@@ -5399,7 +5399,7 @@
         gift:     ['1 café offert', '1 viennoiserie offerte', '1 boisson offerte', '1 dessert offert'],
         discount: ['-10 % sur votre prochain achat', '-5 € dès 20 € d\'achat', '-15 % sur une prestation']
     };
-    const welcomeState = { enabled: false, type: 'gift', loaded: false };
+    const welcomeState = { enabled: false, type: 'gift', loaded: false, savedLabel: '' };
 
     function loadWelcomeGiftSettings(card) {
         welcomeState.loaded  = ('welcome_enabled' in card);   // colonne absente = migration non jouée
@@ -5407,6 +5407,7 @@
         welcomeState.type    = card.welcome_type === 'discount' ? 'discount' : 'gift';
         const labelEl = document.getElementById('welcome-label');
         if (labelEl) labelEl.value = card.welcome_label || '';
+        welcomeState.savedLabel = welcomeState.enabled ? String(card.welcome_label || '').trim() : '';
         const carte = document.getElementById('welcome-card');
         if (carte) carte.style.display = welcomeState.loaded ? '' : 'none';
         renderWelcomeGiftUI();
@@ -5471,6 +5472,7 @@
             return;
         }
         welcomeState.loaded = true;
+        welcomeState.savedLabel = welcomeState.enabled ? label : '';
         try { localStorage.setItem(`KEEPO_welcome_set_${currentMerchantId}`, '1'); } catch (e) {}
         updateWelcomeNudge();
         showToast('success', welcomeState.enabled ? 'Cadeau de bienvenue activé' : 'Cadeau de bienvenue désactivé',
@@ -6731,6 +6733,18 @@
         const pastilleFond  = aFond ? (clair(encre) ? 'rgba(255,255,255,.20)' : 'rgba(0,0,0,.10)') : accent;
         const pastilleEncre = aFond ? encre : '#FFFFFF';
 
+        // Cadeau de bienvenue enregistré et actif : annoncé sur l'affiche,
+        // c'est souvent lui qui décide le client à scanner.
+        const cadeau = (typeof welcomeState !== 'undefined' && welcomeState.savedLabel) || '';
+        const blocCadeau = cadeau ? `
+      <div class="cadeau">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9zM3 7h18v4H3zM12 7v14M12 7S10.5 3 8 3.6C6 4.1 6.6 7 8.4 7M12 7s1.5-4 4-3.4C18 4.1 17.4 7 15.6 7"/></svg>
+        <div>
+          <div class="cadeau-t">Cadeau de bienvenue · dès l'inscription</div>
+          <div class="cadeau-l">${escapeHtml(cadeau)}</div>
+        </div>
+      </div>` : '';
+
         const blocLogo = logoOk
             ? `<img class="ident-logo" src="${logo}" alt="">`
             : `<div class="ident-logo ident-initiale">${escapeHtml(nom.charAt(0).toUpperCase() || 'K')}</div>`;
@@ -6776,6 +6790,17 @@
   .action { font-size:12.5pt; font-weight:700; line-height:1.45; margin-top:6mm; }
   .rassure { font-size:9.5pt; color:#6C6B7A; margin-top:3mm; }
 
+  /* Cadeau de bienvenue : la place est prise sur le QR, qui reste lisible à 54 mm. */
+  .cadeau { display:flex; align-items:center; gap:3.5mm; text-align:left;
+            margin:0 0 4.5mm; padding:2.4mm 5mm; border-radius:4mm;
+            border:.45mm dashed ${accent}; max-width:110mm; }
+  .cadeau svg { width:8mm; height:8mm; flex:0 0 8mm; fill:none; stroke:${accent};
+                stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .cadeau-t { font-size:7.5pt; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:${accent}; }
+  .cadeau-l { font-size:13pt; font-weight:800; line-height:1.25; margin-top:.4mm; }
+  ${cadeau ? `.corps { padding-top:8mm; } .offre { margin:2.5mm 0 4mm; }
+  .qr { width:54mm; height:54mm; padding:3.5mm; } .action { margin-top:4mm; }` : ''}
+
   .pied { margin-top:auto; padding-top:5mm; display:flex; align-items:center;
           gap:2.5mm; font-size:8.5pt; color:#8B8A98; }
   .pied img { height:6mm; width:6mm; border-radius:1.7mm; display:block; }
@@ -6794,7 +6819,7 @@
     <div class="filet"></div>
     <div class="corps">
       <div class="eyebrow">Carte de fidélité</div>
-      <div class="offre">${escapeHtml(texteRecompenseAffiche())}</div>
+      <div class="offre">${escapeHtml(texteRecompenseAffiche())}</div>${blocCadeau}
       <div class="qr">${svgStr}</div>
       <div class="action">Scannez avec l'appareil photo<br>de votre téléphone</div>
       <div class="rassure">Sans application à installer &nbsp;·&nbsp; sans carte à perdre</div>

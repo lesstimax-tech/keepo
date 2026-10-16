@@ -2636,6 +2636,17 @@ function renderMerchantPage({ card, rewards, description, merchantId }) {
   const desc = description
     || `Rejoignez le programme de fidélité de ${escH(name)} et gagnez des points à chaque visite !`;
 
+  // Annoncé avant l'inscription : c'est souvent lui qui décide le client à scanner.
+  const cadeau = card.welcome_enabled ? String(card.welcome_label || '').trim() : '';
+  const welcomeHtml = cadeau ? `
+  <div class="program-banner welcome-banner">
+    <div class="program-icon"><i class="fa-solid fa-gift"></i></div>
+    <div>
+      <div class="welcome-eyebrow">Cadeau de bienvenue à l'inscription</div>
+      <div class="program-big">${escH(cadeau)}</div>
+    </div>
+  </div>` : '';
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -2703,6 +2714,15 @@ function renderMerchantPage({ card, rewards, description, merchantId }) {
     }
     .program-big { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 17px; color: #fff; }
     .program-sub { font-size: 12px; color: rgba(240,238,255,.45); margin-top: 3px; }
+    .welcome-banner {
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, rgba(${rgb},.20), rgba(${rgb},.08));
+      border-color: rgba(${rgb},.45);
+    }
+    .welcome-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .3px;
+      color: var(--a); margin-bottom: 3px;
+    }
     /* section */
     .section { padding: 20px 16px 4px; }
     .section-label {
@@ -2764,7 +2784,7 @@ function renderMerchantPage({ card, rewards, description, merchantId }) {
     ${address ? `<p class="merchant-addr"><i class="fa-solid fa-location-dot"></i>${escH(address)}</p>` : ''}
     <p class="merchant-desc">${escH(desc)}</p>
   </div>
-
+${welcomeHtml}
   <div class="program-banner">
     <div class="program-icon"><i class="fa-solid fa-star"></i></div>
     <div>
@@ -2818,10 +2838,14 @@ async function handleMerchantPage(request, env, url) {
   const SUPA_ANON = env.SUPABASE_ANON_KEY || 'sb_publishable_XJoCbPawUCipKr2lunV8HA_r8XQ0rJ1';
   const headers   = { 'apikey': SUPA_ANON, 'Authorization': `Bearer ${SUPA_ANON}` };
 
-  const [cardRes, ] = await Promise.all([
-    fetch(`${SUPA_URL}/rest/v1/merchant_cards?slug=eq.${encodeURIComponent(slug)}&select=merchant_id,title,color,address,points_per_euro,studio_json&limit=1`,
-      { headers })
-  ]);
+  /* Le cadeau de bienvenue vient d'une migration (supabase/cadeau-bienvenue.sql).
+     Tant qu'elle n'est pas jouée, PostgREST refuse la requête entière pour une
+     colonne inconnue : on redemande alors sans elle, et la page reste celle
+     d'avant au lieu de tomber en « introuvable ». */
+  const carteUrl = `${SUPA_URL}/rest/v1/merchant_cards?slug=eq.${encodeURIComponent(slug)}&limit=1`
+                 + `&select=merchant_id,title,color,address,points_per_euro,studio_json`;
+  let cardRes = await fetch(`${carteUrl},welcome_enabled,welcome_label`, { headers });
+  if (!cardRes.ok) cardRes = await fetch(carteUrl, { headers });
 
   const cards = cardRes.ok ? await cardRes.json() : [];
   if (!cards.length) {
