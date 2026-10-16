@@ -1421,6 +1421,12 @@ async function handleStripeCheckout(request, env) {
     // (codes de réduction / tests internes créés dans le dashboard Stripe).
     'allow_promotion_codes'  : 'true',
     'customer_email'         : merchantEmail,
+    // Mentions obligatoires des factures : le nom du client (dénomination ou
+    // nom complet) doit y figurer. Checkout demande l'adresse de facturation et
+    // propose « J'achète en tant qu'entreprise » (raison sociale + n° de TVA) ;
+    // Stripe les enregistre sur le client et les reporte sur ses factures.
+    'billing_address_collection': 'required',
+    'tax_id_collection[enabled]': 'true',
     'client_reference_id'    : merchantId,
     'success_url'            : successUrl,
     'cancel_url'             : cancelUrl,
