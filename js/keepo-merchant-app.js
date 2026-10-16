@@ -43,7 +43,7 @@
 
   function enableApplicationInterface() {
     document.getElementById("burgerMenuButton").style.display = "flex";
-    document.getElementById("badge-mode-text").innerText = "⚡ Terminal Actif";
+    document.getElementById("badge-mode-text").innerText = "Terminal Actif";
     document.querySelectorAll(".app-view").forEach(function (v) { v.classList.remove("active"); });
     document.getElementById("view-scan").classList.add("active");
     startMerchantQrScanLoop();
@@ -235,7 +235,7 @@
     const redeemZone = document.getElementById("reward-redeem-zone");
     if (points >= targetThreshold && rewardsList.length) {
       document.getElementById("reward-button-text").innerText =
-        "🎁 Offrir : " + rewardsList[0].name + " (-" + targetThreshold + " Pts)";
+        "Offrir : " + rewardsList[0].name + " (-" + targetThreshold + " Pts)";
       redeemZone.style.display = "block";
     } else {
       redeemZone.style.display = "none";

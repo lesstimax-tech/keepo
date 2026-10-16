@@ -82,6 +82,7 @@ h1{font-family:var(--font-d);font-weight:800;font-size:22px;margin-bottom:6px;le
 @keyframes bounce{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-5px)}}
 [hidden]{display:none!important}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
@@ -91,7 +92,7 @@ h1{font-family:var(--font-d);font-weight:800;font-size:22px;margin-bottom:6px;le
 <div class="card">
   <!-- Vérification du lien -->
   <div id="state-loading">
-    <div class="icon">🔐</div>
+    <div class="icon"><i class="fa-solid fa-lock"></i></div>
     <h1>Vérification du lien…</h1>
     <p class="sub">Un instant, nous validons votre lien de réinitialisation.</p>
     <div class="dots"><i></i><i></i><i></i></div>
@@ -99,7 +100,7 @@ h1{font-family:var(--font-d);font-weight:800;font-size:22px;margin-bottom:6px;le
 
   <!-- Formulaire nouveau mot de passe -->
   <div id="state-form" hidden>
-    <div class="icon">🔑</div>
+    <div class="icon"><i class="fa-solid fa-key"></i></div>
     <h1>Choisissez un nouveau mot de passe</h1>
     <p class="sub">Il protège l'accès à votre compte KEEPO.</p>
     <form id="resetForm" novalidate>
@@ -117,7 +118,7 @@ h1{font-family:var(--font-d);font-weight:800;font-size:22px;margin-bottom:6px;le
 
   <!-- Succès -->
   <div id="state-done" hidden>
-    <div class="icon">✅</div>
+    <div class="icon"><i class="fa-solid fa-circle-check"></i></div>
     <h1>Mot de passe modifié !</h1>
     <p class="sub">Votre nouveau mot de passe est actif. Vous êtes connecté.</p>
     <button class="btn-main" onclick="goToApp()">Accéder à mon espace →</button>
@@ -125,7 +126,7 @@ h1{font-family:var(--font-d);font-weight:800;font-size:22px;margin-bottom:6px;le
 
   <!-- Lien invalide -->
   <div id="state-invalid" hidden>
-    <div class="icon">⌛</div>
+    <div class="icon"><i class="fa-solid fa-hourglass-half"></i></div>
     <h1>Lien invalide ou expiré</h1>
     <p class="sub">Les liens de réinitialisation expirent après une heure. Redemandez-en un depuis la page de connexion.</p>
     <a class="btn-main" href="/connexion" style="text-decoration:none;">Retour à la connexion</a>
@@ -139,7 +140,7 @@ function show(id) {
 }
 function showToast(msg, ok) {
     const t = document.getElementById('toast');
-    t.innerHTML = (ok ? '✅ ' : '⚠️ ') + msg;
+    t.innerHTML = (ok ? '<i class="fa-solid fa-circle-check"></i> ' : '<i class="fa-solid fa-triangle-exclamation"></i> ') + msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 4200);
 }

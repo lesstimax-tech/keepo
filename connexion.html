@@ -314,6 +314,7 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
@@ -322,7 +323,7 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
 <!-- ════════ MODAL : ESSAI 14 JOURS (commerçants) ════════ -->
 <div class="payment-overlay" id="paymentOverlay">
   <div class="payment-modal">
-    <div class="pm-icon">🎁</div>
+    <div class="pm-icon"><i class="fa-solid fa-gift"></i></div>
     <h3>14 jours d'essai offerts</h3>
     <p class="pm-sub">Votre compte commerçant démarre avec <strong style="color:var(--ink);">toutes les fonctionnalités</strong>, sans payer aujourd'hui.</p>
     <div class="pm-checks">
@@ -368,7 +369,7 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
 
     <!-- Écran : vérification e-mail -->
     <div class="auth-card verify-screen" id="verificationScreen">
-      <div class="verify-icon">✉️</div>
+      <div class="verify-icon"><i class="fa-solid fa-envelope"></i></div>
       <h2 class="auth-title">Confirmez votre e-mail</h2>
       <p class="auth-sub" style="margin-bottom:8px;">
         Un lien de validation vient d'être envoyé à<br>
@@ -444,18 +445,18 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
           <label>Je suis…</label>
           <div class="role-grid">
             <div class="role-card active" id="role-client" onclick="setRole('client')" role="button" tabindex="0">
-              <span class="ri">👤</span><b>Client</b>
+              <span class="ri"><i class="fa-solid fa-user"></i></span><b>Client</b>
               <small>J'utilise mes cartes de fidélité</small>
             </div>
             <div class="role-card" id="role-commercant" onclick="setRole('commercant')" role="button" tabindex="0">
-              <span class="ri">🏪</span><b>Commerçant</b>
+              <span class="ri"><i class="fa-solid fa-store"></i></span><b>Commerçant</b>
               <small>Je fidélise mes clients</small>
             </div>
           </div>
         </div>
 
         <div id="merchant-trial-note">
-          🎁 <b>14 jours d'essai offerts</b> — toutes les fonctionnalités, 0&nbsp;€ aujourd'hui, annulable en 1 clic.
+          <i class="fa-solid fa-gift"></i> <b>14 jours d'essai offerts</b> — toutes les fonctionnalités, 0&nbsp;€ aujourd'hui, annulable en 1 clic.
         </div>
 
         <div class="form-group">
@@ -495,7 +496,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             const userRole = profile ? profile.role : 'client';
             document.getElementById('mainAuthBlock').innerHTML = `
                 <div style="text-align:center;padding:8px 0;">
-                    <div class="verify-icon" style="font-size:30px;">👋</div>
+                    <div class="verify-icon" style="font-size:30px;"><i class="fa-solid fa-hand"></i></div>
                     <h2 class="auth-title">Vous êtes déjà connecté</h2>
                     <p class="auth-sub">Votre session est active et sécurisée.</p>
                     <button onclick="redirectUser('${userRole}')" class="btn-main" style="margin-top:6px;">Accéder à mon espace →</button>
@@ -545,7 +546,7 @@ async function forceLogout() {
 // ─── Helpers UI ───
 function showToast(message, type = 'error') {
     const toast = document.getElementById('toastMessage');
-    toast.innerHTML = (type === 'error' ? '⚠️ ' : '✅ ') + message;
+    toast.innerHTML = (type === 'error' ? '<i class="fa-solid fa-triangle-exclamation"></i> ' : '<i class="fa-solid fa-circle-check"></i> ') + message;
     toast.className = `toast-notification show toast-${type}`;
     setTimeout(() => { toast.classList.remove('show'); }, 4200);
 }
@@ -752,7 +753,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         showOtpMode();
         await otpAction(); // envoie le code immédiatement
         const hint = document.getElementById('otpHint');
-        hint.innerHTML = '🔐 <strong>Vérification en 2 étapes</strong> : entrez le code reçu par e-mail. Cet appareil sera ensuite <strong>mémorisé 30 jours</strong> — plus de code à saisir pendant ce temps.';
+        hint.innerHTML = '<i class="fa-solid fa-lock"></i> <strong>Vérification en 2 étapes</strong> : entrez le code reçu par e-mail. Cet appareil sera ensuite <strong>mémorisé 30 jours</strong> — plus de code à saisir pendant ce temps.';
         hint.style.display = 'block';
     } catch (error) {
         showToast(error.message, 'error');

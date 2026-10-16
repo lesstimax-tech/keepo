@@ -237,7 +237,7 @@ window.KeepoCard = (function () {
             var filled = Math.min(points, stampGoal), cells = '';
             for (var i = 0; i < stampGoal; i++) cells += stampCell(i < filled, S, accent);
             var note = reached
-                ? '🎉 Carte pleine — ' + esc(o.stampReward || 'récompense') + ' à retirer !'
+                ? '<i class="fa-solid fa-gift"></i> Carte pleine — ' + esc(o.stampReward || 'récompense') + ' à retirer !'
                 : (S.stampText ? esc(tpl(S.stampText, remaining))
                     : (o.stampReward
                         ? 'Récompense : <strong style="color:' + accent + '">' + esc(o.stampReward) + '</strong>'

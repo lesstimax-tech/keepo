@@ -586,6 +586,11 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="8.5" width="16" height="4" rx="1"/><path d="M5.5 12.5v7a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-7M12 8.5V21M12 8.5C10 8.5 7.5 7.8 7.5 5.9 7.5 4.3 9 3.5 10 4c1.4.6 2 2.7 2 4.5zm0 0c2 0 4.5-.7 4.5-2.6 0-1.6-1.5-2.4-2.5-1.9-1.4.6-2 2.7-2 4.5z"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></symbol>
   <symbol id="i-euro" viewBox="0 0 24 24"><path d="M18 5.8A7.5 7.5 0 0 0 6.5 12 7.5 7.5 0 0 0 18 18.2M4 10h9M4 14h8"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M11 17l2 2a1.4 1.4 0 0 0 2-2"/><path d="M14 14l2.5 2.5a1.4 1.4 0 0 0 2-2l-3.9-3.9a2.1 2.1 0 0 0-3 0l-.9.9a1.4 1.4 0 0 1-2-2l2.8-2.8a3 3 0 0 1 3.7-.4l.5.3a3 3 0 0 0 2.1.4L21 6.5"/><path d="M21 3.5l1 9h-2"/><path d="M3 3.5l-1 9 6.5 6.5a1.4 1.4 0 0 0 2-2"/><path d="M3 4.5h8"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M19.5 10c0 5-7.5 11.5-7.5 11.5S4.5 15 4.5 10a7.5 7.5 0 0 1 15 0z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 11.6a8.4 8.4 0 0 1-12.3 7.4L3.5 20.5l1.5-4.6a8.4 8.4 0 1 1 15.5-4.3z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></symbol>
 </svg>
 
 <div id="progress" aria-hidden="true"></div>
@@ -935,15 +940,15 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     </div>
     <div class="tst-grid">
       <article class="tst rv d1">
-        <div style="font-size:30px;margin-bottom:14px;">🤝</div>
+        <svg class="icon" style="font-size:30px;margin-bottom:14px;color:var(--acc)"><use href="#i-hand"/></svg>
         <p><strong style="font-family:var(--font-d);font-size:16px;color:var(--ink);display:block;margin-bottom:8px;">Accompagnement direct</strong>KEEPO est porté par son fondateur, pas par un centre d'appels. On configure votre carte avec vous, et on répond vite.</p>
       </article>
       <article class="tst rv d2">
-        <div style="font-size:30px;margin-bottom:14px;">📍</div>
+        <svg class="icon" style="font-size:30px;margin-bottom:14px;color:var(--acc)"><use href="#i-pin"/></svg>
         <p><strong style="font-family:var(--font-d);font-size:16px;color:var(--ink);display:block;margin-bottom:8px;">Pensé pour le commerce local</strong>Un outil simple, fait pour le comptoir : sans matériel, sans jargon, prêt en quelques minutes.</p>
       </article>
       <article class="tst rv d3">
-        <div style="font-size:30px;margin-bottom:14px;">💬</div>
+        <svg class="icon" style="font-size:30px;margin-bottom:14px;color:var(--acc)"><use href="#i-chat"/></svg>
         <p><strong style="font-family:var(--font-d);font-size:16px;color:var(--ink);display:block;margin-bottom:8px;">Votre avis façonne KEEPO</strong>En arrivant tôt, vos retours orientent les prochaines fonctionnalités. Vous construisez l'outil avec nous.</p>
       </article>
     </div>
@@ -1220,9 +1225,9 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         <img src="img/logo.png" alt="KEEPO">
         <p>Le programme de fidélité des commerces indépendants. Simple, beau, automatique.</p>
         <div class="foot-badges">
-          <span>🇫🇷 Conçu en France</span>
-          <span>🔒 RGPD</span>
-          <span>💳 Paiement Stripe</span>
+          <span><svg class="icon" style="vertical-align:-2px;margin-right:4px"><use href="#i-fr"/></svg>Conçu en France</span>
+          <span><svg class="icon" style="vertical-align:-2px;margin-right:4px"><use href="#i-lock"/></svg>RGPD</span>
+          <span><svg class="icon" style="vertical-align:-2px;margin-right:4px"><use href="#i-card"/></svg>Paiement Stripe</span>
         </div>
       </div>
       <div class="foot-col">

@@ -20,7 +20,7 @@ KEEPO.showToast = function (message, type) {
     toast.className = "toast-notification";
     document.body.appendChild(toast);
   }
-  toast.innerHTML = type === "error" ? "⚠️ " + KEEPO.escapeHtml(message) : "✅ " + KEEPO.escapeHtml(message);
+  toast.innerHTML = type === "error" ? "<i class='fa-solid fa-triangle-exclamation'></i> " + KEEPO.escapeHtml(message) : "<i class='fa-solid fa-circle-check'></i> " + KEEPO.escapeHtml(message);
   toast.className = "toast-notification show toast-" + type;
   clearTimeout(KEEPO._toastTimer);
   KEEPO._toastTimer = setTimeout(function () {
@@ -34,7 +34,7 @@ KEEPO.setButtonLoading = function (buttonId, isLoading, originalText) {
   if (isLoading) {
     btn.disabled = true;
     btn.style.opacity = "0.7";
-    btn.innerText = "⏳ Chargement…";
+    btn.innerText = "Chargement…";
   } else {
     btn.disabled = false;
     btn.style.opacity = "1";

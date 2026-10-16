@@ -692,7 +692,7 @@
 <!-- reward unlocked popup -->
 <div class="reward-unlocked-pop" id="reward-pop" onclick="closeRewardPop()">
     <div class="rup-card" onclick="event.stopPropagation()">
-        <div class="rup-emoji">🎉</div>
+        <div class="rup-emoji"><i class="fa-solid fa-gift"></i></div>
         <div class="rup-title">Récompense débloquée !</div>
         <div class="rup-sub" id="rup-text">Votre client vient de débloquer une récompense. Dans la vraie version, il reçoit une notification push instantanée.</div>
         <button class="demo-btn" onclick="closeRewardPop()">Super, continuer</button>
@@ -771,7 +771,7 @@
         const remaining = Math.max(0, demoPtsGoal - total);
         document.getElementById('pts-to-reward').innerText = remaining > 0
             ? `encore ${remaining} pts pour la prochaine récompense`
-            : '🎉 Récompense disponible !';
+            : 'Récompense disponible !';
 
         // Reward unlock check
         const crossed = (total - pts) < demoPtsGoal && total >= demoPtsGoal;
@@ -806,7 +806,7 @@
         const now  = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
         const html = `
             <div class="scan-feed-item">
-                <span class="sf-icon">🧾</span>
+                <span class="sf-icon"><i class="fa-solid fa-receipt"></i></span>
                 <span class="sf-name">${name}</span>
                 <span class="sf-pts">+${pts} pts</span>
                 <span class="sf-time">${now}</span>
@@ -915,7 +915,7 @@
         const wrap = document.getElementById('demo-toasts');
         const t = document.createElement('div');
         t.className = 'd-toast';
-        t.innerHTML = `<span class="t-icon">✅</span> ${msg}`;
+        t.innerHTML = `<span class="t-icon"><i class="fa-solid fa-circle-check"></i></span> ${msg}`;
         wrap.prepend(t);
         setTimeout(() => t.remove(), 3100);
     }

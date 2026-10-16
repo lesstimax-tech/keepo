@@ -83,6 +83,7 @@
         @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
         .arrow{animation:bob 1.4s ease-in-out infinite;font-size:24px;color:var(--teal);margin-top:8px;}
     </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <div class="logo">
@@ -92,13 +93,13 @@
 
     <!-- ── ANDROID ── -->
     <div id="card-android" class="card hide">
-        <span class="pill android">🤖 Android</span>
-        <div class="emoji">📲</div>
+        <span class="pill android"><i class="fa-brands fa-android"></i> Android</span>
+        <div class="emoji"><i class="fa-solid fa-mobile-screen-button"></i></div>
         <h1>Installez Keepo<br>sur votre téléphone</h1>
         <p class="lead">Gardez vos points de fidélité à portée de main. L'app s'ajoute à votre écran d'accueil — aucun téléchargement depuis un store.</p>
-        <button id="android-install-btn" class="btn"><span>📥</span> Installer l'application</button>
+        <button id="android-install-btn" class="btn"><span><i class="fa-solid fa-download"></i></span> Installer l'application</button>
         <div class="sec-note">
-            🔒 Si votre téléphone affiche un <strong>avertissement de sécurité</strong> (Play Protect ou « application inconnue »), c'est <strong>tout à fait normal</strong> — appuyez sur <strong>« Installer quand même »</strong>. KEEPO est une application web, sans danger.
+            <i class="fa-solid fa-lock"></i> Si votre téléphone affiche un <strong>avertissement de sécurité</strong> (Play Protect ou « application inconnue »), c'est <strong>tout à fait normal</strong> — appuyez sur <strong>« Installer quand même »</strong>. KEEPO est une application web, sans danger.
         </div>
         <div id="android-manual" class="hint hide">
             <div id="manual-chrome">
@@ -116,27 +117,27 @@
 
     <!-- ── iOS ── -->
     <div id="card-ios" class="card hide">
-        <span class="pill ios">🍎 iPhone / iPad</span>
-        <div class="emoji">📲</div>
+        <span class="pill ios"><i class="fa-brands fa-apple"></i> iPhone / iPad</span>
+        <div class="emoji"><i class="fa-solid fa-mobile-screen-button"></i></div>
         <h1>Ajoutez Keepo à<br>votre écran d'accueil</h1>
         <p class="lead">En 3 secondes, depuis Safari :</p>
         <div class="steps">
-            <div class="step"><div class="n">1</div><div class="t">Appuyez sur <strong>Partager</strong> <span class="key">⬆</span> dans la barre Safari</div></div>
+            <div class="step"><div class="n">1</div><div class="t">Appuyez sur <strong>Partager</strong> <span class="key"><i class="fa-solid fa-arrow-up-from-bracket"></i></span> dans la barre Safari</div></div>
             <div class="step"><div class="n">2</div><div class="t">Faites défiler puis choisissez <strong>« Sur l'écran d'accueil »</strong></div></div>
             <div class="step"><div class="n">3</div><div class="t">Appuyez sur <strong>« Ajouter »</strong> en haut à droite</div></div>
         </div>
-        <div id="ios-safari-note" class="hint hide">⚠️ Ouvrez cette page dans <strong>Safari</strong> (pas Chrome ni Instagram) pour pouvoir l'installer.</div>
+        <div id="ios-safari-note" class="hint hide"><i class="fa-solid fa-triangle-exclamation"></i> Ouvrez cette page dans <strong>Safari</strong> (pas Chrome ni Instagram) pour pouvoir l'installer.</div>
         <div class="arrow">↓</div>
         <div class="hint">Le bouton <strong>Partager</strong> se trouve en bas de Safari.</div>
     </div>
 
     <!-- ── DESKTOP / autre ── -->
     <div id="card-desktop" class="card hide">
-        <span class="pill android">💻 Ordinateur</span>
-        <div class="emoji">📲</div>
+        <span class="pill android"><i class="fa-solid fa-laptop"></i> Ordinateur</span>
+        <div class="emoji"><i class="fa-solid fa-mobile-screen-button"></i></div>
         <h1>Scannez avec votre téléphone</h1>
         <p class="lead">Keepo s'installe sur smartphone. Ouvrez cette page sur votre téléphone (ou scannez le QR Code à la caisse) pour l'ajouter à votre écran d'accueil.</p>
-        <button id="desktop-install-btn" class="btn hide"><span>📥</span> Installer sur cet ordinateur</button>
+        <button id="desktop-install-btn" class="btn hide"><span><i class="fa-solid fa-download"></i></span> Installer sur cet ordinateur</button>
         <a class="btn ghost" href="/dashboard-client">Ouvrir Keepo dans le navigateur</a>
     </div>
 

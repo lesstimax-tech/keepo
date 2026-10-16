@@ -1233,13 +1233,13 @@
 <!-- ═══════════ OVERLAY INSTALLATION iOS ═══════════ -->
 <div id="ios-install-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.92);flex-direction:column;align-items:center;justify-content:flex-end;padding:0 20px 36px;">
     <div style="background:linear-gradient(160deg,#131122,#0a0918);border:1px solid rgba(14,124,140,0.3);border-radius:24px;padding:28px 22px;max-width:340px;width:100%;text-align:center;">
-        <div style="font-size:38px;margin-bottom:10px;">📲</div>
+        <div style="font-size:38px;margin-bottom:10px;"><i class="fa-solid fa-mobile-screen-button"></i></div>
         <h3 style="font-family:Inter, sans-serif;font-weight:800;font-size:19px;margin-bottom:6px;color:#fff;">Ajouter à l'écran d'accueil</h3>
         <p style="font-size:13px;color:var(--sub);margin-bottom:20px;line-height:1.6;">Installez Keepo en 3 secondes :</p>
         <div style="display:flex;flex-direction:column;gap:13px;margin-bottom:22px;text-align:left;">
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">1</div>
-                <span style="font-size:13px;color:var(--text);">Appuyez sur <strong style="color:#fff;">Partager</strong> <span style="background:var(--bg-2);border-radius:5px;padding:1px 6px;font-size:15px;">⬆</span> en bas de Safari</span>
+                <span style="font-size:13px;color:var(--text);">Appuyez sur <strong style="color:#fff;">Partager</strong> <span style="background:var(--bg-2);border-radius:5px;padding:1px 6px;font-size:15px;"><i class="fa-solid fa-arrow-up-from-bracket"></i></span> en bas de Safari</span>
             </div>
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:26px;height:26px;border-radius:50%;background:rgba(14,124,140,0.15);border:1px solid rgba(14,124,140,0.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#16B8C4;font-size:12px;flex-shrink:0;">2</div>
@@ -1485,7 +1485,7 @@
     }
     function splashHide(name) {
         const greet = document.getElementById('splash-greeting');
-        greet.innerText = name ? `Bonjour, ${name.split(' ')[0]} 👋` : 'Bienvenue !';
+        greet.innerText = name ? `Bonjour, ${name.split(' ')[0]}` : 'Bienvenue !';
         greet.classList.add('ready');
         splashProgress(100, 'Prêt !');
         setTimeout(() => {
@@ -1554,7 +1554,7 @@
             const choice = await _deferredInstallPrompt.userChoice.catch(() => null);
             _deferredInstallPrompt = null;
             if (choice && choice.outcome === 'accepted') {
-                showToast('success', 'Installée ! 📲', "KEEPO est maintenant sur votre écran d'accueil.");
+                showToast('success', 'Installée !', "KEEPO est maintenant sur votre écran d'accueil.");
             } else {
                 localStorage.setItem('KEEPO_install_snooze', String(Date.now()));
             }
@@ -2240,10 +2240,10 @@
         if (issue === 'existing') {
             showToast('warning', 'Carte déjà obtenue', `Vous possédez déjà la carte de fidélité de ${label} !`);
         } else if (issue === 'restored') {
-            showToast('success', 'Carte de retour 🎉', `La carte de ${label} revient dans votre portefeuille, avec vos points.`);
+            showToast('success', 'Carte de retour', `La carte de ${label} revient dans votre portefeuille, avec vos points.`);
         } else {
             const nom = boutiqueName ? `Boutique "${boutiqueName}"` : 'Nouveau commerce';
-            showToast('success', 'Nouvelle carte ajoutée ! 🎉', `${nom} — bienvenue dans ce programme de fidélité.`);
+            showToast('success', 'Nouvelle carte ajoutée !', `${nom} — bienvenue dans ce programme de fidélité.`);
         }
 
         loadClientWallet();
@@ -2388,7 +2388,7 @@
                     <div style="width:36px;height:36px;border-radius:10px;background:${hexToGlow(color,0.2)};border:1px solid ${hexToGlow(color,0.35)};display:flex;align-items:center;justify-content:center;font-family:Inter, sans-serif;font-weight:800;font-size:14px;color:${color};flex-shrink:0;">${initial}</div>
                     <div style="flex:1;min-width:0;">
                         <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(shopName)}</div>
-                        <div style="font-size:11px;color:var(--muted);">${balance} pts disponibles${unlocked.length ? ` · <span style="color:var(--cyan);font-weight:700;">${unlocked.length} dispo${unlocked.length > 1 ? 's' : ''} 🎉</span>` : ''}</div>
+                        <div style="font-size:11px;color:var(--muted);">${balance} pts disponibles${unlocked.length ? ` · <span style="color:var(--cyan);font-weight:700;">${unlocked.length} dispo${unlocked.length > 1 ? 's' : ''} <i class="fa-solid fa-gift"></i></span>` : ''}</div>
                     </div>
                 </div>
                 <!-- Récompenses -->
@@ -2603,7 +2603,7 @@
             } catch (err2) {
                 html5QrCodeScanner = null;
                 document.getElementById('reader').innerHTML =
-                    '<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px;">📷 Autorisez la caméra dans votre navigateur pour scanner</div>';
+                    '<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px;"><i class="fa-solid fa-camera"></i> Autorisez la caméra dans votre navigateur pour scanner</div>';
             }
         }
     }
@@ -2641,7 +2641,7 @@
         if (error || !rewards || rewards.length === 0) {
             list.innerHTML = `
                 <div style="text-align:center;padding:32px 16px;">
-                    <div style="font-size:36px;margin-bottom:12px;">🎁</div>
+                    <div style="font-size:36px;margin-bottom:12px;"><i class="fa-solid fa-gift"></i></div>
                     <div style="font-weight:700;margin-bottom:6px;">Aucune récompense</div>
                     <div style="font-size:12px;color:var(--muted);">Ce commerçant n'a pas encore configuré de récompenses.</div>
                 </div>`;
@@ -2770,7 +2770,7 @@
                 showToast('warning', 'Sync DB échouée', error.message);
             }
         } else {
-            showToast('success', '✓ Photo de profil mise à jour', 'Votre nouvelle photo est visible.');
+            showToast('success', 'Photo de profil mise à jour', 'Votre nouvelle photo est visible.');
         }
     }
 
@@ -2843,7 +2843,7 @@
                     Enregistrer
                 </button>
             </div>`;
-        showClientModal('🔔 Préférences de notifications', html);
+        showClientModal('Préférences de notifications', html);
     }
 
     function saveNotifPrefs() {
@@ -2886,7 +2886,7 @@
                     <i class="fa-solid fa-envelope"></i> Envoyer un lien de réinitialisation du mot de passe
                 </button>
             </div>`;
-        showClientModal('🔐 Sécurité du compte', html);
+        showClientModal('Sécurité du compte', html);
         // Pré-remplir le nom actuel
         const { data } = await supabaseClient.from('profiles').select('name').eq('id', currentClientId).maybeSingle();
         const el = document.getElementById('sec-name-input');
@@ -2999,12 +2999,12 @@
     };
 
     const CLIENT_THEME_NAMES = {
-        keepo: '✨ KEEPO (Défaut)',
-        dark:  '🌙 Sombre',
-        light: '☀️ Clair',
-        neon:  '⚡ Néon Violet',
-        ocean: '🌊 Océan',
-        rose:  '🌸 Rose Sakura'
+        keepo: '<i class="fa-solid fa-wand-magic-sparkles"></i> KEEPO (Défaut)',
+        dark:  '<i class="fa-solid fa-moon"></i> Sombre',
+        light: '<i class="fa-solid fa-sun"></i> Clair',
+        neon:  '<i class="fa-solid fa-bolt"></i> Néon Violet',
+        ocean: '<i class="fa-solid fa-water"></i> Océan',
+        rose:  '<i class="fa-solid fa-spa"></i> Rose Sakura'
     };
 
     function applyClientTheme(themeKey) {
@@ -3048,7 +3048,7 @@
                     Fermer
                 </button>
             </div>`;
-        showClientModal('🎨 Apparence', html);
+        showClientModal('Apparence', html);
     }
 
     function updateThemeChooserUI(selectedKey) {
@@ -3080,7 +3080,7 @@
         // Browser notification
         if ('Notification' in window && Notification.permission === 'granted') {
             try {
-                new Notification('KEEPO 🎉', {
+                new Notification('KEEPO', {
                     body : `+${pts} points chez ${merchantName} !`,
                     icon : '/img/icon-192.png',
                     tag  : 'KEEPO-pts',
@@ -3202,7 +3202,7 @@
             if (!res.ok || !data.deleted) throw new Error(data.error || 'Échec de la suppression');
             // Compte effacé côté serveur → on purge la session locale et on sort.
             await supabaseClient.auth.signOut().catch(() => {});
-            showToast('success', 'Compte supprimé', 'Votre compte et vos données ont été effacés. Au revoir 👋');
+            showToast('success', 'Compte supprimé', 'Votre compte et vos données ont été effacés. Au revoir.');
             setTimeout(() => { window.location.href = '/'; }, 1600);
         } catch (e) {
             showToast('error', 'Erreur', e.message);
@@ -3248,7 +3248,7 @@
             const old = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-check"></i> Copié';
             setTimeout(() => { btn.innerHTML = old; }, 1500);
-            showSnack('📋 Adresse copiée');
+            showSnack('Adresse copiée');
         };
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(addr).then(done, () => _fallbackCopyText(addr, done));
@@ -3344,7 +3344,7 @@
         const code = document.getElementById('my-referral-code')?.innerText?.trim();
         if (!code || code === '------') return;
         navigator.clipboard.writeText(code).then(() => {
-            showSnack('✓ Code copié dans le presse-papier');
+            showSnack('Code copié dans le presse-papier');
         });
     }
 
@@ -3356,7 +3356,7 @@
             .update({ birthday: val })
             .eq('id', currentClientId);
         if (error) { showSnack('Erreur : ' + error.message); return; }
-        showSnack('🎂 Anniversaire enregistré !');
+        showSnack('Anniversaire enregistré !');
         // Tente le bonus auto chez chaque commerce où le client a une carte
         if (walletCache?.length) {
             for (const c of walletCache) {
@@ -3404,8 +3404,8 @@
         const { data, error } = await supabaseClient.rpc('claim_referral_code', {
             p_code: code, p_merchant_id: merchantId
         });
-        if (error) { showSnack('❌ ' + error.message); return; }
-        showSnack(`🎉 +${data?.bonus || 0} points crédités !`);
+        if (error) { showSnack(error.message); return; }
+        showSnack(`+${data?.bonus || 0} points crédités !`);
         closeReferralRedeem();
         loadClientWallet();
     }
@@ -3469,9 +3469,9 @@
         ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2);
         ctx.fillStyle = '#0d0c18'; ctx.fill();
         ctx.strokeStyle = '#16B8C4'; ctx.lineWidth = 3; ctx.stroke();
-        ctx.font = '16px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '900 15px "Font Awesome 6 Free"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.shadowColor = 'transparent'; ctx.fillStyle = '#fff';
-        ctx.fillText('🎯', cx, cy);
+        ctx.fillText('\uf140', cx, cy);
     }
 
     async function openWheelSheet() {
@@ -3512,7 +3512,7 @@
             const lastSpin = balRes.data?.wheel_last_spin_visits ?? 0;
             const progress = visits - lastSpin;
             if (progress >= required) {
-                document.getElementById('wheel-status-text').innerHTML = `<strong style="color:#16B8C4;">Vous êtes éligible !</strong> Tournez la roue 🎉`;
+                document.getElementById('wheel-status-text').innerHTML = `<strong style="color:#16B8C4;">Vous êtes éligible !</strong> Tournez la roue`;
                 document.getElementById('wheel-spin-btn').disabled = false;
                 document.getElementById('wheel-spin-btn').style.opacity = 1;
             } else {
@@ -3534,7 +3534,7 @@
         const { data, error } = await supabaseClient.rpc('spin_wheel', { p_merchant_id: currentQrMerchantId });
 
         if (error) {
-            showSnack('❌ ' + error.message);
+            showSnack(error.message);
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Tourner la roue';
             return;
@@ -3560,7 +3560,7 @@
         setTimeout(() => {
             const res = document.getElementById('wheel-result');
             res.innerHTML = `
-                <div style="font-size:32px;margin-bottom:6px;">${data?.prize_value > 0 ? '🎉' : '🍀'}</div>
+                <div style="font-size:32px;margin-bottom:6px;">${data?.prize_value > 0 ? '<i class="fa-solid fa-gift"></i>' : '<i class="fa-solid fa-clover"></i>'}</div>
                 <div style="font-weight:800;font-family:Inter, sans-serif;font-size:16px;color:#fff;margin-bottom:4px;">${data?.prize_label || 'Résultat'}</div>
                 ${data?.prize_value > 0 ? `<div style="font-size:12px;color:#16B8C4;">Points crédités automatiquement sur votre carte</div>` : `<div style="font-size:12px;color:var(--muted);">Bonne chance pour la prochaine fois !</div>`}
             `;
@@ -3600,7 +3600,7 @@
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Générer le code';
 
-        if (error) { showSnack('❌ ' + error.message); return; }
+        if (error) { showSnack(error.message); return; }
 
         document.getElementById('gift-result').innerHTML = `
             <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Code à partager</div>
@@ -3623,8 +3623,8 @@
         const code = document.getElementById('redeem-gift-input').value?.trim();
         if (!code) { showSnack('Entrez le code'); return; }
         const { data, error } = await supabaseClient.rpc('redeem_gift_card', { p_code: code });
-        if (error) { showSnack('❌ ' + error.message); return; }
-        showSnack(`🎉 ${data.points} points reçus !`);
+        if (error) { showSnack(error.message); return; }
+        showSnack(`${data.points} points reçus !`);
         closeRedeemGift();
         loadClientWallet();
     }
@@ -3647,7 +3647,7 @@
     //  ASSISTANT IA — Chatbot côté client
     // ═══════════════════════════════════════════════════════════
     let aiClientHistory = [];
-    const AI_CLIENT_WELCOME = "👋 Bonjour ! Je suis l'assistant KEEPO. Posez-moi vos questions sur les points, récompenses, scan QR ou tout ce qui concerne votre carte de fidélité.";
+    const AI_CLIENT_WELCOME = "Bonjour ! Je suis l'assistant KEEPO. Posez-moi vos questions sur les points, récompenses, scan QR ou tout ce qui concerne votre carte de fidélité.";
 
     function openClientAiChat() {
         const sheet = document.getElementById('aiChatSheet');
@@ -3675,7 +3675,7 @@
         const wrap = document.createElement('div');
         wrap.className = 'ai-client-msg ' + who;
         if (opts.id) wrap.id = opts.id;
-        const avatar = who === 'bot' ? '✨' : '<i class="fa-solid fa-user"></i>';
+        const avatar = who === 'bot' ? '<i class="fa-solid fa-wand-magic-sparkles"></i>' : '<i class="fa-solid fa-user"></i>';
         const inner  = opts.typing
             ? '<div class="ai-client-typing-dots"><span></span><span></span><span></span></div>'
             : formatClientAiText(text);
@@ -3737,7 +3737,7 @@
             const data = await res.json();
             reply = res.ok ? (data.reply || "Je n'ai pas bien compris, reformulez ?") : "Désolé, l'assistant est momentanément indisponible. Réessayez dans un instant.";
         } catch {
-            reply = "Pas de connexion 🛜 Vérifiez votre internet.";
+            reply = "Pas de connexion. Vérifiez votre internet.";
         }
 
         if (typingEl?.parentNode) typingEl.parentNode.removeChild(typingEl);

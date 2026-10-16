@@ -415,7 +415,7 @@
             <div class="caisse-panel-title"><i class="fa-solid fa-camera"></i> Scanner de QR Client</div>
             <div class="scanner-zone" id="scanner-zone">
                 <div class="scanner-empty">
-                    <div class="icon">📷</div>
+                    <div class="icon"><i class="fa-solid fa-camera"></i></div>
                     <div style="font-size:14px;text-align:center;">Cliquez pour activer la caméra<br><span style="font-size:11px;">puis pointez vers le QR du client</span></div>
                     <button class="scanner-start-btn" onclick="startCaisseScanner()">
                         <i class="fa-solid fa-camera"></i> Activer la caméra
@@ -424,7 +424,7 @@
                 <div id="scanner-reader" style="display:none;"></div>
             </div>
             <p style="font-size:12px;color:var(--muted);margin-top:14px;text-align:center;">
-                💡 Astuce : placez le client à 15-25 cm de la caméra, écran lumineux.
+                <i class="fa-solid fa-lightbulb"></i> Astuce : placez le client à 15-25 cm de la caméra, écran lumineux.
             </p>
 
             <!-- Recours au scan : un écran sombre, un film de protection ou une
@@ -627,7 +627,7 @@ async function loadCashiers() {
         <button class="cashier-btn" onclick="selectCashier(${c.id})">
             <div class="cashier-avatar">${(c.name || '?').charAt(0).toUpperCase()}</div>
             <div class="cashier-name">${escapeHtml(c.name)}</div>
-            <div class="cashier-role">${c.role === 'manager' ? '👔 Manager' : '👤 Caissier'}</div>
+            <div class="cashier-role">${c.role === 'manager' ? '<i class="fa-solid fa-user-tie"></i> Manager' : '<i class="fa-solid fa-user"></i> Caissier'}</div>
         </button>
     `).join('');
 }
@@ -845,7 +845,7 @@ async function onQrScanned(qrData) {
         const qrBucket  = parseInt(parts[4], 10);
         const nowBucket = Math.floor(Date.now() / 60000);
         if (nowBucket - qrBucket > 2) {
-            showCaisseResult('error', 'QR expiré ⏱', 'Ce code a plus de 2 minutes. Demandez au client d\'actualiser son QR.');
+            showCaisseResult('error', 'QR expiré', 'Ce code a plus de 2 minutes. Demandez au client d\'actualiser son QR.');
             setTimeout(() => { if (scanner) try { scanner.resume(); } catch {} }, 2500);
             return;
         }
@@ -1038,7 +1038,7 @@ function showStampRewardPrompt(clientId, clientName, balance) {
     box.className = 'result-box';
     box.style.display = 'block';
     box.innerHTML = `
-        <div style="font-weight:800;font-size:16px;margin-bottom:4px;">🎉 Carte pleine&nbsp;! (${balance}/${req})</div>
+        <div style="font-weight:800;font-size:16px;margin-bottom:4px;"><i class="fa-solid fa-gift"></i> Carte pleine&nbsp;! (${balance}/${req})</div>
         <div style="font-size:13px;opacity:0.9;margin-bottom:14px;">Remettez <strong>${escapeHtml(reward)}</strong> à ${escapeHtml(clientName)}, puis validez pour démarrer une nouvelle carte.</div>
         <div style="display:flex;gap:10px;">
             <button onclick="dismissStampPrompt()" class="btn-action secondary" style="flex:1;padding:11px;">Plus tard</button>

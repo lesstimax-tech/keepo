@@ -1911,7 +1911,7 @@
             color: rgba(197,184,255,0.7) !important;
         }
         .btn-ai-locked::after {
-            content: "🔒"; margin-left: 8px;
+            content: "\f023"; font-family: "Font Awesome 6 Free"; font-weight: 900; margin-left: 8px;
             filter: none; opacity: 1;
         }
         .btn-ai-locked:hover {
@@ -2160,7 +2160,7 @@
                     <div style="flex:1;min-width:200px;">
                         <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:900;
                             color:var(--text-main);margin-bottom:6px;">
-                            ⚡ Vous approchez des limites du plan Essential
+                            <i class="fa-solid fa-bolt"></i> Vous approchez des limites du plan Essential
                         </div>
                         <div id="upgrade-tunnel-msg" style="font-size:13px;color:var(--text-sub);line-height:1.6;margin-bottom:12px;">
                             Débloquez l'analyse prédictive, le panier moyen fidélisé et l'export CSV pour booster vos résultats.
@@ -2925,7 +2925,7 @@
                             style="width:100%;padding:10px 12px;font-size:13px;background:var(--bg-card-hover);
                                    border:1px solid rgba(255,195,77,0.3);color:var(--text-main);border-radius:10px;font-family:inherit;">
                         <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.5;">
-                            Sur Google Maps : votre fiche → <strong>« Demander des avis »</strong> → copiez le lien. Il deviendra un bouton <strong>« ⭐ Laisser mon avis »</strong> dans l'e-mail.
+                            Sur Google Maps : votre fiche → <strong>« Demander des avis »</strong> → copiez le lien. Il deviendra un bouton <strong>« Laisser mon avis »</strong> dans l'e-mail.
                         </div>
                     </div>
                 </div>
@@ -2951,9 +2951,9 @@
                 <div id="notif-config-custom" class="form-group" style="display:none;">
                     <label>Déclenchement</label>
                     <div class="tab-bar" id="trigger-tabs-bar">
-                        <button class="tab-btn active" onclick="selectTriggerTab(this,'imm')">⚡ Immédiat</button>
-                        <button class="tab-btn" onclick="selectTriggerTab(this,'delay')">⏱ Délai après action</button>
-                        <button class="tab-btn" onclick="selectTriggerTab(this,'date')">📅 Date précise</button>
+                        <button class="tab-btn active" onclick="selectTriggerTab(this,'imm')"><i class="fa-solid fa-bolt"></i> Immédiat</button>
+                        <button class="tab-btn" onclick="selectTriggerTab(this,'delay')"><i class="fa-solid fa-stopwatch"></i> Délai après action</button>
+                        <button class="tab-btn" onclick="selectTriggerTab(this,'date')"><i class="fa-solid fa-calendar-day"></i> Date précise</button>
                     </div>
                     <div id="trigger-content-imm" style="margin-top:10px;padding:10px 14px;background:rgba(14,124,140,0.04);border-radius:10px;border:1px solid rgba(14,124,140,0.12);font-size:13px;color:var(--text-muted);">
                         <i class="fa-solid fa-bolt" style="color:var(--secondary-accent)"></i>&nbsp; L'e-mail partira immédiatement une fois l'automation activée.
@@ -3142,12 +3142,12 @@
                     <div class="form-row">
                         <div class="form-group"><label>Secteur d'activité</label>
                             <select id="settings-sector">
-                                <option value="cafe">☕ Café / Boulangerie</option>
-                                <option value="alim">🛒 Commerce alimentaire</option>
-                                <option value="beaute">💄 Beauté / Cosmétique</option>
-                                <option value="mode">👗 Mode / Textile</option>
-                                <option value="resto">🍽️ Restaurant</option>
-                                <option value="sport">💪 Sport / Bien-être</option>
+                                <option value="cafe">Café / Boulangerie</option>
+                                <option value="alim">Commerce alimentaire</option>
+                                <option value="beaute">Beauté / Cosmétique</option>
+                                <option value="mode">Mode / Textile</option>
+                                <option value="resto">Restaurant</option>
+                                <option value="sport">Sport / Bien-être</option>
                                 <option value="autre">Autre</option>
                             </select>
                         </div>
@@ -3236,12 +3236,12 @@
                     <div class="form-group">
                         <label>Thème visuel</label>
                         <select id="app-theme-select" onchange="applyAppTheme(this.value)">
-                            <option value="dark">🌙 Sombre Cyber-Mat (Défaut)</option>
-                            <option value="light">☀️ Clair Épuré Studio</option>
-                            <option value="neon">⚡ Néon Électrique</option>
-                            <option value="ocean">🌊 Océan Profond</option>
-                            <option value="amber">🍂 Ambre &amp; Bois</option>
-                            <option value="rose">🌸 Rose Sakura</option>
+                            <option value="dark">Sombre Cyber-Mat (Défaut)</option>
+                            <option value="light">Clair Épuré Studio</option>
+                            <option value="neon">Néon Électrique</option>
+                            <option value="ocean">Océan Profond</option>
+                            <option value="amber">Ambre &amp; Bois</option>
+                            <option value="rose">Rose Sakura</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -3326,7 +3326,7 @@
                     <div id="lock-api-webhooks"></div>
                     <div class="card-title"><i class="fa-solid fa-code"></i> Liaison Logiciel de Caisse (API & Webhooks)</div>
                     <p style="color:var(--text-muted);font-size:13px;line-height:1.7;margin-bottom:16px;">Connectez KEEPO directement sur votre système de caisse tactile existant (Clover, Lightspeed, Zelty...) pour automatiser la distribution de points sans écran secondaire.</p>
-                    <button onclick="showToast('info','🔌 Bientôt disponible','La liaison API &amp; Webhooks (Clover, Lightspeed, Zelty…) arrive prochainement.')" class="btn-action btn-secondary" style="opacity:.78;">Générer une clé de couplage API <span style="background:linear-gradient(90deg,#ffc34d,#ff8a5c);color:#06050d;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:8px;letter-spacing:.5px;">BIENTÔT</span></button>
+                    <button onclick="showToast('info','Bientôt disponible','La liaison API &amp; Webhooks (Clover, Lightspeed, Zelty…) arrive prochainement.')" class="btn-action btn-secondary" style="opacity:.78;">Générer une clé de couplage API <span style="background:linear-gradient(90deg,#ffc34d,#ff8a5c);color:#06050d;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:8px;letter-spacing:.5px;">BIENTÔT</span></button>
                 </div>
 
                 <div class="card">
@@ -3359,7 +3359,7 @@
 
                     <!-- Intro guidée -->
                     <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--glass-border);">
-                        <div style="width:44px;height:44px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,#ffc34d,#ff8a5c);display:flex;align-items:center;justify-content:center;font-size:21px;">👑</div>
+                        <div style="width:44px;height:44px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,#ffc34d,#ff8a5c);display:flex;align-items:center;justify-content:center;font-size:21px;color:#fff;"><i class="fa-solid fa-crown"></i></div>
                         <div>
                             <div style="font-family:Inter,sans-serif;font-weight:800;font-size:16px;line-height:1.3;">4 leviers pour fidéliser, sans rien gérer au quotidien</div>
                             <p style="color:var(--text-muted);font-size:12.5px;line-height:1.6;margin:5px 0 0;">Réglez chaque levier une seule fois. Ensuite, tout se déclenche <strong style="color:var(--text-sub);">automatiquement</strong>. Activez seulement ceux qui vous intéressent, puis cliquez sur <strong style="color:var(--text-sub);">Enregistrer</strong> en bas.</p>
@@ -3504,7 +3504,7 @@
 
                     <a href="/caisse" target="_blank"
                         style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(14,124,140,0.1),rgba(91,58,160,0.08));border:1px solid rgba(14,124,140,0.3);border-radius:12px;text-decoration:none;color:#fff;margin-bottom:14px;">
-                        <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📱</div>
+                        <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--tertiary-accent),var(--secondary-accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;"><i class="fa-solid fa-mobile-screen-button"></i></div>
                         <div style="flex:1;">
                             <div style="font-weight:700;font-size:14px;">Ouvrir le mode caisse</div>
                             <div style="font-size:11px;color:var(--text-muted);">Interface tablette plein écran pour comptoir</div>
@@ -4071,7 +4071,7 @@
         <!-- ═══════════════ PARRAINAGE ═══════════════ -->
         <div id="view-parrainage" class="panel-view">
             <div style="margin-bottom:22px;">
-                <h1 style="font-family:Inter,sans-serif;font-size:26px;font-weight:800;margin:0;">Parrainez un confrère 🤝</h1>
+                <h1 style="font-family:Inter,sans-serif;font-size:26px;font-weight:800;margin:0;">Parrainez un confrère</h1>
                 <p style="color:var(--text-muted);font-size:14px;margin-top:6px;line-height:1.6;max-width:620px;">
                     Invitez un commerçant à rejoindre KEEPO. Dès qu'il devient client payant, vous gagnez
                     <strong style="color:var(--secondary-accent);">1 mois gratuit</strong> — et lui profite d'un
@@ -5784,7 +5784,7 @@
 
         if (error) { showToast('error', 'Erreur', error.message); return; }
 
-        showToast('success', '🚀 Boost activé !', `"${name}" · ✕${multiplier} du ${startsAt} au ${endsAt}`);
+        showToast('success', 'Boost activé !', `"${name}" · ✕${multiplier} du ${startsAt} au ${endsAt}`);
         // Vider le formulaire
         document.getElementById('event-name').value = '';
         document.getElementById('event-start').value = '';
@@ -5898,11 +5898,11 @@
 
         if (pct >= 90) {
             tunnel.style.borderColor = 'rgba(255,77,109,0.5)';
-            if (msgEl) msgEl.innerHTML = `⚠️ <strong style="color:var(--danger)">Limite presque atteinte !</strong> Au-delà de ${LIMITE} membres, les nouveaux clients ne pourront plus rejoindre votre programme. Passez ${formule.suivante} maintenant.`;
+            if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <strong style="color:var(--danger)">Limite presque atteinte !</strong> Au-delà de ${LIMITE} membres, les nouveaux clients ne pourront plus rejoindre votre programme. Passez ${formule.suivante} maintenant.`;
         } else if (pct >= 60) {
             if (msgEl) msgEl.innerHTML = `Vous avez utilisé <strong style="color:var(--text-main)">${pct}% de votre quota</strong> ${formule.nom}. Passez ${formule.suivante} pour aller plus loin.`;
         } else {
-            if (msgEl) msgEl.innerHTML = 'Votre programme grandit 🎉 ' + formule.argument;
+            if (msgEl) msgEl.innerHTML = 'Votre programme grandit. ' + formule.argument;
         }
     }
 
@@ -5980,7 +5980,7 @@
 
             const el = document.getElementById('ref-list');
             if (!list.length) {
-                el.innerHTML = '<p style="color:var(--text-muted);font-size:14px;">Aucun filleul pour l\'instant. Partagez votre lien pour commencer ! 🚀</p>';
+                el.innerHTML = '<p style="color:var(--text-muted);font-size:14px;">Aucun filleul pour l\'instant. Partagez votre lien pour commencer !</p>';
             } else {
                 el.innerHTML = list.map(r => {
                     const rewarded = r.status === 'rewarded';
@@ -6151,7 +6151,7 @@
         ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:var(--bg-dark,#F6F6FA);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto;';
         ov.innerHTML = `
         <div style="max-width:760px;width:100%;text-align:center;">
-            <div style="font-size:38px;margin-bottom:10px;">🎁</div>
+            <div style="font-size:38px;margin-bottom:10px;"><i class="fa-solid fa-gift"></i></div>
             <h2 style="font-family:Inter,sans-serif;font-weight:900;font-size:28px;margin-bottom:8px;color:var(--text-main,#14141B);">Activez votre essai gratuit de 14 jours</h2>
             <p style="color:var(--text-muted,#6B6A78);font-size:14.5px;line-height:1.65;max-width:470px;margin:0 auto 22px;">Choisissez votre formule : <strong>0&nbsp;€ aujourd'hui</strong>, premier prélèvement seulement à la fin de l'essai. Annulable en 1&nbsp;clic à tout moment pendant les 14 jours.</p>
             <div style="display:inline-flex;background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:100px;padding:4px;margin-bottom:24px;gap:4px;">
@@ -6183,7 +6183,7 @@
                     <button onclick="startStripeUpgrade('pro', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Pro gratuitement</button>
                 </div>
             </div>
-            <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:20px;">🔒 Paiement sécurisé Stripe · 14 jours d'essai inclus dans les trois formules</p>
+            <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:20px;"><i class="fa-solid fa-lock"></i> Paiement sécurisé Stripe · 14 jours d'essai inclus dans les trois formules</p>
             <button onclick="handleLogout()" style="background:none;border:none;color:var(--text-muted,#6B6A78);font-size:12px;margin-top:14px;cursor:pointer;text-decoration:underline;font-family:inherit;">Se déconnecter</button>
         </div>`;
         document.body.appendChild(ov);
@@ -6628,7 +6628,7 @@
                 <div style="display:flex;align-items:center;gap:12px;padding:14px;
                     background:rgba(14,124,140,0.07);border:1px solid rgba(14,124,140,0.25);
                     border-radius:14px;margin-top:10px;">
-                    <div style="font-size:28px;">✅</div>
+                    <div style="font-size:28px;color:var(--success,#10b981);"><i class="fa-solid fa-circle-check"></i></div>
                     <div>
                         <div style="font-weight:800;font-size:14px;color:var(--secondary-accent);">Code validé !</div>
                         <div style="font-size:13px;color:var(--text-main);margin-top:2px;">
@@ -6641,7 +6641,7 @@
                 </div>`;
             setTimeout(() => { if (box) box.innerHTML = ''; }, 8000);
         } else {
-            showToast('success', `✅ Code validé — ${result.client_name}`,
+            showToast('success', `Code validé — ${result.client_name}`,
                 `${result.points_debited} pts débités · Réclamé le ${result.claimed_at}`);
         }
     }
@@ -6747,7 +6747,7 @@
         if (isStamps) {
             const req = currentStampsRequired || 10;
             showToast('success', '+1 tampon !',
-                `${currentActiveClientSession.name} : ${final}/${req} tampons${final >= req ? ' 🎉 Carte pleine !' : ''}`);
+                `${currentActiveClientSession.name} : ${final}/${req} tampons${final >= req ? ' · Carte pleine !' : ''}`);
         } else {
             showToast('success', `+${points} point${points > 1 ? 's' : ''} crédités !`,
                 `${amount}€ · Nouveau solde de ${currentActiveClientSession.name} : ${final} Pts`);
@@ -7875,10 +7875,10 @@
     };
 
     const TEMPLATE_LABELS = {
-        relance: '🔄 Relance inactivité',
-        avis:    '⭐ Avis Google',
-        offre:   '📢 Événement général',
-        custom:  '✏️ Personnalisé'
+        relance: 'Relance inactivité',
+        avis:    'Avis Google',
+        offre:   'Événement général',
+        custom:  'Personnalisé'
     };
 
     // Sélectionner un type d'automation et afficher sa config spécifique
@@ -8190,7 +8190,7 @@
         landingEl.style.display = 'none';
         listEl.style.display = 'block';
 
-        const typeIcon = { relance: '🔄', avis: '⭐', offre: '📢', custom: '✏️' };
+        const typeIcon = { relance: '<i class="fa-solid fa-rotate"></i>', avis: '<i class="fa-solid fa-star"></i>', offre: '<i class="fa-solid fa-bullhorn"></i>', custom: '<i class="fa-solid fa-pen"></i>' };
 
         listEl.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -8204,7 +8204,7 @@
             notificationsData.map(n => `
             <div style="background:var(--bg-card-hover);border:1px solid ${n.active ? 'rgba(14,124,140,0.2)' : 'var(--glass-border)'};border-radius:16px;padding:18px 20px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;">
                 <div style="width:38px;height:38px;background:${n.active ? 'rgba(14,124,140,0.1)' : 'rgba(255,255,255,0.03)'};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
-                    ${typeIcon[n.type] || '📧'}
+                    ${typeIcon[n.type] || '<i class="fa-solid fa-envelope"></i>'}
                 </div>
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:700;font-size:14px;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n.subject}</div>
@@ -8237,7 +8237,7 @@
     }
 
     // ─── CHAT IA SUPPORT (Gemini Flash via Supabase Edge Function) ───
-    const AI_WELCOME = "👋 Bonjour ! Je suis l'Assistant KEEPO. Posez-moi vos questions sur le programme de fidélité — récompenses, événements, scan QR, paramètres… Je vous réponds en quelques secondes.";
+    const AI_WELCOME = "Bonjour ! Je suis l'Assistant KEEPO. Posez-moi vos questions sur le programme de fidélité — récompenses, événements, scan QR, paramètres… Je vous réponds en quelques secondes.";
     let aiChatHistory = []; // [{role:'user'|'model', content:'...'}]
     let aiChatLoading = false;
 
@@ -8353,21 +8353,21 @@
             // maintenant la vraie marche à suivre, et le détail renvoyé par le
             // serveur plutôt qu'un texte générique.
             if (msg === 'SESSION_EXPIREE') {
-                reply = "🔒 **Votre session a expiré.** Rechargez la page pour vous reconnecter.";
+                reply = "**Votre session a expiré.** Rechargez la page pour vous reconnecter.";
             } else
             if (msg === 'NOT_DEPLOYED') {
-                reply = "⚙️ **L'assistant n'est pas joignable.**\n\n"
+                reply = "**L'assistant n'est pas joignable.**\n\n"
                       + "Le service IA tourne sur Cloudflare. Vérifiez que la clé est en place :\n"
                       + "`npx wrangler secret put GEMINI_API_KEY`\n\n"
                       + "Puis redéployez le site — un changement de secret ne prend effet qu'au déploiement suivant.";
             } else if (msg === 'NO_KEY') {
-                reply = "🔑 **Clé Gemini manquante.**\n\n"
+                reply = "**Clé Gemini manquante.**\n\n"
                       + "Ajoutez-la côté Cloudflare :\n`npx wrangler secret put GEMINI_API_KEY`\n\n"
                       + "La clé se crée sur **aistudio.google.com**.";
             } else {
                 // Le serveur sait pourquoi il a échoué : on le montre, plutôt
                 // que de renvoyer le commerçant vers sa connexion internet.
-                reply = "⚠️ **L'assistant a rencontré une erreur.**\n\n"
+                reply = "**L'assistant a rencontré une erreur.**\n\n"
                       + (msg ? "`" + msg + "`\n\n" : "")
                       + "Si cela persiste, cliquez sur le stéthoscope en haut de cette "
                       + "conversation : le diagnostic indique la cause exacte.";
@@ -8530,10 +8530,10 @@
     }
 
     async function runAiDiagnostic() {
-        appendAiBubble('bot', '🩺 Diagnostic en cours…');
+        appendAiBubble('bot', 'Diagnostic en cours…');
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { appendAiBubble('bot', '⚠️ Session expirée — reconnectez-vous.'); return; }
+            if (!session) { appendAiBubble('bot', 'Session expirée — reconnectez-vous.'); return; }
 
             const res = await fetch('/api/ai-status', {
                 headers: { 'Authorization': 'Bearer ' + session.access_token }
@@ -8545,13 +8545,13 @@
                     + '• Modèle : `' + (d.modele || '?') + '` (' + (d.source || '?') + ')' + "\n"
                     + (d.duree ? '• Temps de réponse : ' + d.duree + "\n" : '')
                     + (d.autresSecrets ? '• Autres secrets : ' + d.autresSecrets + "\n" : '')
-                    + (d.avertissement ? '⚠️ ' + d.avertissement + "\n" : '')
+                    + (d.avertissement ? 'Attention : ' + d.avertissement + "\n" : '')
                     + "\n" + '**' + (d.verdict || 'sans verdict') + '**';
             if (d.detail) txt += "\n\n" + '```' + "\n" + String(d.detail).slice(0, 400) + "\n" + '```';
-            if (d.remede) txt += "\n\n" + '👉 ' + d.remede;
+            if (d.remede) txt += "\n\n" + 'À faire : ' + d.remede;
             appendAiBubble('bot', txt);
         } catch (e) {
-            appendAiBubble('bot', '⚠️ Diagnostic impossible : ' + (e.message || e));
+            appendAiBubble('bot', 'Diagnostic impossible : ' + (e.message || e));
         }
     }
 
@@ -8937,7 +8937,7 @@
         const display = churnList.slice(0, 6);
         box.innerHTML = display.map(c => `
             <div class="churn-row">
-                <div style="font-size:18px;">😴</div>
+                <div style="font-size:18px;"><i class="fa-solid fa-moon"></i></div>
                 <div class="churn-row-info">
                     <div class="churn-row-name">${escape(c.name)}</div>
                     <div class="churn-row-days">Inactif depuis ${c.daysAgo} jours · ${c.balance} pts</div>
@@ -9392,7 +9392,7 @@
                 banner.style.cssText = 'max-width:620px;margin:16px auto 0;background:rgba(224,36,94,0.10);border:1px solid rgba(224,36,94,0.35);color:#c0204e;border-radius:14px;padding:12px 16px;font-size:13px;font-weight:600;line-height:1.5;';
                 gate.querySelector('div')?.appendChild(banner);
             }
-            banner.innerHTML = '⚠️ ' + msg;
+            banner.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + msg;
         }
     }
 
@@ -9435,7 +9435,7 @@
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('stripe') === 'success') {
-            setTimeout(() => showToast('success', '🎉 Abonnement activé !', 'Merci pour votre confiance. Rechargez si certaines fonctions ne sont pas encore visibles.'), 1200);
+            setTimeout(() => showToast('success', 'Abonnement activé !', 'Merci pour votre confiance. Rechargez si certaines fonctions ne sont pas encore visibles.'), 1200);
             history.replaceState(null, '', window.location.pathname);
         } else if (urlParams.get('stripe') === 'cancel') {
             setTimeout(() => showToast('info', 'Paiement annulé', 'Vous restez sur le plan Essential. Vous pouvez réessayer à tout moment.'), 1200);
@@ -9461,7 +9461,7 @@
             .order('created_at', { ascending: true });
 
         if (error) {
-            box.innerHTML = `<div style="padding:12px;color:#ff8a5c;font-size:12px;">⚠️ ${error.message}</div>`;
+            box.innerHTML = `<div style="padding:12px;color:#ff8a5c;font-size:12px;"><i class="fa-solid fa-triangle-exclamation"></i> ${error.message}</div>`;
             return;
         }
         if (!data || data.length === 0) {
@@ -9546,7 +9546,7 @@
                     latitude: +Number(r.lat).toFixed(6), longitude: +Number(r.lon).toFixed(6),
                     address: r.label, updated_at: new Date().toISOString()
                 }).eq('merchant_id', currentMerchantId).then(function (res) {
-                    if (!res.error) showToast('success', '📍 Adresse enregistrée',
+                    if (!res.error) showToast('success', 'Adresse enregistrée',
                         'Votre commerce apparaîtra dans « Découvrir » côté client.');
                 });
             }
@@ -9567,7 +9567,7 @@
         try {
             const data = await keepoGeocode(full);
             if (data.found === false || !data.lat) {
-                if (chip) { chip.innerHTML = '⚠️ Adresse introuvable'; chip.style.color = 'var(--warning)'; }
+                if (chip) { chip.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Adresse introuvable'; chip.style.color = 'var(--warning)'; }
                 showToast('warning', 'Adresse introuvable', 'Vérifiez le numéro, la rue et la ville, puis réessayez.');
                 return;
             }
@@ -9578,11 +9578,11 @@
             const { error } = await supabaseClient.from('merchant_cards')
                 .update({ latitude: lat, longitude: lng, address: addr, updated_at: new Date().toISOString() })
                 .eq('merchant_id', currentMerchantId);
-            if (error) { showToast('error', 'Erreur', error.message); if (chip) { chip.innerHTML = '⚠️ Erreur'; chip.style.color = 'var(--warning)'; } return; }
+            if (error) { showToast('error', 'Erreur', error.message); if (chip) { chip.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Erreur'; chip.style.color = 'var(--warning)'; } return; }
             if (chip) { chip.innerHTML = '<i class="fa-solid fa-check"></i> Adresse localisée'; chip.style.color = 'var(--success)'; }
-            showToast('success', '📍 Adresse localisée', 'Votre commerce apparaîtra dans « Découvrir » côté client.');
+            showToast('success', 'Adresse localisée', 'Votre commerce apparaîtra dans « Découvrir » côté client.');
         } catch (e) {
-            if (chip) { chip.innerHTML = '⚠️ Erreur réseau'; chip.style.color = 'var(--warning)'; }
+            if (chip) { chip.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Erreur réseau'; chip.style.color = 'var(--warning)'; }
             showToast('error', 'Localisation impossible', 'Vérifiez votre connexion et réessayez.');
         }
     }
@@ -9606,9 +9606,9 @@
                     .eq('merchant_id', currentMerchantId);
                 if (error) {
                     showToast('error', 'Erreur', error.message);
-                    if (chip) { chip.innerHTML = '⚠️ Erreur'; chip.style.color = 'var(--warning)'; }
+                    if (chip) { chip.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Erreur'; chip.style.color = 'var(--warning)'; }
                 } else {
-                    showToast('success', '📍 Position enregistrée', `Lat: ${lat}, Lng: ${lng}`);
+                    showToast('success', 'Position enregistrée', `Lat: ${lat}, Lng: ${lng}`);
                     if (chip) { chip.innerHTML = `<i class="fa-solid fa-check"></i> Localisé (${lat.toFixed(3)}, ${lng.toFixed(3)})`; chip.style.color = 'var(--success)'; }
                 }
             },
@@ -9618,7 +9618,7 @@
                 else if (err.code === 2) msg = 'Position indisponible (GPS coupé ?)';
                 else if (err.code === 3) msg = 'Délai dépassé, réessayez';
                 showToast('error', 'Géoloc', msg);
-                if (chip) { chip.innerHTML = '⚠️ ' + msg; chip.style.color = 'var(--warning)'; }
+                if (chip) { chip.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + msg; chip.style.color = 'var(--warning)'; }
             },
             { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
@@ -9733,7 +9733,7 @@
     // Bouton bloqué : Essential → modale upgrade, Pro → toast "bientôt"
     function aiFeatureLockedClick() {
         if (estProScale()) {
-            showToast('info', '⏳ Bientôt disponible',
+            showToast('info', 'Bientôt disponible',
                 'Cette fonctionnalité IA arrive dans une prochaine mise à jour. Restez connecté !');
         } else {
             openUpgradeModal('Fonctionnalité IA réservée aux Pro Scale');
@@ -9809,7 +9809,7 @@
     function openAiForCampaign() {
         const merchantName = document.querySelector('#sidebar-merchant-name')?.innerText
             || document.title.replace('KEEPO — ', '') || 'mon commerce';
-        showModal('✨ Rédiger le corps de l\'email', `
+        showModal('<i class="fa-solid fa-wand-magic-sparkles"></i> Rédiger le corps de l\'email', `
             <div style="padding:4px 0 12px;">
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Décrivez votre message en quelques mots :</div>
                 <textarea id="ai-camp-prompt" rows="3" placeholder="Ex : offre spéciale -20% pour les fêtes, valable ce week-end uniquement"
@@ -9907,7 +9907,7 @@
         const type = document.getElementById('notif-template-selector')?.value || 'relance';
         const typeLabels = { relance: 'Relance d\'inactivité', avis: 'Demande d\'avis Google', offre: 'Événement / promo', custom: 'Personnalisé' };
         showAiModal(`
-            <div class="ai-modal-title">✨ Rédacteur IA</div>
+            <div class="ai-modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Rédacteur IA</div>
             <div class="ai-modal-sub">Décrivez ce que vous voulez communiquer. L'IA générera l'objet + le corps du mail (avec {{prenom}} et {{enseigne}} comme variables auto-remplies).</div>
             <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Type : <strong style="color:var(--secondary-accent)">${typeLabels[type] || type}</strong></div>
             <textarea id="ai-email-prompt" rows="4" placeholder="Ex : Je veux relancer mes clients qui n'ont pas commandé depuis 1 mois. Ton chaleureux, propose 50 points bonus s'ils reviennent cette semaine."></textarea>
@@ -9951,7 +9951,7 @@
         const sector = document.getElementById('settings-sector')?.value || '';
         const sectorLabel = ({cafe:'Café/Boulangerie',alim:'Alimentaire',beaute:'Beauté',mode:'Mode',resto:'Restaurant',sport:'Sport'})[sector] || '';
         showAiModal(`
-            <div class="ai-modal-title">🎁 Suggestions de récompenses IA</div>
+            <div class="ai-modal-title"><i class="fa-solid fa-gift"></i> Suggestions de récompenses IA</div>
             <div class="ai-modal-sub">Décrivez votre commerce (type, ambiance, produits phares). L'IA proposera 5 récompenses progressives adaptées.</div>
             <textarea id="ai-reward-prompt" rows="3" placeholder="${sectorLabel ? 'Ex : ' + sectorLabel + ' parisien spécialisé en pâtisseries artisanales et café de spécialité' : 'Ex : Salon de beauté avec services manucure et coloration'}">${sectorLabel}</textarea>
             <div class="ai-modal-actions">
@@ -10023,7 +10023,7 @@
         const sector = document.getElementById('settings-sector')?.value || '';
         const sectorLabel = ({cafe:'café cosy/boulangerie',alim:'épicerie',beaute:'institut de beauté',mode:'boutique mode',resto:'restaurant',sport:'salle de sport'})[sector] || '';
         showAiModal(`
-            <div class="ai-modal-title">🎨 Auto-design par IA</div>
+            <div class="ai-modal-title"><i class="fa-solid fa-palette"></i> Auto-design par IA</div>
             <div class="ai-modal-sub">Décrivez l'ambiance de votre commerce. L'IA générera une palette de couleurs harmonieuse pour votre carte.</div>
             <textarea id="ai-design-prompt" rows="3" placeholder="${sectorLabel ? 'Ex : ' + sectorLabel + ' chaleureux, ambiance scandinave, tons bois et vert' : 'Ex : Bistrot vintage parisien, ambiance art déco, tons or et bordeaux'}">${sectorLabel}</textarea>
             <div class="ai-modal-actions">
@@ -10381,7 +10381,7 @@
         const title = document.getElementById('boutique-qr-modal-title');
         if (!modal || !zone) return;
 
-        title.textContent = '📍 ' + boutiqueName;
+        title.textContent = boutiqueName;
         zone.innerHTML = '';
         modal.style.display = 'flex';
 
