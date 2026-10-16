@@ -5207,9 +5207,11 @@
             // aujourd'hui). Les comptes historiques ne sont pas concernés.
             const BILLING_CUTOFF = new Date('2026-06-05T00:00:00Z');
             const backFromStripe = new URLSearchParams(location.search).get('stripe') === 'success';
-            if (!backFromStripe && profile && !profile.stripe_subscription_id
+            // Essai sans carte en cours : accès complet, sans abonnement Stripe.
+            const essaiEnCours = merchantTrialEndsAt && new Date(merchantTrialEndsAt) > new Date();
+            if (!backFromStripe && profile && !profile.stripe_subscription_id && !essaiEnCours
                 && profile.created_at && new Date(profile.created_at) >= BILLING_CUTOFF) {
-                showSubscriptionGate();
+                showSubscriptionGate(merchantTrialEndsAt ? 'termine' : 'nouveau');
             }
 
             const name = profile?.name || "Mon Commerce";
@@ -6577,80 +6579,159 @@
     // ─── PLAN RESTRICTIONS ───
     let merchantTrialEndsAt = null, merchantHasStripeSub = false;
 
-    // ─── Mur d'abonnement (nouveaux comptes sans abonnement Stripe) ───
+    // ─── Mur d'abonnement (nouveaux comptes sans abonnement ni essai en cours) ───
+    /* Deux entrées possibles :
+       • 'nouveau' : le commerçant choisit entre l'essai gratuit de 14 jours,
+         sans carte bancaire, et le paiement immédiat à -20 % pendant 3 mois ;
+       • 'termine' : l'essai est fini, il choisit sa formule pour continuer.
+       Ses clients gardent leurs cartes et leurs points dans tous les cas. */
+    let gateOffre = '';            // 'reduction' quand il paie tout de suite
+    const GATE_PRIX = {
+        month: { smart: [24.90, '/mois'], essentiel: [49, '/mois'], pro: [99, '/mois'] },
+        year:  { smart: [249, '/an'],     essentiel: [499, '/an'],  pro: [890, '/an'] }
+    };
+    const gatePrix = v => (Math.round(v * 100) / 100).toLocaleString('fr-FR', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }) + '€';
+
+    function gateCarteFormule(cle, nom, details, recommande) {
+        const bouton = `Choisir ${nom}`;
+        return `
+                <div style="background:var(--bg-card,#fff);border:${recommande ? '2px solid rgba(14,124,140,0.45)' : '1px solid var(--glass-border,rgba(17,24,39,0.09))'};border-radius:20px;padding:26px 22px;text-align:left;position:relative;">
+                    ${recommande ? '<div style="position:absolute;top:-11px;right:14px;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-size:10px;font-weight:800;padding:4px 10px;border-radius:100px;letter-spacing:.4px;">RECOMMANDÉ</div>' : ''}
+                    <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">${nom}</div>
+                    <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-${cle}-price"></div>
+                    <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-${cle}-note"></div>
+                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">${details}</div>
+                    <button onclick="startStripeUpgrade('${cle}', gateBilling, gateOffre)" style="width:100%;padding:12px;border-radius:12px;${recommande ? 'border:none;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-weight:800;' : 'border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;'}font-size:13.5px;cursor:pointer;font-family:inherit;">${bouton}</button>
+                </div>`;
+    }
+
+    function gateFormulesHtml() {
+        const annuel = gateOffre !== 'reduction';   // la réduction ne vaut que pour le mensuel
+        return `
+            ${annuel ? `<div style="display:inline-flex;background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:100px;padding:4px;margin-bottom:24px;gap:4px;">
+                <button id="gate-bill-month" onclick="setGateBilling('month')"></button>
+                <button id="gate-bill-year" onclick="setGateBilling('year')">Annuel · jusqu'à -25%</button>
+            </div>` : ''}
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;max-width:900px;margin:0 auto;">
+                ${gateCarteFormule('smart', 'Smart', '50 clients actifs · 1 point de vente · campagnes manuelles', false)}
+                ${gateCarteFormule('essentiel', 'Essentiel', '150 clients actifs · 2 points de vente · tableau de bord', false)}
+                ${gateCarteFormule('pro', 'KEEPO Pro', 'Illimité · 3 points de vente · marketing automatisé, parrainage, roue, VIP', true)}
+            </div>
+            <div style="font-size:11px;color:var(--text-muted,#6B6A78);margin-top:12px;">TVA non applicable, article 293 B du CGI</div>`;
+    }
+
     let gateBilling = 'month';
     function setGateBilling(b) {
-        gateBilling = (b === 'year') ? 'year' : 'month';
+        gateBilling = (b === 'year' && gateOffre !== 'reduction') ? 'year' : 'month';
         const mBtn = document.getElementById('gate-bill-month');
         const yBtn = document.getElementById('gate-bill-year');
         const on  = 'border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;';
         const off = 'border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:none;color:var(--text-muted,#6B6A78);';
-        if (mBtn) mBtn.style.cssText = gateBilling === 'month' ? on : off;
-        if (yBtn) yBtn.style.cssText = gateBilling === 'year'  ? on : off;
+        if (mBtn) { mBtn.style.cssText = gateBilling === 'month' ? on : off; mBtn.textContent = 'Mensuel'; }
+        if (yBtn) yBtn.style.cssText = gateBilling === 'year' ? on : off;
         const sub = '<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">';
-        const smaP = document.getElementById('gate-smart-price'), smaN = document.getElementById('gate-smart-note');
-        const essP = document.getElementById('gate-ess-price'), essN = document.getElementById('gate-ess-note');
-        const proP = document.getElementById('gate-pro-price'), proN = document.getElementById('gate-pro-note');
-        if (gateBilling === 'year') {
-            if (smaP) smaP.innerHTML = '249€' + sub + '/an</span>';
-            if (smaN) smaN.textContent = '-15% · soit 20,75 €/mois';
-            if (essP) essP.innerHTML = '499€' + sub + '/an</span>';
-            if (essN) essN.textContent = '-15% · soit 41,60 €/mois';
-            if (proP) proP.innerHTML = '890€' + sub + '/an</span>';
-            if (proN) proN.textContent = '-25% · ≈ 3 mois offerts';
-        } else {
-            if (smaP) smaP.innerHTML = '24,90€' + sub + '/mois</span>';
-            if (smaN) smaN.textContent = '';
-            if (essP) essP.innerHTML = '49€' + sub + '/mois</span>';
-            if (essN) essN.textContent = '';
-            if (proP) proP.innerHTML = '99€' + sub + '/mois</span>';
-            if (proN) proN.textContent = '';
-        }
+        const notesAn = { smart: '-15% · soit 20,75 €/mois', essentiel: '-15% · soit 41,60 €/mois', pro: '-25% · ≈ 3 mois offerts' };
+        ['smart', 'essentiel', 'pro'].forEach(k => {
+            const [prix, per] = GATE_PRIX[gateBilling][k];
+            const pEl = document.getElementById(`gate-${k}-price`), nEl = document.getElementById(`gate-${k}-note`);
+            if (gateOffre === 'reduction') {
+                if (pEl) pEl.innerHTML = gatePrix(prix * 0.8) + sub + per + '</span>';
+                if (nEl) nEl.textContent = `-20 % les 3 premiers mois, puis ${gatePrix(prix)}${per}`;
+            } else {
+                if (pEl) pEl.innerHTML = gatePrix(prix) + sub + per + '</span>';
+                if (nEl) nEl.textContent = gateBilling === 'year' ? notesAn[k] : '';
+            }
+        });
     }
 
-    function showSubscriptionGate() {
+    function showSubscriptionGate(etat) {
         if (document.getElementById('subscription-gate')) return;
         const ov = document.createElement('div');
         ov.id = 'subscription-gate';
         ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:var(--bg-dark,#F6F6FA);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto;';
+        document.body.appendChild(ov);
+        gateOffre = '';
+        if (etat === 'termine') gatePeindreFin(ov); else gatePeindreChoix(ov);
+    }
+
+    const GATE_PIED = `<button onclick="handleLogout()" style="background:none;border:none;color:var(--text-muted,#6B6A78);font-size:12px;margin-top:14px;cursor:pointer;text-decoration:underline;font-family:inherit;">Se déconnecter</button>`;
+
+    // Premier passage : essai gratuit sans carte, ou paiement direct à -20 %.
+    function gatePeindreChoix(ov) {
+        ov = ov || document.getElementById('subscription-gate');
+        if (!ov) return;
+        gateOffre = '';
+        const carte = (recommande) => `background:var(--bg-card,#fff);border:${recommande ? '2px solid rgba(14,124,140,0.45)' : '1px solid var(--glass-border,rgba(17,24,39,0.09))'};border-radius:20px;padding:26px 24px;text-align:left;position:relative;display:flex;flex-direction:column;`;
         ov.innerHTML = `
         <div style="max-width:760px;width:100%;text-align:center;">
-            <div style="font-size:38px;margin-bottom:10px;"><i class="fa-solid fa-gift"></i></div>
-            <h2 style="font-family:Inter,sans-serif;font-weight:900;font-size:28px;margin-bottom:8px;color:var(--text-main,#14141B);">Activez votre essai gratuit de 14 jours</h2>
-            <p style="color:var(--text-muted,#6B6A78);font-size:14.5px;line-height:1.65;max-width:470px;margin:0 auto 22px;">Choisissez votre formule : <strong>0&nbsp;€ aujourd'hui</strong>, premier prélèvement seulement à la fin de l'essai. Annulable en 1&nbsp;clic à tout moment pendant les 14 jours.</p>
-            <div style="display:inline-flex;background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:100px;padding:4px;margin-bottom:24px;gap:4px;">
-                <button id="gate-bill-month" onclick="setGateBilling('month')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;">Mensuel</button>
-                <button id="gate-bill-year" onclick="setGateBilling('year')" style="border:none;border-radius:100px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;background:none;color:var(--text-muted,#6B6A78);">Annuel · jusqu'à -25%</button>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;max-width:900px;margin:0 auto;">
-                <div style="background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:20px;padding:26px 22px;text-align:left;">
-                    <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Smart</div>
-                    <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-smart-price">24,90€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
-            <div style="font-size:11px;color:var(--text-muted,#6B6A78);margin-bottom:4px;">TVA non applicable, article 293 B du CGI</div>
-                    <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-smart-note"></div>
-                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">50 clients actifs · 1 point de vente · campagnes manuelles</div>
-                    <button onclick="startStripeUpgrade('smart', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Smart</button>
-                </div>
-                <div style="background:var(--bg-card,#fff);border:1px solid var(--glass-border,rgba(17,24,39,0.09));border-radius:20px;padding:26px 22px;text-align:left;">
-                    <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Essentiel</div>
-                    <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-ess-price">49€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
-                    <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-ess-note"></div>
-                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">150 clients actifs · 2 points de vente · tableau de bord</div>
-                    <button onclick="startStripeUpgrade('essentiel', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Essentiel</button>
-                </div>
-                <div style="background:var(--bg-card,#fff);border:2px solid rgba(14,124,140,0.45);border-radius:20px;padding:26px 22px;text-align:left;position:relative;">
+            <div style="font-size:34px;margin-bottom:10px;color:var(--secondary-accent);"><i class="fa-solid fa-gift"></i></div>
+            <h2 style="font-family:Inter,sans-serif;font-weight:900;font-size:28px;margin-bottom:8px;color:var(--text-main,#14141B);">Comment voulez-vous démarrer&nbsp;?</h2>
+            <p style="color:var(--text-muted,#6B6A78);font-size:14.5px;line-height:1.65;max-width:480px;margin:0 auto 24px;">Dans les deux cas, toutes les fonctions sont disponibles tout de suite et vous arrêtez quand vous voulez.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
+                <div style="${carte(true)}">
                     <div style="position:absolute;top:-11px;right:14px;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-size:10px;font-weight:800;padding:4px 10px;border-radius:100px;letter-spacing:.4px;">RECOMMANDÉ</div>
-                    <div style="font-weight:800;font-size:17px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">KEEPO Pro</div>
-                    <div style="font-size:28px;font-weight:900;margin:6px 0 2px;color:var(--text-main,#14141B);" id="gate-pro-price">99€<span style="font-size:13px;font-weight:600;color:var(--text-muted,#6B6A78);">/mois</span></div>
-                    <div style="font-size:11.5px;color:var(--secondary-accent);font-weight:700;min-height:16px;margin-bottom:2px;" id="gate-pro-note"></div>
-                    <div style="font-size:12.5px;color:var(--text-muted,#6B6A78);line-height:1.6;margin-bottom:16px;">Illimité · 3 points de vente · marketing automatisé, parrainage, roue, VIP</div>
-                    <button onclick="startStripeUpgrade('pro', gateBilling)" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;">Essayer Pro gratuitement</button>
+                    <div style="font-weight:800;font-size:18px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">Essai gratuit 14 jours</div>
+                    <div style="font-size:13px;color:var(--text-muted,#6B6A78);line-height:1.6;margin:8px 0 18px;flex:1;"><b style="color:var(--text-main,#14141B);">Sans carte bancaire.</b> Toutes les fonctions pendant 14 jours ; à la fin, vous choisissez votre formule, ou vous arrêtez.</div>
+                    <button id="gate-essai-btn" onclick="demarrerEssaiGratuit()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(125deg,var(--tertiary-accent),var(--secondary-accent));color:#fff;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;">Commencer gratuitement</button>
+                </div>
+                <div style="${carte(false)}">
+                    <div style="font-weight:800;font-size:18px;font-family:Inter,sans-serif;color:var(--text-main,#14141B);">-20 % pendant 3 mois</div>
+                    <div style="font-size:13px;color:var(--text-muted,#6B6A78);line-height:1.6;margin:8px 0 18px;flex:1;">Vous êtes décidé&nbsp;? Choisissez votre formule mensuelle et payez tout de suite, à -20 % sur vos trois premiers mois. Sans engagement.</div>
+                    <button onclick="gatePeindreReduction()" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--glass-border,rgba(17,24,39,0.15));background:none;color:var(--text-main,#14141B);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;">Voir les formules</button>
                 </div>
             </div>
-            <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:20px;"><i class="fa-solid fa-lock"></i> Paiement sécurisé Stripe · 14 jours d'essai inclus dans les trois formules</p>
-            <button onclick="handleLogout()" style="background:none;border:none;color:var(--text-muted,#6B6A78);font-size:12px;margin-top:14px;cursor:pointer;text-decoration:underline;font-family:inherit;">Se déconnecter</button>
+            ${GATE_PIED}
         </div>`;
-        document.body.appendChild(ov);
+    }
+
+    function gatePeindreReduction() {
+        const ov = document.getElementById('subscription-gate');
+        if (!ov) return;
+        gateOffre = 'reduction';
+        ov.innerHTML = `
+        <div style="max-width:900px;width:100%;text-align:center;">
+            <h2 style="font-family:Inter,sans-serif;font-weight:900;font-size:26px;margin-bottom:8px;color:var(--text-main,#14141B);">-20 % sur vos trois premiers mois</h2>
+            <p style="color:var(--text-muted,#6B6A78);font-size:14px;line-height:1.65;max-width:480px;margin:0 auto 24px;">Formule mensuelle, sans engagement : la réduction s'applique automatiquement au paiement.</p>
+            ${gateFormulesHtml()}
+            <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:16px;"><i class="fa-solid fa-lock"></i> Paiement sécurisé Stripe</p>
+            <button onclick="gatePeindreChoix()" style="background:none;border:1px solid var(--glass-border,rgba(17,24,39,0.15));border-radius:10px;padding:9px 16px;color:var(--text-muted,#6B6A78);font-size:12.5px;margin-top:8px;cursor:pointer;font-family:inherit;"><i class="fa-solid fa-arrow-left"></i>&nbsp; Je préfère l'essai gratuit</button>
+            <div>${GATE_PIED}</div>
+        </div>`;
+        setGateBilling('month');
+    }
+
+    // Fin d'essai : il choisit sa formule pour reprendre.
+    function gatePeindreFin(ov) {
+        gateOffre = '';
+        ov.innerHTML = `
+        <div style="max-width:900px;width:100%;text-align:center;">
+            <div style="font-size:34px;margin-bottom:10px;color:var(--secondary-accent);"><i class="fa-solid fa-hourglass-end"></i></div>
+            <h2 style="font-family:Inter,sans-serif;font-weight:900;font-size:27px;margin-bottom:8px;color:var(--text-main,#14141B);">Votre essai gratuit est terminé</h2>
+            <p style="color:var(--text-muted,#6B6A78);font-size:14.5px;line-height:1.65;max-width:500px;margin:0 auto 24px;">Vos clients gardent leurs cartes et leurs points. Choisissez votre formule pour retrouver votre terminal et continuer à les fidéliser. Sans engagement.</p>
+            ${gateFormulesHtml()}
+            <p style="font-size:11.5px;color:var(--text-muted,#6B6A78);margin-top:16px;"><i class="fa-solid fa-lock"></i> Paiement sécurisé Stripe · un code promo se saisit sur la page de paiement</p>
+            ${GATE_PIED}
+        </div>`;
+        setGateBilling('month');
+    }
+
+    async function demarrerEssaiGratuit() {
+        const btn = document.getElementById('gate-essai-btn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Activation…'; }
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const res = await fetch('/api/essai-gratuit', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + (session?.access_token || '') }
+            });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(d.error || 'Essai indisponible pour le moment.');
+            // On recharge : le tableau de bord repart avec l'essai en cours.
+            window.location.href = '/dashboard-commercant';
+        } catch (err) {
+            if (btn) { btn.disabled = false; btn.textContent = 'Commencer gratuitement'; }
+            showToast('error', 'Essai non démarré', err.message || String(err));
+        }
     }
 
     function applySaaSPlanRestrictions() {
@@ -10234,6 +10315,13 @@
         if (!zone) return;
         const para = 'color:var(--text-muted);font-size:13px;line-height:1.7;margin:0 0 14px;';
         if (!a.abonnement) {
+            // Essai sans carte en cours : on dit jusqu'à quand, et comment continuer.
+            if (merchantTrialEndsAt && new Date(merchantTrialEndsAt) > new Date()) {
+                zone.innerHTML = `<p style="${para}"><strong style="color:var(--text-main);">Essai gratuit jusqu'au ${escapeHtml(abonnementDate(merchantTrialEndsAt))}</strong>, sans carte bancaire : rien ne vous est prélevé.
+                    Choisissez votre formule quand vous voulez, les jours d'essai restants sont conservés.</p>
+                    <button onclick="window.location.href='/upgrade'" class="btn-action"><i class="fa-solid fa-crown"></i> Choisir ma formule</button>`;
+                return;
+            }
             zone.innerHTML = `<p style="${para}">Aucun abonnement payant n'est rattaché à ce compte : rien ne vous est prélevé. Une question ? Écrivez-nous depuis l'onglet Support.</p>`;
             return;
         }
@@ -10293,7 +10381,7 @@
         }
     }
 
-    async function startStripeUpgrade(plan, billing) {
+    async function startStripeUpgrade(plan, billing, offre) {
         if (!currentMerchantId) return;
         const { data: { session } } = await supabaseClient.auth.getSession();
         const email = session?.user?.email;
@@ -10314,6 +10402,7 @@
                     plan: plan === 'smart' ? 'smart'
                         : plan === 'essentiel' ? 'essentiel' : 'pro',
                     billing: billing === 'year' ? 'year' : 'month',
+                    offre: offre === 'reduction' ? 'reduction' : '',
                     returnUrl: window.location.origin + '/dashboard-commercant'
                 })
             });

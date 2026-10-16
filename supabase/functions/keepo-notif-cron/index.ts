@@ -28,6 +28,9 @@
 //    avis     — clients ayant acheté dans les trigger_mins minutes (non déjà notifiés/24h)
 //    offre    — entre date_start et date_end, chaque client une seule fois par campagne
 //    custom   — envoi unique selon le mode (immédiat / délai / date précise)
+//
+//  Rappels d'essai (commerçants, essai gratuit sans carte) :
+//    3 jours avant la fin, puis le jour de la fin — voir supabase/rappels-essai.sql
 // ════════════════════════════════════════════════════════════════
 
 // deno-lint-ignore-file
@@ -363,6 +366,145 @@ async function processCustom(supabase: SupabaseClient, auto: any, merchantName: 
   await pushToClients(clients.map((c: any) => c.id), auto.merchant_id, merchantName, auto.subject);
 }
 
+// ─── Rappels de fin d'essai (KEEPO → commerçant) ──────────────
+// L'essai sans carte n'a pas d'abonnement Stripe, donc pas de rappel Stripe.
+// keepo_rappels_essai() choisit les comptes et les marque avant de les
+// rendre : un e-mail ne part qu'une fois, même si deux passages du cron se
+// chevauchent. En cas d'échec d'envoi, on efface la marque pour réessayer.
+const URL_FORMULES = 'https://keepo.eu/upgrade';
+const REPONDRE_A   = Deno.env.get('KEEPO_REPLY_TO') ?? 'contact@keepo.eu';
+
+function echapperHtml(s: string): string {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Habillage KEEPO (et non celui d'un commerce) : c'est KEEPO qui écrit au commerçant.
+function buildKeepoEmailHtml(bodyText: string, cta: { url: string; label: string }): string {
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F4F4F8;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F4F8;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" border="0"
+             style="background:#ffffff;border-radius:18px;overflow:hidden;max-width:600px;box-shadow:0 4px 24px rgba(20,20,27,0.07);">
+        <tr>
+          <td style="padding:28px 36px 20px;text-align:center;border-bottom:1px solid #EFEFF4;">
+            <img src="https://keepo.eu/img/logo.png" width="120" alt="KEEPO" style="display:inline-block;max-width:120px;height:auto;">
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:30px 36px 18px;color:#34333F;font-size:15px;line-height:1.7;">
+            ${textToHtml(bodyText)}
+            <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:8px auto 18px;"><tr><td style="border-radius:50px;background:linear-gradient(135deg,#5B3AA0,#16B8C4);background-color:#5B3AA0;">
+              <a href="${cta.url}" style="display:inline-block;padding:14px 34px;color:#ffffff;font-weight:bold;font-size:15px;text-decoration:none;border-radius:50px;">${echapperHtml(cta.label)}</a>
+            </td></tr></table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 36px 22px;background:#FAFAFC;font-size:11px;color:#A6A4B2;text-align:center;border-top:1px solid #EFEFF4;">
+            Vous recevez cet e-mail car vous avez créé un compte commerçant sur
+            <a href="https://keepo.eu" style="color:#0E7C8C;text-decoration:none;font-weight:bold;">KEEPO</a>.
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+type RappelEssai = {
+  merchant_id: string; type: 'j3' | 'fin'; nom: string | null; email: string;
+  fin: string; membres: number; passages: number;
+};
+
+// Le texte des deux e-mails. Pur : testé à part, sans réseau.
+export function texteRappelEssai(r: RappelEssai, maintenant: Date = new Date()): { sujet: string; corps: string } {
+  const prenom = String(r.nom || '').trim() || 'Bonjour';
+  const salut  = prenom === 'Bonjour' ? 'Bonjour,' : `Bonjour ${prenom},`;
+  const date   = new Date(r.fin).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', weekday: 'long', day: 'numeric', month: 'long' });
+  const pl     = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+  const bilan  = r.membres > 0
+    ? `Depuis le début de votre essai, ${pl(r.membres, 'client')} ${r.membres > 1 ? 'ont' : 'a'} rejoint votre programme et ${pl(r.passages, 'passage')} ${r.passages > 1 ? 'ont été enregistrés' : 'a été enregistré'}.`
+    : `Votre carte est prête : il ne manque que l'affiche sur votre comptoir pour que vos clients s'inscrivent. Vous l'imprimez depuis l'onglet Code QR de votre tableau de bord.`;
+
+  if (r.type === 'j3') {
+    const heures = (Date.parse(r.fin) - maintenant.getTime()) / 3600000;
+    const quand  = heures <= 24 ? 'demain' : `dans ${Math.max(2, Math.round(heures / 24))} jours`;
+    return {
+      sujet: `Votre essai KEEPO se termine ${quand}`,
+      corps: `${salut}
+
+Votre essai gratuit de KEEPO se termine ${quand}, ${date}.
+
+${bilan}
+
+Pour continuer sans interruption, choisissez votre formule, à partir de 24,90 € par mois, sans engagement. Si vous la choisissez avant la fin de l'essai, les jours restants sont conservés : le premier prélèvement n'a lieu qu'à la fin de l'essai.
+
+Aucune carte bancaire n'a été enregistrée : rien ne sera prélevé sans votre accord. Sans formule, votre tableau de bord sera mis en pause à la fin de l'essai ; vos clients garderont leurs cartes et leurs points.
+
+Une question ? Répondez simplement à cet e-mail.
+
+Sami, fondateur de KEEPO`
+    };
+  }
+
+  const bilanFin = r.membres > 0
+    ? `Vos ${pl(r.membres, 'client')} ${r.membres > 1 ? 'gardent leurs cartes' : 'garde sa carte'} et ${r.membres > 1 ? 'leurs' : 'ses'} points : rien n'est perdu.`
+    : `Votre carte et vos réglages sont conservés : rien n'est perdu.`;
+  return {
+    sujet: 'Votre essai KEEPO est terminé',
+    corps: `${salut}
+
+Votre essai gratuit de KEEPO s'est terminé ${date}. Votre tableau de bord est en pause.
+
+${bilanFin}
+
+Pour retrouver votre terminal et continuer à fidéliser vos clients, choisissez votre formule, à partir de 24,90 € par mois, sans engagement.
+
+Un doute sur la formule qui vous convient ? Répondez à cet e-mail, je vous réponds personnellement.
+
+Sami, fondateur de KEEPO`
+  };
+}
+
+async function processRappelsEssai(supabase: SupabaseClient): Promise<number> {
+  const { data, error } = await supabase.rpc('keepo_rappels_essai');
+  if (error) {
+    // Migration supabase/rappels-essai.sql pas encore jouée : on n'envoie rien.
+    console.warn('Rappels d\'essai indisponibles :', error.message);
+    return 0;
+  }
+  let envoyes = 0;
+  for (const r of (data ?? []) as RappelEssai[]) {
+    const { sujet, corps } = texteRappelEssai(r);
+    let ok = false;
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from:     senderFor('KEEPO'),
+          to:       [r.email],
+          reply_to: REPONDRE_A,
+          subject:  sujet,
+          html:     buildKeepoEmailHtml(corps, { url: URL_FORMULES, label: 'Choisir ma formule' }),
+        }),
+      });
+      ok = res.ok;
+      if (!ok) console.error(`Rappel d'essai ${r.type} → ${r.email} :`, (await res.text()).substring(0, 300));
+    } catch (e) {
+      console.error(`Rappel d'essai ${r.type} → ${r.email} :`, e);
+    }
+    if (ok) { envoyes++; continue; }
+    // Échec : on retire la marque, le passage suivant (15 min) réessaiera.
+    const colonne = r.type === 'j3' ? 'rappel_essai_j3_at' : 'rappel_essai_fin_at';
+    await supabase.from('profiles').update({ [colonne]: null }).eq('id', r.merchant_id);
+  }
+  return envoyes;
+}
+
 // ─── Boucle principale ────────────────────────────────────────
 async function runCron(supabase: SupabaseClient): Promise<{ processed: number; total: number }> {
   // ─── Essais Pro expirés → retour au plan Essentiel ───
@@ -375,6 +517,11 @@ async function runCron(supabase: SupabaseClient): Promise<{ processed: number; t
     .eq('plan', 'pro scale')
     .is('stripe_subscription_id', null)
     .lt('trial_ends_at', new Date().toISOString());
+
+  // ─── Rappels de fin d'essai : avant les automations, qui peuvent
+  // s'arrêter tôt quand aucune n'est active.
+  try { await processRappelsEssai(supabase); }
+  catch (err) { console.error('Rappels d\'essai :', err); }
 
   const { data: automations } = await supabase
     .from('notification_automations')

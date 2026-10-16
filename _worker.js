@@ -1343,7 +1343,7 @@ async function handleStripeCheckout(request, env) {
   try { body = await request.json(); }
   catch { return json({ error: 'Corps invalide' }, 400); }
 
-  const { merchantId, merchantEmail, returnUrl, plan, billing } = body;
+  const { merchantId, merchantEmail, returnUrl, plan, billing, offre } = body;
   if (!merchantId || !merchantEmail) return json({ error: 'merchantId et merchantEmail requis' }, 400);
 
   // Sécurité : le commerçant ne peut ouvrir un checkout que pour lui-même.
@@ -1372,16 +1372,30 @@ async function handleStripeCheckout(request, env) {
   // Essai 14 jours offert UNIQUEMENT à la première souscription : l'éligibilité
   // se lit côté serveur (stripe_customer_id absent = jamais souscrit). Un client
   // résilié qui re-souscrit n'a pas droit à un second essai.
+  // Depuis l'essai sans carte (/api/essai-gratuit), trial_ends_at dit aussi si
+  // l'essai a déjà été pris : en cours, on garde les jours restants ; terminé,
+  // on facture tout de suite.
   let trialDays = 0;
+  let trialEnd  = 0;          // fin d'un essai sans carte en cours, reportée sur Stripe
+  let reduction = false;      // -20 % pendant 3 mois, à la place de l'essai
   const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
   const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
   if (SUPA_KEY) {
     try {
-      const pr = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&select=stripe_customer_id`, {
+      const pr = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&select=stripe_customer_id,trial_ends_at`, {
         headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
       });
       const rows = pr.ok ? await pr.json() : [];
-      if (rows.length && !rows[0].stripe_customer_id) {
+      const essai = rows.length && rows[0].trial_ends_at ? Date.parse(rows[0].trial_ends_at) : NaN;
+      if (rows.length && !rows[0].stripe_customer_id && isFinite(essai)) {
+        // Stripe exige au moins 48 h d'essai restant ; en dessous, on facture.
+        const reste = Math.floor(essai / 1000);
+        if (reste - Math.floor(Date.now() / 1000) > 48 * 3600) trialEnd = reste;
+      } else if (rows.length && !rows[0].stripe_customer_id && offre === 'reduction' && chosenBilling === 'month') {
+        // La réduction vaut pour le mensuel : sur l'annuel, -20 % « pendant 3 mois »
+        // couvrirait toute la première année.
+        reduction = true;
+      } else if (rows.length && !rows[0].stripe_customer_id) {
         trialDays = 14;
         // Parrainage : un filleul (parrainage 'pending') a droit à un essai
         // prolongé de 14 → 30 jours à sa première souscription.
@@ -1420,10 +1434,103 @@ async function handleStripeCheckout(request, env) {
   if (trialDays > 0) {
     sessionParams['subscription_data[trial_period_days]'] = String(trialDays);
   }
+  if (trialEnd > 0) {
+    sessionParams['subscription_data[trial_end]'] = String(trialEnd);
+  }
+  if (reduction) {
+    // Stripe refuse un code promo saisi ET une réduction posée : on retire le champ.
+    const coupon = await couponPaiementDirect(env);
+    if (!coupon.ok) return json({ error: coupon.error }, coupon.status || 502);
+    delete sessionParams['allow_promotion_codes'];
+    sessionParams['discounts[0][coupon]'] = coupon.id;
+    sessionParams['subscription_data[metadata][offre]'] = 'reduction';
+    sessionParams['metadata[offre]'] = 'reduction';
+  }
   const result = await stripeApi(env, 'checkout/sessions', sessionParams, 'POST');
 
   if (!result.ok) return json({ error: result.error }, result.status);
   return json({ url: result.data.url });
+}
+
+// La réduction de qui paie tout de suite, au lieu de l'essai : -20 % pendant
+// 3 mois. Le coupon est créé dans Stripe au premier usage, avec un identifiant
+// fixe : rien à préparer à la main dans le tableau de bord Stripe.
+const COUPON_PAIEMENT_DIRECT = 'KEEPO_DIRECT_20_3M';
+
+async function couponPaiementDirect(env) {
+  const lu = await stripeApi(env, `coupons/${COUPON_PAIEMENT_DIRECT}`);
+  if (lu.ok && lu.data?.valid !== false) return { ok: true, id: COUPON_PAIEMENT_DIRECT };
+  const cree = await stripeApi(env, 'coupons', {
+    'id'                : COUPON_PAIEMENT_DIRECT,
+    'name'              : '-20 % pendant 3 mois',
+    'percent_off'       : '20',
+    'duration'          : 'repeating',
+    'duration_in_months': '3'
+  }, 'POST');
+  // Deux créations simultanées : la seconde échoue, mais le coupon existe.
+  if (cree.ok || /already exists/i.test(cree.error || '')) return { ok: true, id: COUPON_PAIEMENT_DIRECT };
+  return { ok: false, status: cree.status, error: cree.error };
+}
+
+// POST /api/essai-gratuit — démarre l'essai sans carte bancaire.
+// Toutes les fonctions (Pro Scale) pendant 14 jours, 30 pour un filleul.
+// Une seule fois par compte : trial_ends_at, posé ici, ne repasse jamais à
+// vide. À l'échéance, le cron remet le compte en Essentiel et le tableau de
+// bord demande de choisir une formule.
+async function handleEssaiGratuit(request, env, ctx) {
+  if (request.method !== 'POST') return json({ error: 'Method Not Allowed' }, 405);
+  const auth = await requireMerchant(request, env);
+  if (auth.error) return auth.error;
+  const merchantId = auth.user.id;
+
+  const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
+  const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
+  if (!SUPA_KEY) return json({ error: 'Service indisponible' }, 503);
+  const supa = { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` };
+
+  const pr = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&select=role,name,stripe_customer_id,stripe_subscription_id,trial_ends_at`, { headers: supa });
+  const profil = pr.ok ? (await pr.json())[0] : null;
+  if (!profil) return json({ error: 'Profil introuvable' }, 404);
+  if (profil.role !== 'commercant') return json({ error: 'Réservé aux commerçants' }, 403);
+  if (profil.stripe_customer_id || profil.stripe_subscription_id) {
+    return json({ error: 'Votre compte a déjà un abonnement.' }, 409);
+  }
+  if (profil.trial_ends_at) {
+    // Rejouer l'appel ne prolonge rien : on rend l'essai en cours tel quel.
+    if (Date.parse(profil.trial_ends_at) > Date.now()) return json({ trial_ends_at: profil.trial_ends_at, deja: true });
+    return json({ error: 'Votre essai gratuit est terminé : choisissez votre formule pour continuer.' }, 409);
+  }
+
+  let jours = 14;
+  try {
+    const rr = await fetch(`${SUPA_URL}/rest/v1/merchant_referrals?referred_id=eq.${merchantId}&status=eq.pending&select=id`, { headers: supa });
+    if (rr.ok && (await rr.json()).length) jours = 30;
+  } catch { /* défaut : essai standard */ }
+
+  const fin = new Date(Date.now() + jours * 24 * 3600 * 1000).toISOString();
+  // La condition trial_ends_at=is.null rend l'écriture atomique : deux clics
+  // simultanés ne démarrent pas deux essais.
+  const up = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${merchantId}&trial_ends_at=is.null&stripe_customer_id=is.null`, {
+    method : 'PATCH',
+    headers: { ...supa, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    body   : JSON.stringify({ plan: 'pro scale', trial_ends_at: fin })
+  });
+  const lignes = up.ok ? await up.json() : [];
+  if (!up.ok) return json({ error: 'Essai non démarré, réessayez.' }, 502);
+  if (!lignes.length) return json({ error: 'Essai déjà démarré.' }, 409);
+
+  const envoi = versDiscord(env, {
+    salon: 'paiements',
+    titre: 'Nouvel essai gratuit (sans carte)',
+    texte: `${jours} jours, toutes les fonctions.`,
+    champs: [
+      { nom: 'Commerçant', valeur: String(profil.name || merchantId).slice(0, 60) },
+      { nom: 'Fin',        valeur: fin.slice(0, 10) }
+    ]
+  });
+  if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(envoi); else await envoi.catch(() => {});
+
+  return json({ trial_ends_at: fin, jours });
 }
 
 // ──────────── Points de vente en option (Pro Scale) ────────────
@@ -3179,6 +3286,7 @@ export default {
       case '/api/ai-design-studio':        return handleDesignStudio(request, env);
       case '/api/ai-onboarding':           return handleAiOnboarding(request, env);
       case '/api/stripe-checkout':         return handleStripeCheckout(request, env);
+      case '/api/essai-gratuit':           return handleEssaiGratuit(request, env, ctx);
       case '/api/stripe-webhook':          return handleStripeWebhook(request, env, ctx);
       case '/api/send-campaign':           return handleSendCampaign(request, env);
       case '/api/campaign-count':          return handleCampaignCount(request, env);
