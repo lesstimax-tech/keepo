@@ -964,6 +964,14 @@
         .sx-b { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease); }
         .sx.open .sx-b { grid-template-rows: 1fr; }
         .sx-b > .sx-in { overflow: hidden; }
+        /* La liste de suggestions d'adresse deborde sous le champ : la section ne doit pas la couper. */
+        .sx:has(.adr-liste.ouvert), .sx:has(.adr-liste.ouvert) .sx-in { overflow: visible; }
+        /* Pile de sections hors Studio (Notifications, Programme avancé, Paramètres) */
+        .sx-pile { display: flex; flex-direction: column; gap: 14px; max-width: 720px; }
+        .sx-pile + .sx-pile { margin-top: 26px; }
+        .sx-pile-t { font-size: 11px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+            color: var(--text-muted); margin: 0 0 -4px 4px; }
+        .sx-n i { font-size: 13px; }
         .sx.open .sx-in { padding: 4px 18px 18px 20px; border-top: 1px dashed var(--glass-border);
             margin-top: -1px; }
 
@@ -2842,8 +2850,14 @@
             <h2 class="panel-title">Automatisation Marketing</h2>
             <p class="panel-subtitle">Créez des e-mails automatiques pour fidéliser vos clients</p>
 
-            <!-- Tout ce qui part tout seul, en un bloc : la formule Smart le
-                 remplace par un encart, sans toucher à la campagne manuelle. -->
+            <div class="sx-pile">
+                <section class="sx open" data-c="cyan">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-robot"></i></span>
+                        <span class="sx-tt">E-mails automatiques<em>Relances, avis Google, événements : ils partent tout seuls</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
             <div id="notif-auto-zone">
             <div id="notif-saved-list" style="display:none;max-width:680px;margin:0 auto 24px;"></div>
 
@@ -2991,10 +3005,16 @@
             </div>
 
             </div><!-- /notif-auto-zone -->
+                    </div></div>
+                </section>
 
-            <!-- ══ CAMPAGNE MANUELLE ══ -->
-            <div class="card" style="max-width:680px;margin:32px auto 0;border-color:rgba(255,77,130,0.2);">
-                <div class="card-title"><i class="fa-solid fa-bullhorn" style="color:var(--primary-accent);"></i> Campagne Email Manuelle</div>
+                <section class="sx" data-c="pink">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-bullhorn"></i></span>
+                        <span class="sx-tt">Campagne e-mail manuelle<em>Écrivez maintenant à un groupe de clients</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
                 <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;line-height:1.6;">
                     Envoyez un email ciblé maintenant à un segment de vos clients. Utilisez <code style="background:var(--bg-card-hover);padding:2px 6px;border-radius:4px;">{{prenom}}</code> et <code style="background:var(--bg-card-hover);padding:2px 6px;border-radius:4px;">{{enseigne}}</code> pour personnaliser.
                 </p>
@@ -3052,6 +3072,9 @@
                 <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px;">
                     <i class="fa-solid fa-circle-info"></i> Nécessite <code>RESEND_API_KEY</code> dans les variables d'environnement Wrangler.
                 </p>
+                    </div></div>
+                </section>
+
             </div>
         </div>
 
@@ -3107,10 +3130,15 @@
             <h2 class="panel-title">Paramètres</h2>
             <p class="panel-subtitle">Gérez votre établissement et vos préférences</p>
 
-            <div style="max-width:720px;">
-                <div class="card" style="margin-bottom:20px;">
-                    <div class="card-title"><i class="fa-solid fa-building-user"></i> Fiche d'identité</div>
-
+            <div class="sx-pile">
+                <div class="sx-pile-t">Mon commerce</div>
+                <section class="sx open" data-c="violet">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-building-user"></i></span>
+                        <span class="sx-tt">Fiche d'identité<em>Photo, enseigne, contact, secteur</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
                     <!-- ── Photo de profil ── -->
                     <div class="avatar-uploader">
                         <div class="avatar-uploader-preview" id="avatar-preview" onclick="document.getElementById('avatar-file-input').click()">
@@ -3153,12 +3181,16 @@
                         </div>
                         <div class="form-group"><label>Code Postal</label><input type="text" id="settings-postcode" placeholder="Ex: 75001" maxlength="5"></div>
                     </div>
-                    <!-- ════ Section : Localisation ════ -->
-                    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--glass-border);">
-                        <div style="font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--secondary-accent);margin-bottom:12px;">
-                            <i class="fa-solid fa-location-dot"></i> &nbsp;Localisation
-                        </div>
-                    </div>
+                    </div></div>
+                </section>
+
+                <section class="sx" data-c="cyan">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-location-dot"></i></span>
+                        <span class="sx-tt">Localisation<em>Votre adresse et votre place dans « Découvrir »</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
                     <div class="form-group" style="margin-top:0;">
                         <label>Adresse complète</label>
                         <input type="text" id="settings-address" placeholder="Ex: 12 rue de la Paix, Cannes" autocomplete="street-address">
@@ -3180,13 +3212,17 @@
                             <i class="fa-solid fa-crosshairs"></i> Ou utiliser ma position GPS actuelle
                         </button>
                     </div>
+                    </div></div>
+                </section>
 
-                    <!-- ── Page publique ── -->
-                    <div class="form-group" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--glass-border);">
-                        <label style="display:flex;align-items:center;gap:8px;">
-                            <i class="fa-solid fa-globe" style="color:var(--secondary-accent);"></i> Votre page publique
-                            <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;">Partageable avec vos clients</span>
-                        </label>
+                <section class="sx" data-c="green">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-globe"></i></span>
+                        <span class="sx-tt">Page publique<em>Le lien à partager avec vos clients</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
+                    <div class="form-group">
                         <p style="font-size:12px;color:var(--text-muted);margin:6px 0 12px;line-height:1.6;">
                             Vos clients peuvent découvrir votre programme et rejoindre directement depuis cette page. L'IA génère automatiquement une description de votre commerce.
                         </p>
@@ -3209,41 +3245,16 @@
                                 style="margin-top:6px;" oninput="updatePublicUrlPreview()">
                         </div>
                     </div>
+                    </div></div>
+                </section>
 
-                    <button onclick="saveBusinessSettings()" class="btn-action"><i class="fa-solid fa-floppy-disk"></i> Enregistrer toutes les informations</button>
-                </div>
-
-
-                <div class="card" style="margin-bottom:20px;">
-                    <div class="card-title"><i class="fa-solid fa-shield-halved"></i> Sécurité du compte</div>
-                    <div class="form-row" style="margin-bottom:14px;">
-                        <div class="form-group"><label>Nouveau mot de passe</label><input type="password" placeholder="••••••••" disabled style="opacity:.6;"></div>
-                        <div class="form-group"><label>Confirmer le mot de passe</label><input type="password" placeholder="••••••••" disabled style="opacity:.6;"></div>
-                    </div>
-                    <div class="form-group">
-                        <div class="toggle-wrap" onclick="this.querySelector('.toggle').classList.toggle('on')">
-                            <div class="toggle"></div>
-                            <div>
-                                <div class="toggle-label">Authentification à deux facteurs (A2F)</div>
-                                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Protège votre compte avec un code SMS à chaque connexion</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-bottom:20px;">
-                    <div class="card-title"><i class="fa-solid fa-sliders"></i> Préférences d'environnement</div>
-                    <div class="form-group">
-                        <label>Thème visuel</label>
-                        <select id="app-theme-select" onchange="applyAppTheme(this.value)">
-                            <option value="dark">Sombre Cyber-Mat (Défaut)</option>
-                            <option value="light">Clair Épuré Studio</option>
-                            <option value="neon">Néon Électrique</option>
-                            <option value="ocean">Océan Profond</option>
-                            <option value="amber">Ambre &amp; Bois</option>
-                            <option value="rose">Rose Sakura</option>
-                        </select>
-                    </div>
+                <section class="sx" data-c="amber">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-coins"></i></span>
+                        <span class="sx-tt">Programme de fidélité<em>Points ou tampons, et leur règle</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
                     <div class="form-group">
                         <label>Mode de fidélité</label>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -3311,6 +3322,27 @@
                             </p>
                         </div>
                     </div>
+                    </div></div>
+                </section>
+
+                <section class="sx" data-c="violet">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-sliders"></i></span>
+                        <span class="sx-tt">Apparence et terminal<em>Thème visuel, sons du scan</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
+                    <div class="form-group">
+                        <label>Thème visuel</label>
+                        <select id="app-theme-select" onchange="applyAppTheme(this.value)">
+                            <option value="dark">Sombre Cyber-Mat (Défaut)</option>
+                            <option value="light">Clair Épuré Studio</option>
+                            <option value="neon">Néon Électrique</option>
+                            <option value="ocean">Océan Profond</option>
+                            <option value="amber">Ambre &amp; Bois</option>
+                            <option value="rose">Rose Sakura</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <div class="toggle-wrap" onclick="this.querySelector('.toggle').classList.toggle('on')">
                             <div class="toggle on"></div>
@@ -3320,31 +3352,81 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                    </div></div>
+                </section>
 
-                <div class="card pro-locked-container">
-                    <div id="lock-api-webhooks"></div>
-                    <div class="card-title"><i class="fa-solid fa-code"></i> Liaison Logiciel de Caisse (API & Webhooks)</div>
-                    <p style="color:var(--text-muted);font-size:13px;line-height:1.7;margin-bottom:16px;">Connectez KEEPO directement sur votre système de caisse tactile existant (Clover, Lightspeed, Zelty...) pour automatiser la distribution de points sans écran secondaire.</p>
-                    <button onclick="showToast('info','Bientôt disponible','La liaison API &amp; Webhooks (Clover, Lightspeed, Zelty…) arrive prochainement.')" class="btn-action btn-secondary" style="opacity:.78;">Générer une clé de couplage API <span style="background:linear-gradient(90deg,#ffc34d,#ff8a5c);color:#06050d;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:8px;letter-spacing:.5px;">BIENTÔT</span></button>
-                </div>
+                <button onclick="saveBusinessSettings()" class="btn-action"><i class="fa-solid fa-floppy-disk"></i> Enregistrer toutes les informations</button>
+            </div>
 
-                <div class="card">
-                    <div class="card-title"><i class="fa-solid fa-credit-card"></i> Mon abonnement</div>
+            <div class="sx-pile">
+                <div class="sx-pile-t">Mon compte</div>
+                <section class="sx" data-c="cyan">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-credit-card"></i></span>
+                        <span class="sx-tt">Mon abonnement<em>Formule, échéance, résiliation</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
                     <div id="abonnement-etat" style="color:var(--text-muted);font-size:13px;line-height:1.7;">
                         <i class="fa-solid fa-spinner fa-spin"></i> Lecture de votre abonnement…
                     </div>
-                </div>
+                    </div></div>
+                </section>
 
-                <div class="card" style="border-color:rgba(224,36,94,0.3);">
-                    <div class="card-title" style="color:#ff6b8f;"><i class="fa-solid fa-triangle-exclamation"></i> Zone de danger</div>
+                <section class="sx" data-c="green">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-shield-halved"></i></span>
+                        <span class="sx-tt">Sécurité du compte<em>Mot de passe, double authentification</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
+                    <div class="form-row" style="margin-bottom:14px;">
+                        <div class="form-group"><label>Nouveau mot de passe</label><input type="password" placeholder="••••••••" disabled style="opacity:.6;"></div>
+                        <div class="form-group"><label>Confirmer le mot de passe</label><input type="password" placeholder="••••••••" disabled style="opacity:.6;"></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="toggle-wrap" onclick="this.querySelector('.toggle').classList.toggle('on')">
+                            <div class="toggle"></div>
+                            <div>
+                                <div class="toggle-label">Authentification à deux facteurs (A2F)</div>
+                                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Protège votre compte avec un code SMS à chaque connexion</div>
+                            </div>
+                        </div>
+                    </div>
+                    </div></div>
+                </section>
+
+                <section class="sx" data-c="amber">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-code"></i></span>
+                        <span class="sx-tt">Liaison logiciel de caisse<em>API et webhooks · bientôt</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
+                    <div class="pro-locked-container">
+                    <div id="lock-api-webhooks"></div>
+                    <p style="color:var(--text-muted);font-size:13px;line-height:1.7;margin-bottom:16px;">Connectez KEEPO directement sur votre système de caisse tactile existant (Clover, Lightspeed, Zelty...) pour automatiser la distribution de points sans écran secondaire.</p>
+                    <button onclick="showToast('info','Bientôt disponible','La liaison API &amp; Webhooks (Clover, Lightspeed, Zelty…) arrive prochainement.')" class="btn-action btn-secondary" style="opacity:.78;">Générer une clé de couplage API <span style="background:linear-gradient(90deg,#ffc34d,#ff8a5c);color:#06050d;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:8px;letter-spacing:.5px;">BIENTÔT</span></button>
+                    </div>
+                    </div></div>
+                </section>
+
+                <section class="sx" data-c="pink">
+                    <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                        <span class="sx-n"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                        <span class="sx-tt">Zone de danger<em>Suppression définitive du compte</em></span>
+                        <i class="fa-solid fa-chevron-down sx-c"></i>
+                    </button>
+                    <div class="sx-b"><div class="sx-in">
                     <p style="color:var(--text-muted);font-size:13px;line-height:1.7;margin-bottom:16px;">
                         Supprimer votre compte est <strong style="color:var(--text-main);">définitif</strong> : votre programme de fidélité, vos cartes, vos clients, votre historique et vos automations seront effacés sans retour possible. Votre <strong style="color:var(--text-main);">abonnement est coupé immédiatement</strong>, sans remboursement de la période en cours. Pour arrêter de payer en gardant vos données, utilisez plutôt « Arrêter mon abonnement » ci-dessus.
                     </p>
                     <button onclick="openMerchantDeleteAccount()" class="btn-action" style="background:rgba(224,36,94,0.1);color:#ff6b8f;border:1px solid rgba(224,36,94,0.3);">
                         <i class="fa-solid fa-trash-can"></i> Supprimer définitivement mon compte
                     </button>
-                </div>
+                    </div></div>
+                </section>
+
             </div>
         </div>
 
@@ -3366,42 +3448,48 @@
                         </div>
                     </div>
 
-                    <!-- ① Parrainage -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:var(--bg-card-hover);">
-                        <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
-                            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(14,124,140,0.12);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-users" style="color:var(--secondary-accent);font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">1. Parrainage</div>
-                        </div>
-                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Un client amène un ami&nbsp;? Les <strong style="color:var(--text-sub);">deux</strong> reçoivent des points. Le bouche-à-oreille qui se récompense tout seul.</p>
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:47px;">
+                    <div class="sx-pile" style="margin-bottom:20px;">
+                        <section class="sx open" data-c="cyan">
+                            <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                                <span class="sx-n"><i class="fa-solid fa-users"></i></span>
+                                <span class="sx-tt">Parrainage<em>Un ami amené, des points pour les deux</em></span>
+                                <i class="fa-solid fa-chevron-down sx-c"></i>
+                            </button>
+                            <div class="sx-b"><div class="sx-in">
+                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px;">Un client amène un ami&nbsp;? Les <strong style="color:var(--text-sub);">deux</strong> reçoivent des points. Le bouche-à-oreille qui se récompense tout seul.</p>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                             <span style="font-size:13px;color:var(--text-sub);">Offrir</span>
                             <input type="number" id="cfg-referral-bonus" min="0" value="50" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(14,124,140,0.3);color:var(--secondary-accent);">
                             <span style="font-size:13px;color:var(--text-sub);">points à chacun &nbsp;·&nbsp; <span style="color:var(--text-muted);">0 = désactivé</span></span>
                         </div>
-                    </div>
+                            </div></div>
+                        </section>
 
-                    <!-- ② Anniversaire -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:var(--bg-card-hover);">
-                        <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
-                            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(255,138,92,0.12);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-cake-candles" style="color:#ff8a5c;font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">2. Cadeau d'anniversaire</div>
-                        </div>
-                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Le jour de son anniversaire, votre client reçoit un bonus de points en automatique. Une attention qui fait revenir.</p>
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:47px;">
+                        <section class="sx" data-c="amber">
+                            <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                                <span class="sx-n"><i class="fa-solid fa-cake-candles"></i></span>
+                                <span class="sx-tt">Cadeau d'anniversaire<em>Un bonus de points le jour J</em></span>
+                                <i class="fa-solid fa-chevron-down sx-c"></i>
+                            </button>
+                            <div class="sx-b"><div class="sx-in">
+                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px;">Le jour de son anniversaire, votre client reçoit un bonus de points en automatique. Une attention qui fait revenir.</p>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                             <span style="font-size:13px;color:var(--text-sub);">Offrir</span>
                             <input type="number" id="cfg-birthday-bonus" min="0" value="100" style="width:80px;text-align:center;font-weight:700;background:#000;border:1px solid rgba(255,138,92,0.4);color:#ff8a5c;">
                             <span style="font-size:13px;color:var(--text-sub);">points le jour J &nbsp;·&nbsp; <span style="color:var(--text-muted);">0 = désactivé</span></span>
                         </div>
-                    </div>
+                            </div></div>
+                        </section>
 
-                    <!-- ③ Roue de la fortune -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:14px;background:var(--bg-card-hover);">
-                        <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
-                            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(91,58,160,0.14);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-dice" style="color:#c5b8ff;font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">3. Roue de la fortune</div>
-                        </div>
-                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Après plusieurs visites, votre client tente sa chance et gagne un lot. Un jeu qui donne envie de revenir.</p>
-                        <div style="margin-left:47px;">
+                        <section class="sx" data-c="violet">
+                            <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                                <span class="sx-n"><i class="fa-solid fa-dice"></i></span>
+                                <span class="sx-tt">Roue de la fortune<em>Un lot à gagner après plusieurs visites</em></span>
+                                <i class="fa-solid fa-chevron-down sx-c"></i>
+                            </button>
+                            <div class="sx-b"><div class="sx-in">
+                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px;">Après plusieurs visites, votre client tente sa chance et gagne un lot. Un jeu qui donne envie de revenir.</p>
+                        <div>
                             <div class="toggle-wrap" id="wheel-toggle-wrap" onclick="document.getElementById('cfg-wheel-enabled').classList.toggle('on')" style="margin-bottom:12px;">
                                 <div id="cfg-wheel-enabled" class="toggle on"></div>
                                 <span class="toggle-label" style="font-size:13px;color:var(--text-sub);">Afficher la roue dans l'application de mes clients</span>
@@ -3432,16 +3520,18 @@
                                 <div id="wheel-prizes-list"></div>
                             </div>
                         </div>
-                    </div>
+                            </div></div>
+                        </section>
 
-                    <!-- ④ Niveaux VIP -->
-                    <div style="border:1px solid var(--glass-border);border-radius:16px;padding:18px;margin-bottom:20px;background:var(--bg-card-hover);">
-                        <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px;">
-                            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(255,211,77,0.14);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-ranking-star" style="color:#ffd700;font-size:15px;"></i></div>
-                            <div style="font-weight:800;font-size:15px;font-family:Inter,sans-serif;">4. Niveaux VIP</div>
-                        </div>
-                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px 47px;">Plus un client cumule de points au fil du temps, plus il monte de niveau — et plus il gagne de points à chaque passage. Vos meilleurs clients sont récompensés sans que vous ayez à y penser.</p>
-                        <div style="margin-left:47px;">
+                        <section class="sx" data-c="green">
+                            <button type="button" class="sx-h" onclick="studioToggleSec(this)">
+                                <span class="sx-n"><i class="fa-solid fa-ranking-star"></i></span>
+                                <span class="sx-tt">Niveaux VIP<em>Silver et Gold : plus de points pour vos fidèles</em></span>
+                                <i class="fa-solid fa-chevron-down sx-c"></i>
+                            </button>
+                            <div class="sx-b"><div class="sx-in">
+                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px;">Plus un client cumule de points au fil du temps, plus il monte de niveau — et plus il gagne de points à chaque passage. Vos meilleurs clients sont récompensés sans que vous ayez à y penser.</p>
+                        <div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                                 <div style="background:rgba(192,197,212,0.05);border:1px solid rgba(192,197,212,0.18);border-radius:12px;padding:13px;">
                                     <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#c0c5d4;margin-bottom:10px;">
@@ -3478,7 +3568,11 @@
                                 <i class="fa-solid fa-lightbulb" style="color:var(--secondary-accent);margin-right:5px;"></i><strong style="color:var(--text-sub);">Exemple :</strong> avec un multiplicateur Silver ×1,2, un achat qui rapporte normalement 100 pts en rapporte 120. En Gold ×1,5, il en rapporte 150.
                             </p>
                         </div>
+                            </div></div>
+                        </section>
+
                     </div>
+
 
                     <button onclick="saveAdvancedProgram()" class="btn-action btn-ai-suggest" style="width:100%;">
                         <i class="fa-solid fa-floppy-disk"></i> Enregistrer mes réglages
@@ -5436,6 +5530,11 @@
         const sec = btn.closest('.sx');
         if (sec) sec.classList.toggle('open');
     }
+    // Un champ qui recoit le focus (tabulation, ou focus() pose par le code) ouvre sa section.
+    document.addEventListener('focusin', (e) => {
+        const sec = e.target.closest?.('.sx');
+        if (sec && !sec.classList.contains('open') && !e.target.classList.contains('sx-h')) sec.classList.add('open');
+    });
 
     /* ── Type de fond / motif / alignement ── */
     function studioSetBgType(t) {
