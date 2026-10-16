@@ -461,6 +461,19 @@
             justify-content: center; margin-top: 8px; }
         #modal-tier .tier-badge { margin-top: 0; }
         .modal-tier-note { font-size: 11.5px; color: var(--muted); }
+
+        /* ── Cadeau de bienvenue ── */
+        .client-welcome { display: flex; align-items: center; gap: 12px; text-align: left;
+            padding: 12px 14px; border-radius: 16px; margin: 0 0 14px;
+            background: rgba(255,191,105,0.10); border: 1px solid rgba(255,191,105,0.35); }
+        .client-welcome .cw-ico { width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px; display: grid; place-items: center;
+            background: linear-gradient(135deg,#ffc34d,#ff8a5c); color: #fff; font-size: 16px; }
+        .client-welcome .cw-t { font-size: 10.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: var(--gold, #ffbf69); }
+        .client-welcome .cw-l { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 1px; }
+        .client-welcome .cw-s { font-size: 11.5px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+        .client-welcome .cw-code { font-family: Inter, sans-serif; font-weight: 900; letter-spacing: 3px; color: var(--gold, #ffbf69); }
+        button.client-welcome { width: 100%; cursor: pointer; font-family: inherit; }
+        button.client-welcome .cw-go { margin-left: auto; color: var(--muted); font-size: 12px; }
         .modal-sub { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
         .qr-zone {
             background: #fff; border: 1px solid var(--border); border-radius: var(--r);
@@ -744,6 +757,8 @@
             </div>
         </div>
 
+        <div id="welcome-gifts-zone"></div>
+
         <div id="cards-container" class="cards-grid">
             <div class="skeleton" style="height:158px;border-radius:20px;"></div>
             <div class="skeleton" style="height:158px;border-radius:20px;"></div>
@@ -1015,6 +1030,7 @@
         <div class="modal-merchant-chip"><i class="fa-solid fa-store" style="font-size:11px;"></i> Commerce partenaire</div>
         <h3 id="modal-merchant-name">Magasin</h3>
         <div id="modal-tier" style="display:none;"></div>
+        <div id="modal-welcome" class="client-welcome" style="display:none;"></div>
         <p class="modal-sub">Faites scanner ce code par votre commerçant</p>
 
         <div class="qr-zone" id="client-qr-rendering-zone"></div>
@@ -1323,6 +1339,7 @@
     let currentClientId = null;
     let html5QrCodeScanner = null;
     let walletCache = [];
+    let welcomeGifts = {}; // merchantId → { gift, type, code } — cadeaux de bienvenue pas encore remis
     let merchantCardDesigns = {}; // merchantId → { title, color } — chargé par loadClientWallet, réutilisé dans l'historique
 
     // ─── Historique ───
@@ -1813,6 +1830,9 @@
         })();
 
         if (!walletData || walletData.length === 0) {
+            welcomeGifts = {};
+            const wz = document.getElementById('welcome-gifts-zone');
+            if (wz) wz.innerHTML = '';
             container.innerHTML = `
                 <div class="empty-wallet">
                     <div class="empty-wallet-icon"><i class="fa-solid fa-ticket"></i></div>
@@ -1923,6 +1943,65 @@
                 bar.style.width = bar.dataset.width;
             });
         }, 120);
+
+        loadWelcomeGifts(cardDesigns, merchantPlans);
+    }
+
+    /* ── Cadeaux de bienvenue (supabase/cadeau-bienvenue.sql) ──
+       Requête à part : si la migration manque, le portefeuille s'affiche
+       comme avant, simplement sans cadeau. */
+    async function loadWelcomeGifts(cardDesigns, merchantPlans) {
+        const zone = document.getElementById('welcome-gifts-zone');
+        const { data, error } = await supabaseClient
+            .from('loyalty_balances')
+            .select('merchant_id, welcome_gift, welcome_type, welcome_code, welcome_given_at')
+            .eq('client_id', currentClientId)
+            .is('hidden_at', null)
+            .not('welcome_gift', 'is', null)
+            .is('welcome_given_at', null);
+        welcomeGifts = {};
+        if (error || !data) { if (zone) zone.innerHTML = ''; return; }
+        data.forEach(r => { welcomeGifts[r.merchant_id] = { gift: r.welcome_gift, type: r.welcome_type, code: r.welcome_code }; });
+        if (!zone) return;
+        zone.innerHTML = data.map(r => {
+            const design = (cardDesigns && cardDesigns[r.merchant_id]) || {};
+            const nom = design.title || 'votre commerce';
+            return `<button type="button" class="client-welcome" data-merchant="${escapeHtml(r.merchant_id)}">
+                <div class="cw-ico"><i class="fa-solid fa-gift"></i></div>
+                <div>
+                    <div class="cw-t">Cadeau de bienvenue · ${escapeHtml(nom)}</div>
+                    <div class="cw-l">${escapeHtml(r.welcome_gift)}</div>
+                    <div class="cw-s">À retirer lors de votre prochain passage</div>
+                </div>
+                <i class="fa-solid fa-chevron-right cw-go"></i>
+            </button>`;
+        }).join('');
+        // Ouvre la carte correspondante : le QR et le code y sont affichés.
+        zone.querySelectorAll('button[data-merchant]').forEach(b => {
+            b.onclick = () => {
+                const mid = b.dataset.merchant;
+                const card = walletCache.find(c => c.merchant_id === mid);
+                if (!card) return;
+                const design = (cardDesigns && cardDesigns[mid]) || {};
+                openClientCardPopup(design.title || card.merchant_profile?.name || 'Commerce partenaire',
+                    card.points_balance || 0, mid, (merchantPlans && merchantPlans[mid]) || 'essential');
+            };
+        });
+    }
+
+    function renderModalWelcome(merchantId) {
+        const el = document.getElementById('modal-welcome');
+        if (!el) return;
+        const w = welcomeGifts[merchantId];
+        if (!w) { el.style.display = 'none'; el.innerHTML = ''; return; }
+        el.innerHTML = `
+            <div class="cw-ico"><i class="fa-solid fa-gift"></i></div>
+            <div>
+                <div class="cw-t">Votre cadeau de bienvenue</div>
+                <div class="cw-l">${escapeHtml(w.gift)}</div>
+                <div class="cw-s">Le commerçant le voit en scannant ce QR. Sinon, donnez-lui ce code : <span class="cw-code">${escapeHtml(w.code || '')}</span></div>
+            </div>`;
+        el.style.display = 'flex';
     }
 
     // Niveau VIP par commerce, alimenté au rendu des cartes et lu par la
@@ -1945,6 +2024,7 @@
             tierEl.style.display = tier ? 'flex' : 'none';
         }
         document.getElementById('modal-current-points').innerText = `${currentPoints} Pts`;
+        renderModalWelcome(merchantId);
 
         // Stocke pour les actions Phase 3 (wheel / gift)
         currentQrMerchantId   = merchantId;
@@ -2243,7 +2323,16 @@
             showToast('success', 'Carte de retour', `La carte de ${label} revient dans votre portefeuille, avec vos points.`);
         } else {
             const nom = boutiqueName ? `Boutique "${boutiqueName}"` : 'Nouveau commerce';
-            showToast('success', 'Nouvelle carte ajoutée !', `${nom} — bienvenue dans ce programme de fidélité.`);
+            // Un cadeau de bienvenue a-t-il été attribué à l'inscription ?
+            const { data: bienvenue } = await supabaseClient.from('loyalty_balances')
+                .select('welcome_gift').eq('client_id', currentClientId).eq('merchant_id', merchantId).maybeSingle();
+            if (bienvenue && bienvenue.welcome_gift) {
+                showToast('success', 'Carte ajoutée, avec un cadeau !',
+                    `${bienvenue.welcome_gift} — montrez votre carte au commerçant pour le recevoir.`);
+                setTimeout(() => { try { triggerRewardConfetti(); } catch (e) {} }, 500);
+            } else {
+                showToast('success', 'Nouvelle carte ajoutée !', `${nom} — bienvenue dans ce programme de fidélité.`);
+            }
         }
 
         loadClientWallet();

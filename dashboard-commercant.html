@@ -1446,6 +1446,24 @@
         .loyalty-mode-btn span { font-size: 11px; color: var(--text-muted); }
         .loyalty-mode-btn:hover { border-color: var(--glass-border-bright, rgba(255,255,255,0.15)); }
         .loyalty-mode-btn.active { border-color: var(--secondary-accent); background: rgba(14,124,140,0.08); }
+
+        /* ── Cadeau de bienvenue ── */
+        .welcome-card { border-color: rgba(201,138,22,0.28); }
+        .welcome-ico { width: 44px; height: 44px; flex-shrink: 0; border-radius: 13px; display: grid; place-items: center;
+            background: linear-gradient(135deg,#ffc34d,#ff8a5c); color: #fff; font-size: 19px; }
+        .welcome-badge { font-size: 10px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+            padding: 3px 9px; border-radius: 999px; background: rgba(201,138,22,0.14); color: #C98A16; }
+        .welcome-gift-banner { display: flex; align-items: center; gap: 12px; text-align: left;
+            padding: 12px 14px; margin-bottom: 16px; border-radius: 14px;
+            background: rgba(201,138,22,0.08); border: 1px solid rgba(201,138,22,0.3); }
+        .welcome-gift-banner .wg-ico { font-size: 22px; color: #C98A16; flex-shrink: 0; }
+        .welcome-gift-banner .wg-t { font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #C98A16; }
+        .welcome-gift-banner .wg-l { font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+        .welcome-gift-banner button { margin-left: auto; flex-shrink: 0; padding: 9px 14px; font-size: 12px; }
+        .welcome-nudge { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 0 22px;
+            padding: 14px 16px; border-radius: 16px; background: var(--bg-card);
+            border: 1px solid rgba(201,138,22,0.3); }
+        .welcome-nudge .wn-x { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 4px; }
         .loyalty-mode-btn.active i { color: var(--secondary-accent); }
 
         /* ─── PRESETS TAUX ─── */
@@ -2121,6 +2139,17 @@
             <h2 class="panel-title">Performances Générales</h2>
             <p class="panel-subtitle">Vue d'ensemble de votre programme de fidélité</p>
 
+            <!-- Conseil : affiché tant que le cadeau de bienvenue n'est pas réglé -->
+            <div class="welcome-nudge" id="welcome-nudge" style="display:none;">
+                <div class="welcome-ico" style="width:38px;height:38px;font-size:16px;"><i class="fa-solid fa-gift"></i></div>
+                <div style="flex:1;min-width:200px;">
+                    <div style="font-weight:800;font-size:14px;">Conseil : offrez un cadeau de bienvenue</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Un café ou une petite réduction à l'inscription donne à vos clients une raison de scanner votre QR tout de suite.</div>
+                </div>
+                <button type="button" class="btn-action" style="padding:9px 16px;font-size:12px;" onclick="switchPanel('view-rewards')">Configurer</button>
+                <button type="button" class="wn-x" onclick="dismissWelcomeNudge()" aria-label="Masquer ce conseil"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-card" style="--accent-color: var(--secondary-accent)">
                     <div class="stat-card-icon" style="color:var(--secondary-accent)"><i class="fa-solid fa-users"></i></div>
@@ -2408,6 +2437,56 @@
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Suggérer avec l'IA
                 </button>
             </div>
+
+            <!-- ── Cadeau de bienvenue : facultatif, recommandé ── -->
+            <div class="card welcome-card" id="welcome-card" style="display:none;margin-top:18px;">
+                <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+                    <div class="welcome-ico"><i class="fa-solid fa-gift"></i></div>
+                    <div style="flex:1;min-width:220px;">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span style="font-family:Inter,sans-serif;font-weight:800;font-size:16px;">Cadeau de bienvenue</span>
+                            <span class="welcome-badge">Recommandé</span>
+                        </div>
+                        <p style="font-size:12.5px;color:var(--text-muted);line-height:1.6;margin:4px 0 0;">
+                            Offrez quelque chose à chaque client qui rejoint votre programme : c'est la meilleure raison de scanner votre QR dès sa première visite. Facultatif, vous pouvez l'arrêter quand vous voulez.
+                        </p>
+                    </div>
+                    <div class="toggle-wrap" onclick="toggleWelcomeGift()" style="margin-top:4px;">
+                        <div class="toggle" id="welcome-toggle"></div>
+                        <span class="toggle-label" id="welcome-toggle-label" style="font-size:13px;">Désactivé</span>
+                    </div>
+                </div>
+
+                <div id="welcome-body" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--glass-border);">
+                    <div class="form-group">
+                        <label>Type de cadeau</label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <button type="button" id="welcome-type-gift" class="loyalty-mode-btn active" onclick="setWelcomeType('gift')">
+                                <i class="fa-solid fa-mug-hot"></i>
+                                <strong>Produit offert</strong>
+                                <span>Un café, une viennoiserie…</span>
+                            </button>
+                            <button type="button" id="welcome-type-discount" class="loyalty-mode-btn" onclick="setWelcomeType('discount')">
+                                <i class="fa-solid fa-percent"></i>
+                                <strong>Réduction</strong>
+                                <span>-10 %, -5 € dès 20 €…</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ce que reçoit le client</label>
+                        <input type="text" id="welcome-label" maxlength="80" placeholder="Ex : 1 café offert">
+                        <div id="welcome-presets" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+                    </div>
+                    <p style="font-size:11.5px;color:var(--text-muted);line-height:1.6;margin:0 0 14px;">
+                        <i class="fa-solid fa-circle-info" style="color:var(--secondary-accent);margin-right:4px;"></i>Chaque nouveau membre le reçoit une seule fois. Il le voit sur sa carte avec un code ; vous le remettez en scannant sa carte, ou en saisissant le code au terminal ou en caisse. Les clients déjà inscrits ne sont pas concernés.
+                    </p>
+                </div>
+                <button type="button" onclick="saveWelcomeGift()" class="btn-action" id="welcome-save-btn" style="width:100%;margin-top:14px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+                </button>
+            </div>
+
             <div class="reward-form-grid" style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start;margin-top:18px;">
                 <form id="reward-creation-form" class="card" onsubmit="handleRewardSubmit(event)">
                     <div class="card-title"><i class="fa-solid fa-plus-circle"></i> Nouvelle Récompense</div>
@@ -4455,6 +4534,15 @@
             <div class="modal-points-val" id="client-found-pts">0 Pts</div>
         </div>
 
+        <div class="welcome-gift-banner" id="scan-welcome-gift" style="display:none;">
+            <i class="fa-solid fa-gift wg-ico"></i>
+            <div>
+                <div class="wg-t">Cadeau de bienvenue à remettre</div>
+                <div class="wg-l" id="scan-welcome-label"></div>
+            </div>
+            <button type="button" class="btn-action" id="scan-welcome-btn" onclick="giveWelcomeGiftToScannedClient()">Remis</button>
+        </div>
+
         <div id="scan-amount-section">
             <div class="form-group" style="text-align:left;margin-bottom:6px;">
                 <label>Montant de la vente (€)</label>
@@ -5298,6 +5386,145 @@
         const slugEl = document.getElementById('settings-slug');
         if (slugEl) slugEl.value = card?.slug || '';
         updatePublicUrlPreview();
+
+        // ── Cadeau de bienvenue ──
+        if (card) loadWelcomeGiftSettings(card);
+    }
+
+    /* ═══════════ CADEAU DE BIENVENUE ═══════════
+       Facultatif. Le serveur l'attribue à chaque nouveau membre
+       (supabase/cadeau-bienvenue.sql) ; ici on ne fait que le régler,
+       puis le remettre quand le client se présente. */
+    const WELCOME_PRESETS = {
+        gift:     ['1 café offert', '1 viennoiserie offerte', '1 boisson offerte', '1 dessert offert'],
+        discount: ['-10 % sur votre prochain achat', '-5 € dès 20 € d\'achat', '-15 % sur une prestation']
+    };
+    const welcomeState = { enabled: false, type: 'gift', loaded: false };
+
+    function loadWelcomeGiftSettings(card) {
+        welcomeState.loaded  = ('welcome_enabled' in card);   // colonne absente = migration non jouée
+        welcomeState.enabled = !!card.welcome_enabled;
+        welcomeState.type    = card.welcome_type === 'discount' ? 'discount' : 'gift';
+        const labelEl = document.getElementById('welcome-label');
+        if (labelEl) labelEl.value = card.welcome_label || '';
+        const carte = document.getElementById('welcome-card');
+        if (carte) carte.style.display = welcomeState.loaded ? '' : 'none';
+        renderWelcomeGiftUI();
+        updateWelcomeNudge();
+    }
+
+    function renderWelcomeGiftUI() {
+        const t = document.getElementById('welcome-toggle');
+        const l = document.getElementById('welcome-toggle-label');
+        const b = document.getElementById('welcome-body');
+        if (t) t.classList.toggle('on', welcomeState.enabled);
+        if (l) l.textContent = welcomeState.enabled ? 'Activé' : 'Désactivé';
+        if (b) b.style.display = welcomeState.enabled ? '' : 'none';
+        ['gift', 'discount'].forEach(k =>
+            document.getElementById('welcome-type-' + k)?.classList.toggle('active', welcomeState.type === k));
+        const labelEl = document.getElementById('welcome-label');
+        if (labelEl) labelEl.placeholder = welcomeState.type === 'discount' ? 'Ex : -10 % sur votre prochain achat' : 'Ex : 1 café offert';
+        const presets = document.getElementById('welcome-presets');
+        if (presets) {
+            presets.innerHTML = '';
+            WELCOME_PRESETS[welcomeState.type].forEach(txt => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'rate-preset-btn';
+                btn.textContent = txt;
+                btn.onclick = () => { if (labelEl) labelEl.value = txt; };
+                presets.appendChild(btn);
+            });
+        }
+    }
+
+    function toggleWelcomeGift() {
+        welcomeState.enabled = !welcomeState.enabled;
+        renderWelcomeGiftUI();
+    }
+
+    function setWelcomeType(type) {
+        const labelEl = document.getElementById('welcome-label');
+        // Un exemple pré-rempli de l'autre type n'a plus de sens : on le retire.
+        if (labelEl && WELCOME_PRESETS[welcomeState.type].includes(labelEl.value)) labelEl.value = '';
+        welcomeState.type = type === 'discount' ? 'discount' : 'gift';
+        renderWelcomeGiftUI();
+    }
+
+    async function saveWelcomeGift() {
+        const label = (document.getElementById('welcome-label')?.value || '').trim();
+        if (welcomeState.enabled && !label) {
+            showToast('warning', 'Cadeau à préciser', 'Indiquez ce que reçoit le client, par exemple « 1 café offert ».');
+            document.getElementById('welcome-label')?.focus();
+            return;
+        }
+        const btn = document.getElementById('welcome-save-btn');
+        if (btn) btn.disabled = true;
+        const { error } = await supabaseClient.from('merchant_cards')
+            .update({ welcome_enabled: welcomeState.enabled, welcome_type: welcomeState.type, welcome_label: label || null })
+            .eq('merchant_id', currentMerchantId);
+        if (btn) btn.disabled = false;
+        if (error) {
+            const manque = /welcome_/.test(error.message || '');
+            showToast('error', manque ? 'Fonction pas encore active' : 'Erreur',
+                manque ? 'Le cadeau de bienvenue sera disponible très bientôt.' : error.message);
+            return;
+        }
+        welcomeState.loaded = true;
+        try { localStorage.setItem(`KEEPO_welcome_set_${currentMerchantId}`, '1'); } catch (e) {}
+        updateWelcomeNudge();
+        showToast('success', welcomeState.enabled ? 'Cadeau de bienvenue activé' : 'Cadeau de bienvenue désactivé',
+            welcomeState.enabled ? `Vos nouveaux membres recevront : ${label}` : 'Les nouveaux membres ne recevront plus de cadeau.');
+    }
+
+    // Le conseil du tableau de bord disparaît dès que le commerçant a choisi,
+    // dans un sens ou dans l'autre, ou s'il l'a masqué.
+    function updateWelcomeNudge() {
+        const el = document.getElementById('welcome-nudge');
+        if (!el) return;
+        let decide = false;
+        try {
+            decide = localStorage.getItem(`KEEPO_welcome_set_${currentMerchantId}`) === '1'
+                  || localStorage.getItem(`KEEPO_welcome_nudge_off_${currentMerchantId}`) === '1';
+        } catch (e) {}
+        el.style.display = (welcomeState.loaded && !welcomeState.enabled && !decide) ? 'flex' : 'none';
+    }
+
+    function dismissWelcomeNudge() {
+        try { localStorage.setItem(`KEEPO_welcome_nudge_off_${currentMerchantId}`, '1'); } catch (e) {}
+        updateWelcomeNudge();
+    }
+
+    // Fiche client ouverte au scan : on signale un cadeau encore à remettre.
+    async function showScannedClientWelcomeGift(clientId) {
+        const box = document.getElementById('scan-welcome-gift');
+        if (!box) return;
+        box.style.display = 'none';
+        // Requête à part : si la migration n'est pas jouée, le scan fonctionne quand même.
+        const { data, error } = await supabaseClient.from('loyalty_balances')
+            .select('welcome_gift, welcome_given_at')
+            .eq('client_id', clientId).eq('merchant_id', currentMerchantId).maybeSingle();
+        if (error || !data || !data.welcome_gift || data.welcome_given_at) return;
+        if (!currentActiveClientSession || currentActiveClientSession.id !== clientId) return;
+        document.getElementById('scan-welcome-label').textContent = data.welcome_gift;
+        const btn = document.getElementById('scan-welcome-btn');
+        if (btn) { btn.disabled = false; btn.textContent = 'Remis'; }
+        box.style.display = 'flex';
+    }
+
+    async function giveWelcomeGiftToScannedClient() {
+        if (!currentActiveClientSession) return;
+        const btn = document.getElementById('scan-welcome-btn');
+        if (btn) btn.disabled = true;
+        const { data, error } = await supabaseClient
+            .rpc('remettre_cadeau_bienvenue', { p_client_id: currentActiveClientSession.id });
+        if (error) {
+            if (btn) btn.disabled = false;
+            showToast('error', 'Cadeau non enregistré', error.message);
+            return;
+        }
+        document.getElementById('scan-welcome-gift').style.display = 'none';
+        showToast('success', 'Cadeau de bienvenue remis', `${data?.gift || ''} · ${currentActiveClientSession.name}`);
     }
 
     async function saveBusinessSettings() {
@@ -6711,6 +6938,21 @@
             .rpc('validate_claim_code', { p_code: code });
 
         if (error) {
+            // Le code n'est pas celui d'une récompense : c'est peut-être
+            // celui d'un cadeau de bienvenue.
+            if (/Code invalide/i.test(error.message || '')) {
+                const { data: cadeau, error: errCadeau } = await supabaseClient
+                    .rpc('remettre_cadeau_bienvenue', { p_code: code });
+                if (!errCadeau && cadeau) {
+                    showWelcomeCodeSuccess(cadeau);
+                    document.getElementById('claim-code-input').value = '';
+                    return;
+                }
+                if (errCadeau && /déjà remis/.test(errCadeau.message || '')) {
+                    showToast('error', 'Code refusé', errCadeau.message);
+                    return;
+                }
+            }
             showToast('error', 'Code refusé', error.message);
             return;
         }
@@ -6731,7 +6973,7 @@
                     <div>
                         <div style="font-weight:800;font-size:14px;color:var(--secondary-accent);">Code validé !</div>
                         <div style="font-size:13px;color:var(--text-main);margin-top:2px;">
-                            Client : <strong>${result.client_name}</strong>
+                            Client : <strong>${escapeHtml(result.client_name || '')}</strong>
                         </div>
                         <div style="font-size:12px;color:var(--text-muted);">
                             ${result.points_debited} pts débités · Réclamé le ${result.claimed_at}
@@ -6743,6 +6985,24 @@
             showToast('success', `Code validé — ${result.client_name}`,
                 `${result.points_debited} pts débités · Réclamé le ${result.claimed_at}`);
         }
+    }
+
+    function showWelcomeCodeSuccess(cadeau) {
+        const box = document.getElementById('claim-validation-result');
+        if (!box) {
+            showToast('success', `Cadeau de bienvenue — ${cadeau.client_name || 'Client'}`, cadeau.gift || '');
+            return;
+        }
+        box.innerHTML = `
+            <div class="welcome-gift-banner" style="margin:10px 0 0;">
+                <i class="fa-solid fa-gift wg-ico"></i>
+                <div>
+                    <div class="wg-t">Cadeau de bienvenue validé</div>
+                    <div class="wg-l">${escapeHtml(cadeau.gift || '')}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Client : <strong>${escapeHtml(cadeau.client_name || 'Client')}</strong></div>
+                </div>
+            </div>`;
+        setTimeout(() => { if (box) box.innerHTML = ''; }, 8000);
     }
 
     async function flipCamera() {
@@ -6818,6 +7078,7 @@
         if (stHint) stHint.style.display = isStampsMode ? '' : 'none';
         if (scBtn)  scBtn.innerHTML = isStampsMode ? '<i class="fa-solid fa-stamp"></i> Ajouter 1 tampon' : '<i class="fa-solid fa-coins"></i> Valider + Points';
         document.getElementById('lookupCaisseModal').style.display = 'flex';
+        showScannedClientWelcomeGift(clientId);
     }
 
     async function executePointsCreditingEngine() {

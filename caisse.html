@@ -273,6 +273,14 @@
             color: var(--cyan); padding: 3px 10px; border-radius: 50px;
             font-size: 11px; font-weight: 700; margin-top: 5px;
         }
+        .cm-welcome { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; padding: 12px 14px;
+            border-radius: 14px; background: rgba(201,138,22,0.08); border: 1px solid rgba(201,138,22,0.3); }
+        .cm-welcome .cw-ico { font-size: 22px; color: #C98A16; flex-shrink: 0; }
+        .cm-welcome .cw-t { font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #C98A16; }
+        .cm-welcome .cw-l { font-size: 14px; font-weight: 700; margin-top: 2px; }
+        .cm-welcome button { margin-left: auto; flex-shrink: 0; padding: 9px 14px; border-radius: 10px; border: none;
+            background: #C98A16; color: #fff; font-weight: 700; font-size: 12px; cursor: pointer; font-family: inherit; }
+        .cm-welcome button:disabled { opacity: .6; cursor: default; }
         .cm-divider {
             height: 1px; background: rgba(17,24,39,0.07); margin-bottom: 24px;
         }
@@ -493,6 +501,16 @@
             </div>
         </div>
         <div class="cm-divider"></div>
+
+        <!-- Cadeau de bienvenue encore à remettre -->
+        <div class="cm-welcome" id="cm-welcome" style="display:none;">
+            <i class="fa-solid fa-gift cw-ico"></i>
+            <div>
+                <div class="cw-t">Cadeau de bienvenue à remettre</div>
+                <div class="cw-l" id="cm-welcome-label"></div>
+            </div>
+            <button type="button" id="cm-welcome-btn" onclick="remettreCadeauCaisse()">Remis</button>
+        </div>
 
         <!-- Saisie montant (mode Points uniquement) -->
         <div id="cm-amount-section">
@@ -870,6 +888,49 @@ async function ouvrirCreditPour(clientId) {
     creditClientName = client?.name || 'Client';
 
     openCreditModal(creditClientName, client?.avatar_url || null);
+    afficherCadeauBienvenue(clientId);
+}
+
+/* ── Cadeau de bienvenue (supabase/cadeau-bienvenue.sql) ──
+   Requête à part : si la migration manque, la caisse marche comme avant. */
+async function afficherCadeauBienvenue(clientId) {
+    const box = document.getElementById('cm-welcome');
+    if (!box) return;
+    box.style.display = 'none';
+    const { data, error } = await window.supabaseClient.from('loyalty_balances')
+        .select('welcome_gift, welcome_given_at')
+        .eq('merchant_id', merchantId).eq('client_id', clientId).maybeSingle();
+    if (error || !data || !data.welcome_gift || data.welcome_given_at) return;
+    if (creditClientId !== clientId) return;
+    document.getElementById('cm-welcome-label').textContent = data.welcome_gift;
+    const btn = document.getElementById('cm-welcome-btn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Remis'; }
+    box.style.display = 'flex';
+}
+
+async function remettreCadeauCaisse() {
+    if (!creditClientId) return;
+    const btn = document.getElementById('cm-welcome-btn');
+    if (btn) btn.disabled = true;
+    const { data, error } = await window.supabaseClient
+        .rpc('remettre_cadeau_bienvenue', { p_client_id: creditClientId });
+    if (error) {
+        if (btn) btn.disabled = false;
+        showCaisseResult('error', 'Cadeau non enregistré', error.message);
+        return;
+    }
+    document.getElementById('cm-welcome').style.display = 'none';
+    showCaisseResult('success', 'Cadeau de bienvenue remis', `${data?.gift || ''} · ${creditClientName}`);
+    auditCadeau(creditClientId, data);
+}
+
+function auditCadeau(clientId, data) {
+    if (!selectedCashier) return;
+    window.supabaseClient.from('cashier_audit').insert({
+        merchant_id: merchantId, cashier_id: selectedCashier.id,
+        cashier_name: selectedCashier.name, action: 'welcome_give', client_id: clientId,
+        meta: { gift: data?.gift || null, client_name: data?.client_name || null }
+    }).then(() => {}, () => {});
 }
 
 /* ── Créditer à partir du code affiché sur le téléphone du client ──
@@ -1080,6 +1141,21 @@ async function validateCodeAtCaisse() {
     const code = document.getElementById('claim-code-input').value?.trim().toUpperCase();
     if (!code) return;
     const { data, error } = await window.supabaseClient.rpc('validate_claim_code', { p_code: code });
+    if (error && /Code invalide/i.test(error.message || '')) {
+        // Ce n'est pas une récompense : peut-être un cadeau de bienvenue.
+        const { data: cadeau, error: errCadeau } = await window.supabaseClient
+            .rpc('remettre_cadeau_bienvenue', { p_code: code });
+        if (!errCadeau && cadeau) {
+            showCaisseResult('success', 'Cadeau de bienvenue validé', `${cadeau.client_name || 'Client'} — ${cadeau.gift || ''}`);
+            document.getElementById('claim-code-input').value = '';
+            auditCadeau(null, cadeau);
+            return;
+        }
+        if (errCadeau && /déjà remis/.test(errCadeau.message || '')) {
+            showCaisseResult('error', 'Code refusé', errCadeau.message);
+            return;
+        }
+    }
     if (error) {
         showCaisseResult('error', 'Code invalide', error.message);
     } else {
