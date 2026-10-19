@@ -3600,6 +3600,8 @@ export default {
       try { brut = decodeURIComponent(brut); } catch { /* code tel quel */ }
       const code = brut.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                        .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16);
+      // Sans code (keepo.eu/a/) : la page du programme. Code trop court : l'accueil.
+      if (!code) return Response.redirect(`${url.origin}/ambassadeurs`, 302);
       return Response.redirect(`${url.origin}/${code.length >= 3 ? '?amb=' + code : ''}`, 302);
     }
 

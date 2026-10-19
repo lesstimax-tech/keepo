@@ -12,4 +12,15 @@
 /commercant     /dashboard-commercant   301
 /merchant       /dashboard-commercant   301
 /essai          /connexion              301
+
+# Programme ambassadeur : les adresses qu'on tape de tête
+/a                       /ambassadeurs           302
+/ambassadeur             /ambassadeurs           301
+/ambassador              /ambassadeurs           301
+/ambassadors             /ambassadeurs           301
+/affiliation             /ambassadeurs           301
+/affiliations            /ambassadeurs           301
+/affiliate               /ambassadeurs           301
+/espace-ambassadeur      /dashboard-ambassadeur  301
+/dashboard-ambassadeurs  /dashboard-ambassadeur  301
 # NB: /pro doit être servi par pro.html (page marketing) — pas de redirection ici !
