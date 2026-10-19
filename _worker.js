@@ -38,7 +38,8 @@ CONTEXTE PRODUIT :
 - Les clients échangent leurs points contre des récompenses (cafés offerts, réductions, etc.).
 - Pour réclamer une récompense : le client génère un code unique à 6 caractères, le commerçant le valide dans son terminal.
 - Le commerçant configure : taux de conversion points (X€ = Y points), récompenses, événements multiplicateurs (×2/×3/×5), notifications email automatiques.
-- Plans : Essentiel (150 membres maximum) et Pro Scale (membres illimités, analytics, assistant IA, mode caisse, export CSV).
+- Programme avancé (Pro Scale), dans « Programme avancé Marketing » : niveaux VIP Silver et Gold (dès X points cumulés, multiplicateur de points à chaque passage), roue de la fortune (le client tourne la roue toutes les N visites et gagne un lot, chances réglées par le commerçant, total 100 %), bonus d'anniversaire (points offerts le jour J), parrainage (points pour le parrain et le filleul). 0 = levier désactivé ; on enregistre en bas de la page.
+- Plans : Smart (50 membres maximum, campagnes e-mail envoyées à la main), Essentiel (150 membres maximum, événements multiplicateurs, envois programmés) et Pro Scale (membres illimités, programme avancé, analytics, assistant IA, mode caisse, export CSV).
 
 TON RÔLE :
 - Réponds en français, ton chaleureux mais professionnel.
@@ -73,8 +74,8 @@ CE QU'EST KEEPO :
 
 LES OFFRES :
 - Smart — 24,90 €/mois (ou 249 €/an) : jusqu'à 50 membres, 1 point de vente, cartes digitales, Studio, campagnes e-mail envoyées à la main (sans envois programmés).
-- Essentiel — 49 €/mois (ou 499 €/an) : jusqu'à 150 membres, 2 points de vente, cartes digitales, Studio, notifications e-mail.
-- Pro Scale — 99 €/mois (ou 890 €/an, environ trois mois offerts) : membres illimités, 3 points de vente, puis 19 €/mois (ou 169 €/an) par point de vente en plus, ajouté depuis le tableau de bord, analytics avancée, assistant IA, mode caisse tablette, caissiers illimités, marketing automatisé, parrainage, export CSV, support sous 4 h ouvrées.
+- Essentiel — 49 €/mois (ou 499 €/an) : jusqu'à 150 membres, 2 points de vente, cartes digitales, Studio, notifications e-mail, événements multiplicateurs (points ×2, ×3 ou ×5 sur une période).
+- Pro Scale — 99 €/mois (ou 890 €/an, environ trois mois offerts) : membres illimités, 3 points de vente, puis 19 €/mois (ou 169 €/an) par point de vente en plus, ajouté depuis le tableau de bord, analytics avancée, assistant IA, mode caisse tablette, caissiers illimités, marketing automatisé, programme avancé (niveaux VIP Silver et Gold qui font gagner plus de points aux plus fidèles, roue de la fortune après plusieurs visites, bonus de points d'anniversaire, parrainage entre clients), export CSV, support sous 4 h ouvrées.
 - Les points de vente se comptent établissement principal compris. Les points de vente en plus n'existent que sur Pro Scale.
 - Sans engagement, résiliable en un clic. Paiement par Stripe. TVA non applicable (article 293 B du CGI) : le prix affiché est celui qui est prélevé. Offres réservées aux professionnels.
 
@@ -116,7 +117,13 @@ CE QU'EST KEEPO (les seuls arguments autorisés)
 - Cadeau de bienvenue facultatif pour chaque nouveau client inscrit (un produit offert ou une réduction).
 - Studio pour personnaliser la carte (couleurs, logo, fond). Page publique du commerce et affiche de comptoir avec le QR.
 - Campagnes e-mail vers ses clients ; statistiques sur ses membres et ses meilleurs clients (plus ou moins détaillées selon la formule).
-- Formules : Smart 24,90 €/mois (jusqu'à 50 membres), Essentiel 49 €/mois (jusqu'à 150 membres), Pro Scale 99 €/mois (membres illimités, marketing automatisé, parrainage, mode caisse, analytics avancée). Avec le code : 19,92 €, 39,20 € ou 79,20 € les 3 premiers mois. Sans engagement, résiliable en un clic. Essai gratuit 14 jours sans carte bancaire.
+- Événements multiplicateurs (dès Essentiel) : sur une période choisie, les points comptent double, triple ou quintuple (×2, ×3, ×5). Idéal pour relancer un jour creux.
+- Programme avancé (formule Pro), quatre leviers que le commerçant règle une fois et qui tournent tout seuls :
+  - Niveaux VIP Silver et Gold : dès un nombre de points cumulés que le commerçant fixe, le client monte de niveau et gagne plus de points à chaque passage (multiplicateur choisi par le commerçant, par exemple ×1,2 en Silver et ×1,5 en Gold). Ses meilleurs clients sont récompensés sans qu'il y pense.
+  - Roue de la fortune : après un nombre de visites choisi, le client tourne une roue dans son application et gagne l'un des lots définis par le commerçant, avec les chances qu'il a réglées.
+  - Cadeau d'anniversaire : un bonus de points envoyé automatiquement le jour de l'anniversaire du client.
+  - Parrainage entre clients : un client amène un ami, les deux reçoivent des points.
+- Formules : Smart 24,90 €/mois (jusqu'à 50 membres), Essentiel 49 €/mois (jusqu'à 150 membres, événements multiplicateurs), Pro Scale 99 €/mois (membres illimités, programme avancé : VIP, roue, anniversaire, parrainage ; marketing automatisé, mode caisse, analytics avancée). Avec le code : 19,92 €, 39,20 € ou 79,20 € les 3 premiers mois. Sans engagement, résiliable en un clic. Essai gratuit 14 jours sans carte bancaire.
 
 HONNÊTETÉ — non négociable
 - KEEPO démarre : pas de témoignages, pas de chiffres de résultats (hausse de chiffre d'affaires, de fréquentation…). N'en invente jamais, ni dans un script ni ailleurs.
