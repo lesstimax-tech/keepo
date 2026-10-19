@@ -67,7 +67,7 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
 .code{font-size:44px;font-weight:700;letter-spacing:.08em;margin:2px 0 4px;word-break:break-all}
 .lien-court{font-size:14px;color:rgba(255,255,255,.8);margin-bottom:18px;word-break:break-all}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:10px 15px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:transform .25s var(--ease),background .2s,border-color .2s;white-space:nowrap}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:10px 15px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:transform .25s var(--ease),background .2s,border-color .2s;white-space:nowrap}
 .btn:active{transform:scale(.98)}
 .btn-blanc{background:#fff;color:var(--ink)}
 .btn-verre{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.22)}
@@ -132,6 +132,52 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
 .qr-boite{background:#fff;border-radius:22px;padding:26px;text-align:center;max-width:360px;width:100%}
 .qr-boite #qr-zone{display:flex;justify-content:center;margin:14px 0}
 .qr-boite p{color:var(--muted);font-size:13.5px;margin:0}
+
+/* ═══ Vidéos ═══ */
+.sec-video{margin-bottom:16px}
+.sec-tete{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sec-tete p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.avance{font-size:13px;font-weight:600;color:var(--acc);background:var(--acc-soft);border-radius:99px;padding:5px 12px;white-space:nowrap}
+.rail-v{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:16px}
+.vignette{position:relative;border:none;padding:0;background:none;cursor:pointer;text-align:left;border-radius:14px}
+.vignette .img{position:relative;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:var(--bg);border:1px solid var(--line)}
+.vignette img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s var(--ease)}
+.vignette:hover img{transform:scale(1.04)}
+.vignette .jouer{position:absolute;left:10px;bottom:10px;width:40px;height:40px;border-radius:50%;background:rgba(13,13,17,.72);color:#fff;display:grid;place-items:center;font-size:20px;backdrop-filter:blur(4px)}
+.vignette .vu{position:absolute;right:8px;top:8px;background:var(--ok);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:3px 8px;display:none}
+.vignette.deja .vu{display:block}
+.vignette b{display:block;font-size:13px;margin-top:8px;line-height:1.35}
+.vignette small{display:block;font-size:12px;color:var(--muted)}
+.ugc{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+.format{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;display:flex;flex-direction:column}
+.format-t{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.format-t .pic{width:34px;height:34px;border-radius:10px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;font-size:17px;flex:none}
+.format b{font-size:15px}
+.format p{margin:0 0 12px;color:var(--muted);font-size:13.5px;line-height:1.5;flex:1}
+.format .btn{align-self:flex-start;padding:8px 12px;font-size:13px}
+.conseils{margin-top:14px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.conseils b{font-size:14px}
+.conseils ul{margin:8px 0 0;padding-left:20px;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.sous-titre{font-size:15px;font-weight:600;margin:22px 0 2px}
+.rail-p{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px}
+.pub .img{aspect-ratio:9/16;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--bg);position:relative;cursor:pointer}
+.pub img{width:100%;height:100%;object-fit:cover;display:block}
+.pub b{display:block;font-size:13px;margin:8px 0 6px;line-height:1.35}
+.pub .btns{display:flex;gap:6px;flex-wrap:wrap}
+.pub .btns .btn{padding:7px 10px;font-size:12.5px;flex:1}
+.lecteur{position:fixed;inset:0;z-index:75;background:rgba(8,8,12,.9);display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:12px}
+.lecteur.ouvert{display:flex}
+.lecteur video{max-height:calc(100vh - 120px);max-height:calc(100dvh - 120px);max-width:100%;aspect-ratio:9/16;border-radius:16px;background:#000}
+.lecteur-bas{display:flex;align-items:center;gap:10px;color:#fff;flex-wrap:wrap;justify-content:center}
+.lecteur-bas b{font-size:14px;font-weight:600;margin:0 6px}
+.lecteur-bas .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)}
+.lecteur-fermer{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;cursor:pointer;display:grid;place-items:center;font-size:20px}
+@media (max-width:820px){
+  .rail-v{grid-template-columns:repeat(6,42%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+  .rail-v .vignette{scroll-snap-align:start}
+  .rail-p{grid-template-columns:repeat(5,42%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+  .ugc{grid-template-columns:1fr}
+}
 
 /* ═══ Assistant IA ═══ */
 .btn-ia{display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:600;color:#fff;background:var(--grad)}
@@ -263,6 +309,9 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-refaire" viewBox="0 0 24 24"><path d="M20 11.5A8 8 0 1 0 18.4 17"/><path d="M20 6.5v5h-5"/></symbol>
+  <symbol id="i-lecture" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="6.5" width="13" height="11" rx="2.5"/><path d="M16 10.5l5-3v9l-5-3"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.4"/></symbol>
 </svg>
 
@@ -334,6 +383,34 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
       <button class="puce" onclick="ouvrirIA('Un commerçant me dit : « J\'ai déjà des cartes en carton, ça marche très bien. » Que lui répondre ?')">Répondre à une objection</button>
       <button class="puce" onclick="ouvrirIA('Où j\'en suis ? Fais le point sur mes commerces et ma prochaine prime.')">Où j'en suis ?</button>
     </div>
+  </section>
+
+  <section class="carte sec-video" aria-labelledby="t-formation">
+    <div class="sec-tete">
+      <div><h2 id="t-formation">Comprendre KEEPO</h2><p>Six vidéos d'environ 30&nbsp;secondes pour tout savoir avant d'en parler.</p></div>
+      <span class="avance" id="formation-avance">0 / 6 vues</span>
+    </div>
+    <div class="rail-v" id="rail-formation"></div>
+  </section>
+
+  <section class="carte sec-video" aria-labelledby="t-videos">
+    <div class="sec-tete">
+      <div><h2 id="t-videos">Vos vidéos</h2><p>Ce qui marche le mieux : une vidéo filmée par vous, au téléphone, sincère et courte.</p></div>
+    </div>
+    <div class="ugc" id="formats-ugc"></div>
+    <div class="conseils">
+      <b>Conseils de tournage</b>
+      <ul>
+        <li>À la verticale, à la lumière du jour, 15 à 30 secondes.</li>
+        <li>Une accroche dans les deux premières secondes, et des sous-titres : beaucoup regardent sans le son.</li>
+        <li>Montrez le vrai KEEPO : la démo <a href="/demo" target="_blank">keepo.eu/demo</a> se filme sans compte.</li>
+        <li>Vous filmez quelqu'un ou un commerce : demandez son accord avant.</li>
+        <li>Mention « Collaboration commerciale » sur la vidéo, et sur TikTok « Contenu de marque » activé.</li>
+      </ul>
+    </div>
+    <div class="sous-titre">Pubs KEEPO prêtes à publier</div>
+    <p class="sous" style="margin:0;font-size:13.5px;">Téléchargez, publiez avec la légende : votre code est déjà dedans, avec le crédit de la musique.</p>
+    <div class="rail-p" id="rail-pubs"></div>
   </section>
 
   <div class="grille">
@@ -429,6 +506,16 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
   </div>
 </div>
 
+<div class="lecteur" id="lecteur" onclick="if (event.target === this) fermerLecteur()" role="dialog" aria-modal="true" aria-label="Vidéo">
+  <button class="lecteur-fermer" onclick="fermerLecteur()" aria-label="Fermer"><svg class="icon"><use href="#i-x"/></svg></button>
+  <video id="lecteur-video" controls playsinline preload="metadata"></video>
+  <div class="lecteur-bas">
+    <button class="btn" id="lecteur-prec" onclick="lireEpisode(lectureEnCours - 1)">Précédent</button>
+    <b id="lecteur-titre"></b>
+    <button class="btn" id="lecteur-suiv" onclick="lireEpisode(lectureEnCours + 1)">Épisode suivant</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -497,6 +584,7 @@ async function charger() {
   iaConv = lireIA();
   document.getElementById('btn-ia-tete').style.display = '';
   afficher();
+  afficherVideos();
   document.getElementById('chargement').style.display = 'none';
   document.getElementById('contenu').style.display = 'block';
 }
@@ -701,6 +789,145 @@ async function enregistrer() {
   } catch (_) { toast('Non enregistré, réessayez'); }
   btn.disabled = false;
 }
+
+// ═══════════════════════════════════════════════════════════
+//  VIDÉOS — formation et pubs à publier
+// ═══════════════════════════════════════════════════════════
+const FORMATION = [
+  { f: 'formation-01-keepo-cest-quoi',          t: 'KEEPO, c\'est quoi\u00A0?', s: 29 },
+  { f: 'formation-02-parcours-client',           t: 'Le parcours du client', s: 34 },
+  { f: 'formation-03-lancer-son-programme',      t: 'Lancer son programme', s: 33 },
+  { f: 'formation-04-ce-que-keepo-apporte',      t: 'Ce que KEEPO apporte', s: 30 },
+  { f: 'formation-05-formules-et-code',          t: 'Les formules et votre code', s: 25 },
+  { f: 'formation-06-questions-des-commercants', t: 'Les questions des commerçants', s: 30 },
+];
+const PUBS = [
+  { f: 'keepo-pub-style-conversation',         t: 'Deux commerçants en discussion', musique: 'Moavii – We Are' },
+  { f: 'keepo-pub-style-papier',               t: 'Du carton au téléphone',        musique: 'Epic Spectrum – Morning Light' },
+  { f: 'keepo-pub-style-arcade-points',        t: 'Les points, façon jeu vidéo',   musique: 'Avanti – Mindwave' },
+  { f: 'keepo-pub-style-film-produit',         t: 'Le tableau de bord',            musique: 'Aylex – Innovating Care' },
+  { f: 'keepo-pub-style-editorial-parrainage', t: 'Le parrainage entre clients',   musique: 'Walen – Dark Heart' },
+];
+const FORMATS_UGC = [
+  { t: 'Face caméra', d: 'Vous parlez aux commerçants en 20 secondes : le problème du carton, la carte dans le téléphone, votre code.',
+    q: 'Écris-moi un script UGC « face caméra » de 20 secondes : je parle aux commerçants, avec une accroche forte, des sous-titres à l\'écran et mon code à la fin.' },
+  { t: 'Au comptoir', d: 'Vous filmez votre commerce préféré : le QR code sur le comptoir, la carte qui apparaît dans votre téléphone.',
+    q: 'Écris-moi un script UGC « au comptoir » de 25 secondes : je filme mon commerce préféré, je scanne le QR code et la carte apparaît dans mon téléphone. Plan par plan.' },
+  { t: 'POV commerçant', d: '« POV : tes clients perdent leur carte de fidélité. » Du texte à l\'écran et le vrai KEEPO en démo.',
+    q: 'Écris-moi un script UGC « POV » de 15 secondes pour TikTok, du point de vue d\'un commerçant dont les clients perdent leur carte en carton, avec le texte à afficher à l\'écran.' },
+  { t: 'Avant / après', d: 'Une carte en carton froissée, puis la carte dans le téléphone. Simple, visuel, efficace.',
+    q: 'Écris-moi un script UGC « avant / après » de 15 secondes : la carte de fidélité en carton, puis la carte KEEPO dans le téléphone. Plan par plan, avec le texte à l\'écran.' },
+];
+let lectureEnCours = -1;
+
+function vusFormation() { try { return JSON.parse(localStorage.getItem('keepo_formation_vue_' + iaUid) || '[]'); } catch (_) { return []; } }
+function marquerVu(i) {
+  const v = vusFormation();
+  if (!v.includes(i)) { v.push(i); try { localStorage.setItem('keepo_formation_vue_' + iaUid, JSON.stringify(v)); } catch (_) {} }
+  afficherVideos();
+}
+
+function afficherVideos() {
+  const vus = vusFormation();
+  document.getElementById('formation-avance').textContent = vus.length >= FORMATION.length ? '✓ Formation terminée' : vus.length + ' / ' + FORMATION.length + ' vues';
+  const rail = document.getElementById('rail-formation');
+  rail.textContent = '';
+  FORMATION.forEach((x, i) => {
+    const b = el('button', 'vignette' + (vus.includes(i) ? ' deja' : ''));
+    b.type = 'button';
+    b.onclick = () => lireEpisode(i);
+    b.innerHTML = '<div class="img"><img loading="lazy" alt="" src="/videos/formation/' + x.f + '.jpg"><span class="jouer"><svg class="icon"><use href="#i-lecture"/></svg></span><span class="vu">✓ Vu</span></div>';
+    b.appendChild(el('b', '', (i + 1) + '. ' + x.t));
+    b.appendChild(el('small', '', x.s + ' secondes'));
+    rail.appendChild(b);
+  });
+
+  const ugc = document.getElementById('formats-ugc');
+  ugc.textContent = '';
+  FORMATS_UGC.forEach(x => {
+    const c = el('div', 'format');
+    const t = el('div', 'format-t');
+    t.innerHTML = '<span class="pic"><svg class="icon"><use href="#i-cam"/></svg></span>';
+    t.appendChild(el('b', '', x.t));
+    c.appendChild(t);
+    c.appendChild(el('p', '', x.d));
+    const btn = el('button', 'btn btn-cadre');
+    btn.type = 'button';
+    btn.innerHTML = '<svg class="icon"><use href="#i-etoile"/></svg>';
+    btn.appendChild(document.createTextNode('Écrire ce script avec l\'IA'));
+    btn.onclick = () => ouvrirIA(x.q);
+    c.appendChild(btn);
+    ugc.appendChild(c);
+  });
+
+  const pubs = document.getElementById('rail-pubs');
+  pubs.textContent = '';
+  PUBS.forEach(x => {
+    const c = el('div', 'pub');
+    const im = el('div', 'img');
+    im.innerHTML = '<img loading="lazy" alt="" src="/videos/pubs/' + x.f + '.jpg"><span class="jouer" style="position:absolute;left:50%;top:50%;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:rgba(13,13,17,.72);color:#fff;display:grid;place-items:center;font-size:18px"><svg class="icon"><use href="#i-lecture"/></svg></span>';
+    im.onclick = () => lireVideo('/videos/pubs/' + x.f + '.mp4', x.t, false);
+    c.appendChild(im);
+    c.appendChild(el('b', '', x.t));
+    const btns = el('div', 'btns');
+    const dl = el('a', 'btn btn-cadre');
+    dl.href = '/videos/pubs/' + x.f + '.mp4';
+    dl.setAttribute('download', 'keepo-' + x.f.replace(/^keepo-/, '') + '.mp4');
+    dl.innerHTML = '<svg class="icon"><use href="#i-dl"/></svg>';
+    dl.appendChild(document.createTextNode('Télécharger'));
+    const lg = el('button', 'btn btn-cadre');
+    lg.type = 'button';
+    lg.innerHTML = '<svg class="icon"><use href="#i-copy"/></svg>';
+    lg.appendChild(document.createTextNode('Légende'));
+    lg.onclick = () => copier(legendePub(x), 'Légende copiée');
+    btns.appendChild(dl); btns.appendChild(lg);
+    c.appendChild(btns);
+    pubs.appendChild(c);
+  });
+}
+
+function legendePub(x) {
+  return 'Collaboration commerciale avec KEEPO.\n'
+    + 'Commerçants : la carte de fidélité dans le téléphone de vos clients, sans carton à perdre. '
+    + '-20 % pendant 3 mois avec mon code ' + espace.code + ' : ' + lienCourt() + '\n'
+    + 'Musique : ' + x.musique + ' (freetouse.com)';
+}
+
+function lireVideo(src, titre, episode) {
+  const l = document.getElementById('lecteur');
+  const v = document.getElementById('lecteur-video');
+  v.src = src;
+  document.getElementById('lecteur-titre').textContent = titre;
+  document.getElementById('lecteur-prec').style.display = episode && lectureEnCours > 0 ? '' : 'none';
+  document.getElementById('lecteur-suiv').style.display = episode && lectureEnCours < FORMATION.length - 1 ? '' : 'none';
+  l.classList.add('ouvert');
+  document.body.style.overflow = 'hidden';
+  v.play().catch(() => {});
+}
+function lireEpisode(i) {
+  if (i < 0 || i >= FORMATION.length) return;
+  lectureEnCours = i;
+  lireVideo('/videos/formation/' + FORMATION[i].f + '.mp4', (i + 1) + '. ' + FORMATION[i].t, true);
+}
+function fermerLecteur() {
+  const v = document.getElementById('lecteur-video');
+  v.pause(); v.removeAttribute('src'); v.load();
+  document.getElementById('lecteur').classList.remove('ouvert');
+  document.body.style.overflow = '';
+  lectureEnCours = -1;
+}
+// Un épisode compte comme vu aux trois quarts ; à la fin, le suivant démarre.
+document.getElementById('lecteur-video').addEventListener('timeupdate', ev => {
+  const v = ev.target;
+  if (lectureEnCours >= 0 && v.duration && v.currentTime / v.duration > 0.75) {
+    const i = lectureEnCours;
+    if (!vusFormation().includes(i)) marquerVu(i);
+  }
+});
+document.getElementById('lecteur-video').addEventListener('ended', () => {
+  if (lectureEnCours >= 0 && lectureEnCours < FORMATION.length - 1) lireEpisode(lectureEnCours + 1);
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && document.getElementById('lecteur').classList.contains('ouvert')) fermerLecteur(); });
 
 // ═══════════════════════════════════════════════════════════
 //  ASSISTANT IA — conversation en continu
