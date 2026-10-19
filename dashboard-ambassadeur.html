@@ -48,7 +48,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.88);backdro
 .marque{display:flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;letter-spacing:-.02em}
 .marque img{height:26px;width:auto}
 .marque small{font-weight:500;color:var(--muted);font-size:13px;letter-spacing:0;padding-left:9px;border-left:1px solid var(--line-2)}
-.btn-lien{background:none;border:none;color:var(--muted);font-size:13.5px;font-weight:500;cursor:pointer;padding:6px 4px}
+.btn-lien{background:none;border:none;color:var(--muted);font-size:13.5px;font-weight:500;cursor:pointer;padding:6px 4px;white-space:nowrap}
 .btn-lien:hover{color:var(--ink)}
 
 main{max-width:980px;margin:0 auto;padding:26px 20px 70px}
@@ -133,6 +133,100 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
 .qr-boite #qr-zone{display:flex;justify-content:center;margin:14px 0}
 .qr-boite p{color:var(--muted);font-size:13.5px;margin:0}
 
+/* ═══ Assistant IA ═══ */
+.btn-ia{display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:600;color:#fff;background:var(--grad)}
+.btn-ia .icon{font-size:15px}
+.barre-d{display:flex;align-items:center;gap:12px}
+.lanceur{margin-bottom:16px;position:relative;overflow:hidden}
+.lanceur::after{content:"";position:absolute;right:-60px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(90,50,160,.10),transparent 70%);pointer-events:none}
+.lanceur-tete{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.etoile{width:38px;height:38px;border-radius:12px;background:var(--grad);color:#fff;display:grid;place-items:center;flex:none;font-size:19px}
+.lanceur-tete p{margin:2px 0 0;color:var(--muted);font-size:13.5px}
+.lanceur form{display:flex;gap:8px;position:relative;z-index:1}
+.lanceur input{flex:1;min-width:0;padding:13px 15px;border-radius:12px;border:1px solid var(--line-2);font-size:15px;background:#fff}
+.lanceur input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(75,69,166,.12)}
+.puces{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;position:relative;z-index:1}
+.puce{border:1px solid var(--line-2);background:#fff;border-radius:99px;padding:7px 13px;font-size:13px;cursor:pointer;color:var(--ink-2)}
+.puce:hover{border-color:var(--acc);color:var(--acc)}
+
+.ia{position:fixed;inset:0;z-index:70;background:rgba(13,13,17,.42);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:24px}
+.ia.ouvert{display:flex}
+.ia-fen{background:#fff;width:min(860px,100%);height:min(92vh,920px);border-radius:24px;box-shadow:0 40px 90px -30px rgba(13,13,17,.5);display:flex;flex-direction:column;overflow:hidden;animation:ia-entree .45s var(--ease)}
+@keyframes ia-entree{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.ia-tete{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.ia-titre{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.ia-titre>div:last-child{min-width:0}
+.ia-titre .etoile{width:32px;height:32px;border-radius:10px;font-size:16px}
+.ia-titre b{display:block;font-size:15px}
+.ia-titre small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ia-outils{display:flex;gap:4px}
+.ia-outil{background:none;border:none;cursor:pointer;color:var(--muted);border-radius:9px;padding:8px 10px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.ia-outil:hover{background:var(--bg);color:var(--ink)}
+.ia-outil .icon{font-size:16px}
+.ia-fil{flex:1;overflow-y:auto;padding:26px 20px 10px;scroll-behavior:smooth}
+.ia-col{max-width:700px;margin:0 auto}
+.ia-vide{padding:6vh 0 10px}
+.ia-vide h2{font-size:30px;letter-spacing:-.035em;line-height:1.15;font-weight:600}
+.ia-vide h2 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ia-vide p{color:var(--muted);margin:8px 0 24px;font-size:15px}
+.ia-idees{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ia-idee{text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:14px 15px;cursor:pointer;transition:border-color .2s,transform .25s var(--ease),box-shadow .25s}
+.ia-idee:hover{border-color:rgba(75,69,166,.35);transform:translateY(-2px);box-shadow:var(--shadow)}
+.ia-idee b{display:block;font-size:14px;margin-bottom:3px}
+.ia-idee span{color:var(--muted);font-size:13px;line-height:1.45}
+.ia-moi{display:flex;justify-content:flex-end;margin:0 0 22px}
+.ia-moi div{background:var(--bg);border:1px solid var(--line);border-radius:18px 18px 4px 18px;padding:10px 15px;max-width:82%;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
+.ia-elle{display:flex;gap:12px;margin:0 0 26px}
+.ia-elle>.etoile{width:28px;height:28px;border-radius:9px;font-size:14px;margin-top:2px}
+.ia-corps{flex:1;min-width:0}
+.ia-md{font-size:15px;line-height:1.65;color:var(--ink);overflow-wrap:anywhere}
+.ia-md>*:first-child{margin-top:0}
+.ia-md p{margin:0 0 12px}
+.ia-md h4{font-size:15.5px;margin:18px 0 6px;letter-spacing:-.01em}
+.ia-md ul,.ia-md ol{margin:0 0 12px;padding-left:22px}
+.ia-md li{margin:3px 0}
+.ia-md code{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:13.5px}
+.ia-md hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+.ia-copie{border:1px solid var(--line);border-radius:14px;margin:4px 0 14px;overflow:hidden;background:#FBFBFD}
+.ia-copie-tete{display:flex;align-items:center;justify-content:space-between;padding:7px 8px 7px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);font-weight:600}
+.ia-copie-tete button{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;color:var(--ink)}
+.ia-copie pre{margin:0;padding:12px 14px;white-space:pre-wrap;font-family:inherit;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+.ia-curseur{display:inline-block;width:8px;height:1.05em;vertical-align:-.15em;border-radius:2px;margin-left:2px;background:var(--acc);animation:ia-clignote 1s steps(2) infinite}
+@keyframes ia-clignote{50%{opacity:0}}
+.ia-pense{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:14.5px;padding-top:3px}
+.ia-pense span{background:linear-gradient(90deg,var(--muted) 0%,#C9C8D6 50%,var(--muted) 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:ia-reflet 1.6s linear infinite}
+@keyframes ia-reflet{from{background-position:100% 0}to{background-position:-100% 0}}
+.ia-actions{display:flex;gap:2px;margin-top:2px;opacity:0;transition:opacity .2s}
+.ia-elle:hover .ia-actions,.ia-elle.derniere .ia-actions{opacity:1}
+.ia-actions button{background:none;border:none;color:var(--muted);cursor:pointer;border-radius:8px;padding:6px 8px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px}
+.ia-actions button:hover{background:var(--bg);color:var(--ink)}
+.ia-erreur{color:var(--err);font-size:14.5px}
+.ia-erreur button{margin-left:6px;border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px}
+.ia-bas{padding:10px 20px 14px}
+.ia-saisie{max-width:700px;margin:0 auto;border:1px solid var(--line-2);border-radius:18px;padding:8px 8px 8px 16px;display:flex;align-items:flex-end;gap:8px;background:#fff;box-shadow:0 8px 24px -18px rgba(13,13,17,.35);transition:border-color .2s,box-shadow .2s}
+.ia-saisie:focus-within{border-color:rgba(75,69,166,.5);box-shadow:0 0 0 3px rgba(75,69,166,.1)}
+.ia-saisie textarea{flex:1;border:none;outline:none;resize:none;font:inherit;font-size:15px;line-height:1.5;max-height:170px;padding:6px 0;background:none}
+.ia-envoi{width:38px;height:38px;border-radius:12px;border:none;cursor:pointer;background:var(--ink);color:#fff;display:grid;place-items:center;flex:none;transition:opacity .2s,transform .2s}
+.ia-envoi:disabled{opacity:.3;cursor:default}
+.ia-envoi .icon{font-size:17px}
+.ia-envoi.stop{background:var(--ink)}
+.ia-note{max-width:700px;margin:7px auto 0;text-align:center;font-size:11.5px;color:var(--faint)}
+
+@media (max-width:640px){
+  .ia{padding:0}
+  .ia-fen{width:100%;height:100%;height:100dvh;border-radius:0}
+  .ia-fil{padding:20px 16px 8px}
+  .ia-bas{padding:8px 12px max(12px,env(safe-area-inset-bottom))}
+  .ia-vide{padding-top:2vh}
+  .ia-vide h2{font-size:26px}
+  .ia-idees{grid-template-columns:1fr;gap:8px}
+  .ia-idee{padding:11px 14px}
+  .ia-moi div{max-width:90%}
+  .ia-outil .txt{display:none}
+  .btn-ia .txt{display:none}
+  .ia-actions{opacity:1}
+}
+
 #chargement,#erreur{text-align:center;padding:80px 20px;color:var(--muted)}
 #erreur{display:none}
 #contenu{display:none}
@@ -163,13 +257,22 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
   <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M14 14h2.5v2.5H14zM18 18h2.5v2.5H18zM18 14h2.5M14 20.5h2.5"/></symbol>
   <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-etoile" viewBox="0 0 24 24"><path d="M12 3.5c.5 3.9 2.6 6 6.5 6.5-3.9.5-6 2.6-6.5 6.5-.5-3.9-2.6-6-6.5-6.5 3.9-.5 6-2.6 6.5-6.5z"/><path d="M18.5 15.5c.2 1.6 1 2.4 2.5 2.5-1.5.2-2.3 1-2.5 2.5-.2-1.5-1-2.3-2.5-2.5 1.5-.1 2.3-.9 2.5-2.5z"/></symbol>
+  <symbol id="i-haut" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-carre" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-refaire" viewBox="0 0 24 24"><path d="M20 11.5A8 8 0 1 0 18.4 17"/><path d="M20 6.5v5h-5"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.4"/></symbol>
 </svg>
 
 <header>
   <div class="barre">
     <a class="marque" href="/ambassadeurs"><img src="img/logo.png" alt=""><span>KEEPO</span><small>Espace ambassadeur</small></a>
-    <button class="btn-lien" onclick="seDeconnecter()">Se déconnecter</button>
+    <div class="barre-d">
+      <button class="btn-ia" id="btn-ia-tete" onclick="ouvrirIA()" style="display:none;"><svg class="icon"><use href="#i-etoile"/></svg><span class="txt">Assistant IA</span></button>
+      <button class="btn-lien" onclick="seDeconnecter()">Se déconnecter</button>
+    </div>
   </div>
 </header>
 
@@ -215,6 +318,23 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
       </div>
     </section>
   </div>
+
+  <section class="carte lanceur" aria-labelledby="t-ia">
+    <div class="lanceur-tete">
+      <div class="etoile"><svg class="icon"><use href="#i-etoile"/></svg></div>
+      <div><h2 id="t-ia">Votre assistant IA</h2><p>Il connaît votre code et vos commerces. Scripts, légendes, messages, objections : demandez.</p></div>
+    </div>
+    <form onsubmit="event.preventDefault();ouvrirIA(document.getElementById('lanceur-q').value);document.getElementById('lanceur-q').value='';">
+      <input id="lanceur-q" placeholder="Écris-moi un script TikTok pour une boulangerie…" autocomplete="off" enterkeyhint="send">
+      <button class="btn btn-grad" type="submit" aria-label="Demander"><svg class="icon"><use href="#i-haut"/></svg></button>
+    </form>
+    <div class="puces">
+      <button class="puce" onclick="ouvrirIA('Écris-moi un script TikTok de 20 secondes pour présenter KEEPO aux commerçants, avec mon code.')">Script TikTok</button>
+      <button class="puce" onclick="ouvrirIA('Écris un message court à envoyer à un commerçant de mon quartier pour lui parler de KEEPO.')">Message à un commerçant</button>
+      <button class="puce" onclick="ouvrirIA('Un commerçant me dit : « J\'ai déjà des cartes en carton, ça marche très bien. » Que lui répondre ?')">Répondre à une objection</button>
+      <button class="puce" onclick="ouvrirIA('Où j\'en suis ? Fais le point sur mes commerces et ma prochaine prime.')">Où j'en suis ?</button>
+    </div>
+  </section>
 
   <div class="grille">
     <div class="pile">
@@ -286,6 +406,29 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
   </div>
 </div>
 
+<div class="ia" id="ia" onclick="if (event.target === this) fermerIA()">
+  <div class="ia-fen" role="dialog" aria-modal="true" aria-labelledby="ia-nom">
+    <div class="ia-tete">
+      <div class="ia-titre">
+        <div class="etoile"><svg class="icon"><use href="#i-etoile"/></svg></div>
+        <div><b id="ia-nom">Assistant IA</b><small id="ia-sous">Connaît votre code et vos commerces</small></div>
+      </div>
+      <div class="ia-outils">
+        <button class="ia-outil" onclick="nouvelleDiscussion()" title="Nouvelle discussion"><svg class="icon"><use href="#i-plus"/></svg><span class="txt">Nouvelle discussion</span></button>
+        <button class="ia-outil" onclick="fermerIA()" aria-label="Fermer"><svg class="icon"><use href="#i-x"/></svg></button>
+      </div>
+    </div>
+    <div class="ia-fil" id="ia-fil"><div class="ia-col" id="ia-col"></div></div>
+    <div class="ia-bas">
+      <form class="ia-saisie" id="ia-form" onsubmit="event.preventDefault();envoyerIA();">
+        <textarea id="ia-champ" rows="1" placeholder="Votre demande…" enterkeyhint="send"></textarea>
+        <button class="ia-envoi" id="ia-envoi" type="submit" aria-label="Envoyer" disabled><svg class="icon"><use href="#i-haut"/></svg></button>
+      </form>
+      <div class="ia-note">L'IA peut se tromper : relisez avant de publier.</div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -350,6 +493,9 @@ async function charger() {
   if (!data || data.erreur) { erreur('Session expirée. Reconnectez-vous.', [{ texte: 'Se connecter', principal: true, faire: () => { window.location.href = '/connexion?next=/dashboard-ambassadeur'; } }]); return; }
 
   espace = data;
+  iaUid = session.user.id;
+  iaConv = lireIA();
+  document.getElementById('btn-ia-tete').style.display = '';
   afficher();
   document.getElementById('chargement').style.display = 'none';
   document.getElementById('contenu').style.display = 'block';
@@ -555,6 +701,316 @@ async function enregistrer() {
   } catch (_) { toast('Non enregistré, réessayez'); }
   btn.disabled = false;
 }
+
+// ═══════════════════════════════════════════════════════════
+//  ASSISTANT IA — conversation en continu
+// ═══════════════════════════════════════════════════════════
+let iaConv = [];          // [{ role: 'user' | 'model', content }]
+let iaCtrl = null;        // AbortController de la réponse en cours
+let iaVue = null;         // réponse en train de s'écrire
+let iaUid = '';
+const IA_MAX = 40;
+
+function cleIA() { return 'keepo_ia_amb_' + iaUid; }
+function sauverIA() { try { localStorage.setItem(cleIA(), JSON.stringify(iaConv.slice(-IA_MAX))); } catch (_) {} }
+function lireIA() { try { const v = JSON.parse(localStorage.getItem(cleIA()) || '[]'); return Array.isArray(v) ? v.filter(m => m && typeof m.content === 'string') : []; } catch (_) { return []; } }
+
+// Markdown léger : tout est échappé d'abord, puis on rétablit titres,
+// listes, gras et blocs à copier. Jamais l'inverse.
+const ENT = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ENT[c]);
+function enLigne(t) {
+  return esc(t)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[\s(«])\*([^*\s][^*]*?)\*(?=[\s).,!?:;»]|$)/g, '$1<em>$2</em>');
+}
+function blocCopie(lignes) {
+  return '<div class="ia-copie"><div class="ia-copie-tete"><span>Texte à copier</span><button type="button" data-copier><svg class="icon"><use href="#i-copy"/></svg>Copier</button></div><pre>'
+    + esc(lignes.join('\n').replace(/^\n+|\n+$/g, '')) + '</pre></div>';
+}
+function rendreMd(md) {
+  const lignes = String(md).replace(/\r/g, '').split('\n');
+  let html = '', para = [], liste = null, code = null;
+  const finPara = () => { if (para.length) { html += '<p>' + para.map(enLigne).join('<br>') + '</p>'; para = []; } };
+  const finListe = () => { if (liste) { html += '</' + liste + '>'; liste = null; } };
+  for (const l of lignes) {
+    if (code !== null) {
+      if (/^\s*```/.test(l)) { html += blocCopie(code); code = null; } else code.push(l);
+      continue;
+    }
+    if (/^\s*```/.test(l)) { finPara(); finListe(); code = []; continue; }
+    const h = l.match(/^\s{0,3}#{1,4}\s+(.*)$/);
+    if (h) { finPara(); finListe(); html += '<h4>' + enLigne(h[1].replace(/\s*#+\s*$/, '')) + '</h4>'; continue; }
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l)) { finPara(); finListe(); html += '<hr>'; continue; }
+    const ul = l.match(/^\s*[-*•]\s+(.*)$/), ol = l.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (ul || ol) {
+      finPara();
+      const t = ul ? 'ul' : 'ol';
+      if (liste !== t) { finListe(); html += '<' + t + '>'; liste = t; }
+      html += '<li>' + enLigne((ul || ol)[1]) + '</li>';
+      continue;
+    }
+    if (!l.trim()) { finPara(); if (liste) { /* une ligne vide ne coupe pas une liste numérotée */ } continue; }
+    finListe();
+    para.push(l);
+  }
+  finPara(); finListe();
+  if (code !== null) html += blocCopie(code);   // bloc encore ouvert pendant l'écriture
+  return html;
+}
+function avecCurseur(html) {
+  const c = '<span class="ia-curseur"></span>';
+  if (/<\/pre><\/div>$/.test(html)) return html.replace(/<\/pre><\/div>$/, c + '</pre></div>');
+  if (/<\/(p|li|h4)>(<\/(ul|ol)>)?$/.test(html)) return html.replace(/(<\/(p|li|h4)>)(<\/(ul|ol)>)?$/, c + '$1$3');
+  return html + c;
+}
+
+function filEnBas(force) {
+  const f = document.getElementById('ia-fil');
+  if (force || f.scrollHeight - f.scrollTop - f.clientHeight < 120) f.scrollTop = f.scrollHeight;
+}
+
+function videIA() {
+  const col = document.getElementById('ia-col');
+  const prenom = espace && espace.pseudo ? espace.pseudo : '';
+  col.innerHTML = '<div class="ia-vide"><h2>Bonjour' + (prenom ? ' <span>' + esc(prenom) + '</span>' : '') + ',<br>que voulez-vous préparer&nbsp;?</h2>'
+    + '<p>Je connais votre code ' + esc(espace ? espace.code : '') + ', vos commerces et vos primes. Je rédige, vous publiez.</p>'
+    + '<div class="ia-idees">'
+    + idee('Un script TikTok', 'Une vidéo de 20 secondes avec mon code', 'Écris-moi un script TikTok de 20 secondes pour présenter KEEPO aux commerçants, avec mon code.')
+    + idee('Un message à un commerçant', 'À envoyer à la boulangerie d\'à côté', 'Écris un message court à envoyer à une boulangerie de mon quartier pour lui parler de KEEPO.')
+    + idee('Répondre à une objection', '« J\'ai déjà des cartes en carton »', 'Un commerçant me dit : « J\'ai déjà des cartes en carton, ça marche très bien. » Que lui répondre ?')
+    + idee('Où j\'en suis ?', 'Mes commerces et ma prochaine prime', 'Où j\'en suis ? Fais le point sur mes commerces et ma prochaine prime.')
+    + '</div></div>';
+}
+function idee(titre, sous, q) {
+  return '<button type="button" class="ia-idee" data-q="' + esc(q) + '"><b>' + esc(titre) + '</b><span>' + esc(sous) + '</span></button>';
+}
+
+function ajouterMoi(texte) {
+  const col = document.getElementById('ia-col');
+  col.querySelector('.ia-vide')?.remove();
+  const l = el('div', 'ia-moi');
+  l.appendChild(el('div', '', texte));
+  col.appendChild(l);
+}
+function ajouterElle() {
+  const col = document.getElementById('ia-col');
+  col.querySelectorAll('.ia-elle.derniere').forEach(e => e.classList.remove('derniere'));
+  col.querySelectorAll('[data-refaire]').forEach(b => b.remove());   // « Autre version » : la dernière seulement
+  const l = el('div', 'ia-elle derniere');
+  l.innerHTML = '<div class="etoile"><svg class="icon"><use href="#i-etoile"/></svg></div><div class="ia-corps"><div class="ia-md"></div></div>';
+  col.appendChild(l);
+  return l;
+}
+function actionsElle(ligne, texte, derniere) {
+  const corps = ligne.querySelector('.ia-corps');
+  corps.querySelector('.ia-actions')?.remove();
+  const a = el('div', 'ia-actions');
+  const copie = el('button'); copie.type = 'button';
+  copie.innerHTML = '<svg class="icon"><use href="#i-copy"/></svg>Copier';
+  copie.onclick = () => copier(texte, 'Réponse copiée');
+  a.appendChild(copie);
+  if (derniere) {
+    const refaire = el('button'); refaire.type = 'button'; refaire.setAttribute('data-refaire', '');
+    refaire.innerHTML = '<svg class="icon"><use href="#i-refaire"/></svg>Autre version';
+    refaire.onclick = regenererIA;
+    a.appendChild(refaire);
+  }
+  corps.appendChild(a);
+}
+
+function afficherConv() {
+  const col = document.getElementById('ia-col');
+  col.textContent = '';
+  if (!iaConv.length) { videIA(); return; }
+  iaConv.forEach((m, i) => {
+    if (m.role === 'user') ajouterMoi(m.content);
+    else {
+      const l = ajouterElle();
+      l.querySelector('.ia-md').innerHTML = rendreMd(m.content);
+      actionsElle(l, m.content, i === iaConv.length - 1);
+    }
+  });
+}
+
+function ouvrirIA(question) {
+  const ia = document.getElementById('ia');
+  if (!ia.classList.contains('ouvert')) {
+    ia.classList.add('ouvert');
+    document.body.style.overflow = 'hidden';
+    if (!iaVue) afficherConv();
+    const fil = document.getElementById('ia-fil');
+    setTimeout(() => { if (iaConv.length) filEnBas(true); else fil.scrollTop = 0; }, 30);
+  }
+  const q = String(question || '').trim();
+  if (q && !iaVue) { document.getElementById('ia-champ').value = q; envoyerIA(); }
+  else setTimeout(() => document.getElementById('ia-champ').focus(), 60);
+}
+function fermerIA() {
+  document.getElementById('ia').classList.remove('ouvert');
+  document.body.style.overflow = '';
+}
+function nouvelleDiscussion() {
+  if (iaCtrl) iaCtrl.abort();
+  iaConv = [];
+  sauverIA();
+  afficherConv();
+  document.getElementById('ia-champ').focus();
+}
+
+function majBoutonIA() {
+  const b = document.getElementById('ia-envoi');
+  const champ = document.getElementById('ia-champ');
+  if (iaVue) {
+    b.disabled = false; b.classList.add('stop'); b.setAttribute('aria-label', 'Arrêter');
+    b.innerHTML = '<svg class="icon"><use href="#i-carre"/></svg>';
+  } else {
+    b.classList.remove('stop'); b.setAttribute('aria-label', 'Envoyer');
+    b.innerHTML = '<svg class="icon"><use href="#i-haut"/></svg>';
+    b.disabled = !champ.value.trim();
+  }
+}
+
+function envoyerIA() {
+  if (iaVue) { iaCtrl && iaCtrl.abort(); return; }   // le bouton sert alors à arrêter
+  const champ = document.getElementById('ia-champ');
+  const texte = champ.value.trim();
+  if (!texte) return;
+  champ.value = ''; ajusterChamp();
+  iaConv.push({ role: 'user', content: texte });
+  sauverIA();
+  ajouterMoi(texte);
+  filEnBas(true);
+  repondreIA();
+}
+
+function regenererIA() {
+  if (iaVue) return;
+  if (iaConv.length && iaConv[iaConv.length - 1].role === 'model') iaConv.pop();
+  const col = document.getElementById('ia-col');
+  const derniere = col.querySelector('.ia-elle.derniere');
+  if (derniere) derniere.remove();
+  if (!iaConv.length || iaConv[iaConv.length - 1].role !== 'user') return;
+  repondreIA();
+}
+
+async function repondreIA() {
+  const ligne = ajouterElle();
+  const md = ligne.querySelector('.ia-md');
+  md.innerHTML = '<div class="ia-pense"><svg class="icon" style="color:var(--acc)"><use href="#i-etoile"/></svg><span>Réflexion…</span></div>';
+  filEnBas(true);
+
+  const vue = iaVue = { recu: '', affiche: 0, fini: false, arrete: false, erreur: '' };
+  iaCtrl = new AbortController();
+  majBoutonIA();
+
+  // L'affichage suit le texte reçu à un rythme régulier : les morceaux
+  // arrivent par paquets, l'écriture reste fluide.
+  const peindre = () => {
+    if (!vue.recu) return;
+    md.innerHTML = avecCurseur(rendreMd(vue.recu.slice(0, vue.affiche)));
+    filEnBas();
+  };
+  // Un minuteur plutôt que requestAnimationFrame : certains navigateurs
+  // intégrés (TikTok, Instagram) ralentissent les animations. Onglet en
+  // arrière-plan : tout ce qui est reçu s'affiche d'un coup.
+  const boucle = () => {
+    const reste = vue.recu.length - vue.affiche;
+    if (reste > 0) {
+      vue.affiche = document.hidden ? vue.recu.length
+                  : Math.min(vue.recu.length, vue.affiche + Math.max(3, Math.ceil(reste / 12)));
+      peindre();
+    }
+    if (!vue.fini || vue.affiche < vue.recu.length) {
+      setTimeout(boucle, document.hidden ? 250 : 16);
+    } else terminer();
+  };
+  const terminer = () => {
+    if (vue.termine) return;
+    vue.termine = true;
+    iaVue = null; iaCtrl = null;
+    if (vue.recu) {
+      md.innerHTML = rendreMd(vue.recu);
+      iaConv.push({ role: 'model', content: vue.recu });
+      sauverIA();
+      actionsElle(ligne, vue.recu, true);
+    }
+    if (vue.erreur) {
+      const e = el('div', 'ia-erreur', vue.erreur);
+      const r = el('button', '', 'Réessayer'); r.type = 'button';
+      r.onclick = () => { ligne.remove(); repondreIA(); };
+      e.appendChild(r);
+      if (!vue.recu) md.textContent = '';
+      ligne.querySelector('.ia-corps').appendChild(e);
+    }
+    majBoutonIA();
+    filEnBas();
+  };
+
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const res = await fetch('/api/ai-ambassadeur', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (session ? session.access_token : '') },
+      body   : JSON.stringify({ messages: iaConv.slice(-16) }),
+      signal : iaCtrl.signal
+    });
+    if (!res.ok || !(res.headers.get('content-type') || '').includes('event-stream')) {
+      vue.erreur = res.status === 429 ? 'Vous allez un peu vite : attendez une minute.'
+                 : res.status === 401 ? 'Votre session a expiré : rechargez la page.'
+                 : res.status === 403 ? 'L\'assistant est réservé aux ambassadeurs.'
+                 : res.status === 503 || res.status === 504 ? 'L\'IA est très demandée en ce moment. Réessayez dans un instant.'
+                 : 'Je n\'ai pas pu répondre. Réessayez dans un instant.';
+      vue.fini = true; terminer(); return;
+    }
+    setTimeout(boucle, 16);
+    const lecteur = res.body.getReader();
+    const dec = new TextDecoder();
+    let tampon = '';
+    for (;;) {
+      const { value, done } = await lecteur.read();
+      if (done) break;
+      tampon += dec.decode(value, { stream: true });
+      let i;
+      while ((i = tampon.indexOf('\n\n')) >= 0) {
+        const bloc = tampon.slice(0, i); tampon = tampon.slice(i + 2);
+        const ligneData = bloc.split('\n').find(x => x.startsWith('data:'));
+        if (!ligneData) continue;
+        let d; try { d = JSON.parse(ligneData.slice(5)); } catch (_) { continue; }
+        if (d.t) vue.recu += d.t;
+        if (d.erreur) vue.erreur = vue.recu ? 'La réponse a été coupée.' : 'Je n\'ai pas pu répondre. Réessayez dans un instant.';
+      }
+    }
+  } catch (e) {
+    if (iaCtrl && iaCtrl.signal.aborted) vue.arrete = true;
+    else vue.erreur = vue.recu ? 'La connexion a été coupée.' : 'Connexion interrompue. Vérifiez votre réseau.';
+  }
+  if (vue.arrete) vue.affiche = vue.recu.length;   // arrêté : on garde ce qui est écrit
+  vue.fini = true;
+  if (!vue.recu && !vue.erreur && !vue.arrete) vue.erreur = 'Je n\'ai pas pu répondre. Réessayez dans un instant.';
+  if (!vue.recu) terminer();   // la boucle d'affichage ne tourne pas sans texte
+}
+
+function ajusterChamp() {
+  const c = document.getElementById('ia-champ');
+  c.style.height = 'auto';
+  c.style.height = Math.min(c.scrollHeight, 170) + 'px';
+  majBoutonIA();
+}
+document.getElementById('ia-champ').addEventListener('input', ajusterChamp);
+document.getElementById('ia-champ').addEventListener('keydown', ev => {
+  if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && window.matchMedia('(pointer: fine)').matches) {
+    ev.preventDefault(); envoyerIA();
+  }
+});
+document.getElementById('ia-col').addEventListener('click', ev => {
+  const q = ev.target.closest('[data-q]');
+  if (q) { document.getElementById('ia-champ').value = q.getAttribute('data-q'); envoyerIA(); return; }
+  const b = ev.target.closest('[data-copier]');
+  if (b) copier(b.closest('.ia-copie').querySelector('pre').textContent, 'Texte copié');
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && document.getElementById('ia').classList.contains('ouvert')) fermerIA(); });
 
 charger().catch(() => erreur('Votre espace ne répond pas pour le moment. Réessayez dans un instant.', [{ texte: 'Réessayer', principal: true, faire: () => location.reload() }]));
 </script>
