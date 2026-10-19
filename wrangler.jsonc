@@ -25,7 +25,8 @@
     // pages publiques /c/slug, logos, API. Sans cette liste, Cloudflare
     // sert directement la page 404 quand un NAVIGATEUR les ouvre (requête
     // de navigation sans fichier correspondant), sans appeler le Worker.
-    "run_worker_first": ["/a/*", "/c/*", "/logo/*", "/api/*"]
+    // /videos/* : le Worker répond aux demandes de morceau, que Safari exige.
+    "run_worker_first": ["/a/*", "/c/*", "/logo/*", "/api/*", "/videos/*"]
   }
   // Aucune clé secrète ici : RESEND_API_KEY, STRIPE_*, SUPABASE_SERVICE_ROLE et
   // GEMINI_API_KEY sont gérés via `npx wrangler secret put <NOM>` (jamais en clair).

@@ -3582,6 +3582,52 @@ async function handleIncident(request, env) {
   return json({ recu: true, relaye: issue.relaye, raison: issue.raison || undefined });
 }
 
+// ──────────── Vidéos : lecture par morceaux ────────────
+// Safari (iPhone, iPad, Mac) ne lit une vidéo que si le serveur répond aux
+// demandes de morceau (Range → 206). Les fichiers statiques de Cloudflare
+// renvoient toujours le fichier entier : on découpe ici. Les vidéos font
+// quelques mégaoctets, elles tiennent sans peine en mémoire.
+async function handleVideo(request, env) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method Not Allowed', { status: 405 });
+  const url = new URL(request.url);
+  const fichier = await env.ASSETS.fetch(new Request(url.origin + url.pathname, { method: 'GET' }));
+  if (!fichier.ok) return fichier;
+
+  const entetes = {
+    'Content-Type' : fichier.headers.get('Content-Type') || 'video/mp4',
+    'Accept-Ranges': 'bytes',
+    'Cache-Control': 'public, max-age=86400',
+  };
+  const etag = fichier.headers.get('ETag');
+  if (etag) entetes['ETag'] = etag;
+
+  const corps = await fichier.arrayBuffer();
+  const total = corps.byteLength;
+  const tete = request.method === 'HEAD';
+  const plage = /^bytes=(\d*)-(\d*)$/.exec((request.headers.get('Range') || '').trim());
+
+  // Pas de demande de morceau (ou plusieurs morceaux à la fois, que les
+  // lecteurs vidéo n'utilisent pas) : le fichier entier.
+  if (!plage || (plage[1] === '' && plage[2] === '')) {
+    return new Response(tete ? null : corps, { status: 200, headers: { ...entetes, 'Content-Length': String(total) } });
+  }
+  let debut, fin;
+  if (plage[1] === '') {                       // « bytes=-500 » : les 500 derniers octets
+    debut = Math.max(0, total - parseInt(plage[2], 10));
+    fin = total - 1;
+  } else {
+    debut = parseInt(plage[1], 10);
+    fin = plage[2] === '' ? total - 1 : Math.min(parseInt(plage[2], 10), total - 1);
+  }
+  if (!(debut <= fin) || debut >= total) {
+    return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${total}`, 'Accept-Ranges': 'bytes' } });
+  }
+  return new Response(tete ? null : corps.slice(debut, fin + 1), {
+    status: 206,
+    headers: { ...entetes, 'Content-Range': `bytes ${debut}-${fin}/${total}`, 'Content-Length': String(fin - debut + 1) }
+  });
+}
+
 // ──────────── Router ────────────
 
 export default {
@@ -3591,6 +3637,10 @@ export default {
     // Dynamic route: public merchant page
     if (url.pathname.startsWith('/c/') && url.pathname.length > 3) {
       return handleMerchantPage(request, env, url);
+    }
+
+    if (url.pathname.startsWith('/videos/') && url.pathname.endsWith('.mp4')) {
+      return handleVideo(request, env);
     }
 
     // Lien d'un ambassadeur : keepo.eu/a/LEA20 mène à l'accueil, qui retient
