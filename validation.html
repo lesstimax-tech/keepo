@@ -114,7 +114,9 @@
 
                 // 3. Petite pause de 2 secondes pour que l'utilisateur ait le temps de voir le "✅ Succès"
                 setTimeout(() => {
-                    window.location.href = role === 'commercant' ? '/dashboard-commercant' : '/dashboard-client';
+                    window.location.href = role === 'commercant' ? '/dashboard-commercant'
+                                         : role === 'ambassadeur' ? '/dashboard-ambassadeur'
+                                         : '/dashboard-client';
                 }, 2000);
 
             } catch (err) {

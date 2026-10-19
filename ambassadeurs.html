@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programme ambassadeur KEEPO — 30 € par commerce abonné</title>
+<meta name="description" content="Recommandez KEEPO aux commerces de votre quartier et gagnez 30 € par commerce abonné. Gratuit, sans minimum d'abonnés, virement chaque mois.">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="canonical" href="https://keepo.eu/ambassadeurs">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Devenez ambassadeur KEEPO — 30 € par commerce abonné">
+<meta property="og:description" content="Partagez votre code : le commerce paie 20 % de moins pendant 3 mois, vous touchez 30 €. Gratuit, sans minimum d'abonnés.">
+<meta property="og:url" content="https://keepo.eu/ambassadeurs">
+<meta property="og:image" content="https://keepo.eu/img/icon-512.png">
+<meta property="og:locale" content="fr_FR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0D0D11;
+  --ink-2:#33333D;
+  --muted:#61616B;
+  --faint:#8E8E98;
+  --paper:#FFFFFF;
+  --bg-2:#F4F5F8;
+  --line:#EAEAEF;
+  --line-2:#DDDDE4;
+  --acc:#4B45A6;
+  --acc-2:#1FA5A8;
+  --acc-soft:#F0EFFA;
+  --teal:#0E7C8C;
+  --grad:linear-gradient(135deg,#5A32A0 0%,#3F63A4 52%,#1FA5A8 100%);
+  --ok:#0E9F6E;
+  --shadow-md:0 18px 40px -24px rgba(13,13,17,.28),0 2px 6px rgba(13,13,17,.04);
+  --shadow-lg:0 40px 80px -40px rgba(13,13,17,.40),0 2px 8px rgba(13,13,17,.05);
+  --r:10px;--r-lg:16px;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(13,13,17,.05) 1px,transparent 1px);background-size:26px 26px;
+  mask-image:linear-gradient(180deg,#000,transparent 50%);-webkit-mask-image:linear-gradient(180deg,#000,transparent 50%)}
+body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(700px 360px at 85% -8%,rgba(90,50,160,.09),transparent 64%),
+             radial-gradient(520px 300px at 5% 10%,rgba(31,165,168,.07),transparent 60%)}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+section{padding:88px 0;position:relative;z-index:1}
+h1,h2,h3{margin:0;color:var(--ink);letter-spacing:-.035em;font-weight:600;text-wrap:balance}
+h1{font-size:clamp(36px,5.4vw,58px);line-height:1.04;letter-spacing:-.042em}
+h2{font-size:clamp(28px,3.6vw,40px);line-height:1.1}
+h3{font-size:17.5px;letter-spacing:-.02em;line-height:1.3}
+p{margin:0}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.icon{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.12em;flex:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--muted);
+  border:1px solid var(--line-2);background:rgba(255,255,255,.75);padding:5px 13px;border-radius:999px;margin-bottom:20px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc)}
+.sec-head{max-width:640px;margin-bottom:44px}
+.sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+.sec-head p{color:var(--muted);font-size:17px;margin-top:14px;line-height:1.62}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;
+  padding:13px 22px;border-radius:var(--r);border:1px solid transparent;cursor:pointer;white-space:nowrap;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),background-position .6s var(--ease),border-color .2s}
+.btn-grad{background:var(--grad);background-size:140% 140%;color:#fff;box-shadow:0 8px 20px -10px rgba(75,69,166,.65)}
+.btn-grad:hover{transform:translateY(-2px);background-position:100% 50%;box-shadow:0 14px 30px -12px rgba(75,69,166,.75)}
+.btn-ghost{background:rgba(255,255,255,.9);color:var(--ink);border-color:var(--line-2)}
+.btn-ghost:hover{border-color:var(--ink);transform:translateY(-2px)}
+.btn-sm{padding:8px 15px;font-size:13.5px}
+
+/* En-tête */
+#hd{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.8);backdrop-filter:saturate(180%) blur(16px);
+  -webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:62px}
+.nav .logo{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.02em}
+.nav .logo img{height:28px;width:auto}
+.nav-r{display:flex;align-items:center;gap:18px}
+.nav-r .lien{font-size:14px;color:var(--muted);font-weight:500}
+.nav-r .lien:hover{color:var(--ink)}
+
+/* Héros */
+.hero{padding-top:64px;padding-bottom:72px}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+.hero-sub{font-size:18px;color:var(--muted);margin-top:20px;max-width:50ch;line-height:1.6}
+.hero-sub strong{color:var(--ink);font-weight:600}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.hero-proof{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;font-size:14px;color:var(--muted)}
+.hero-proof span{display:inline-flex;align-items:center;gap:7px}
+.hero-proof .icon{color:var(--ok)}
+
+/* Aperçu de l'espace ambassadeur */
+.apercu{position:relative}
+.ecran{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg);padding:22px 22px 46px;max-width:420px;margin-left:auto}
+.ecran-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.ecran-top b{font-size:14px}
+.tag-ex{font-size:11px;font-weight:600;color:var(--muted);background:var(--bg-2);border:1px solid var(--line);padding:3px 9px;border-radius:999px}
+.code-box{border:1.5px dashed rgba(75,69,166,.35);background:var(--acc-soft);border-radius:14px;padding:16px;text-align:center}
+.code-box small{display:block;font-size:12px;color:var(--muted)}
+.code-box .code{font-size:30px;font-weight:700;letter-spacing:.08em;color:var(--acc);margin:2px 0}
+.code-box .lien-court{font-size:12.5px;color:var(--ink-2)}
+.chiffres{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.chiffre{border:1px solid var(--line);border-radius:12px;padding:12px 10px}
+.chiffre .n{font-size:22px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.chiffre .l{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.chiffre.fort .n{color:var(--teal)}
+.lignes{margin-top:14px;border-top:1px solid var(--line)}
+.ligne{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ligne:last-child{border-bottom:none}
+.statut{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.statut.due{background:rgba(14,159,110,.1);color:var(--ok)}
+.statut.attente{background:var(--bg-2);color:var(--muted)}
+.notif{position:absolute;left:-8px;bottom:-22px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-md);
+  padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:13px;max-width:270px}
+.notif .rond{width:32px;height:32px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;flex:none}
+.notif b{display:block;font-size:13px}
+.notif span{color:var(--muted);font-size:12px}
+
+/* Étapes */
+.bande{background:rgba(244,245,248,.7);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.etapes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:etape}
+.etape{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 24px;position:relative}
+.etape .num{width:34px;height:34px;border-radius:10px;background:var(--acc-soft);color:var(--acc);font-weight:700;display:grid;place-items:center;margin-bottom:16px;font-size:15px}
+.etape p{color:var(--muted);font-size:14.5px;margin-top:8px;line-height:1.6}
+.etape p strong{color:var(--ink);font-weight:600}
+
+/* Calcul */
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;background:#fff;border:1px solid var(--line);
+  border-radius:22px;padding:40px;box-shadow:var(--shadow-md)}
+.calc label{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.calc .valeur{font-size:15px;color:var(--muted);margin-bottom:16px}
+.calc .valeur b{color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.resultat{text-align:center;padding:28px;border-radius:18px;background:var(--acc-soft)}
+.resultat small{display:block;font-size:13.5px;color:var(--muted)}
+.resultat .somme{font-size:clamp(44px,6vw,60px);font-weight:700;letter-spacing:-.04em;line-height:1.1;margin:6px 0;font-variant-numeric:tabular-nums}
+.resultat p{font-size:12.5px;color:var(--muted);line-height:1.5;max-width:34ch;margin:0 auto}
+
+/* Offre commerce */
+.offre{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.atout{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+.atout .pic{width:38px;height:38px;border-radius:11px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;flex:none;font-size:18px}
+.atout p{color:var(--muted);font-size:14px;margin-top:4px;line-height:1.55}
+
+/* Idées */
+.idees{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.idee{border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px;background:#fff}
+.idee b{display:block;font-size:15px;margin-bottom:4px}
+.idee p{color:var(--muted);font-size:14px;line-height:1.55}
+.regle{margin-top:18px;display:flex;gap:12px;align-items:flex-start;border-radius:var(--r-lg);padding:16px 18px;
+  background:rgba(14,124,140,.06);border:1px solid rgba(14,124,140,.22);font-size:14px;color:var(--ink-2);line-height:1.55}
+.regle .icon{color:var(--teal);font-size:18px;margin-top:2px}
+
+/* FAQ */
+.faq{max-width:760px;margin:0 auto}
+.faq details{border-bottom:1px solid var(--line);padding:4px 0}
+.faq summary{list-style:none;cursor:pointer;padding:16px 36px 16px 0;font-weight:600;font-size:16px;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:12px;font-size:24px;font-weight:400;color:var(--muted);transition:transform .25s var(--ease)}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{color:var(--muted);font-size:15px;padding:0 0 18px;line-height:1.65}
+
+/* Fin */
+.final{text-align:center}
+.final .boite{background:var(--ink);color:#fff;border-radius:26px;padding:56px 28px;position:relative;overflow:hidden}
+.final .boite::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 260px at 80% 0%,rgba(90,50,160,.55),transparent 65%),radial-gradient(500px 260px at 10% 100%,rgba(31,165,168,.35),transparent 65%)}
+.final .boite>*{position:relative}
+.final h2{color:#fff}
+.final p{color:rgba(255,255,255,.72);margin:14px auto 28px;max-width:46ch;font-size:16.5px}
+.final .btn-grad{box-shadow:none}
+
+footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px 0 40px;font-size:13.5px;color:var(--muted)}
+.pied{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:center}
+.pied nav{display:flex;flex-wrap:wrap;gap:8px 20px}
+.pied a:hover{color:var(--ink)}
+
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:56px}
+  .ecran{margin:0 auto}
+  .etapes{grid-template-columns:1fr}
+  .calc{grid-template-columns:1fr;padding:28px 22px;gap:26px}
+  .offre,.idees{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .wrap{padding:0 16px}
+  section{padding:64px 0}
+  .hero{padding-top:36px}
+  .nav-r .lien{display:none}
+  .hero-ctas .btn{width:100%}
+  .notif{left:8px;right:8px;max-width:none}
+  .chiffre .n{font-size:19px}
+  .final .boite{padding:44px 20px}
+  .final .btn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/></symbol>
+  <symbol id="i-euro" viewBox="0 0 24 24"><path d="M18 5.8A7.5 7.5 0 0 0 6.5 12 7.5 7.5 0 0 0 18 18.2M4 10h9M4 14h8"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="8.5" width="16" height="4" rx="1"/><path d="M5.5 12.5v7a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-7M12 8.5V21M12 8.5C10 8.5 7.5 7.8 7.5 5.9 7.5 4.3 9 3.5 10 4c1.4.6 2 2.7 2 4.5zm0 0c2 0 4.5-.7 4.5-2.6 0-1.6-1.5-2.4-2.5-1.9-1.4.6-2 2.7-2 4.5z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.8"/><path d="M10.5 18.5h3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.5 2"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1a1 1 0 0 1 .7.3l7.4 7.4a1 1 0 0 1 0 1.4l-8.1 8.1a1 1 0 0 1-1.4 0l-7.4-7.4a1 1 0 0 1-.3-.7z"/><circle cx="8.5" cy="8.5" r="1.5"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M14 14h2.5v2.5H14zM18 18h2.5v2.5H18zM18 14h2.5M14 20.5h2.5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.4"/></symbol>
+</svg>
+
+<header id="hd">
+  <div class="wrap nav">
+    <a href="/" class="logo" aria-label="Accueil KEEPO"><img src="img/logo.png" alt=""><span>KEEPO</span></a>
+    <div class="nav-r">
+      <a class="lien" href="#comment">Comment ça marche</a>
+      <a class="lien" href="#faq">Questions</a>
+      <a class="lien" href="connexion.html">Se connecter</a>
+      <a href="connexion.html?tab=register&amp;role=ambassadeur" class="btn btn-grad btn-sm">Devenir ambassadeur</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="hero" aria-labelledby="titre">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Programme ambassadeur KEEPO</span>
+      <h1 id="titre">Recommandez KEEPO. Gagnez <span class="grad-text">30&nbsp;€</span> par commerce abonné.</h1>
+      <p class="hero-sub">Vous connaissez une boulangerie, un coiffeur, un snack&nbsp;? Partagez votre code&nbsp;: <strong>le commerce paie 20&nbsp;% de moins pendant 3&nbsp;mois</strong>, et vous touchez 30&nbsp;€ dès qu'il a payé son 2ᵉ&nbsp;mois.</p>
+      <div class="hero-ctas">
+        <a href="connexion.html?tab=register&amp;role=ambassadeur" class="btn btn-grad">Obtenir mon code <svg class="icon"><use href="#i-arrow"/></svg></a>
+        <a href="#comment" class="btn btn-ghost">Comment ça marche</a>
+      </div>
+      <div class="hero-proof">
+        <span><svg class="icon"><use href="#i-check"/></svg>Gratuit</span>
+        <span><svg class="icon"><use href="#i-check"/></svg>Sans minimum d'abonnés</span>
+        <span><svg class="icon"><use href="#i-check"/></svg>Virement chaque mois</span>
+      </div>
+    </div>
+
+    <div class="apercu" aria-label="Exemple d'espace ambassadeur">
+      <div class="ecran">
+        <div class="ecran-top"><b>Mon espace ambassadeur</b><span class="tag-ex">Exemple</span></div>
+        <div class="code-box">
+          <small>Mon code</small>
+          <div class="code">LEA20</div>
+          <div class="lien-court">keepo.eu/a/LEA20</div>
+        </div>
+        <div class="chiffres">
+          <div class="chiffre"><div class="n">4</div><div class="l">commerces inscrits</div></div>
+          <div class="chiffre"><div class="n">2</div><div class="l">primes gagnées</div></div>
+          <div class="chiffre fort"><div class="n">60&nbsp;€</div><div class="l">à recevoir</div></div>
+        </div>
+        <div class="lignes">
+          <div class="ligne"><span>Boulangerie du Marché</span><span class="statut due">Prime due</span></div>
+          <div class="ligne"><span>Salon Coupe &amp; Style</span><span class="statut due">Prime due</span></div>
+          <div class="ligne"><span>Snack Le Comptoir</span><span class="statut attente">1 mois payé</span></div>
+        </div>
+      </div>
+      <div class="notif" aria-hidden="true">
+        <div class="rond"><svg class="icon"><use href="#i-euro"/></svg></div>
+        <div><b>Prime de 30 € gagnée</b><span>Un commerce a payé son 2ᵉ mois</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bande" id="comment" aria-labelledby="t-comment">
+  <div class="wrap">
+    <div class="sec-head center">
+      <h2 id="t-comment">Trois étapes, sans rien vendre</h2>
+      <p>Vous n'avez pas à convaincre ni à installer quoi que ce soit&nbsp;: KEEPO s'occupe du reste.</p>
+    </div>
+    <div class="etapes">
+      <div class="etape">
+        <div class="num">1</div>
+        <h3>Créez votre compte</h3>
+        <p>Une minute, gratuitement. Vous recevez <strong>votre code et votre lien</strong> tout de suite, et vous pouvez choisir votre code (LEA20, SNACKTOK…).</p>
+      </div>
+      <div class="etape">
+        <div class="num">2</div>
+        <h3>Partagez-le</h3>
+        <p>Sur TikTok, Instagram, ou directement au commerçant d'à côté. Le commerce qui s'inscrit avec votre code a <strong>-20&nbsp;% pendant 3&nbsp;mois</strong> sur l'abonnement mensuel.</p>
+      </div>
+      <div class="etape">
+        <div class="num">3</div>
+        <h3>Recevez vos primes</h3>
+        <p><strong>30&nbsp;€ par commerce</strong> qui a payé son 2ᵉ mois (ou un abonnement annuel). Virement chaque mois dès 50&nbsp;€ cumulés.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="t-calc">
+  <div class="wrap">
+    <div class="calc">
+      <div>
+        <h2 id="t-calc">Combien ça peut rapporter&nbsp;?</h2>
+        <p style="color:var(--muted);margin:12px 0 26px;font-size:16px;">Pas de plafond&nbsp;: chaque commerce abonné grâce à vous compte.</p>
+        <label for="nb">Commerces abonnés avec votre code</label>
+        <div class="valeur"><b id="nb-val">5</b> commerces</div>
+        <input type="range" id="nb" min="1" max="40" value="5">
+      </div>
+      <div class="resultat" aria-live="polite">
+        <small>Vos primes</small>
+        <div class="somme grad-text" id="somme">150&nbsp;€</div>
+        <p>Exemple de calcul&nbsp;: 30&nbsp;€ par commerce qui a payé son 2ᵉ mois d'abonnement. Ce n'est pas une promesse de gain.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bande" aria-labelledby="t-offre">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="t-offre">Facile à recommander</h2>
+      <p>KEEPO, c'est la carte de fidélité des commerces de quartier, directement dans le téléphone de leurs clients. Ce que vous offrez au commerçant&nbsp;:</p>
+    </div>
+    <div class="offre">
+      <div class="atout"><div class="pic"><svg class="icon"><use href="#i-tag"/></svg></div><div><h3>-20 % pendant 3 mois</h3><p>Sur l'abonnement mensuel, grâce à votre code. Les formules commencent à 24,90&nbsp;€ par mois.</p></div></div>
+      <div class="atout"><div class="pic"><svg class="icon"><use href="#i-gift"/></svg></div><div><h3>14 jours d'essai gratuits</h3><p>Sans carte bancaire, et la réduction s'applique quand même ensuite.</p></div></div>
+      <div class="atout"><div class="pic"><svg class="icon"><use href="#i-clock"/></svg></div><div><h3>Prêt en quelques minutes</h3><p>Le commerçant prend sa carte en photo, l'IA prépare son programme de fidélité.</p></div></div>
+      <div class="atout"><div class="pic"><svg class="icon"><use href="#i-phone"/></svg></div><div><h3>Rien à installer</h3><p>Ses clients scannent un QR code&nbsp;: la carte est dans leur téléphone, sans carton à perdre.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="t-idees">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="t-idees">Des idées de vidéos</h2>
+      <p>Pas besoin d'une grande audience&nbsp;: une vidéo sincère sur un commerce que vous aimez suffit.</p>
+    </div>
+    <div class="idees">
+      <div class="idee"><b>«&nbsp;Mon café préféré a enfin une carte de fidélité&nbsp;»</b><p>Filmez le QR code sur le comptoir et la carte qui apparaît dans votre téléphone.</p></div>
+      <div class="idee"><b>«&nbsp;Commerçants, arrêtez les cartes en carton&nbsp;»</b><p>Le carton qu'on oublie, puis la carte dans le téléphone. Votre code à l'écran.</p></div>
+      <div class="idee"><b>«&nbsp;J'ai aidé mon coiffeur à lancer sa carte&nbsp;»</b><p>Montrez la création du programme en quelques minutes, de la photo au QR code.</p></div>
+      <div class="idee"><b>En vrai, au comptoir</b><p>Parlez-en directement au commerçant&nbsp;: donnez-lui votre code ou votre lien keepo.eu/a/…</p></div>
+    </div>
+    <div class="regle"><svg class="icon"><use href="#i-info"/></svg><div><b>Obligatoire&nbsp;:</b> indiquez «&nbsp;Collaboration commerciale&nbsp;» ou «&nbsp;Publicité&nbsp;» sur vos publications, dès lors que vous touchez une prime. Ne promettez rien que KEEPO ne fait pas.</div></div>
+  </div>
+</section>
+
+<section class="bande" id="faq" aria-labelledby="t-faq">
+  <div class="wrap">
+    <div class="sec-head center"><h2 id="t-faq">Questions fréquentes</h2></div>
+    <div class="faq">
+      <details>
+        <summary>Faut-il beaucoup d'abonnés&nbsp;?</summary>
+        <p>Non, aucun minimum. Le programme est ouvert à tous les majeurs&nbsp;: créateurs, étudiants, commerciaux, amis de commerçants… Un seul commerce abonné vous rapporte déjà 30&nbsp;€.</p>
+      </details>
+      <details>
+        <summary>Quand est-ce que je touche ma prime&nbsp;?</summary>
+        <p>La prime de 30&nbsp;€ est gagnée quand le commerce a payé son 2ᵉ mois d'abonnement (ou dès son paiement s'il choisit l'annuel). Les virements partent une fois par mois, dès que vous avez au moins 50&nbsp;€ à recevoir. Tout est suivi dans votre espace.</p>
+      </details>
+      <details>
+        <summary>Comment le commerce utilise-t-il mon code&nbsp;?</summary>
+        <p>Le plus simple&nbsp;: votre lien keepo.eu/a/VOTRECODE, qui remplit le code tout seul. Sinon, le commerçant le tape à l'inscription, ou plus tard dans son espace, tant qu'il n'a pas encore payé son abonnement.</p>
+      </details>
+      <details>
+        <summary>Y a-t-il une limite&nbsp;?</summary>
+        <p>Aucune limite de nombre&nbsp;: 30&nbsp;€ par commerce abonné grâce à vous. Une seule prime par commerce.</p>
+      </details>
+      <details>
+        <summary>Dois-je déclarer ces gains&nbsp;?</summary>
+        <p>Oui&nbsp;: les primes sont des revenus, à déclarer selon votre situation. Si vous en touchez régulièrement, le statut de micro-entrepreneur est souvent le plus simple. Pour être payé, vous renseignez un IBAN à votre nom dans votre espace.</p>
+      </details>
+      <details>
+        <summary>Je suis commerçant, je peux utiliser mon propre code&nbsp;?</summary>
+        <p>Non&nbsp;: le programme récompense les recommandations. Un commerce inscrit avec le code de son propre gérant n'ouvre pas droit à la prime. Pour recommander KEEPO à d'autres commerçants, votre espace commerçant a aussi son parrainage.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="final" aria-labelledby="t-fin">
+  <div class="wrap">
+    <div class="boite">
+      <h2 id="t-fin">Votre code vous attend</h2>
+      <p>Une minute pour créer votre compte. Vous pouvez partager votre lien dès aujourd'hui.</p>
+      <a href="connexion.html?tab=register&amp;role=ambassadeur" class="btn btn-grad">Devenir ambassadeur <svg class="icon"><use href="#i-arrow"/></svg></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap pied">
+    <span>© 2026 KEEPO</span>
+    <nav aria-label="Liens légaux">
+      <a href="/">Accueil</a>
+      <a href="cgu-cgv.html#ambassadeurs">Conditions du programme</a>
+      <a href="mentions-legales.html">Mentions légales</a>
+      <a href="confidentialite.html">Confidentialité</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var curseur = document.getElementById('nb');
+  var nb = document.getElementById('nb-val');
+  var somme = document.getElementById('somme');
+  function maj() {
+    var n = parseInt(curseur.value, 10) || 1;
+    nb.textContent = n;
+    nb.nextSibling.textContent = n > 1 ? ' commerces' : ' commerce';
+    somme.textContent = (n * 30).toLocaleString('fr-FR') + ' €';
+  }
+  curseur.addEventListener('input', maj);
+  maj();
+})();
+</script>
+</body>
+</html>

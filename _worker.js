@@ -1378,6 +1378,7 @@ async function handleStripeCheckout(request, env) {
   let trialDays = 0;
   let trialEnd  = 0;          // fin d'un essai sans carte en cours, reportée sur Stripe
   let reduction = false;      // -20 % pendant 3 mois, à la place de l'essai
+  let jamaisAbonne = false;   // aucun client Stripe : premier abonnement
   const SUPA_URL = env.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co';
   const SUPA_KEY = env.SUPABASE_SERVICE_ROLE;
   if (SUPA_KEY) {
@@ -1386,6 +1387,7 @@ async function handleStripeCheckout(request, env) {
         headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
       });
       const rows = pr.ok ? await pr.json() : [];
+      jamaisAbonne = !!(rows.length && !rows[0].stripe_customer_id);
       const essai = rows.length && rows[0].trial_ends_at ? Date.parse(rows[0].trial_ends_at) : NaN;
       if (rows.length && !rows[0].stripe_customer_id && isFinite(essai)) {
         // Stripe exige au moins 48 h d'essai restant ; en dessous, on facture.
@@ -1408,6 +1410,22 @@ async function handleStripeCheckout(request, env) {
         } catch { /* défaut : essai standard */ }
       }
     } catch { /* en cas de doute : pas d'essai (sécurité avant générosité) */ }
+  }
+
+  // Programme ambassadeur : un commerce venu avec un code paie -20 % pendant
+  // 3 mois sur le mensuel, essai compris (sans carte ou Stripe). Seulement à
+  // un premier abonnement : keepo_rattacher refuse déjà un commerce abonné,
+  // on le revérifie ici. Le coupon remplace la réduction « payer tout de
+  // suite », identique : une seule remise à la fois chez Stripe.
+  let ambassadeur = '';
+  if (SUPA_KEY && jamaisAbonne && chosenBilling === 'month') {
+    try {
+      const ar = await fetch(`${SUPA_URL}/rest/v1/affiliations?merchant_id=eq.${merchantId}&select=code`, {
+        headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
+      });
+      const lignes = ar.ok ? await ar.json() : [];
+      if (lignes.length) ambassadeur = String(lignes[0].code || 'AMBASSADEUR');
+    } catch { /* sans réponse : prix normal */ }
   }
 
   const successUrl = (returnUrl || 'https://keepo.eu/dashboard-commercant') + '?stripe=success&session_id={CHECKOUT_SESSION_ID}';
@@ -1443,14 +1461,20 @@ async function handleStripeCheckout(request, env) {
   if (trialEnd > 0) {
     sessionParams['subscription_data[trial_end]'] = String(trialEnd);
   }
-  if (reduction) {
+  if (reduction || ambassadeur) {
     // Stripe refuse un code promo saisi ET une réduction posée : on retire le champ.
-    const coupon = await couponPaiementDirect(env);
+    const coupon = ambassadeur ? await couponAmbassadeur(env) : await couponPaiementDirect(env);
     if (!coupon.ok) return json({ error: coupon.error }, coupon.status || 502);
     delete sessionParams['allow_promotion_codes'];
     sessionParams['discounts[0][coupon]'] = coupon.id;
-    sessionParams['subscription_data[metadata][offre]'] = 'reduction';
-    sessionParams['metadata[offre]'] = 'reduction';
+    if (reduction) {
+      sessionParams['subscription_data[metadata][offre]'] = 'reduction';
+      sessionParams['metadata[offre]'] = 'reduction';
+    }
+    if (ambassadeur) {
+      sessionParams['subscription_data[metadata][ambassadeur]'] = ambassadeur;
+      sessionParams['metadata[ambassadeur]'] = ambassadeur;
+    }
   }
   const result = await stripeApi(env, 'checkout/sessions', sessionParams, 'POST');
 
@@ -1463,18 +1487,30 @@ async function handleStripeCheckout(request, env) {
 // fixe : rien à préparer à la main dans le tableau de bord Stripe.
 const COUPON_PAIEMENT_DIRECT = 'KEEPO_DIRECT_20_3M';
 
-async function couponPaiementDirect(env) {
-  const lu = await stripeApi(env, `coupons/${COUPON_PAIEMENT_DIRECT}`);
-  if (lu.ok && lu.data?.valid !== false) return { ok: true, id: COUPON_PAIEMENT_DIRECT };
+// Même remise pour un commerce venu par un ambassadeur, sous un coupon à part
+// pour la compter séparément dans Stripe.
+const COUPON_AMBASSADEUR = 'KEEPO_AMBASSADEUR_20_3M';
+
+function couponPaiementDirect(env) {
+  return couponVingtPourcentTroisMois(env, COUPON_PAIEMENT_DIRECT, '-20 % pendant 3 mois');
+}
+
+function couponAmbassadeur(env) {
+  return couponVingtPourcentTroisMois(env, COUPON_AMBASSADEUR, '-20 % pendant 3 mois (ambassadeur)');
+}
+
+async function couponVingtPourcentTroisMois(env, id, nom) {
+  const lu = await stripeApi(env, `coupons/${id}`);
+  if (lu.ok && lu.data?.valid !== false) return { ok: true, id };
   const cree = await stripeApi(env, 'coupons', {
-    'id'                : COUPON_PAIEMENT_DIRECT,
-    'name'              : '-20 % pendant 3 mois',
+    'id'                : id,
+    'name'              : nom,
     'percent_off'       : '20',
     'duration'          : 'repeating',
     'duration_in_months': '3'
   }, 'POST');
   // Deux créations simultanées : la seconde échoue, mais le coupon existe.
-  if (cree.ok || /already exists/i.test(cree.error || '')) return { ok: true, id: COUPON_PAIEMENT_DIRECT };
+  if (cree.ok || /already exists/i.test(cree.error || '')) return { ok: true, id };
   return { ok: false, status: cree.status, error: cree.error };
 }
 
@@ -1973,6 +2009,52 @@ async function handleStripeWebhook(request, env, ctx) {
           }
         }
       } catch (e) { console.error('Parrainage webhook error', String(e)); }
+
+      // ── PROGRAMME AMBASSADEUR : chaque facture payée compte ; la 2ᵉ (ou une
+      //    facture annuelle) rend la prime de 30 € due. La base mémorise la
+      //    facture : invoice.paid puis invoice.payment_succeeded ne comptent
+      //    qu'une fois. Le commerçant se lit d'abord dans les métadonnées de
+      //    l'abonnement : la 1ʳᵉ facture peut arriver avant
+      //    checkout.session.completed, donc avant stripe_subscription_id.
+      try {
+        const meta = invoice?.parent?.subscription_details?.metadata
+                  || invoice?.subscription_details?.metadata || {};
+        let commerce = (meta.merchant_id && isUuid(meta.merchant_id)) ? meta.merchant_id : null;
+        if (!commerce) {
+          const cRes = await fetch(`${SUPA_URL}/rest/v1/profiles?stripe_subscription_id=eq.${encodeURIComponent(subId)}&select=id`, { headers: supaHeaders });
+          commerce = cRes.ok ? ((await cRes.json())[0]?.id || null) : null;
+        }
+        const longue = (invoice?.lines?.data || [])
+          .some(l => (l?.period?.end || 0) - (l?.period?.start || 0) > 40 * 24 * 3600);
+        if (commerce && invoice?.id) {
+          const aRes = await fetch(`${SUPA_URL}/rest/v1/rpc/keepo_affiliation_paiement`, {
+            method: 'POST',
+            headers: supaHeaders,
+            body: JSON.stringify({ p_merchant: commerce, p_invoice: String(invoice.id), p_montant_cents: amount, p_longue: longue })
+          });
+          const aff = aRes.ok ? await aRes.json() : null;
+          vu.ambassadeur = !aff ? 'erreur ' + aRes.status
+                         : !aff.affilie ? 'non'
+                         : aff.deja_comptee ? 'facture déjà comptée'
+                         : 'facture ' + aff.factures;
+          if (aff?.nouvelle_prime) {
+            const du = ((aff.a_verser_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €';
+            prevenir({
+              salon: 'paiements',
+              titre: 'Prime ambassadeur due — 30 €',
+              texte: (aff.factures >= 2 ? 'Un commerce venu par ' + aff.code + ' a payé son 2ᵉ mois.'
+                                        : 'Un commerce venu par ' + aff.code + ' a payé son abonnement annuel.')
+                   + ' Virement mensuel dès 50 € : select * from keepo_versements_a_faire();',
+              couleur: 0x5B3AA0,
+              champs: [
+                { nom: 'Ambassadeur', valeur: String(aff.code || '—') },
+                { nom: 'À lui verser', valeur: du },
+                { nom: 'Commerçant',  valeur: String(commerce).slice(0, 8) }
+              ]
+            });
+          }
+        }
+      } catch (e) { console.error('Ambassadeur webhook error', String(e)); }
     }
   }
 
@@ -3267,6 +3349,16 @@ export default {
     // Dynamic route: public merchant page
     if (url.pathname.startsWith('/c/') && url.pathname.length > 3) {
       return handleMerchantPage(request, env, url);
+    }
+
+    // Lien d'un ambassadeur : keepo.eu/a/LEA20 mène à l'accueil, qui retient
+    // le code ; l'inscription commerçant le reprend (-20 % pendant 3 mois).
+    if (url.pathname.startsWith('/a/')) {
+      let brut = url.pathname.slice(3);
+      try { brut = decodeURIComponent(brut); } catch { /* code tel quel */ }
+      const code = brut.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                       .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16);
+      return Response.redirect(`${url.origin}/${code.length >= 3 ? '?amb=' + code : ''}`, 302);
     }
 
     // Logo public d'un commerçant (utilisé dans les e-mails : Gmail bloque

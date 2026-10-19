@@ -1634,6 +1634,10 @@
             splashRedirect('/dashboard-commercant');
             return;
         }
+        if (profile && profile.role === 'ambassadeur') {
+            splashRedirect('/dashboard-ambassadeur');
+            return;
+        }
 
         const displayName = (profile && profile.name) ? profile.name : "Client Privilège";
         const initial = displayName.charAt(0).toUpperCase();

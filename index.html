@@ -154,6 +154,11 @@ p{margin:0}
 
 /* ── Navigation ─────────────────────────────────────────────── */
 /* Le header est #hd ; la barre elle-même porte les DEUX classes .wrap.nav */
+#amb-bandeau{position:relative;z-index:61;background:var(--ink);color:#fff;font-size:14px}
+#amb-bandeau[hidden]{display:none}
+.amb-bandeau-in{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 16px;padding-top:10px;padding-bottom:10px;text-align:center}
+#amb-bandeau b{letter-spacing:.05em}
+#amb-bandeau a{background:#fff;color:var(--ink);font-weight:600;font-size:13px;padding:5px 12px;border-radius:999px;white-space:nowrap}
 #hd{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.78);
   backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
   border-bottom:1px solid var(--line)}
@@ -594,6 +599,13 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 </svg>
 
 <div id="progress" aria-hidden="true"></div>
+
+<div id="amb-bandeau" hidden>
+  <div class="wrap amb-bandeau-in">
+    <span>Code <b id="amb-bandeau-code"></b> activé&nbsp;: -20&nbsp;% pendant 3&nbsp;mois sur l'abonnement mensuel, après 14&nbsp;jours d'essai gratuits.</span>
+    <a id="amb-bandeau-lien" href="connexion.html?role=commercant&amp;tab=register">Créer mon compte</a>
+  </div>
+</div>
 
 <!-- ════════ HEADER ════════ -->
 <header id="hd">
@@ -1244,6 +1256,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
         <a href="#avis">À propos</a>
         <a href="connexion.html">Se connecter</a>
         <a href="connexion.html?role=commercant&amp;tab=register">Créer un compte</a>
+        <a href="ambassadeurs.html">Devenir ambassadeur</a>
       </div>
       <div class="foot-col">
         <h4>Légal</h4>
@@ -1970,6 +1983,30 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 })();
 </script>
 
+<script>
+/* Lien d'un ambassadeur (keepo.eu/a/CODE → /?amb=CODE) : on vérifie le code,
+   on le retient pour l'inscription et on annonce la remise. */
+(function () {
+  var brut = new URLSearchParams(location.search).get('amb');
+  if (!brut) return;
+  var code = brut.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16);
+  if (code.length < 3) return;
+  var cfg = window.KEEPO_CONFIG || {};
+  var url = (cfg.SUPABASE_URL || 'https://kvtsjylnwgexfywvxnwz.supabase.co') + '/rest/v1/rpc/verifier_code_ambassadeur';
+  var cle = cfg.SUPABASE_ANON_KEY || 'sb_publishable_XJoCbPawUCipKr2lunV8HA_r8XQ0rJ1';
+  fetch(url, { method: 'POST', headers: { 'apikey': cle, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_code: code }) })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || !d.valide) return;
+      try { localStorage.setItem('keepo_amb', d.code); } catch (_) {}
+      var b = document.getElementById('amb-bandeau');
+      document.getElementById('amb-bandeau-code').textContent = d.code;
+      document.getElementById('amb-bandeau-lien').href = 'connexion.html?role=commercant&tab=register&amb=' + encodeURIComponent(d.code);
+      b.hidden = false;
+    })
+    .catch(function () {});
+})();
+</script>
 <script src="js/keepo-assistant.js" defer></script>
 </body>
 </html>

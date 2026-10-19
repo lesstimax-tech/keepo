@@ -35,7 +35,9 @@ KEEPO.ensureProfile = async function (session, options) {
 };
 
 KEEPO.redirectByRole = function (role) {
-  window.location.href = role === "commercant" ? "/dashboard-commercant" : "/dashboard-client";
+  window.location.href = role === "commercant" ? "/dashboard-commercant"
+                       : role === "ambassadeur" ? "/dashboard-ambassadeur"
+                       : "/dashboard-client";
 };
 
 KEEPO.signOut = async function () {

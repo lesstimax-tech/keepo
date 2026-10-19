@@ -187,6 +187,26 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
   font-size:12.5px;color:var(--ink-2);line-height:1.55;
 }
 #merchant-trial-note b{color:var(--ink)}
+#ambassador-note{
+  display:none;margin-bottom:16px;padding:12px 15px;border-radius:13px;
+  background:linear-gradient(135deg,rgba(91,58,160,.07),rgba(22,184,196,.05));
+  border:1px solid rgba(91,58,160,.25);
+  font-size:12.5px;color:var(--ink-2);line-height:1.55;
+}
+#ambassador-note b{color:var(--ink)}
+#ambassador-note a{color:var(--teal-deep);font-weight:600}
+.role-card.wide{grid-column:1/-1;display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px}
+.role-card.wide .ri{margin:0;font-size:19px}
+label .opt{font-weight:500;color:var(--muted)}
+#register-amb-code{text-transform:uppercase;letter-spacing:.06em}
+#register-amb-code::placeholder{text-transform:none;letter-spacing:0}
+.amb-code-msg{font-size:12px;margin-top:6px;min-height:0;color:var(--muted);line-height:1.45}
+.amb-code-msg:empty{display:none}
+.amb-code-msg.ok{color:#0E7C8C}
+.amb-code-msg.ko{color:#C2412D}
+.amb-majeur{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink-2);line-height:1.5;margin:-2px 0 16px;cursor:pointer}
+.amb-majeur input{width:17px;height:17px;margin:1px 0 0;flex:none;accent-color:var(--teal-deep)}
+.amb-majeur a{color:var(--teal-deep);font-weight:600}
 
 /* Boutons */
 .btn-main{
@@ -330,6 +350,7 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
       <span><i>✓</i>Toutes les fonctionnalités pendant 14 jours</span>
       <span><i>✓</i>Sans carte bancaire : vous choisissez votre formule à la fin</span>
       <span><i>✓</i>Annulable en 1 clic à tout moment pendant l'essai</span>
+      <span id="pm-amb" style="display:none;"><i>✓</i>Code <b id="pm-amb-code"></b> : -20 % pendant 3 mois sur l'abonnement mensuel</span>
     </div>
     <button onclick="processMerchantRegistrationAfterPayment()" id="btnConfirmPayment" class="btn-main">
       <span class="spinner"></span>Activer mon essai gratuit →
@@ -452,11 +473,23 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
               <span class="ri"><i class="fa-solid fa-store"></i></span><b>Commerçant</b>
               <small>Je fidélise mes clients</small>
             </div>
+            <div class="role-card wide" id="role-ambassadeur" onclick="setRole('ambassadeur')" role="button" tabindex="0">
+              <span class="ri"><i class="fa-solid fa-bullhorn"></i></span>
+              <span><b>Ambassadeur</b><small>Je recommande KEEPO et je gagne 30 € par commerce abonné</small></span>
+            </div>
           </div>
         </div>
 
         <div id="merchant-trial-note">
           <i class="fa-solid fa-gift"></i> <b>14 jours d'essai offerts</b> — toutes les fonctionnalités, sans carte bancaire.
+        </div>
+        <div id="ambassador-note">
+          <i class="fa-solid fa-bullhorn"></i> <b>Gratuit, sans minimum d'abonnés.</b> Vous recevez votre code tout de suite ; les commerces qui l'utilisent ont -20 % pendant 3 mois. <a href="/ambassadeurs" target="_blank">Comment ça marche</a>
+        </div>
+        <div class="form-group" id="amb-code-group" style="display:none;">
+          <label for="register-amb-code">Code ambassadeur <span class="opt">(facultatif)</span></label>
+          <input type="text" id="register-amb-code" placeholder="Ex. LEA20" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" oninput="surSaisieCodeAmb()">
+          <div class="amb-code-msg" id="amb-code-msg" aria-live="polite"></div>
         </div>
 
         <div class="form-group">
@@ -478,6 +511,10 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(22,184,196,.55);
           <label for="register-confirm-password">Confirmer le mot de passe</label>
           <input type="password" id="register-confirm-password" placeholder="Répétez le mot de passe" autocomplete="new-password" required>
         </div>
+        <label class="amb-majeur" id="amb-majeur-group" style="display:none;">
+          <input type="checkbox" id="amb-majeur">
+          <span>J'ai 18 ans ou plus et j'accepte les <a href="cgu-cgv.html#ambassadeurs" target="_blank">conditions du programme ambassadeur</a>.</span>
+        </label>
         <button type="submit" class="btn-main" id="registerBtn"><span class="spinner"></span>Créer mon compte</button>
         <p class="auth-foot">En créant un compte, vous acceptez les <a href="cgu-cgv.html" target="_blank">CGU</a> et la <a href="confidentialite.html" target="_blank">politique de confidentialité</a>.</p>
       </form>
@@ -523,7 +560,19 @@ window.addEventListener('DOMContentLoaded', async () => {
         const q = new URLSearchParams(window.location.search);
         if (q.get('tab') === 'register') switchTab('register');
         const role = q.get('role');
-        if (role === 'commercant' || role === 'client') setRole(role);
+        if (role === 'commercant' || role === 'client' || role === 'ambassadeur') setRole(role);
+
+        // ?amb=CODE (lien d'un ambassadeur) : c'est un commerçant qui arrive.
+        const amb = nettoyerCodeAmb(q.get('amb'));
+        if (amb) {
+            try { localStorage.setItem('keepo_amb', amb); } catch (_) {}
+            if (!role) { switchTab('register'); setRole('commercant'); }
+        }
+        const memorise = amb || getAmbCode();
+        if (memorise) {
+            document.getElementById('register-amb-code').value = memorise;
+            ambVerifEnCours = verifierCodeAmb();
+        }
     }
 
     // ?ref=CODE : code de parrainage commerçant, mémorisé jusqu'à l'inscription
@@ -579,12 +628,19 @@ function setRole(role) {
     document.getElementById('register-role').value = role;
     document.getElementById('role-client').classList.toggle('active', role === 'client');
     document.getElementById('role-commercant').classList.toggle('active', role === 'commercant');
+    document.getElementById('role-ambassadeur').classList.toggle('active', role === 'ambassadeur');
     document.getElementById('merchant-trial-note').style.display = role === 'commercant' ? 'block' : 'none';
+    document.getElementById('amb-code-group').style.display = role === 'commercant' ? 'block' : 'none';
+    document.getElementById('ambassador-note').style.display = role === 'ambassadeur' ? 'block' : 'none';
+    document.getElementById('amb-majeur-group').style.display = role === 'ambassadeur' ? 'flex' : 'none';
     const nameLabel = document.getElementById('register-name-label');
     const nameInput = document.getElementById('register-name');
     if (role === 'commercant') {
         nameLabel.innerText = 'Nom de votre enseigne';
         nameInput.placeholder = 'Le Bistrot de Jean';
+    } else if (role === 'ambassadeur') {
+        nameLabel.innerText = 'Votre prénom ou pseudo';
+        nameInput.placeholder = 'Léa ou @lea.food';
     } else {
         nameLabel.innerText = 'Votre nom';
         nameInput.placeholder = 'Jean Dupont';
@@ -598,11 +654,70 @@ function safeNext() {
 }
 function redirectUser(role) {
     const next = safeNext();
-    window.location.href = next || (role === 'commercant' ? '/dashboard-commercant' : '/dashboard-client');
+    window.location.href = next || (role === 'commercant' ? '/dashboard-commercant'
+                                  : role === 'ambassadeur' ? '/dashboard-ambassadeur'
+                                  : '/dashboard-client');
+}
+
+// ─── Code ambassadeur (commerçants, facultatif) ───
+// Le code arrive par le lien keepo.eu/a/CODE (retenu par l'accueil), par
+// ?amb=CODE, ou se tape à la main. Il n'est envoyé que s'il existe.
+let ambCodeValide = '';
+let ambVerifEnCours = null;
+let ambVerifImpossible = false; // base injoignable : le serveur tranchera seul
+function nettoyerCodeAmb(v) {
+    return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16);
+}
+function getAmbCode() {
+    try { return nettoyerCodeAmb(localStorage.getItem('keepo_amb')); } catch (_) { return ''; }
+}
+function ecrireMessageAmb(classe, icone, texte) {
+    const msg = document.getElementById('amb-code-msg');
+    msg.className = 'amb-code-msg' + (classe ? ' ' + classe : '');
+    msg.textContent = '';
+    if (icone) { const i = document.createElement('i'); i.className = 'fa-solid ' + icone; msg.appendChild(i); msg.appendChild(document.createTextNode(' ')); }
+    msg.appendChild(document.createTextNode(texte || ''));
+}
+function majRemiseAmb() {
+    const ligne = document.getElementById('pm-amb');
+    if (!ligne) return;
+    ligne.style.display = ambCodeValide ? '' : 'none';
+    const c = document.getElementById('pm-amb-code');
+    if (c) c.textContent = ambCodeValide;
+}
+async function verifierCodeAmb() {
+    const input = document.getElementById('register-amb-code');
+    const code = nettoyerCodeAmb(input.value);
+    ambCodeValide = '';
+    ambVerifImpossible = false;
+    majRemiseAmb();
+    if (!code) { ecrireMessageAmb('', '', ''); return; }
+    if (code.length < 3) { ecrireMessageAmb('ko', 'fa-circle-xmark', 'Un code compte au moins 3 caractères.'); return; }
+    ecrireMessageAmb('', 'fa-circle-notch fa-spin', 'Vérification du code…');
+    try {
+        const { data, error } = await supabaseClient.rpc('verifier_code_ambassadeur', { p_code: code });
+        if (nettoyerCodeAmb(input.value) !== code) return; // saisie modifiée entre-temps
+        if (!error && data && data.valide) {
+            ambCodeValide = data.code;
+            ecrireMessageAmb('ok', 'fa-circle-check',
+                '-20 % pendant 3 mois sur l\'abonnement mensuel' + (data.pseudo ? ', grâce à ' + data.pseudo : '') + '.');
+        } else if (error) {
+            ambVerifImpossible = true;
+            ecrireMessageAmb('', '', '');
+        } else {
+            ecrireMessageAmb('ko', 'fa-circle-xmark', 'Code inconnu. Vérifiez l\'orthographe, ou laissez vide.');
+        }
+    } catch (_) { ambVerifImpossible = true; ecrireMessageAmb('', '', ''); }
+    majRemiseAmb();
+}
+function surSaisieCodeAmb() {
+    clearTimeout(surSaisieCodeAmb.t);
+    surSaisieCodeAmb.t = setTimeout(() => { ambVerifEnCours = verifierCodeAmb(); }, 450);
 }
 
 // ─── Inscription ───
-document.getElementById('registerForm').addEventListener('submit', function(e) {
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const name = document.getElementById('register-name').value.trim();
@@ -616,7 +731,22 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     if (password !== confirmPassword) { showToast('Les mots de passe ne correspondent pas.'); return; }
 
     const role = document.getElementById('register-role').value;
+    if (role === 'ambassadeur' && !document.getElementById('amb-majeur').checked) {
+        showToast('Le programme ambassadeur est réservé aux personnes majeures : cochez la case pour continuer.');
+        return;
+    }
     if (role === 'commercant') {
+        // Un code tapé mais pas encore vérifié (ou faux) : on tranche avant.
+        const tape = nettoyerCodeAmb(document.getElementById('register-amb-code').value);
+        if (tape && tape !== ambCodeValide) {
+            clearTimeout(surSaisieCodeAmb.t);
+            await verifierCodeAmb();
+            if (!ambCodeValide && !ambVerifImpossible) {
+                showToast('Ce code ambassadeur est inconnu. Corrigez-le ou laissez le champ vide.');
+                return;
+            }
+        }
+        majRemiseAmb();
         document.getElementById('paymentOverlay').style.display = 'flex';
     } else {
         processRegistrationEngine();
@@ -652,10 +782,16 @@ async function processRegistrationEngine() {
                 // à partir de ces métadonnées. Le plan n'est jamais décidé ici :
                 // l'essai et l'abonnement se gèrent après connexion (Stripe).
                 // ref_code (parrainage) : n'a d'effet que pour un compte commerçant.
+                // amb_code (programme ambassadeur) : la base rattache le commerce
+                // à l'ambassadeur dès la création du profil.
                 data: (function () {
                     const d = { name: name, role: role };
                     const rc = getRefCode();
                     if (role === 'commercant' && rc) d.ref_code = rc;
+                    // Vérification impossible : on envoie le code tapé, la base
+                    // ignore de toute façon un code qui n'existe pas.
+                    const ac = ambCodeValide || (ambVerifImpossible ? nettoyerCodeAmb(document.getElementById('register-amb-code').value) : '');
+                    if (role === 'commercant' && ac) d.amb_code = ac;
                     return d;
                 })()
             }
@@ -665,6 +801,7 @@ async function processRegistrationEngine() {
         if (authData.user) {
             closePaymentModal();
             try { localStorage.removeItem('keepo_ref'); } catch (_) {} // parrainage consommé
+            if (role === 'commercant' && ambCodeValide) { try { localStorage.removeItem('keepo_amb'); } catch (_) {} }
             if (authData.session) {
                 showToast('Compte créé avec succès !', 'success');
                 setTimeout(() => { redirectUser(role); }, 1200);
