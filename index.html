@@ -154,9 +154,14 @@ p{margin:0}
 
 /* ── Navigation ─────────────────────────────────────────────── */
 /* Le header est #hd ; la barre elle-même porte les DEUX classes .wrap.nav */
-#amb-bandeau{position:relative;z-index:61;background:var(--ink);color:#fff;font-size:14px}
+#amb-bandeau{background:var(--ink);color:#fff;font-size:14px}
 #amb-bandeau[hidden]{display:none}
-.amb-bandeau-in{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 16px;padding-top:10px;padding-bottom:10px;text-align:center}
+.amb-bandeau-in{display:flex;align-items:center;justify-content:center;gap:6px 16px;padding-top:9px;padding-bottom:9px;text-align:center}
+@media (max-width:640px){
+  #amb-bandeau{font-size:13px}
+  .amb-bandeau-in{justify-content:space-between;text-align:left;gap:10px;padding-top:8px;padding-bottom:8px}
+  .amb-long{display:none}
+}
 #amb-bandeau b{letter-spacing:.05em}
 #amb-bandeau a{background:#fff;color:var(--ink);font-weight:600;font-size:13px;padding:5px 12px;border-radius:999px;white-space:nowrap}
 #hd{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.78);
@@ -186,11 +191,11 @@ p{margin:0}
 .burger.x span:last-child{transform:translateY(-3.3px) rotate(-45deg)}
 
 /* Menu mobile : masqué par défaut, déplié par la classe .open (posée par le JS) */
-#mobileNav{display:none;position:fixed;top:65px;left:0;right:0;z-index:59;
+#mobileNav{display:none;position:fixed;top:var(--hd-h,65px);left:0;right:0;z-index:59;
   background:rgba(255,255,255,.97);backdrop-filter:saturate(180%) blur(16px);
   -webkit-backdrop-filter:saturate(180%) blur(16px);
   border-bottom:1px solid var(--line);box-shadow:var(--shadow-md);
-  padding:14px 24px 22px;max-height:calc(100dvh - 64px);overflow-y:auto;
+  padding:14px 24px 22px;max-height:calc(100dvh - var(--hd-h,65px));overflow-y:auto;
   flex-direction:column;gap:2px}
 #mobileNav.open{display:flex;animation:mnav .28s var(--ease)}
 @keyframes mnav{from{opacity:0;transform:translateY(-10px)}}
@@ -600,15 +605,15 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
 
 <div id="progress" aria-hidden="true"></div>
 
-<div id="amb-bandeau" hidden>
-  <div class="wrap amb-bandeau-in">
-    <span>Code <b id="amb-bandeau-code"></b> activé&nbsp;: -20&nbsp;% pendant 3&nbsp;mois sur l'abonnement mensuel, après 14&nbsp;jours d'essai gratuits.</span>
-    <a id="amb-bandeau-lien" href="connexion.html?role=commercant&amp;tab=register">Créer mon compte</a>
-  </div>
-</div>
-
 <!-- ════════ HEADER ════════ -->
 <header id="hd">
+  <!-- Bandeau du code ambassadeur : dans l'en-tête, il reste visible pendant le défilement -->
+  <div id="amb-bandeau" hidden>
+    <div class="wrap amb-bandeau-in">
+      <span class="amb-txt">Code <b id="amb-bandeau-code"></b> activé&nbsp;: -20&nbsp;% pendant 3&nbsp;mois<span class="amb-long"> sur l'abonnement mensuel, après 14&nbsp;jours d'essai gratuits</span></span>
+      <a id="amb-bandeau-lien" href="connexion.html?role=commercant&amp;tab=register">Créer mon compte</a>
+    </div>
+  </div>
   <div class="wrap nav">
     <a href="/" class="logo" aria-label="Accueil KEEPO"><img src="img/logo.png" alt="KEEPO"></a>
     <nav aria-label="Navigation principale">
@@ -2006,6 +2011,11 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       document.getElementById('amb-bandeau-code').textContent = d.code;
       document.getElementById('amb-bandeau-lien').href = 'connexion.html?role=commercant&tab=register&amb=' + encodeURIComponent(d.code);
       b.hidden = false;
+      // Le menu mobile s'ouvre sous l'en-tête, qui a grandi du bandeau.
+      var hd = document.getElementById('hd');
+      var caler = function () { document.documentElement.style.setProperty('--hd-h', hd.offsetHeight + 'px'); };
+      caler();
+      window.addEventListener('resize', caler);
     })
     .catch(function () {});
 })();
