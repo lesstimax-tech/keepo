@@ -737,12 +737,24 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
   .cq-exemple .cq-texte{ margin:0; font-size:16px; line-height:1.62; color:var(--ink-2); max-width:72ch; text-wrap:pretty }
   .cq-pas{ max-width:960px; margin:30px auto 0; padding:0 4px }
   .cq-pas ul{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px 32px }
+  .cq-commerces{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; max-width:960px; margin:0 auto 22px }
+  .cq-commerces figure{ margin:0; position:relative; aspect-ratio:3/4; border-radius:var(--r-lg); overflow:hidden; background:var(--bg-2) }
+  .cq-commerces img{ width:100%; height:100%; object-fit:cover; transition:transform .8s var(--ease) }
+  .cq-commerces figure:hover img{ transform:scale(1.04) }
+  .cq-commerces figcaption{ position:absolute; left:10px; bottom:10px; padding:5px 11px; border-radius:999px;
+    background:rgba(255,255,255,.93); color:var(--ink); font-size:13px; font-weight:600 }
+  .cq-exemple.avec-photo{ display:grid; grid-template-columns:minmax(0, .85fr) minmax(0, 1.15fr); gap:24px; align-items:center }
+  .cq-exemple .cq-photo{ margin:0; aspect-ratio:4/3; border-radius:12px; overflow:hidden }
+  .cq-exemple .cq-photo img{ width:100%; height:100%; object-fit:cover }
   .cq-pas li{ position:relative; padding-left:24px; font-size:15px; line-height:1.5; color:var(--ink-2) }
   .cq-pas li::before, .cq-pas li::after{ content:""; position:absolute; left:3px; top:.72em; width:11px; height:2px;
                                          border-radius:2px; background:var(--muted); transform:rotate(45deg) }
   .cq-pas li::after{ transform:rotate(-45deg) }
   @media (max-width:760px){
     .cq-duo, .cq-pas ul{ grid-template-columns:1fr }
+  .cq-commerces{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px }
+  .cq-exemple.avec-photo{ grid-template-columns:1fr; gap:16px }
+  .cq-exemple .cq-photo{ aspect-ratio:16/9 }
     .cq-carte, .cq-exemple{ padding:20px }
   }
 </style>
@@ -752,6 +764,15 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       <div class="eyebrow">En clair</div>
       <h2 id="cq-title">KEEPO, c'est quoi exactement&nbsp;?</h2>
       <p>Une carte de fidélité qui vit dans le téléphone de vos clients, à la place de la carte en carton. Vous la créez sur keepo.eu, vos clients l'ajoutent en scannant un QR code posé sur votre comptoir, et vous créditez leurs points en scannant leur téléphone avec le vôtre.</p>
+    </div>
+
+    <!-- Photos Unsplash : des commerces, jamais des visages ni des enseignes réelles,
+         pour ne laisser croire à personne qu'il s'agit de clients KEEPO. -->
+    <div class="cq-commerces rv" aria-label="Pour tous les commerces de quartier">
+      <figure><img src="img/photos/commerce-boulangerie.webp" alt="Croissants en vitrine d'une boulangerie" loading="lazy" decoding="async"><figcaption>Boulangerie</figcaption></figure>
+      <figure><img src="img/photos/commerce-coiffeur.webp" alt="Fauteuils et miroirs d'un salon de coiffure" loading="lazy" decoding="async"><figcaption>Coiffeur</figcaption></figure>
+      <figure><img src="img/photos/commerce-cafe.webp" alt="Un barista verse un latte au comptoir" loading="lazy" decoding="async"><figcaption>Café</figcaption></figure>
+      <figure><img src="img/photos/commerce-fleuriste.webp" alt="Bouquets de fleurs devant une boutique" loading="lazy" decoding="async"><figcaption>Fleuriste</figcaption></figure>
     </div>
 
     <div class="cq-duo">
@@ -777,9 +798,12 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
       </article>
     </div>
 
-    <div class="cq-exemple rv">
+    <div class="cq-exemple avec-photo rv">
+      <figure class="cq-photo"><img src="img/photos/exemple-boulangerie.webp" alt="Vitrine de pains et de viennoiseries" loading="lazy" decoding="async"></figure>
+      <div>
       <p class="cq-label">Un exemple</p>
       <p class="cq-texte">Une boulangerie fixe « 10 baguettes = 1 viennoiserie offerte ». À chaque achat, la boulangère scanne le téléphone du client : <b>un tampon s'ajoute</b>. Au dixième, le client est prévenu, affiche le code de sa récompense sur sa carte, la boulangère le valide, et il repart avec sa viennoiserie.</p>
+      </div>
     </div>
 
     <div class="cq-pas rv">
@@ -1273,6 +1297,7 @@ html.motion section.sec-in::before{transform:translateX(-50%) scaleX(1)}
     <div class="foot-bottom">
       <span>© 2026 KEEPO — Tous droits réservés.</span>
       <span>Fait avec soin pour les commerçants indépendants.</span>
+      <span>Photos : Kavita Joshi Rai, Greg Trowman, Nathan Dumlao, Roman Kraft et Siebe Warmoeskerken sur Unsplash.</span>
     </div>
   </div>
 </footer>
