@@ -335,6 +335,7 @@ label .opt{font-weight:500;color:var(--muted)}
 }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="/js/keepo-mesure.js" defer></script>
 </head>
 <body>
 
@@ -799,6 +800,8 @@ async function processRegistrationEngine() {
         if (authError) throw authError;
 
         if (authData.user) {
+            // Statistiques : le rôle et la présence d'un code, jamais le nom ni l'e-mail.
+            keepoMesure('inscription', { role: role, code_ambassadeur: role === 'commercant' && !!ambCodeValide });
             closePaymentModal();
             try { localStorage.removeItem('keepo_ref'); } catch (_) {} // parrainage consommé
             if (role === 'commercant' && ambCodeValide) { try { localStorage.removeItem('keepo_amb'); } catch (_) {} }

@@ -3635,6 +3635,39 @@ async function handleVideo(request, env) {
   });
 }
 
+// ── Mesure d'audience (PostHog, hébergé en Europe) ──
+// Le navigateur parle à keepo.eu/relais/… et le Worker relaie vers PostHog :
+// le CSP reste limité à notre domaine, et les bloqueurs de pub qui visent
+// posthog.com ne faussent pas les chiffres. On transmet l'adresse IP du
+// visiteur (PostHog verrait sinon celle de Cloudflare, et compterait tout le
+// monde comme un seul visiteur) ; cookies et en-tête d'autorisation restent ici.
+const POSTHOG_API = 'eu.i.posthog.com';
+const POSTHOG_FICHIERS = 'eu-assets.i.posthog.com';
+
+async function handleRelaisMesure(request, url, ctx) {
+  const chemin = url.pathname.slice('/relais'.length) + url.search;
+
+  // Le script PostHog et sa configuration : mis en cache chez Cloudflare.
+  if (chemin.startsWith('/static/') || chemin.startsWith('/array/')) {
+    const enCache = await caches.default.match(request);
+    if (enCache) return enCache;
+    const reponse = await fetch(`https://${POSTHOG_FICHIERS}${chemin}`);
+    if (reponse.ok) ctx.waitUntil(caches.default.put(request, reponse.clone()));
+    return reponse;
+  }
+
+  const entetes = new Headers(request.headers);
+  entetes.delete('cookie');
+  entetes.delete('authorization');
+  entetes.set('X-Forwarded-For', request.headers.get('CF-Connecting-IP') || '');
+  return fetch(`https://${POSTHOG_API}${chemin}`, {
+    method: request.method,
+    headers: entetes,
+    body: request.method === 'GET' || request.method === 'HEAD' ? null : await request.arrayBuffer(),
+    redirect: request.redirect
+  });
+}
+
 // ──────────── Router ────────────
 
 export default {
@@ -3644,6 +3677,10 @@ export default {
     // Dynamic route: public merchant page
     if (url.pathname.startsWith('/c/') && url.pathname.length > 3) {
       return handleMerchantPage(request, env, url);
+    }
+
+    if (url.pathname.startsWith('/relais/')) {
+      return handleRelaisMesure(request, url, ctx);
     }
 
     if (url.pathname.startsWith('/videos/') && url.pathname.endsWith('.mp4')) {
