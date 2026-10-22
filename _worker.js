@@ -104,7 +104,7 @@ CE QUE TU FAIS
 LE PROGRAMME AMBASSADEUR (règles exactes)
 - Gratuit, réservé aux majeurs, sans minimum d'abonnés.
 - Le commerce qui s'inscrit avec son code — via le lien keepo.eu/a/CODE, en le tapant à l'inscription, ou plus tard dans son tableau de bord avant son premier paiement — a -20 % pendant 3 mois sur l'abonnement mensuel, même après son essai gratuit de 14 jours sans carte bancaire. La réduction ne vaut pas pour l'annuel.
-- Prime : 30 € par commerce, gagnée quand ce commerce a payé son 2e mois (ou dès qu'il paie un abonnement annuel). Une seule prime par commerce, aucun plafond.
+- Prime : l'équivalent du 2e paiement du commerce, avec un minimum de 30 €. Elle est gagnée quand ce commerce a payé son 2e mois. Avec la réduction du code, ça fait 30 € pour un Smart (son 2e mois, 19,92 €, est sous le minimum), 39,20 € pour un Essentiel, 79,20 € pour un Pro Scale. Abonnement annuel : la prime vaut un douzième du paiement, 30 € au minimum (environ 74 € pour un Pro Scale annuel), gagnée dès ce paiement. Une seule prime par commerce, aucun plafond. Viser les commerces qui ont besoin de Pro Scale (beaucoup de clients, plusieurs points de vente, envie de VIP, roue, parrainage) rapporte plus, mais ne pousse jamais un commerce vers une formule dont il n'a pas besoin.
 - Virement une fois par mois dès 50 € à recevoir, sur un IBAN à son nom renseigné dans son espace (rubrique « Recevoir vos primes »).
 - Pas de prime pour son propre commerce (gérant, associé, salarié), ni pour un compte créé ou payé juste pour la prime.
 - Mention « Collaboration commerciale » ou « Publicité » obligatoire sur ses publications (loi du 9 juin 2023) ; sur TikTok, il active aussi « Contenu de marque ». Mets TOUJOURS cette mention dans les légendes et les scripts que tu écris.
@@ -128,7 +128,7 @@ CE QU'EST KEEPO (les seuls arguments autorisés)
 HONNÊTETÉ — non négociable
 - KEEPO démarre : pas de témoignages, pas de chiffres de résultats (hausse de chiffre d'affaires, de fréquentation…). N'en invente jamais, ni dans un script ni ailleurs.
 - N'invente aucune fonctionnalité, aucun partenariat, aucune promotion absente de cette liste. Si tu ne sais pas, dis-le et propose d'écrire à contact@keepo.eu.
-- Ne promets jamais de gains à l'ambassadeur. Un calcul (« 10 commerces abonnés = 300 € ») se présente comme un exemple.
+- Ne promets jamais de gains à l'ambassadeur. Un calcul (« 10 commerces abonnés = au moins 300 € ») se présente comme un exemple.
 - Pas de fausse urgence ni de pression trompeuse dans ce que tu écris (« plus que 2 places », « offre qui se termine ce soir »…).
 - Ses chiffres : uniquement ceux des données ci-dessous. Si une information n'y est pas, dis que tu ne la vois pas.
 
@@ -1006,9 +1006,9 @@ function ficheAmbassadeur(e) {
   const euros = c => ((c || 0) / 100).toFixed(2).replace('.', ',').replace(',00', '') + ' €';
   const court = (t, n) => String(t == null ? '' : t).replace(/[\r\n]+/g, ' ').slice(0, n);
   const s = e.stats || {};
-  const statuts = { inscrit: 'inscrit, pas encore abonné', abonne: 'abonné', due: 'prime de 30 € gagnée, à verser', versee: 'prime versée' };
+  const statuts = { inscrit: 'inscrit, pas encore abonné', abonne: 'abonné, prime pas encore gagnée (au moins 30 € à son 2e mois)', due: 'prime gagnée, à verser', versee: 'prime versée' };
   const commerces = (e.commerces || []).slice(0, 40).map(c =>
-    `  - « ${court(c.nom, 60)} » — ${statuts[c.statut] || c.statut} — ${c.mois_payes || 0} mois payé(s) — inscrit le ${String(c.depuis || '').slice(0, 10)}`
+    `  - « ${court(c.nom, 60)} » — ${statuts[c.statut] || c.statut}${c.prime_cents ? ' : ' + euros(c.prime_cents) : ''} — ${c.mois_payes || 0} mois payé(s) — inscrit le ${String(c.depuis || '').slice(0, 10)}`
   ).join('\n') || '  (aucun pour l\'instant)';
   const virements = (e.versements || []).slice(0, 12).map(v =>
     `  - ${String(v.date || '').slice(0, 10)} : ${euros(v.montant_cents)} (${v.primes} prime(s))`
@@ -2260,7 +2260,8 @@ async function handleStripeWebhook(request, env, ctx) {
       } catch (e) { console.error('Parrainage webhook error', String(e)); }
 
       // ── PROGRAMME AMBASSADEUR : chaque facture payée compte ; la 2ᵉ (ou une
-      //    facture annuelle) rend la prime de 30 € due. La base mémorise la
+      //    facture annuelle) rend la prime due : ce paiement ramené à un
+      //    mois, 30 € au minimum (calcul dans la base). La base mémorise la
       //    facture : invoice.paid puis invoice.payment_succeeded ne comptent
       //    qu'une fois. Le commerçant se lit d'abord dans les métadonnées de
       //    l'abonnement : la 1ʳᵉ facture peut arriver avant
@@ -2273,13 +2274,15 @@ async function handleStripeWebhook(request, env, ctx) {
           const cRes = await fetch(`${SUPA_URL}/rest/v1/profiles?stripe_subscription_id=eq.${encodeURIComponent(subId)}&select=id`, { headers: supaHeaders });
           commerce = cRes.ok ? ((await cRes.json())[0]?.id || null) : null;
         }
-        const longue = (invoice?.lines?.data || [])
-          .some(l => (l?.period?.end || 0) - (l?.period?.start || 0) > 40 * 24 * 3600);
+        // Nombre de mois que couvre la facture : 1 en mensuel, 12 en annuel.
+        const mois = Math.max(1, ...(invoice?.lines?.data || [])
+          .map(l => Math.round(((l?.period?.end || 0) - (l?.period?.start || 0)) / (30.44 * 24 * 3600))));
+        const longue = mois > 1;
         if (commerce && invoice?.id) {
           const aRes = await fetch(`${SUPA_URL}/rest/v1/rpc/keepo_affiliation_paiement`, {
             method: 'POST',
             headers: supaHeaders,
-            body: JSON.stringify({ p_merchant: commerce, p_invoice: String(invoice.id), p_montant_cents: amount, p_longue: longue })
+            body: JSON.stringify({ p_merchant: commerce, p_invoice: String(invoice.id), p_montant_cents: amount, p_longue: longue, p_mois: mois })
           });
           const aff = aRes.ok ? await aRes.json() : null;
           vu.ambassadeur = !aff ? 'erreur ' + aRes.status
@@ -2287,12 +2290,13 @@ async function handleStripeWebhook(request, env, ctx) {
                          : aff.deja_comptee ? 'facture déjà comptée'
                          : 'facture ' + aff.factures;
           if (aff?.nouvelle_prime) {
-            const du = ((aff.a_verser_cents || 0) / 100).toFixed(2).replace('.', ',') + ' €';
+            const euros = c => ((c || 0) / 100).toFixed(2).replace('.', ',') + ' €';
+            const du = euros(aff.a_verser_cents);
             prevenir({
               salon: 'paiements',
-              titre: 'Prime ambassadeur due — 30 €',
-              texte: (aff.factures >= 2 ? 'Un commerce venu par ' + aff.code + ' a payé son 2ᵉ mois.'
-                                        : 'Un commerce venu par ' + aff.code + ' a payé son abonnement annuel.')
+              titre: 'Prime ambassadeur due — ' + euros(aff.prime_cents || 3000),
+              texte: (aff.annuel ? 'Un commerce venu par ' + aff.code + ' a payé son abonnement annuel.'
+                                 : 'Un commerce venu par ' + aff.code + ' a payé son 2ᵉ mois.')
                    + ' Virement mensuel dès 50 € : select * from keepo_versements_a_faire();',
               couleur: 0x5B3AA0,
               champs: [

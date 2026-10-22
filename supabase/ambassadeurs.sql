@@ -7,8 +7,10 @@
 -- d'abonnés) partage son code ou son lien keepo.eu/a/CODE.
 --   • Le commerce qui s'inscrit avec ce code paie -20 % pendant 3 mois
 --     sur l'abonnement mensuel (coupon posé par le Worker au paiement).
---   • Quand ce commerce a payé son 2ᵉ mois (ou un abonnement annuel),
---     l'ambassadeur gagne une prime de 30 €.
+--   • Quand ce commerce a payé son 2ᵉ mois, l'ambassadeur gagne une prime
+--     égale à ce 2ᵉ paiement, avec un minimum de 30 € (Smart 30 €,
+--     Essentiel 39,20 €, Pro Scale 79,20 € avec la réduction). Abonnement
+--     annuel : la prime vaut un douzième du paiement, 30 € au minimum.
 --   • Sami verse les primes par virement, une fois par mois, dès 50 € dus :
 --       select * from keepo_versements_a_faire();
 --       select keepo_marquer_verse('CODE', 'virement novembre');
@@ -73,7 +75,7 @@ create table if not exists public.affiliations (
   ambassadeur_id   uuid not null references public.ambassadeurs(id) on delete cascade,
   code             text not null,          -- le code saisi, pour l'historique
   factures_payees  int  not null default 0,
-  prime_cents      int  not null default 3000,
+  prime_cents      int  not null default 3000, -- le minimum ; fixé quand la prime devient due
   prime_due_at     timestamptz,            -- 2ᵉ mois payé : la prime est due
   versement_id     uuid references public.ambassadeur_versements(id) on delete set null,
   created_at       timestamptz not null default now()
@@ -345,7 +347,7 @@ begin
     'iban',       case when v_amb.iban is null then null
                        else left(v_amb.iban, 4) || ' •••• ' || right(v_amb.iban, 4) end,
     'actif',      v_amb.actif,
-    'prime_cents', 3000,
+    'prime_min_cents', 3000,
     'seuil_cents', 5000,
     'code_modifiable', not exists (select 1 from public.affiliations where ambassadeur_id = v_uid),
     'stats', (
@@ -363,6 +365,7 @@ begin
                                       case when af.merchant_id is null then 'Commerce fermé' else 'Commerce' end),
                'depuis',     af.created_at,
                'mois_payes', af.factures_payees,
+               'prime_cents', case when af.prime_due_at is not null then af.prime_cents end,
                'statut',     case when af.versement_id is not null then 'versee'
                                   when af.prime_due_at is not null then 'due'
                                   when af.factures_payees >= 1    then 'abonne'
@@ -460,13 +463,19 @@ grant execute on function public.ambassadeur_changer_code(text) to authenticated
 -- ── 8. Le serveur compte les paiements ──────────────────
 -- Appelée par le Worker à chaque facture payée (montant > 0). La prime
 -- devient due à la 2ᵉ facture, ou dès la 1ʳᵉ si elle couvre plus d'un
--- mois (abonnement annuel : p_longue). Renvoie nouvelle_prime = true une
+-- mois (abonnement annuel). Son montant : ce que le commerce vient de
+-- payer, ramené à un mois (p_mois = nombre de mois couverts par la
+-- facture), jamais moins de 30 €. Renvoie nouvelle_prime = true une
 -- seule fois, pour la notification Discord.
+-- p_longue reste accepté pour un ancien Worker : sans p_mois, une facture
+-- longue compte pour 12 mois.
+drop function if exists public.keepo_affiliation_paiement(uuid, text, int, boolean);
 create or replace function public.keepo_affiliation_paiement(
   p_merchant      uuid,
   p_invoice       text,
   p_montant_cents int     default 0,
-  p_longue        boolean default false
+  p_longue        boolean default false,
+  p_mois          int     default null
 )
 returns jsonb
 language plpgsql
@@ -474,9 +483,12 @@ security definer
 set search_path = public
 as $$
 declare
-  v_aff   record;
-  v_apres record;
-  v_du    int;
+  v_aff     record;
+  v_apres   record;
+  v_du      int;
+  v_mois    int;
+  v_prime   int;
+  v_devient boolean;
 begin
   if p_merchant is null or nullif(btrim(p_invoice), '') is null then
     return jsonb_build_object('affilie', false);
@@ -494,11 +506,14 @@ begin
     return jsonb_build_object('affilie', true, 'deja_comptee', true);
   end if;
 
+  v_mois    := greatest(coalesce(p_mois, case when coalesce(p_longue, false) then 12 else 1 end), 1);
+  v_prime   := greatest(3000, round(greatest(coalesce(p_montant_cents, 0), 0)::numeric / v_mois)::int);
+  v_devient := v_aff.prime_due_at is null and (v_aff.factures_payees + 1 >= 2 or v_mois > 1);
+
   update public.affiliations
      set factures_payees = factures_payees + 1,
-         prime_due_at    = case when prime_due_at is null
-                                 and (factures_payees + 1 >= 2 or coalesce(p_longue, false))
-                                then now() else prime_due_at end
+         prime_due_at    = case when v_devient then now()   else prime_due_at end,
+         prime_cents     = case when v_devient then v_prime else prime_cents  end
    where id = v_aff.id
   returning * into v_apres;
 
@@ -510,14 +525,16 @@ begin
   return jsonb_build_object(
     'affilie',        true,
     'factures',       v_apres.factures_payees,
-    'nouvelle_prime', v_aff.prime_due_at is null and v_apres.prime_due_at is not null,
+    'nouvelle_prime', v_devient,
+    'prime_cents',    v_apres.prime_cents,
+    'annuel',         v_mois > 1,
     'code',           v_aff.code,
     'a_verser_cents', v_du);
 end;
 $$;
 
-revoke all on function public.keepo_affiliation_paiement(uuid, text, int, boolean) from public, anon, authenticated;
-grant execute on function public.keepo_affiliation_paiement(uuid, text, int, boolean) to service_role;
+revoke all on function public.keepo_affiliation_paiement(uuid, text, int, boolean, int) from public, anon, authenticated;
+grant execute on function public.keepo_affiliation_paiement(uuid, text, int, boolean, int) to service_role;
 
 
 -- ── 9. Les virements du mois (pour Sami, dans l'éditeur SQL) ─

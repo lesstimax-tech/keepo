@@ -330,7 +330,7 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
 
 <main id="contenu">
   <h1 id="bonjour">Bonjour</h1>
-  <p class="sous">Partagez votre code : chaque commerce qui paie son 2ᵉ mois grâce à vous vous rapporte 30&nbsp;€.</p>
+  <p class="sous">Partagez votre code : chaque commerce qui paie son 2ᵉ mois grâce à vous vous rapporte l'équivalent de ce 2ᵉ mois, 30&nbsp;€ au minimum et jusqu'à 79,20&nbsp;€ en Pro&nbsp;Scale.</p>
 
   <div class="grille">
     <section class="carte code-carte" aria-labelledby="t-code">
@@ -619,7 +619,7 @@ function afficher() {
     const libelles = {
       inscrit: ['Inscrit', 's-inscrit'],
       abonne:  [null, 's-abonne'],
-      due:     ['Prime de 30 € gagnée', 's-due'],
+      due:     ['Prime gagnée', 's-due'],
       versee:  ['Prime versée', 's-versee']
     };
     e.commerces.forEach(c => {
@@ -627,7 +627,8 @@ function afficher() {
       const g = el('div');
       g.appendChild(el('div', 'nom', c.nom || 'Commerce'));
       g.appendChild(el('div', 'date', 'Depuis le ' + new Date(c.depuis).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })));
-      const [texte, classe] = libelles[c.statut] || libelles.inscrit;
+      let [texte, classe] = libelles[c.statut] || libelles.inscrit;
+      if (texte && c.prime_cents) texte += ' · ' + euros(c.prime_cents);
       const n = c.mois_payes || 0;
       l.appendChild(g);
       l.appendChild(el('span', 'statut ' + classe, texte || (n + ' mois payé' + (n > 1 ? 's' : '') + ' sur 2')));
