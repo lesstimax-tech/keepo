@@ -11,7 +11,8 @@
 --     égale à ce 2ᵉ paiement, avec un minimum de 30 € (Smart 30 €,
 --     Essentiel 39,20 €, Pro Scale 79,20 € avec la réduction). Abonnement
 --     annuel : la prime vaut un douzième du paiement, 30 € au minimum.
---   • Sami verse les primes par virement, une fois par mois, dès 50 € dus :
+--   • Sami verse les primes par virement, une fois par mois, dès 30 € dus
+--     (le montant d'une prime minimum : chaque prime part le mois suivant) :
 --       select * from keepo_versements_a_faire();
 --       select keepo_marquer_verse('CODE', 'virement novembre');
 --
@@ -348,7 +349,7 @@ begin
                        else left(v_amb.iban, 4) || ' •••• ' || right(v_amb.iban, 4) end,
     'actif',      v_amb.actif,
     'prime_min_cents', 3000,
-    'seuil_cents', 5000,
+    'seuil_cents', 3000,
     'code_modifiable', not exists (select 1 from public.affiliations where ambassadeur_id = v_uid),
     'stats', (
       select jsonb_build_object(
@@ -538,9 +539,10 @@ grant execute on function public.keepo_affiliation_paiement(uuid, text, int, boo
 
 
 -- ── 9. Les virements du mois (pour Sami, dans l'éditeur SQL) ─
--- Qui payer : les ambassadeurs à qui l'on doit au moins 50 €.
+-- Qui payer : les ambassadeurs à qui l'on doit au moins 30 €, soit
+-- toute prime gagnée (une prime vaut 30 € au minimum).
 --   select * from keepo_versements_a_faire();
-create or replace function public.keepo_versements_a_faire(p_seuil_cents int default 5000)
+create or replace function public.keepo_versements_a_faire(p_seuil_cents int default 3000)
 returns table (
   code       text,
   pseudo     text,

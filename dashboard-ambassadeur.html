@@ -95,6 +95,18 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
 .jauge .rail{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
 .jauge .rempli{height:100%;border-radius:99px;background:var(--grad);width:0;transition:width .8s var(--ease)}
 .jauge p{font-size:13px;color:var(--muted);margin:8px 0 0}
+/* Niveau : un badge, rien à gagner en plus (la prime ne change pas) */
+.niveau{display:flex;gap:12px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.medaille{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--line);color:var(--muted);flex:none;transition:background .4s,color .4s}
+.medaille .icon{font-size:22px}
+.niveau-txt{flex:1;min-width:0}
+.niveau-txt b{font-size:14.5px;font-weight:600}
+.niveau-txt .rail{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:7px}
+.niveau-txt .rempli{height:100%;border-radius:99px;width:0;background:var(--grad);transition:width .8s var(--ease)}
+.niveau-txt p{font-size:12.5px;color:var(--muted);margin:6px 0 0;line-height:1.4}
+.paliers{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.palier{font-size:11.5px;font-weight:600;border-radius:99px;padding:3px 9px;border:1px solid var(--line-2);color:var(--muted)}
+.palier.atteint{color:#fff;border-color:transparent}
 
 /* Listes */
 .liste{margin-top:10px}
@@ -312,6 +324,8 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
   <symbol id="i-lecture" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></symbol>
   <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="6.5" width="13" height="11" rx="2.5"/><path d="M16 10.5l5-3v9l-5-3"/></symbol>
+  <symbol id="i-imprimer" viewBox="0 0 24 24"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/></symbol>
+  <symbol id="i-medaille" viewBox="0 0 24 24"><circle cx="12" cy="15" r="5.5"/><path d="M8.6 10.6 6 3.5h4.2L12 8l1.8-4.5H18l-2.6 7.1M12 12.6l.8 1.6 1.7.3-1.2 1.2.3 1.7-1.6-.8-1.6.8.3-1.7-1.2-1.2 1.7-.3z"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.4"/></symbol>
 </svg>
 
@@ -342,6 +356,7 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
         <button class="btn btn-verre" onclick="copier(espace.code, 'Code copié')"><svg class="icon"><use href="#i-copy"/></svg>Copier le code</button>
         <button class="btn btn-verre" id="btn-partager" onclick="partager()"><svg class="icon"><use href="#i-share"/></svg>Partager</button>
         <button class="btn btn-verre" onclick="ouvrirQr()"><svg class="icon"><use href="#i-qr"/></svg>QR code</button>
+        <button class="btn btn-verre" onclick="ouvrirFiche()"><svg class="icon"><use href="#i-imprimer"/></svg>Fiche à imprimer</button>
       </div>
       <div class="modif-code" id="modif-code" style="display:none;">
         Vous préférez un autre code&nbsp;? <button onclick="ouvrirFormCode()">Choisir mon code</button>
@@ -364,6 +379,15 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
       <div class="jauge">
         <div class="rail"><div class="rempli" id="jauge"></div></div>
         <p id="jauge-texte"></p>
+      </div>
+      <div class="niveau" id="niveau">
+        <div class="medaille" id="niveau-medaille"><svg class="icon"><use href="#i-medaille"/></svg></div>
+        <div class="niveau-txt">
+          <b id="niveau-nom">Pas encore de niveau</b>
+          <div class="rail"><div class="rempli" id="niveau-jauge"></div></div>
+          <p id="niveau-texte"></p>
+          <div class="paliers" id="paliers"></div>
+        </div>
       </div>
     </section>
   </div>
@@ -440,7 +464,7 @@ h2{font-size:17px;letter-spacing:-.02em;margin:0 0 4px;font-weight:600}
     <div class="pile">
       <section class="carte" aria-labelledby="t-paiement">
         <h2 id="t-paiement">Recevoir vos primes</h2>
-        <p class="sous" style="margin:4px 0 0;font-size:14px;">Un virement par mois, dès 50&nbsp;€ à recevoir. Le compte doit être à votre nom.</p>
+        <p class="sous" style="margin:4px 0 0;font-size:14px;">Un virement par mois, dès votre première prime. Le compte doit être à votre nom.</p>
         <form id="form-paiement" onsubmit="event.preventDefault();enregistrer();" novalidate>
           <div class="champ">
             <label for="pseudo">Nom affiché <span>(pseudo, visible des commerçants)</span></label>
@@ -601,13 +625,14 @@ function afficher() {
   document.getElementById('n-verse').textContent = euros(s.verse_cents);
   document.getElementById('n-inscrits').textContent = s.inscrits || 0;
   document.getElementById('n-primes').textContent = s.primes_gagnees || 0;
+  afficherNiveau(s.primes_gagnees || 0);
 
-  const seuil = e.seuil_cents || 5000, du = s.a_verser_cents || 0;
+  const seuil = e.seuil_cents || 3000, du = s.a_verser_cents || 0;
   document.getElementById('jauge').style.width = Math.min(100, Math.round(du / seuil * 100)) + '%';
   document.getElementById('jauge-texte').textContent = du >= seuil
     ? 'Vous serez payé au prochain virement mensuel' + (e.iban ? '.' : ' : renseignez votre IBAN ci-dessous.')
     : du > 0
-      ? 'Encore ' + euros(seuil - du) + ' avant votre ' + (s.verse_cents ? 'prochain' : 'premier') + ' virement (dès 50 €).'
+      ? 'Encore ' + euros(seuil - du) + ' avant votre ' + (s.verse_cents ? 'prochain' : 'premier') + ' virement.'
       : 'Votre première prime arrive quand un commerce venu par vous a payé son 2ᵉ mois.';
 
   // Commerces
@@ -696,6 +721,48 @@ async function partager() {
       url: lienComplet()
     });
   } catch (_) { /* partage annulé */ }
+}
+
+// Niveaux : un badge selon le nombre de commerces qui ont payé leur 2ᵉ mois
+// grâce à l'ambassadeur. Purement symbolique : la prime reste la même.
+const PALIERS = [
+  { nom: 'Bronze', min: 1,  couleur: '#A86B3C' },
+  { nom: 'Argent', min: 5,  couleur: '#7D8794' },
+  { nom: 'Or',     min: 10, couleur: '#C29A1E' }
+];
+function afficherNiveau(n) {
+  const actuel = PALIERS.filter(p => n >= p.min).pop();
+  const suivant = PALIERS.find(p => n < p.min);
+  const medaille = document.getElementById('niveau-medaille');
+  medaille.style.background = actuel ? actuel.couleur : '';
+  medaille.style.color = actuel ? '#fff' : '';
+  document.getElementById('niveau-nom').textContent = actuel
+    ? 'Niveau ' + actuel.nom + (actuel.nom === 'Or' ? ' · Ambassadeur VIP' : '')
+    : 'Pas encore de niveau';
+  const depart = actuel ? actuel.min : 0;
+  const part = suivant ? (n - depart) / (suivant.min - depart) : 1;
+  document.getElementById('niveau-jauge').style.width = Math.round(Math.max(part, suivant ? .04 : 1) * 100) + '%';
+  const reste = suivant ? suivant.min - n : 0;
+  const pluriel = reste > 1 ? 's' : '';
+  document.getElementById('niveau-texte').textContent = !suivant
+    ? 'Le niveau le plus haut. Merci de faire grandir KEEPO autour de vous.'
+    : !actuel
+      ? 'Votre premier commerce abonné (2ᵉ mois payé) vous fait passer Bronze.'
+      : 'Encore ' + reste + ' commerce' + pluriel + ' abonné' + pluriel + ' pour passer ' + suivant.nom + '.';
+  const zone = document.getElementById('paliers');
+  zone.textContent = '';
+  PALIERS.forEach(p => {
+    const pastille = el('span', 'palier' + (n >= p.min ? ' atteint' : ''), p.nom + ' · ' + p.min + '+');
+    if (n >= p.min) pastille.style.background = p.couleur;
+    zone.appendChild(pastille);
+  });
+}
+
+// La fiche A5 à donner au commerçant, déjà remplie avec le code.
+function ouvrirFiche() {
+  const p = new URLSearchParams({ code: espace.code });
+  if (espace.pseudo) p.set('nom', espace.pseudo);
+  window.open('fiche-ambassadeur?' + p.toString(), '_blank', 'noopener');
 }
 
 function ouvrirQr() {

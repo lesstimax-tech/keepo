@@ -107,6 +107,8 @@
     cornersDotOptions: { color: '#16B8C4' },
     backgroundOptions: { color: '#ffffff' }
   }).append(document.getElementById('cv-qr'));
+  // Sans viewBox, le dessin serait rogné au lieu d'être réduit à la bonne taille.
+  (function (svg) { if (svg) { svg.setAttribute('viewBox', '0 0 ' + svg.getAttribute('width') + ' ' + svg.getAttribute('height')); } })(document.querySelector('#cv-qr svg'));
 </script>
 </body>
 </html>

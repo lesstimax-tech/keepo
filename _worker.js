@@ -105,7 +105,8 @@ LE PROGRAMME AMBASSADEUR (règles exactes)
 - Gratuit, réservé aux majeurs, sans minimum d'abonnés.
 - Le commerce qui s'inscrit avec son code — via le lien keepo.eu/a/CODE, en le tapant à l'inscription, ou plus tard dans son tableau de bord avant son premier paiement — a -20 % pendant 3 mois sur l'abonnement mensuel, même après son essai gratuit de 14 jours sans carte bancaire. La réduction ne vaut pas pour l'annuel.
 - Prime : l'équivalent du 2e paiement du commerce, avec un minimum de 30 €. Elle est gagnée quand ce commerce a payé son 2e mois. Avec la réduction du code, ça fait 30 € pour un Smart (son 2e mois, 19,92 €, est sous le minimum), 39,20 € pour un Essentiel, 79,20 € pour un Pro Scale. Abonnement annuel : la prime vaut un douzième du paiement, 30 € au minimum (environ 74 € pour un Pro Scale annuel), gagnée dès ce paiement. Une seule prime par commerce, aucun plafond. Viser les commerces qui ont besoin de Pro Scale (beaucoup de clients, plusieurs points de vente, envie de VIP, roue, parrainage) rapporte plus, mais ne pousse jamais un commerce vers une formule dont il n'a pas besoin.
-- Virement une fois par mois dès 50 € à recevoir, sur un IBAN à son nom renseigné dans son espace (rubrique « Recevoir vos primes »).
+- Virement une fois par mois dès sa première prime (seuil de 30 €, le montant minimum d'une prime), sur un IBAN à son nom renseigné dans son espace (rubrique « Recevoir vos primes »).
+- Niveaux dans son espace : Bronze dès 1 commerce qui a payé son 2e mois grâce à lui, Argent dès 5, Or dès 10 (« Ambassadeur VIP »). C'est un badge et une barre de progression, purement symboliques : aucun cadeau ni bonus en plus, la prime reste la même. Ne promets jamais d'avantage lié au niveau.
 - Pas de prime pour son propre commerce (gérant, associé, salarié), ni pour un compte créé ou payé juste pour la prime.
 - Mention « Collaboration commerciale » ou « Publicité » obligatoire sur ses publications (loi du 9 juin 2023) ; sur TikTok, il active aussi « Contenu de marque ». Mets TOUJOURS cette mention dans les légendes et les scripts que tu écris.
 - Les primes sont des revenus à déclarer ; si elles deviennent régulières, le statut de micro-entrepreneur est souvent le plus simple. Tu ne donnes pas de conseil fiscal personnalisé : renvoie vers un comptable ou impots.gouv.fr.
@@ -1000,6 +1001,14 @@ async function handleAmbassadeurChat(request, env, ctx) {
   });
 }
 
+// Même paliers que l'espace ambassadeur (dashboard-ambassadeur.html, PALIERS).
+function niveauAmbassadeur(n) {
+  if (n >= 10) return 'Or (Ambassadeur VIP), le plus haut';
+  if (n >= 5)  return 'Argent ; encore ' + (10 - n) + ' commerce(s) pour Or';
+  if (n >= 1)  return 'Bronze ; encore ' + (5 - n) + ' commerce(s) pour Argent';
+  return 'aucun pour l\'instant ; Bronze au premier commerce qui paie son 2e mois';
+}
+
 // Ce que l'assistant sait de l'ambassadeur. Les noms de commerces viennent
 // des commerçants eux-mêmes : bornés, et présentés comme des données.
 function ficheAmbassadeur(e) {
@@ -1019,7 +1028,8 @@ function ficheAmbassadeur(e) {
 - Son code : ${e.code} — son lien : keepo.eu/a/${e.code}
 - Code encore modifiable : ${e.code_modifiable ? 'oui (aucun commerce ne l\'a encore utilisé ; bouton « Choisir mon code » dans son espace)' : 'non (un commerce l\'a déjà utilisé)'}
 - Commerces inscrits avec son code : ${s.inscrits || 0} ; abonnés : ${s.abonnes || 0} ; primes gagnées : ${s.primes_gagnees || 0}
-- À recevoir : ${euros(s.a_verser_cents)} ; déjà versé : ${euros(s.verse_cents)} ; virement dès 50 € à recevoir
+- Son niveau : ${niveauAmbassadeur(s.primes_gagnees || 0)}
+- À recevoir : ${euros(s.a_verser_cents)} ; déjà versé : ${euros(s.verse_cents)} ; virement le mois suivant chaque prime gagnée
 - IBAN renseigné : ${e.iban ? 'oui' : 'non (à remplir dans « Recevoir vos primes » pour être payé)'}
 - Ses commerces :
 ${commerces}
@@ -2297,7 +2307,7 @@ async function handleStripeWebhook(request, env, ctx) {
               titre: 'Prime ambassadeur due — ' + euros(aff.prime_cents || 3000),
               texte: (aff.annuel ? 'Un commerce venu par ' + aff.code + ' a payé son abonnement annuel.'
                                  : 'Un commerce venu par ' + aff.code + ' a payé son 2ᵉ mois.')
-                   + ' Virement mensuel dès 50 € : select * from keepo_versements_a_faire();',
+                   + ' À verser au prochain virement mensuel : select * from keepo_versements_a_faire();',
               couleur: 0x5B3AA0,
               champs: [
                 { nom: 'Ambassadeur', valeur: String(aff.code || '—') },
