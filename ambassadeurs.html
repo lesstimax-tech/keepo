@@ -18,6 +18,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+/* Visiteurs venus de TikTok (pub ou lien de la bio) : le haut de la page
+   reprend les mots de la pub, au « tu ». Décidé avant l'affichage, pour
+   qu'on ne voie jamais l'autre version clignoter. */
+(function () {
+  try {
+    var source = new URLSearchParams(location.search).get('utm_source') || '';
+    if (/tiktok/i.test(source) || /tiktok\./i.test(document.referrer)) document.documentElement.classList.add('vue-tiktok');
+  } catch (e) {}
+})();
+</script>
 <style>
 :root{
   --ink:#0D0D11;
@@ -192,6 +203,93 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
 .pied nav{display:flex;flex-wrap:wrap;gap:8px 20px}
 .pied a:hover{color:var(--ink)}
 
+/* Le kit de l'ambassadeur */
+.kit-grille{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.kit-carte{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:var(--shadow-md);display:flex;flex-direction:column;gap:10px;min-width:0}
+.kit-carte h3{font-size:18px}
+.kit-carte>p,.kit-tete p{color:var(--muted);font-size:14.5px;line-height:1.55}
+.kit-carte .pic{width:40px;height:40px;border-radius:12px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;flex:none;font-size:19px}
+.kit-videos{grid-column:1/-1;padding:26px 26px 20px}
+.kit-tete{display:flex;gap:14px;align-items:flex-start}
+.kit-tete h3{margin-bottom:4px}
+.defile{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-top:8px}
+.vignette{position:relative;border:0;padding:0;border-radius:14px;overflow:hidden;aspect-ratio:9/16;background:var(--ink);cursor:pointer;
+  box-shadow:0 12px 26px -16px rgba(13,13,17,.55);transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.vignette:hover{transform:translateY(-4px);box-shadow:0 22px 36px -18px rgba(13,13,17,.6)}
+.vignette img{width:100%;height:100%;object-fit:cover}
+.vignette::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(13,13,17,.78))}
+.vignette .jouer{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.92);color:var(--ink);display:grid;place-items:center;font-size:17px;z-index:1;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.vignette .jouer .icon{margin-left:2px}
+.vignette .titre-v{position:absolute;left:10px;right:10px;bottom:10px;color:#fff;font-size:12.5px;font-weight:600;line-height:1.3;text-align:left;z-index:1}
+.kit-note{font-size:12.5px;color:var(--faint);margin-top:6px}
+.chat{position:relative;margin-top:auto;background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.bulle{font-size:13px;line-height:1.5;padding:9px 12px;border-radius:14px;max-width:92%}
+.bulle.moi{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:5px}
+.bulle.ia{background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px;color:var(--ink-2)}
+.bulle.ia b{display:block;font-size:11.5px;color:var(--acc);margin-top:4px}
+.bulle.ia b:first-child{margin-top:0}
+.chat .tag-ex{position:absolute;top:-10px;left:12px;background:#fff}
+.mini-fiche{margin-top:auto;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 14px 28px -20px rgba(13,13,17,.45);transform:rotate(-1.5deg)}
+.mf-haut{background:linear-gradient(135deg,#1C1733,#131125 55%,#0E1F26);color:#fff;padding:14px 16px}
+.mf-marque{display:block;font-weight:700;font-size:11px;letter-spacing:.12em;color:#4ED3DE;margin-bottom:6px}
+.mf-titre{font-weight:600;font-size:15px;line-height:1.25;letter-spacing:-.02em}
+.mf-titre i{font-style:normal;background:linear-gradient(125deg,#a98bdb,#4ED3DE);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mf-bas{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#FAFAFC}
+.mf-qr{width:46px;height:46px;border-radius:10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:26px;color:var(--ink);flex:none}
+.mf-offre{display:inline-block;background:var(--grad);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;margin-bottom:3px}
+.mf-bas b{display:block;font-size:19px;letter-spacing:.06em}
+.pile{position:relative;margin-top:auto;height:170px}
+.pile img{position:absolute;bottom:0;width:31%;height:auto;aspect-ratio:9/16;object-fit:cover;border-radius:12px;border:3px solid #fff;box-shadow:0 12px 24px -14px rgba(13,13,17,.55)}
+.pile img:nth-child(1){left:6%;transform:rotate(-7deg)}
+.pile img:nth-child(2){left:34.5%;z-index:1;bottom:8px}
+.pile img:nth-child(3){left:63%;transform:rotate(7deg)}
+
+/* Lecteur des vidéos du kit */
+.lecteur{border:0;padding:0;background:transparent;max-width:min(92vw,420px);width:100%;overflow:visible}
+.lecteur::backdrop{background:rgba(13,13,17,.82);backdrop-filter:blur(6px)}
+.lecteur video{width:100%;max-height:82vh;border-radius:18px;background:#000;display:block}
+.lecteur .fermer{position:absolute;top:-44px;right:0;background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:999px;padding:8px 14px;font:600 14px Inter,sans-serif;cursor:pointer}
+
+/* Mot du fondateur */
+.mot{padding-top:24px}
+.mot-boite{max-width:760px;margin:0 auto;text-align:center}
+.mot-avatar{width:56px;height:56px;border-radius:50%;background:var(--grad);color:#fff;font-weight:700;font-size:22px;display:inline-grid;place-items:center;margin-bottom:18px;box-shadow:0 10px 24px -12px rgba(75,69,166,.7)}
+.mot blockquote{margin:0;font-size:clamp(19px,2.3vw,23px);line-height:1.5;letter-spacing:-.015em;color:var(--ink);font-weight:500;text-wrap:balance}
+.mot figcaption{margin-top:18px;color:var(--muted);font-size:14.5px}
+.mot figcaption b{color:var(--ink)}
+.mot figcaption a{color:var(--acc);font-weight:500}
+.visuellement-cache{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Rassurance sous le dernier bouton */
+.garanties{list-style:none;padding:0;margin:22px auto 0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 20px;font-size:13.5px;color:rgba(255,255,255,.72)}
+.garanties li{display:inline-flex;align-items:center;gap:7px}
+.garanties .icon{color:#4ED3DE}
+
+/* Apparition douce au défilement (seulement si le script tourne) */
+.js-revele .revele{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.js-revele .revele.vu{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js-revele .revele{opacity:1;transform:none}}
+
+@media (max-width:900px){
+  .kit-grille{grid-template-columns:1fr}
+  .defile{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:clamp(130px,38vw,180px);overflow-x:auto;scroll-snap-type:x mandatory;
+    margin:8px 0 0;padding:4px 22px 10px;scroll-padding:0 22px;scrollbar-width:none}
+  .defile::-webkit-scrollbar{display:none}
+  .vignette{scroll-snap-align:start}
+  .kit-carte{padding:22px}
+  .kit-videos{padding:22px 0 16px}
+  .kit-videos .kit-tete,.kit-videos .kit-note{padding:0 22px}
+}
+
+.hero-tiktok{display:none}
+.vue-tiktok .hero-tiktok{display:block}
+.vue-tiktok .hero-standard{display:none}
+.points-tiktok{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;max-width:46ch}
+.points-tiktok li{display:flex;gap:11px;align-items:flex-start;font-size:16.5px;line-height:1.5;color:var(--ink-2)}
+.points-tiktok li strong{color:var(--ink);font-weight:600}
+.points-tiktok .icon{color:var(--ok);font-size:19px;margin-top:2px}
+.btn-xl{font-size:17px;padding:17px 30px}
 @media (max-width:900px){
   .hero-grid{grid-template-columns:1fr;gap:56px}
   .ecran{margin:0 auto}
@@ -228,6 +326,10 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.5 2"/></symbol>
   <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1a1 1 0 0 1 .7.3l7.4 7.4a1 1 0 0 1 0 1.4l-8.1 8.1a1 1 0 0 1-1.4 0l-7.4-7.4a1 1 0 0 1-.3-.7z"/><circle cx="8.5" cy="8.5" r="1.5"/></symbol>
   <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M14 14h2.5v2.5H14zM18 18h2.5v2.5H18zM18 14h2.5M14 20.5h2.5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5c.5 3.9 2.6 6 6.5 6.5-3.9.5-6 2.6-6.5 6.5-.5-3.9-2.6-6-6.5-6.5 3.9-.5 6-2.6 6.5-6.5z"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.5v4.2c1.4 1.3 3.3 2 5.5 2s4.1-.7 5.5-2v-4.2M21.5 9.5v5"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.4"/></symbol>
 </svg>
 
@@ -248,6 +350,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
 <section class="hero" aria-labelledby="titre">
   <div class="wrap hero-grid">
     <div>
+     <div class="hero-standard">
       <span class="eyebrow">Programme ambassadeur KEEPO</span>
       <h1 id="titre">Recommandez KEEPO. Touchez <span class="grad-text">le 2ᵉ&nbsp;mois</span> de chaque commerce abonné.</h1>
       <p class="hero-sub">Vous connaissez une boulangerie, un coiffeur, un snack&nbsp;? Partagez votre code&nbsp;: <strong>le commerce paie 20&nbsp;% de moins pendant 3&nbsp;mois</strong>, et vous touchez l'équivalent de son 2ᵉ&nbsp;mois dès qu'il l'a payé&nbsp;: 30&nbsp;€ au minimum, 79,20&nbsp;€ pour un Pro&nbsp;Scale.</p>
@@ -260,6 +363,27 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
         <span><svg class="icon"><use href="#i-check"/></svg>Sans minimum d'abonnés</span>
         <span><svg class="icon"><use href="#i-check"/></svg>Virement chaque mois</span>
       </div>
+     </div>
+
+     <div class="hero-tiktok">
+      <span class="eyebrow">Programme ambassadeur KEEPO</span>
+      <h1 id="titre-tiktok">Jusqu'à <span class="grad-text">80&nbsp;€</span> par commerce abonné.</h1>
+      <p class="hero-sub">Tu connais une boulangerie, un coiffeur, un café&nbsp;? Fais-leur découvrir KEEPO avec ton code.</p>
+      <ul class="points-tiktok">
+        <li><svg class="icon"><use href="#i-check"/></svg><span><strong>−20&nbsp;% pendant 3&nbsp;mois</strong> pour le commerce, grâce à ton code.</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span><strong>Tu touches son 2ᵉ&nbsp;mois</strong> dès qu'il l'a payé&nbsp;: 30&nbsp;€ minimum, 79,20&nbsp;€ en Pro&nbsp;Scale.</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span><strong>Vidéos prêtes à poster</strong> et une IA qui écrit tes scripts.</span></li>
+      </ul>
+      <div class="hero-ctas">
+        <a href="connexion.html?tab=register&amp;role=ambassadeur" class="btn btn-grad btn-xl">Je veux mon code <svg class="icon"><use href="#i-arrow"/></svg></a>
+      </div>
+      <div class="hero-proof">
+        <span><svg class="icon"><use href="#i-check"/></svg>Gratuit</span>
+        <span><svg class="icon"><use href="#i-check"/></svg>Dès 18 ans</span>
+        <span><svg class="icon"><use href="#i-check"/></svg>Sans minimum d'abonnés</span>
+        <span><svg class="icon"><use href="#i-check"/></svg>Virement dès ta 1ʳᵉ prime</span>
+      </div>
+     </div>
     </div>
 
     <div class="apercu" aria-label="Exemple d'espace ambassadeur">
@@ -289,27 +413,117 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
   </div>
 </section>
 
+<section class="kit" id="kit" aria-labelledby="t-kit">
+  <div class="wrap">
+    <div class="sec-head center revele">
+      <span class="eyebrow">Inclus dès l'inscription</span>
+      <h2 id="t-kit" data-tu="Tout est prêt pour te lancer">Tout est prêt pour vous lancer</h2>
+      <p data-tu="Pas besoin d'être monteur ni vendeur&nbsp;: ton espace ambassadeur contient tout ce qu'il faut pour recommander KEEPO en quelques minutes.">Pas besoin d'être monteur ni vendeur&nbsp;: votre espace ambassadeur contient tout ce qu'il faut pour recommander KEEPO en quelques minutes.</p>
+    </div>
+
+    <div class="kit-grille">
+      <article class="kit-carte kit-videos revele">
+        <div class="kit-tete">
+          <span class="pic"><svg class="icon"><use href="#i-play"/></svg></span>
+          <div>
+            <h3>6 vidéos prêtes à poster</h3>
+            <p data-tu="Des pubs KEEPO montées, avec voix et musique. Tu les télécharges et tu les publies avec ton code.">Des pubs KEEPO montées, avec voix et musique. Vous les téléchargez et vous les publiez avec votre code.</p>
+          </div>
+        </div>
+        <div class="defile">
+          <button type="button" class="vignette" data-video="keepo-pub-style-compte-a-rebours-voix" aria-label="Voir la pub « 14 jours d'essai, sans piège »">
+            <img src="img/kit/keepo-pub-style-compte-a-rebours-voix.jpg" alt="" loading="lazy" width="360" height="640">
+            <span class="jouer"><svg class="icon"><use href="#i-play"/></svg></span>
+            <span class="titre-v">14 jours d'essai, sans piège</span>
+          </button>
+          <button type="button" class="vignette" data-video="keepo-pub-style-enquete-voix" aria-label="Voir la pub « L'enquête : qui fait tout ça ? »">
+            <img src="img/kit/keepo-pub-style-enquete-voix.jpg" alt="" loading="lazy" width="360" height="640">
+            <span class="jouer"><svg class="icon"><use href="#i-play"/></svg></span>
+            <span class="titre-v">L'enquête : qui fait tout ça ?</span>
+          </button>
+          <button type="button" class="vignette" data-video="keepo-pub-style-camera-subjective-voix" aria-label="Voir la pub « Vu par vos clients »">
+            <img src="img/kit/keepo-pub-style-camera-subjective-voix.jpg" alt="" loading="lazy" width="360" height="640">
+            <span class="jouer"><svg class="icon"><use href="#i-play"/></svg></span>
+            <span class="titre-v">Vu par vos clients</span>
+          </button>
+          <button type="button" class="vignette" data-video="keepo-pub-generale-palettes" aria-label="Voir la pub « KEEPO en une phrase »">
+            <img src="img/kit/keepo-pub-generale-palettes.jpg" alt="" loading="lazy" width="360" height="640">
+            <span class="jouer"><svg class="icon"><use href="#i-play"/></svg></span>
+            <span class="titre-v">KEEPO en une phrase</span>
+          </button>
+          <button type="button" class="vignette" data-video="keepo-pub-style-nuancier-studio-voix" aria-label="Voir la pub « Une carte à votre image »">
+            <img src="img/kit/keepo-pub-style-nuancier-studio-voix.jpg" alt="" loading="lazy" width="360" height="640">
+            <span class="jouer"><svg class="icon"><use href="#i-play"/></svg></span>
+            <span class="titre-v">Une carte à votre image</span>
+          </button>
+          <button type="button" class="vignette" data-video="keepo-pub-style-diorama-caisse-voix" aria-label="Voir la pub « Le mode caisse en équipe »">
+            <img src="img/kit/keepo-pub-style-diorama-caisse-voix.jpg" alt="" loading="lazy" width="360" height="640">
+            <span class="jouer"><svg class="icon"><use href="#i-play"/></svg></span>
+            <span class="titre-v">Le mode caisse en équipe</span>
+          </button>
+        </div>
+        <p class="kit-note" data-tu="Touche une vidéo pour la voir. Ce sont les vraies, telles qu'elles sont dans ton espace.">Touchez une vidéo pour la voir. Ce sont les vraies, telles qu'elles sont dans votre espace.</p>
+      </article>
+
+      <article class="kit-carte revele">
+        <span class="pic"><svg class="icon"><use href="#i-sparkle"/></svg></span>
+        <h3 data-tu="Une IA qui écrit tes scripts">Une IA qui écrit vos scripts</h3>
+        <p>Scripts de vidéos, légendes, messages aux commerçants, réponses aux objections.</p>
+        <div class="chat" aria-hidden="true">
+          <div class="bulle moi">Écris-moi un script TikTok de 20 s pour ma boulangerie préférée.</div>
+          <div class="bulle ia"><b>Accroche (0–2 s)</b> « Ta boulangerie a encore des cartes en carton&nbsp;? » <b>Scène 2</b> Le QR code sur le comptoir, la carte qui s'ouvre dans le téléphone…</div>
+          <span class="tag-ex">Exemple</span>
+        </div>
+      </article>
+
+      <article class="kit-carte revele">
+        <span class="pic"><svg class="icon"><use href="#i-print"/></svg></span>
+        <h3>Une fiche à imprimer</h3>
+        <p data-tu="À donner en main propre au commerçant&nbsp;: ton code et un QR code sont déjà dessus.">À donner en main propre au commerçant&nbsp;: votre code et un QR code sont déjà dessus.</p>
+        <div class="mini-fiche" aria-hidden="true">
+          <div class="mf-haut"><span class="mf-marque">KEEPO</span><span class="mf-titre">La carte de fidélité de vos clients, <i>dans leur téléphone</i>.</span></div>
+          <div class="mf-bas">
+            <span class="mf-qr"><svg class="icon"><use href="#i-qr"/></svg></span>
+            <span><span class="mf-offre">−20 % pendant 3 mois</span><b>LEA20</b></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="kit-carte revele">
+        <span class="pic"><svg class="icon"><use href="#i-cap"/></svg></span>
+        <h3>6 vidéos de formation</h3>
+        <p data-tu="KEEPO expliqué en 3 minutes&nbsp;: ce que tu présentes, les formules, les questions des commerçants.">KEEPO expliqué en 3 minutes&nbsp;: ce que vous présentez, les formules, les questions des commerçants.</p>
+        <div class="pile" aria-hidden="true">
+          <img src="videos/formation/formation-01-keepo-cest-quoi.jpg" alt="" loading="lazy" width="540" height="960">
+          <img src="videos/formation/formation-03-lancer-son-programme.jpg" alt="" loading="lazy" width="540" height="960">
+          <img src="videos/formation/formation-05-formules-et-code.jpg" alt="" loading="lazy" width="540" height="960">
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="bande" id="comment" aria-labelledby="t-comment">
   <div class="wrap">
     <div class="sec-head center">
       <h2 id="t-comment">Trois étapes, sans rien vendre</h2>
-      <p>Vous n'avez pas à convaincre ni à installer quoi que ce soit&nbsp;: KEEPO s'occupe du reste.</p>
+      <p data-tu="Tu n'as pas à convaincre ni à installer quoi que ce soit&nbsp;: KEEPO s'occupe du reste.">Vous n'avez pas à convaincre ni à installer quoi que ce soit&nbsp;: KEEPO s'occupe du reste.</p>
     </div>
     <div class="etapes">
       <div class="etape">
         <div class="num">1</div>
-        <h3>Créez votre compte</h3>
-        <p>Une minute, gratuitement. Vous recevez <strong>votre code et votre lien</strong> tout de suite, et vous pouvez choisir votre code (LEA20, SNACKTOK…).</p>
+        <h3 data-tu="Crée ton compte">Créez votre compte</h3>
+        <p data-tu="Une minute, gratuitement. Tu reçois <strong>ton code et ton lien</strong> tout de suite, et tu peux choisir ton code (LEA20, SNACKTOK…).">Une minute, gratuitement. Vous recevez <strong>votre code et votre lien</strong> tout de suite, et vous pouvez choisir votre code (LEA20, SNACKTOK…).</p>
       </div>
       <div class="etape">
         <div class="num">2</div>
-        <h3>Partagez-le</h3>
-        <p>Sur TikTok, Instagram, ou directement au commerçant d'à côté. Le commerce qui s'inscrit avec votre code a <strong>-20&nbsp;% pendant 3&nbsp;mois</strong> sur l'abonnement mensuel.</p>
+        <h3 data-tu="Partage-le">Partagez-le</h3>
+        <p data-tu="Sur TikTok, Instagram, ou directement au commerçant d'à côté. Le commerce qui s'inscrit avec ton code a <strong>-20&nbsp;% pendant 3&nbsp;mois</strong> sur l'abonnement mensuel.">Sur TikTok, Instagram, ou directement au commerçant d'à côté. Le commerce qui s'inscrit avec votre code a <strong>-20&nbsp;% pendant 3&nbsp;mois</strong> sur l'abonnement mensuel.</p>
       </div>
       <div class="etape">
         <div class="num">3</div>
-        <h3>Recevez vos primes</h3>
-        <p><strong>Le 2ᵉ mois de chaque commerce</strong>, dès qu'il l'a payé&nbsp;: 30&nbsp;€ au minimum, 39,20&nbsp;€ pour un Essentiel, 79,20&nbsp;€ pour un Pro&nbsp;Scale. Virement chaque mois, dès votre première prime.</p>
+        <h3 data-tu="Reçois tes primes">Recevez vos primes</h3>
+        <p data-tu="<strong>Le 2ᵉ mois de chaque commerce</strong>, dès qu'il l'a payé&nbsp;: 30&nbsp;€ au minimum, 39,20&nbsp;€ pour un Essentiel, 79,20&nbsp;€ pour un Pro&nbsp;Scale. Virement chaque mois, dès ta première prime."><strong>Le 2ᵉ mois de chaque commerce</strong>, dès qu'il l'a payé&nbsp;: 30&nbsp;€ au minimum, 39,20&nbsp;€ pour un Essentiel, 79,20&nbsp;€ pour un Pro&nbsp;Scale. Virement chaque mois, dès votre première prime.</p>
       </div>
     </div>
   </div>
@@ -320,13 +534,13 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
     <div class="calc">
       <div>
         <h2 id="t-calc">Combien ça peut rapporter&nbsp;?</h2>
-        <p style="color:var(--muted);margin:12px 0 26px;font-size:16px;">Pas de plafond&nbsp;: chaque commerce abonné grâce à vous compte.</p>
-        <label for="nb">Commerces abonnés avec votre code</label>
+        <p style="color:var(--muted);margin:12px 0 26px;font-size:16px;"><span data-tu="Pas de plafond&nbsp;: chaque commerce abonné grâce à toi compte.">Pas de plafond&nbsp;: chaque commerce abonné grâce à vous compte.</span></p>
+        <label for="nb" data-tu="Commerces abonnés avec ton code">Commerces abonnés avec votre code</label>
         <div class="valeur"><b id="nb-val">5</b> commerces</div>
         <input type="range" id="nb" min="1" max="40" value="5">
       </div>
       <div class="resultat" aria-live="polite">
-        <small>Vos primes, au minimum</small>
+        <small data-tu="Tes primes, au minimum">Vos primes, au minimum</small>
         <div class="somme grad-text" id="somme">150&nbsp;€</div>
         <p id="somme-max">Jusqu'à 396&nbsp;€ si ce sont des commerces en Pro&nbsp;Scale.</p>
         <p>Exemple de calcul&nbsp;: 30&nbsp;€ au minimum par commerce qui a payé son 2ᵉ mois, 39,20&nbsp;€ pour un Essentiel, 79,20&nbsp;€ pour un Pro&nbsp;Scale. Ce n'est pas une promesse de gain.</p>
@@ -339,7 +553,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
   <div class="wrap">
     <div class="sec-head">
       <h2 id="t-offre">Facile à recommander</h2>
-      <p>KEEPO, c'est la carte de fidélité des commerces de quartier, directement dans le téléphone de leurs clients. Ce que vous offrez au commerçant&nbsp;:</p>
+      <p>KEEPO, c'est la carte de fidélité des commerces de quartier, directement dans le téléphone de leurs clients. <span data-tu="Ce que tu offres au commerçant&nbsp;:">Ce que vous offrez au commerçant&nbsp;:</span></p>
     </div>
     <div class="commerces" aria-label="Les commerces à qui en parler">
       <figure><img src="img/photos/commerce-boulangerie.webp" alt="Croissants en vitrine d'une boulangerie" loading="lazy" decoding="async"><figcaption>Boulangerie</figcaption></figure>
@@ -360,7 +574,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
   <div class="wrap">
     <div class="sec-head">
       <h2 id="t-idees">Des idées de vidéos</h2>
-      <p>Pas besoin d'une grande audience&nbsp;: une vidéo sincère sur un commerce que vous aimez suffit.</p>
+      <p>Pas besoin d'une grande audience&nbsp;: <span data-tu="une vidéo sincère sur un commerce que tu aimes suffit.">une vidéo sincère sur un commerce que vous aimez suffit.</span></p>
     </div>
     <div class="idees-zone">
     <figure class="idees-photo"><img src="img/photos/ambassadeur-filmer.webp" alt="Des mains filment avec un téléphone" loading="lazy" decoding="async"></figure>
@@ -411,17 +625,38 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
   </div>
 </section>
 
+<section class="mot" aria-labelledby="t-mot">
+  <div class="wrap">
+    <figure class="mot-boite revele">
+      <h2 id="t-mot" class="visuellement-cache">Un mot du fondateur</h2>
+      <span class="mot-avatar" aria-hidden="true">S</span>
+      <blockquote>«&nbsp;J'ai créé KEEPO pour que les commerces de quartier aient enfin une carte de fidélité simple, dans le téléphone de leurs clients. Le programme ambassadeur, c'est ma façon de partager ce qu'ils paient avec celles et ceux qui les font connaître. Je verse moi-même les primes, chaque mois.&nbsp;»</blockquote>
+      <figcaption><b>Sami</b>, fondateur de KEEPO · <a href="mailto:contact@keepo.eu">contact@keepo.eu</a></figcaption>
+    </figure>
+  </div>
+</section>
+
 <section class="final" aria-labelledby="t-fin">
   <div class="wrap">
     <div class="boite">
-      <h2 id="t-fin">Votre code vous attend</h2>
-      <p>Une minute pour créer votre compte. Vous pouvez partager votre lien dès aujourd'hui.</p>
+      <h2 id="t-fin" data-tu="Ton code t'attend">Votre code vous attend</h2>
+      <p data-tu="Une minute pour créer ton compte. Tu peux partager ton lien dès aujourd'hui.">Une minute pour créer votre compte. Vous pouvez partager votre lien dès aujourd'hui.</p>
       <a href="connexion.html?tab=register&amp;role=ambassadeur" class="btn btn-grad">Devenir ambassadeur <svg class="icon"><use href="#i-arrow"/></svg></a>
+      <ul class="garanties">
+        <li><svg class="icon"><use href="#i-check"/></svg>Gratuit, sans engagement</li>
+        <li><svg class="icon"><use href="#i-check"/></svg>Règles écrites dans les conditions du programme</li>
+        <li><svg class="icon"><use href="#i-check"/></svg>Virement bancaire chaque mois</li>
+      </ul>
     </div>
   </div>
 </section>
 
 </main>
+
+<dialog class="lecteur" id="lecteur" aria-label="Lecture de la vidéo">
+  <button type="button" class="fermer" id="lecteur-fermer">Fermer ✕</button>
+  <video id="lecteur-video" controls playsinline preload="none"></video>
+</dialog>
 
 <footer>
   <div class="wrap pied">
@@ -452,6 +687,61 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px
   curseur.addEventListener('input', maj);
   maj();
 })();
+
+// Visiteurs venus de TikTok : la page passe au « tu », comme la pub.
+if (document.documentElement.classList.contains('vue-tiktok')) {
+  document.querySelectorAll('[data-tu]').forEach(function (el) { el.innerHTML = el.getAttribute('data-tu'); });
+}
+
+// Apparition douce des blocs au défilement. Sans IntersectionObserver, tout
+// reste affiché d'emblée.
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  document.querySelectorAll('.sec-head, .etape, .calc, .commerces, .atout, .idees-zone, .faq, .final .boite')
+    .forEach(function (b) { b.classList.add('revele'); });
+  var blocs = document.querySelectorAll('.revele');
+  document.documentElement.classList.add('js-revele');
+  var obs = new IntersectionObserver(function (entrees) {
+    entrees.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('vu'); obs.unobserve(e.target); }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+  blocs.forEach(function (b) { obs.observe(b); });
+})();
+
+// Les vraies pubs du kit, lues sur place.
+(function () {
+  var boite = document.getElementById('lecteur');
+  var video = document.getElementById('lecteur-video');
+  if (!boite || !video || typeof boite.showModal !== 'function') return;
+  function fermer() { video.pause(); video.removeAttribute('src'); video.load(); if (boite.open) boite.close(); }
+  document.querySelectorAll('.vignette[data-video]').forEach(function (v) {
+    v.addEventListener('click', function () {
+      var f = v.getAttribute('data-video');
+      video.poster = 'img/kit/' + f + '.jpg';
+      video.src = 'videos/pubs/' + f + '.mp4';
+      boite.showModal();
+      var lecture = video.play();
+      if (lecture && lecture.catch) lecture.catch(function () {});
+      if (window.keepoMesure) keepoMesure('kit_video', { video: f });
+    });
+  });
+  document.getElementById('lecteur-fermer').addEventListener('click', fermer);
+  boite.addEventListener('click', function (e) { if (e.target === boite) fermer(); });
+  boite.addEventListener('close', function () { video.pause(); });
+})();
+
+// Suivi : quel bouton mène à l'inscription, et depuis quelle version du
+// haut de page. Sans ça, on voit les visites mais pas où elles s'arrêtent.
+document.querySelectorAll('a[href*="role=ambassadeur"]').forEach(function (lien) {
+  lien.addEventListener('click', function () {
+    if (!window.keepoMesure) return;
+    keepoMesure('clic_obtenir_code', {
+      version: document.documentElement.classList.contains('vue-tiktok') ? 'tiktok' : 'standard',
+      emplacement: lien.closest('header') ? 'entete' : lien.closest('.hero') ? 'haut' : lien.closest('.final') ? 'bas' : 'autre'
+    });
+  });
+});
 </script>
 </body>
 </html>
