@@ -774,7 +774,7 @@
             </div>
         </div>
 
-        <div id="prenom-zone"></div>
+        <div id="suite-inscription-zone"></div>
         <div id="welcome-gifts-zone"></div>
 
         <div id="cards-container" class="cards-grid">
@@ -1716,7 +1716,7 @@
         }
         // Invitation à installer l'app : forcée après une arrivée par QR
         // commerçant, discrète (max 1×/semaine) sinon.
-        proposerPrenom(profile);
+        proposerSuiteInscription(profile, session.user);
         setTimeout(() => maybeProposeInstall(!!joinId), 2200);
 
         // Notifications push (demande après splashHide pour ne pas perturber le chargement)
@@ -3020,49 +3020,110 @@
         showToast('success', 'Nom mis à jour', `Bonjour, ${name} !`);
     }
 
-    // ─── Prénom facultatif (inscription express) ───
-    // L'inscription par code ne demande que l'e-mail. Le prénom se propose
-    // ensuite, au-dessus des cartes : le commerçant le verra en caisse.
-    // « Plus tard » le fait oublier une semaine.
-    const PRENOM_PLUS_TARD = 'KEEPO_prenom_plus_tard';
-    function proposerPrenom(profile) {
-        const zone = document.getElementById('prenom-zone');
+    // ─── Continuer l'inscription (inscription express) ───
+    // Au comptoir, le client ne donne que son e-mail et un code. Ensuite,
+    // au-dessus des cartes, un petit encart propose de terminer : le prénom
+    // (le commerçant le voit en caisse) et un mot de passe (pour retrouver
+    // sa carte sur un autre téléphone). « Plus tard » l'oublie une semaine.
+    // Un compte express se reconnaît à ses métadonnées : name vide à la
+    // création (rejoindre.html), puis mot_de_passe posé une fois choisi.
+    const SUITE_PLUS_TARD = 'KEEPO_suite_inscription_plus_tard';
+    const SUITE_CHAMP = 'width:100%;padding:11px 13px;border:1px solid var(--border-2);border-radius:12px;font-size:16px;font-family:inherit;background:var(--bg-3);color:var(--text);';
+    const SUITE_BTN = 'padding:11px 18px;border:none;border-radius:12px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;';
+
+    function proposerSuiteInscription(profile, user) {
+        const zone = document.getElementById('suite-inscription-zone');
         if (!zone || !profile) return;
+        const meta = (user && user.user_metadata) || {};
+        const express = meta.inscription === 'express' || meta.name === '';
         const nom = (profile.name || '').trim();
-        if (nom && nom !== 'Utilisateur') return;
-        try { if (Number(localStorage.getItem(PRENOM_PLUS_TARD) || 0) > Date.now()) return; } catch (_) {}
+        const besoinNom = !nom || nom === 'Utilisateur';
+        const besoinMdp = express && !meta.mot_de_passe;
+        if (!besoinNom && !besoinMdp) return;
+        try { if (Number(localStorage.getItem(SUITE_PLUS_TARD) || 0) > Date.now()) return; } catch (_) {}
+
+        const texte = besoinMdp
+            ? 'Votre prénom et un mot de passe, pour retrouver votre carte sur n\'importe quel téléphone.'
+            : 'Votre prénom : le commerçant le verra en caisse.';
         zone.innerHTML = `
             <div style="background:var(--card-bg);border:1px solid var(--acc-line);border-radius:18px;padding:16px;margin:4px 0 16px;box-shadow:var(--shadow-xs);">
-                <div style="font-weight:700;font-size:14.5px;color:var(--text);margin-bottom:2px;">Comment vous appelez-vous ?</div>
-                <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Facultatif : le commerçant verra votre prénom en caisse.</div>
-                <form onsubmit="enregistrerPrenom(event)" style="display:flex;gap:8px;">
-                    <input id="prenom-input" type="text" autocomplete="given-name" maxlength="40" placeholder="Votre prénom"
-                        style="flex:1;min-width:0;padding:11px 13px;border:1px solid var(--border-2);border-radius:12px;font-size:16px;font-family:inherit;background:var(--bg-3);color:var(--text);">
-                    <button type="submit" style="padding:11px 18px;border:none;border-radius:12px;background:var(--grad);color:#fff;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;">OK</button>
+                <div style="font-weight:700;font-size:14.5px;color:var(--text);margin-bottom:2px;">Continuer l'inscription</div>
+                <div style="font-size:12.5px;color:var(--muted);">${texte}</div>
+                <div id="suite-actions" style="display:flex;gap:8px;margin-top:12px;">
+                    <button type="button" onclick="ouvrirSuiteInscription()" style="${SUITE_BTN}background:var(--grad);color:#fff;">Continuer</button>
+                    <button type="button" onclick="suiteInscriptionPlusTard()" style="${SUITE_BTN}background:none;color:var(--muted);font-weight:600;">Plus tard</button>
+                </div>
+                <form id="suite-form" onsubmit="enregistrerSuiteInscription(event)" style="display:none;margin-top:12px;">
+                    ${besoinNom ? `
+                    <input id="suite-prenom" type="text" autocomplete="given-name" maxlength="40" placeholder="Votre prénom" style="${SUITE_CHAMP}margin-bottom:8px;">` : ''}
+                    ${besoinMdp ? `
+                    <input type="email" autocomplete="username" value="${escapeHtml(user.email || '')}" hidden>
+                    <div style="position:relative;margin-bottom:8px;">
+                        <input id="suite-mdp" type="password" autocomplete="new-password" placeholder="Choisissez un mot de passe" style="${SUITE_CHAMP}padding-right:46px;">
+                        <button type="button" onclick="basculerSuiteMdp(this)" aria-label="Afficher le mot de passe"
+                            style="position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;background:none;border:none;color:var(--faint);cursor:pointer;">
+                            <i class="fa-solid fa-eye"></i></button>
+                    </div>` : ''}
+                    <button type="submit" id="suite-btn" style="${SUITE_BTN}width:100%;background:var(--grad);color:#fff;">Enregistrer</button>
                 </form>
-                <button type="button" onclick="prenomPlusTard()" style="background:none;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:10px 0 0;">Plus tard</button>
             </div>`;
     }
 
-    async function enregistrerPrenom(e) {
-        e.preventDefault();
-        const champ = document.getElementById('prenom-input');
-        const name = (champ?.value || '').trim();
-        if (!name) { champ?.focus(); return; }
-        const { error } = await supabaseClient.from('profiles').update({ name }).eq('id', currentClientId);
-        if (error) { showToast('error', 'Prénom non enregistré', 'Réessayez dans un instant.'); return; }
-        const initial = name.charAt(0).toUpperCase();
-        document.getElementById('user-display-name').innerText = name;
-        document.getElementById('profile-name-big').innerText = name;
-        document.getElementById('profile-avatar-big').innerText = initial;
-        document.getElementById('avatar-letter').innerText = initial;
-        document.getElementById('prenom-zone').innerHTML = '';
-        showToast('success', 'Merci !', `Bienvenue, ${name}.`);
+    function ouvrirSuiteInscription() {
+        document.getElementById('suite-actions').style.display = 'none';
+        document.getElementById('suite-form').style.display = 'block';
+        (document.getElementById('suite-prenom') || document.getElementById('suite-mdp'))?.focus();
     }
 
-    function prenomPlusTard() {
-        try { localStorage.setItem(PRENOM_PLUS_TARD, String(Date.now() + 7 * 24 * 3600 * 1000)); } catch (_) {}
-        document.getElementById('prenom-zone').innerHTML = '';
+    function basculerSuiteMdp(btn) {
+        const champ = document.getElementById('suite-mdp');
+        const visible = champ.type === 'password';
+        champ.type = visible ? 'text' : 'password';
+        btn.innerHTML = `<i class="fa-solid ${visible ? 'fa-eye-slash' : 'fa-eye'}"></i>`;
+    }
+
+    async function enregistrerSuiteInscription(e) {
+        e.preventDefault();
+        const champNom = document.getElementById('suite-prenom');
+        const champMdp = document.getElementById('suite-mdp');
+        const name = champNom ? champNom.value.trim() : '';
+        const mdp  = champMdp ? champMdp.value : '';
+        if (champNom && !name) { champNom.focus(); showToast('warning', 'Prénom manquant', 'Entrez votre prénom.'); return; }
+        if (champMdp && mdp.length < 6) { champMdp.focus(); showToast('warning', 'Mot de passe trop court', 'Il faut au moins 6 caractères.'); return; }
+
+        const btn = document.getElementById('suite-btn');
+        btn.disabled = true;
+        try {
+            // Le mot de passe d'abord : s'il est refusé, rien n'est à moitié fait.
+            if (champMdp) {
+                const { error } = await supabaseClient.auth.updateUser({ password: mdp, data: { mot_de_passe: true } });
+                if (error) throw error;
+            }
+            if (champNom) {
+                const { error } = await supabaseClient.from('profiles').update({ name }).eq('id', currentClientId);
+                if (error) throw error;
+                const initial = name.charAt(0).toUpperCase();
+                document.getElementById('user-display-name').innerText = name;
+                document.getElementById('profile-name-big').innerText = name;
+                document.getElementById('profile-avatar-big').innerText = initial;
+                document.getElementById('avatar-letter').innerText = initial;
+            }
+            document.getElementById('suite-inscription-zone').innerHTML = '';
+            showToast('success', 'Inscription terminée', name ? `Bienvenue, ${name} !` : 'Votre mot de passe est enregistré.');
+        } catch (err) {
+            btn.disabled = false;
+            const m = String((err && err.message) || '');
+            showToast('error', 'Pas enregistré',
+                /reauth|recent/i.test(m) ? 'Par sécurité, reconnectez-vous puis réessayez.'
+                : /weak|pwned|common|known/i.test(m) ? 'Ce mot de passe est trop courant : choisissez-en un autre.'
+                : /least|short/i.test(m) ? 'Mot de passe trop court.'
+                : 'Réessayez dans un instant.');
+        }
+    }
+
+    function suiteInscriptionPlusTard() {
+        try { localStorage.setItem(SUITE_PLUS_TARD, String(Date.now() + 7 * 24 * 3600 * 1000)); } catch (_) {}
+        document.getElementById('suite-inscription-zone').innerHTML = '';
     }
 
     async function sendPasswordReset() {

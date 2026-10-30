@@ -245,8 +245,9 @@ async function envoyerCode(email) {
     options: {
       shouldCreateUser: true,
       // Lu par handle_new_user à la création seulement ; ignoré pour un
-      // compte existant. Prénom vide : la carte le proposera après.
-      data: { role: 'client', name: '' },
+      // compte existant. Prénom vide et « express » : la carte proposera
+      // ensuite de continuer l'inscription (prénom, mot de passe).
+      data: { role: 'client', name: '', inscription: 'express' },
       // Le bouton de l'e-mail ramène aussi sur la carte du commerce.
       emailRedirectTo: location.origin + versLaCarte
     }
