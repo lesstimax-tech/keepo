@@ -3369,7 +3369,7 @@ ${welcomeHtml}
   ${rewardsHtml}
 
   <div class="cta">
-    <a href="/dashboard-client?join=${escH(merchantId)}" class="btn-join">
+    <a href="/rejoindre?join=${escH(merchantId)}" class="btn-join">
       <i class="fa-solid fa-heart" style="margin-right:8px;"></i>Rejoindre le programme
     </a>
     <a href="/dashboard-client" class="btn-member">Déjà membre · Voir mes points →</a>

@@ -427,7 +427,10 @@ label .opt{font-weight:500;color:var(--muted)}
               <svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
-          <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+          <!-- Les clients inscrits au comptoir (rejoindre.html) n'ont pas de
+               mot de passe : ils se reconnectent avec un code par e-mail. -->
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0 12px;margin-bottom:16px;">
+            <a class="mini-link" onclick="codeParEmail()">Recevoir un code par e-mail</a>
             <a class="mini-link" onclick="sendResetPassword()">Mot de passe oublié ?</a>
           </div>
           <button type="submit" class="btn-main" id="loginBtn"><span class="spinner"></span>Se connecter</button>
@@ -944,6 +947,15 @@ function showOtpMode() {
     document.getElementById('otpBtn').innerHTML = '<span class="spinner"></span>Recevoir mon code';
     lockEmailField(true);
 }
+// Choix du client sans mot de passe : l'e-mail reste modifiable jusqu'à
+// l'envoi du code (showOtpMode le verrouille, pensé pour la 2FA où il est
+// déjà rempli).
+function codeParEmail() {
+    showOtpMode();
+    lockEmailField(false);
+    const f = document.getElementById('login-email');
+    if (f && !f.value.trim()) f.focus();
+}
 function showPasswordMode() {
     document.getElementById('otpPanel').style.display = 'none';
     document.getElementById('pwdPanel').style.display = 'block';
@@ -979,6 +991,7 @@ async function otpAction() {
                 options: { shouldCreateUser: false }
             });
             if (error) throw error;
+            lockEmailField(true);   // le code part à CETTE adresse
             otpStage = 'verify';
             document.getElementById('otpCodeGroup').style.display = 'block';
             document.getElementById('otpHint').style.display = 'none';
@@ -1000,7 +1013,8 @@ async function otpAction() {
             return;
         }
     } catch (error) {
-        showToast(error.message, 'error');
+        const m = String(error.message || '');
+        showToast(/signups not allowed/i.test(m) ? 'Aucun compte avec cette adresse e-mail.' : m, 'error');
         document.getElementById('otp-code').value = '';
     }
     otpBusy = false;

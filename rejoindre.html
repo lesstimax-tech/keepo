@@ -1,0 +1,388 @@
+<!-- rejoindre.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ma carte de fidélité — KEEPO</title>
+<meta name="description" content="Rejoignez le programme de fidélité de votre commerce en quelques secondes, avec votre seule adresse e-mail.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/img/icon-180.png" sizes="180x180">
+<meta name="theme-color" content="#FAFAFC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="/js/keepo-mesure.js" defer></script>
+
+<style>
+:root{
+  --ink:#14141B; --ink-2:#46455A; --muted:#5F5E6E;
+  --bg:#FAFAFC; --card:#FFFFFF;
+  --line:rgba(20,20,27,.09); --line-2:rgba(20,20,27,.16);
+  --violet:#5B3AA0; --teal:#16B8C4; --teal-deep:#0E7C8C;
+  --grad:linear-gradient(125deg,#5B3AA0,#16B8C4);
+  --danger:#C2412D;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --font:'Bricolage Grotesque',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--ink);
+  min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;line-height:1.55;
+  display:flex;flex-direction:column;align-items:center;
+  padding:28px 16px calc(28px + env(safe-area-inset-bottom));
+  background-image:
+    radial-gradient(480px 320px at 90% 0%,rgba(22,184,196,.08),transparent 60%),
+    radial-gradient(420px 300px at 5% 100%,rgba(91,58,160,.07),transparent 60%);
+  overflow-x:clip;
+}
+button{-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid rgba(22,184,196,.55);outline-offset:2px}
+
+.logo{display:block;margin-bottom:22px}
+.logo img{height:38px;width:auto;display:block}
+
+.card{
+  width:100%;max-width:420px;background:var(--card);
+  border:1px solid var(--line);border-radius:26px;padding:28px 22px 24px;
+  box-shadow:0 1px 2px rgba(20,20,27,.04),0 24px 60px -24px rgba(20,20,27,.16);
+}
+
+/* Le commerce : c'est lui que le client vient de scanner */
+.shop{display:flex;align-items:center;gap:13px;margin-bottom:20px}
+.shop-av{
+  width:48px;height:48px;border-radius:15px;flex-shrink:0;background:var(--grad);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:21px;color:#fff;
+}
+.shop-name{font-weight:800;font-size:18px;line-height:1.25;letter-spacing:-.01em;overflow-wrap:anywhere}
+.shop-sub{font-size:12.5px;color:var(--muted)}
+
+.gift{
+  display:none;align-items:center;gap:11px;margin-bottom:18px;
+  padding:11px 14px;border-radius:14px;font-size:13px;color:var(--ink-2);
+  background:linear-gradient(135deg,rgba(91,58,160,.06),rgba(22,184,196,.08));
+  border:1px solid rgba(14,124,140,.22);
+}
+.gift b{color:var(--ink)}
+.gift .ico{font-size:20px;line-height:1}
+
+h1{font-weight:800;font-size:22px;letter-spacing:-.01em;line-height:1.2;margin-bottom:6px}
+.lead{font-size:14px;color:var(--muted);margin-bottom:20px}
+.lead b{color:var(--ink)}
+
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-2);margin-bottom:7px}
+input{
+  width:100%;padding:14px 15px;font-size:16px;font-family:var(--font);
+  background:#fff;border:1px solid var(--line-2);border-radius:13px;color:var(--ink);
+  transition:border-color .25s,box-shadow .25s;
+}
+input::placeholder{color:#B4B3C0}
+input:focus{outline:none;border-color:var(--teal-deep);box-shadow:0 0 0 3.5px rgba(22,184,196,.14)}
+#code{text-align:center;letter-spacing:10px;font-size:26px;font-weight:800;padding:13px 10px}
+
+.btn{
+  width:100%;margin-top:14px;padding:15px;border:none;border-radius:100px;cursor:pointer;
+  font-family:var(--font);font-size:16px;font-weight:700;color:#fff;background:var(--grad);
+  box-shadow:0 12px 26px -10px rgba(91,58,160,.45);
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:transform .3s var(--ease),opacity .2s;
+}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.65;cursor:wait;transform:none}
+.spinner{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;display:none;
+  border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite;
+}
+.btn.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.msg{font-size:13px;color:var(--danger);margin-top:10px;line-height:1.45}
+.msg:empty{display:none}
+.hint{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5;text-align:center}
+.links{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 14px;margin-top:14px}
+.links button{
+  background:none;border:none;cursor:pointer;font-family:var(--font);
+  font-size:13px;font-weight:700;color:var(--teal-deep);padding:12px 4px;
+}
+.links button:disabled{color:var(--muted);cursor:default;font-weight:600}
+
+.step{display:none;animation:stepIn .35s var(--ease)}
+.step.on{display:block}
+@keyframes stepIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.foot{font-size:11.5px;color:var(--muted);text-align:center;margin-top:18px;max-width:420px;line-height:1.6}
+.foot a{color:var(--teal-deep);text-decoration:none;font-weight:600}
+.member{margin-top:14px;font-size:13px;color:var(--muted);text-align:center}
+.member a{color:var(--teal-deep);font-weight:700;text-decoration:none;display:inline-block;padding:10px 4px}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<a href="/" class="logo"><img src="img/logo.png" alt="KEEPO"></a>
+
+<main class="card" id="carte">
+  <div class="shop">
+    <div class="shop-av" id="shopAv">K</div>
+    <div>
+      <div class="shop-name" id="shopName">&nbsp;</div>
+      <div class="shop-sub">Programme de fidélité</div>
+    </div>
+  </div>
+
+  <div class="gift" id="gift">
+    <span class="ico">🎁</span>
+    <span>Cadeau de bienvenue : <b id="giftLabel"></b></span>
+  </div>
+
+  <!-- Étape 1 : l'e-mail, et rien d'autre -->
+  <form class="step on" id="stepEmail" novalidate>
+    <h1>Votre carte en 10 secondes</h1>
+    <p class="lead">Sans appli et sans mot de passe : un code par e-mail suffit.</p>
+    <label for="email">Votre e-mail</label>
+    <input type="email" id="email" placeholder="nom@exemple.com" autocomplete="email"
+           inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+    <button type="submit" class="btn" id="btnEmail"><span class="spinner"></span>Recevoir mon code</button>
+    <p class="msg" id="msgEmail" role="alert"></p>
+  </form>
+
+  <!-- Étape 2 : le code reçu -->
+  <form class="step" id="stepCode" novalidate>
+    <h1>Entrez votre code</h1>
+    <p class="lead">Envoyé à <b id="sentTo"></b>. Pensez à regarder dans les spams.</p>
+    <label for="code">Code à 6 chiffres</label>
+    <input type="text" id="code" inputmode="numeric" autocomplete="one-time-code"
+           maxlength="6" placeholder="••••••" required>
+    <button type="submit" class="btn" id="btnCode"><span class="spinner"></span>Voir ma carte</button>
+    <p class="msg" id="msgCode" role="alert"></p>
+    <div class="links">
+      <button type="button" id="btnResend">Renvoyer le code</button>
+      <button type="button" id="btnChange">Changer d'e-mail</button>
+    </div>
+  </form>
+
+  <!-- QR sans commerce reconnu -->
+  <div class="step" id="stepInvalid">
+    <h1>QR code non reconnu</h1>
+    <p class="lead">Ce lien ne correspond à aucun commerce KEEPO. Scannez à nouveau le QR code affiché au comptoir.</p>
+    <a href="/connexion" class="btn" style="text-decoration:none;">Me connecter</a>
+  </div>
+</main>
+
+<p class="member" id="member">Vous avez un mot de passe ? <a id="memberLink" href="/connexion">Me connecter</a></p>
+<p class="foot">En continuant, vous acceptez les <a href="/cgu-cgv.html" target="_blank">CGU</a> et la <a href="/confidentialite.html" target="_blank">politique de confidentialité</a>.</p>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   Inscription express d'un client, devant le comptoir.
+
+   Le QR du comptoir mène à /dashboard-client?join=<commerce>. Sans
+   session, la carte renvoie ici : le client tape son e-mail, reçoit un
+   code à 6 chiffres, le saisit, et retourne sur la carte qui ajoute
+   celle du commerce (join_loyalty_card, cadeau de bienvenue compris).
+
+   signInWithOtp crée le compte s'il n'existe pas : rôle « client »
+   (handle_new_user), sans mot de passe, prénom vide — la carte le
+   demandera ensuite, facultativement. Un compte qui existe déjà, avec
+   ou sans mot de passe, reçoit simplement un code de connexion.
+   ════════════════════════════════════════════════════════════════ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const commerce = (new URLSearchParams(location.search).get('join') || '').trim();
+const versLaCarte = '/dashboard-client?join=' + encodeURIComponent(commerce);
+
+const $ = id => document.getElementById(id);
+let emailEnvoye = '';
+let attenteRenvoi = null;
+let validationEnCours = false;
+
+function etape(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.toggle('on', s.id === id));
+}
+function chargement(btn, oui) { btn.disabled = oui; btn.classList.toggle('loading', oui); }
+
+/* Les messages de Supabase sont en anglais et techniques : le client
+   devant la caisse doit savoir quoi faire, pas ce qui s'est passé. */
+function messageClair(err) {
+  const m = String((err && err.message) || err || '');
+  if (/only request this after|after \d+ seconds?/i.test(m)) return 'Un code vient d\'être envoyé. Patientez quelques secondes avant d\'en demander un autre.';
+  if (/rate limit|too many/i.test(m)) return 'Trop de demandes pour le moment. Réessayez dans quelques minutes.';
+  if (/invalid.*email|email.*invalid|unable to validate email/i.test(m)) return 'Cette adresse e-mail ne semble pas valide.';
+  if (/expired|invalid|token/i.test(m)) return 'Code incorrect ou expiré. Vérifiez-le, ou demandez-en un nouveau.';
+  if (/fetch|network|load failed/i.test(m)) return 'Connexion internet impossible. Réessayez dans un instant.';
+  return 'Un souci est survenu. Réessayez dans un instant.';
+}
+
+function compteARebours(secondes) {
+  const btn = $('btnResend');
+  clearInterval(attenteRenvoi);
+  let reste = secondes;
+  btn.disabled = true;
+  btn.textContent = `Renvoyer le code (${reste} s)`;
+  attenteRenvoi = setInterval(() => {
+    reste -= 1;
+    if (reste <= 0) {
+      clearInterval(attenteRenvoi);
+      btn.disabled = false;
+      btn.textContent = 'Renvoyer le code';
+    } else {
+      btn.textContent = `Renvoyer le code (${reste} s)`;
+    }
+  }, 1000);
+}
+
+async function envoyerCode(email) {
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+      // Lu par handle_new_user à la création seulement ; ignoré pour un
+      // compte existant. Prénom vide : la carte le proposera après.
+      data: { role: 'client', name: '' },
+      // Le bouton de l'e-mail ramène aussi sur la carte du commerce.
+      emailRedirectTo: location.origin + versLaCarte
+    }
+  });
+  if (error) throw error;
+}
+
+// ── Étape 1 ──
+$('stepEmail').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('email').value.trim().toLowerCase();
+  $('msgEmail').textContent = '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    $('msgEmail').textContent = 'Entrez une adresse e-mail complète, par exemple nom@gmail.com.';
+    $('email').focus();
+    return;
+  }
+  const btn = $('btnEmail');
+  chargement(btn, true);
+  try {
+    await envoyerCode(email);
+    emailEnvoye = email;
+    try { localStorage.setItem('KEEPO_last_email', email); } catch (_) {}
+    $('sentTo').textContent = email;
+    $('code').value = '';
+    $('msgCode').textContent = '';
+    etape('stepCode');
+    compteARebours(60);
+    $('code').focus();
+    keepoMesure('code_demande', { parcours: 'express' });
+  } catch (err) {
+    $('msgEmail').textContent = messageClair(err);
+  } finally {
+    chargement(btn, false);
+  }
+});
+
+// ── Étape 2 ──
+async function validerCode() {
+  if (validationEnCours) return;
+  const token = $('code').value.replace(/\D/g, '');
+  $('msgCode').textContent = '';
+  if (token.length !== 6) {
+    $('msgCode').textContent = 'Le code compte 6 chiffres.';
+    $('code').focus();
+    return;
+  }
+  validationEnCours = true;
+  const btn = $('btnCode');
+  chargement(btn, true);
+  try {
+    const { data, error } = await supabaseClient.auth.verifyOtp({ email: emailEnvoye, token, type: 'email' });
+    if (error) throw error;
+    // Un compte né il y a quelques minutes vient d'être créé par ce parcours.
+    const cree = data && data.user && data.user.created_at;
+    if (cree && Date.now() - new Date(cree).getTime() < 15 * 60 * 1000) {
+      keepoMesure('inscription', { role: 'client', parcours: 'express' });
+    }
+    location.replace(versLaCarte);
+  } catch (err) {
+    validationEnCours = false;
+    chargement(btn, false);
+    $('msgCode').textContent = messageClair(err);
+    $('code').select();
+  }
+}
+$('stepCode').addEventListener('submit', (e) => { e.preventDefault(); validerCode(); });
+$('code').addEventListener('input', () => {
+  const el = $('code');
+  el.value = el.value.replace(/\D/g, '').slice(0, 6);
+  if (el.value.length === 6) validerCode();
+});
+
+$('btnResend').addEventListener('click', async () => {
+  $('msgCode').textContent = '';
+  const btn = $('btnResend');
+  btn.disabled = true;
+  try {
+    await envoyerCode(emailEnvoye);
+    compteARebours(60);
+    $('code').value = '';
+    $('code').focus();
+  } catch (err) {
+    btn.disabled = false;
+    $('msgCode').textContent = messageClair(err);
+  }
+});
+$('btnChange').addEventListener('click', () => {
+  clearInterval(attenteRenvoi);
+  $('msgEmail').textContent = '';
+  etape('stepEmail');
+  $('email').focus();
+});
+
+// ── Le commerce scanné ──
+async function afficherCommerce() {
+  const champs = 'title,color';
+  let { data, error } = await supabaseClient.from('merchant_cards')
+    .select(champs + ',welcome_enabled,welcome_label').eq('merchant_id', commerce).maybeSingle();
+  // Cadeau de bienvenue pas encore en base (supabase/cadeau-bienvenue.sql) :
+  // on redemande sans ces colonnes.
+  if (error) ({ data } = await supabaseClient.from('merchant_cards')
+    .select(champs).eq('merchant_id', commerce).maybeSingle());
+  const nom = ((data && data.title) || '').trim() || 'Votre commerce';
+  $('shopName').textContent = nom;
+  $('shopAv').textContent = nom.charAt(0).toUpperCase();
+  if (!data) return;
+  const couleur = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(data.color || '') ? data.color : '';
+  if (couleur) {
+    $('shopAv').style.background = couleur;
+    // Sur une couleur claire, l'initiale blanche ne se lit pas.
+    const hex = couleur.length === 4 ? couleur.replace(/[0-9a-f]/gi, c => c + c) : couleur;
+    const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+    if (0.299 * r + 0.587 * g + 0.114 * b > 170) $('shopAv').style.color = '#14141B';
+  }
+  document.title = `${nom} — Ma carte de fidélité`;
+  if (data.welcome_enabled && (data.welcome_label || '').trim()) {
+    $('giftLabel').textContent = data.welcome_label.trim();
+    $('gift').style.display = 'flex';
+  }
+}
+
+// ── Démarrage ──
+(async function () {
+  if (!UUID.test(commerce)) { etape('stepInvalid'); $('member').style.display = 'none'; return; }
+
+  // Déjà connecté sur ce téléphone : la carte s'ajoute directement.
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) { location.replace(versLaCarte); return; }
+  } catch (_) { /* on reste sur le formulaire */ }
+
+  // Après une connexion par mot de passe, revenir ajouter cette carte.
+  try { sessionStorage.setItem('KEEPO_pending_join', commerce); } catch (_) {}
+  $('memberLink').href = '/connexion?next=' + encodeURIComponent(versLaCarte);
+
+  try { const dernier = localStorage.getItem('KEEPO_last_email'); if (dernier) $('email').value = dernier; } catch (_) {}
+  afficherCommerce().catch(() => {});
+})();
+</script>
+</body>
+</html>

@@ -4,6 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script>
+    /* QR du comptoir scanné sans compte : direction l'inscription express
+       (e-mail + code) avant même de charger l'application. Le cas où la
+       session existe mais a expiré est rattrapé plus bas, au démarrage.
+       ?code= : retour du bouton de l'e-mail, la session arrive avec lui. */
+    (function () {
+        try {
+            var q = new URLSearchParams(location.search);
+            var commerce = q.get('join');
+            if (!commerce || q.has('code')) return;
+            for (var i = 0; i < localStorage.length; i++) {
+                if (/^sb-.+-auth-token$/.test(localStorage.key(i))) return;
+            }
+            location.replace('/rejoindre?join=' + encodeURIComponent(commerce));
+        } catch (e) { /* stockage bloqué : le démarrage normal s'en charge */ }
+    })();
+    </script>
     <title>KEEPO | Portefeuille Client</title>
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
@@ -757,6 +774,7 @@
             </div>
         </div>
 
+        <div id="prenom-zone"></div>
         <div id="welcome-gifts-zone"></div>
 
         <div id="cards-container" class="cards-grid">
@@ -1615,7 +1633,8 @@
             // Preserve pending join so it survives the login redirect
             const pendingJoin = new URLSearchParams(window.location.search).get('join');
             if (pendingJoin) sessionStorage.setItem('KEEPO_pending_join', pendingJoin);
-            splashRedirect('/connexion');
+            // Un QR de commerce sans compte : l'inscription express (e-mail + code).
+            splashRedirect(pendingJoin ? '/rejoindre?join=' + encodeURIComponent(pendingJoin) : '/connexion');
             return;
         }
         currentClientId = session.user.id;
@@ -1697,6 +1716,7 @@
         }
         // Invitation à installer l'app : forcée après une arrivée par QR
         // commerçant, discrète (max 1×/semaine) sinon.
+        proposerPrenom(profile);
         setTimeout(() => maybeProposeInstall(!!joinId), 2200);
 
         // Notifications push (demande après splashHide pour ne pas perturber le chargement)
@@ -2998,6 +3018,51 @@
         document.getElementById('avatar-letter').innerText = initial;
         closeClientModal();
         showToast('success', 'Nom mis à jour', `Bonjour, ${name} !`);
+    }
+
+    // ─── Prénom facultatif (inscription express) ───
+    // L'inscription par code ne demande que l'e-mail. Le prénom se propose
+    // ensuite, au-dessus des cartes : le commerçant le verra en caisse.
+    // « Plus tard » le fait oublier une semaine.
+    const PRENOM_PLUS_TARD = 'KEEPO_prenom_plus_tard';
+    function proposerPrenom(profile) {
+        const zone = document.getElementById('prenom-zone');
+        if (!zone || !profile) return;
+        const nom = (profile.name || '').trim();
+        if (nom && nom !== 'Utilisateur') return;
+        try { if (Number(localStorage.getItem(PRENOM_PLUS_TARD) || 0) > Date.now()) return; } catch (_) {}
+        zone.innerHTML = `
+            <div style="background:var(--card-bg);border:1px solid var(--acc-line);border-radius:18px;padding:16px;margin:4px 0 16px;box-shadow:var(--shadow-xs);">
+                <div style="font-weight:700;font-size:14.5px;color:var(--text);margin-bottom:2px;">Comment vous appelez-vous ?</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Facultatif : le commerçant verra votre prénom en caisse.</div>
+                <form onsubmit="enregistrerPrenom(event)" style="display:flex;gap:8px;">
+                    <input id="prenom-input" type="text" autocomplete="given-name" maxlength="40" placeholder="Votre prénom"
+                        style="flex:1;min-width:0;padding:11px 13px;border:1px solid var(--border-2);border-radius:12px;font-size:16px;font-family:inherit;background:var(--bg-3);color:var(--text);">
+                    <button type="submit" style="padding:11px 18px;border:none;border-radius:12px;background:var(--grad);color:#fff;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;">OK</button>
+                </form>
+                <button type="button" onclick="prenomPlusTard()" style="background:none;border:none;color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;padding:10px 0 0;">Plus tard</button>
+            </div>`;
+    }
+
+    async function enregistrerPrenom(e) {
+        e.preventDefault();
+        const champ = document.getElementById('prenom-input');
+        const name = (champ?.value || '').trim();
+        if (!name) { champ?.focus(); return; }
+        const { error } = await supabaseClient.from('profiles').update({ name }).eq('id', currentClientId);
+        if (error) { showToast('error', 'Prénom non enregistré', 'Réessayez dans un instant.'); return; }
+        const initial = name.charAt(0).toUpperCase();
+        document.getElementById('user-display-name').innerText = name;
+        document.getElementById('profile-name-big').innerText = name;
+        document.getElementById('profile-avatar-big').innerText = initial;
+        document.getElementById('avatar-letter').innerText = initial;
+        document.getElementById('prenom-zone').innerHTML = '';
+        showToast('success', 'Merci !', `Bienvenue, ${name}.`);
+    }
+
+    function prenomPlusTard() {
+        try { localStorage.setItem(PRENOM_PLUS_TARD, String(Date.now() + 7 * 24 * 3600 * 1000)); } catch (_) {}
+        document.getElementById('prenom-zone').innerHTML = '';
     }
 
     async function sendPasswordReset() {
