@@ -55,10 +55,13 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid rgba(
 /* Le commerce : c'est lui que le client vient de scanner */
 .shop{display:flex;align-items:center;gap:13px;margin-bottom:20px}
 .shop-av{
-  width:48px;height:48px;border-radius:15px;flex-shrink:0;background:var(--grad);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:21px;color:#fff;
+  width:60px;height:60px;border-radius:17px;flex-shrink:0;background:var(--grad);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  font-weight:800;font-size:25px;color:#fff;
 }
+/* Le logo du commerce, quand il en a un : le client reconnaît la boutique. */
+.shop-av.logo{background:#fff;border:1px solid var(--line)}
+.shop-av img{width:100%;height:100%;object-fit:contain;display:block}
 .shop-name{font-weight:800;font-size:18px;line-height:1.25;letter-spacing:-.01em;overflow-wrap:anywhere}
 .shop-sub{font-size:12.5px;color:var(--muted)}
 
@@ -339,6 +342,23 @@ $('btnChange').addEventListener('click', () => {
 });
 
 // ── Le commerce scanné ──
+// Le logo passe par /logo/<commerce> (avatar du compte, sinon logo de la
+// carte) ; ?fb=none répond 404 quand il n'y en a pas, l'initiale reste.
+let logoAffiche = false;
+function afficherLogo() {
+  const img = new Image();
+  img.alt = '';
+  img.onload = () => {
+    logoAffiche = true;
+    const av = $('shopAv');
+    av.textContent = '';
+    av.style.background = '';
+    av.classList.add('logo');
+    av.appendChild(img);
+  };
+  img.src = '/logo/' + encodeURIComponent(commerce) + '?fb=none';
+}
+
 async function afficherCommerce() {
   const champs = 'title,color';
   let { data, error } = await supabaseClient.from('merchant_cards')
@@ -349,10 +369,10 @@ async function afficherCommerce() {
     .select(champs).eq('merchant_id', commerce).maybeSingle());
   const nom = ((data && data.title) || '').trim() || 'Votre commerce';
   $('shopName').textContent = nom;
-  $('shopAv').textContent = nom.charAt(0).toUpperCase();
+  if (!logoAffiche) $('shopAv').textContent = nom.charAt(0).toUpperCase();
   if (!data) return;
   const couleur = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(data.color || '') ? data.color : '';
-  if (couleur) {
+  if (couleur && !logoAffiche) {
     $('shopAv').style.background = couleur;
     // Sur une couleur claire, l'initiale blanche ne se lit pas.
     const hex = couleur.length === 4 ? couleur.replace(/[0-9a-f]/gi, c => c + c) : couleur;
@@ -381,6 +401,7 @@ async function afficherCommerce() {
   $('memberLink').href = '/connexion?next=' + encodeURIComponent(versLaCarte);
 
   try { const dernier = localStorage.getItem('KEEPO_last_email'); if (dernier) $('email').value = dernier; } catch (_) {}
+  afficherLogo();
   afficherCommerce().catch(() => {});
 })();
 </script>
